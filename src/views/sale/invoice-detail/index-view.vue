@@ -1,72 +1,48 @@
 <template>
   <div class="app-container">
     <!-- Header Section -->
-    <div class="card mb-3">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">
-          <i class="bi bi-file-earmark-text mr-2"></i>
-          {{ $t('view.sale.invoiceDetail.title') }}
-          <span v-if="currentViewingVersion" class="badge badge-warning ml-2">
-            <i class="bi bi-eye mr-1"></i>
-            {{ $t('view.sale.invoiceDetail.viewingVersion') }}: {{ currentViewingVersion }}
-          </span>
-        </h5>
-        <div>
-          <button
-            v-if="currentViewingVersion"
-            class="btn btn-outline-main btn-sm mr-2"
-            @click="restoreOriginalView"
-          >
-            <i class="bi bi-arrow-left mr-1"></i>
-            {{ $t('view.sale.invoiceDetail.restoreOriginal') }}
-          </button>
-          <button class="btn btn-green btn-sm btn-header-action mr-2" @click="openVersionModal">
-            <i class="bi bi-plus-circle mr-1"></i>
-            {{ $t('view.sale.invoiceDetail.addVersion') }}
-          </button>
-          <button class="btn btn-green btn-sm btn-header-action mr-2" @click="reprintPDF">
-            <i class="bi bi-printer mr-1"></i>
-            {{ $t('view.sale.invoiceDetail.printInvoice') }}
-          </button>
-
-          <button class="btn btn-green btn-sm btn-header-action mr-2" @click="exportInvoiceExcel">
-            <i class="bi bi-file-earmark-excel mr-1"></i>
-            {{ $t('view.sale.invoiceDetail.exportExcel') }}
-          </button>
-          <button class="btn btn-green btn-sm btn-header-action mr-2" @click="printDeliveryNote">
-            <i class="bi bi-truck mr-1"></i>
-            {{ $t('view.sale.invoiceDetail.printDelivery') }}
-          </button>
-          <button
-            class="btn btn-green btn-sm btn-header-action mr-2"
-            :disabled="!invoiceItems || invoiceItems.length === 0"
-            @click="printSummary"
-          >
-            <i class="bi bi-file-earmark-pdf mr-1"></i>
-            {{ $t('view.sale.invoiceDetail.printSummary') }}
-          </button>
-          <button
-            class="btn btn-green btn-sm btn-header-action mr-2"
-            :disabled="!invoiceItems || invoiceItems.length === 0"
-            @click="exportSummaryExcel"
-          >
-            <i class="bi bi-file-earmark-excel mr-1"></i>
-            {{ $t('view.sale.invoiceDetail.exportSummaryExcel') }}
-          </button>
-          <button
-            class="btn btn-red btn-sm btn-header-action mr-2"
-            @click="confirmReverseInvoice"
-          >
-            <i class="bi bi-arrow-counterclockwise mr-1"></i>
-            {{ $t('view.sale.invoiceDetail.cancelDocument') }}
-          </button>
-          <button class="btn btn-outline-main btn-sm btn-header-action" @click="goBack">
-            <i class="bi bi-arrow-left mr-1"></i>
-            {{ $t('view.sale.invoiceDetail.goBack') }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <PageHeaderGeneric :title="$t('view.sale.invoiceDetail.title')" @back="goBack">
+      <template #actions>
+        <span v-if="currentViewingVersion" class="badge badge-warning">
+          <i class="bi bi-eye mr-1"></i>
+          {{ $t('view.sale.invoiceDetail.viewingVersion') }}: {{ currentViewingVersion }}
+        </span>
+        <ButtonGeneric
+          v-if="currentViewingVersion"
+          variant="outline"
+          icon="bi-arrow-left"
+          :label="$t('view.sale.invoiceDetail.restoreOriginal')"
+          @click="restoreOriginalView"
+        />
+        <ButtonGeneric
+          variant="outline"
+          icon="bi-plus-circle"
+          :label="$t('view.sale.invoiceDetail.addVersion')"
+          @click="openVersionModal"
+        />
+        <ButtonGeneric
+          class="is-primary"
+          icon="bi-printer"
+          :label="$t('view.sale.invoiceDetail.printInvoice')"
+          @click="reprintPDF"
+        />
+        <ActionMenuGeneric
+          :label="$t('view.sale.invoiceDetail.menuOtherDocs')"
+          icon="bi-file-earmark-text"
+          :items="otherDocMenuItems"
+        />
+        <ActionMenuGeneric
+          :label="$t('view.sale.invoiceDetail.menuExcel')"
+          icon="bi-file-earmark-excel"
+          :items="excelMenuItems"
+        />
+        <ActionMenuGeneric
+          icon="bi-three-dots"
+          :title="$t('view.sale.invoiceDetail.menuMore')"
+          :items="moreMenuItems"
+        />
+      </template>
+    </PageHeaderGeneric>
 
     <!-- Error State -->
     <div v-if="loadError" class="alert alert-danger">
@@ -364,6 +340,17 @@
         @confirm-print="handleConfirmDeliveryPrint"
       />
 
+      <!-- Guarantee Card Print Modal -->
+      <GuaranteeCardPrintModal
+        :isShowModal="showGuaranteeModal"
+        :invoiceData="invoiceData"
+        :invoiceItems="invoiceItems"
+        :historyVersion="guaranteeHistoryVersion"
+        @close-modal="showGuaranteeModal = false"
+        @preview-print="handlePreviewGuarantee"
+        @confirm-print="handleConfirmGuaranteePrint"
+      />
+
       <!-- Invoice Confirm Excel Modal -->
       <ExcelExportConfirmModal
         :isShowModal="showConfirmExcelModal"
@@ -393,21 +380,26 @@ import InvoiceConfirmPrintModal from './modal/invoice-confirm-print-modal.vue'
 import InvoicePdfPreviewModal from './modal/invoice-pdf-preview-modal.vue'
 import ContinuousPrintPreviewPanel from './modal/continuous-print-preview-panel.vue'
 import DeliveryConfirmPrintModal from './modal/delivery-confirm-print-modal.vue'
+import GuaranteeCardPrintModal from './modal/guarantee-card-print-modal.vue'
 import ExcelExportConfirmModal from '@/components/modal/excel-export-confirm-modal.vue'
 import PaymentRecordModal from './modal/payment-record-modal.vue'
 import InvoiceInfoCard from './components/invoice-info-card.vue'
 import InvoiceItemsTable from './components/invoice-items-table.vue'
 import PaymentSection from './components/payment-section.vue'
+import PageHeaderGeneric from '@/components/generic/PageHeaderGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import ActionMenuGeneric from '@/components/generic/ActionMenuGeneric.vue'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
-import { error, success } from '@/services/alert/sweetAlerts.js'
+import { error, success, warning } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
 import { invoiceSummaryPdfService } from '@/services/helper/pdf/invoice-summary/invoice-summary-integration.js'
 import { invoiceExcelService } from '@/services/helper/excel/invoice/invoice-excel-integration.js'
 import { deliveryPdfService } from '@/services/helper/pdf/delivery/delivery-pdf-integration.js'
+import { guaranteeCardPdfService } from '@/services/helper/pdf/guarantee-card/guarantee-card-pdf-integration.js'
 import { SaleSummaryPdfBuilder } from '@/services/helper/pdf/sale-summary/sale-summary-pdf-builder.js'
 import { SaleSummaryExcelBuilder } from '@/services/helper/excel/sale-summary/sale-summary-excel-builder.js'
 import { buildProductTypeLabelMap } from '@/services/helper/sale-summary/sale-summary-data.js'
@@ -423,11 +415,15 @@ export default {
     InvoicePdfPreviewModal,
     ContinuousPrintPreviewPanel,
     DeliveryConfirmPrintModal,
+    GuaranteeCardPrintModal,
     ExcelExportConfirmModal,
     PaymentRecordModal,
     InvoiceInfoCard,
     InvoiceItemsTable,
-    PaymentSection
+    PaymentSection,
+    PageHeaderGeneric,
+    ButtonGeneric,
+    ActionMenuGeneric
   },
 
   data() {
@@ -446,10 +442,14 @@ export default {
       showVersionModal: false,
       showConfirmPrintModal: false,
       showDeliveryPrintModal: false,
+      showGuaranteeModal: false,
+      guaranteeHistoryVersion: 0,
       showConfirmExcelModal: false,
       showPaymentModal: false,
       isShowPreviewModal: false,
       previewUrl: '',
+      previewSource: 'invoice',
+      lastGuaranteeCards: null,
       isShowContinuousPreview: false,
       continuousPreviewModel: null,
       lastPreviewPrintData: null,
@@ -497,6 +497,75 @@ export default {
     },
     roundingAdjustment() {
       return this.grandTotalRounded - this.grandTotalRaw
+    },
+
+    remainingBalance() {
+      return this.grandTotalRounded - (this.invoiceData?.deposit || 0) - this.paidAmount
+    },
+
+    canPrintGuarantee() {
+      return (
+        !!this.invoiceData &&
+        this.invoiceItems.length > 0 &&
+        this.remainingBalance <= 0 &&
+        this.invoiceData.statusName !== 'Cancelled'
+      )
+    },
+
+    otherDocMenuItems() {
+      return [
+        {
+          key: 'delivery',
+          icon: 'bi-truck',
+          label: this.$t('view.sale.invoiceDetail.printDelivery'),
+          command: this.printDeliveryNote
+        },
+        {
+          key: 'guarantee',
+          icon: 'bi-patch-check',
+          label: this.$t('view.sale.invoiceDetail.printGuarantee'),
+          disabled: !this.canPrintGuarantee,
+          hint: this.canPrintGuarantee ? '' : this.$t('view.sale.invoiceDetail.guaranteeNeedPaid'),
+          command: this.printGuaranteeCard
+        },
+        {
+          key: 'summary-pdf',
+          icon: 'bi-file-earmark-pdf',
+          label: this.$t('view.sale.invoiceDetail.printSummaryPdf'),
+          disabled: !this.invoiceItems.length,
+          command: this.printSummary
+        }
+      ]
+    },
+
+    excelMenuItems() {
+      return [
+        {
+          key: 'excel',
+          icon: 'bi-file-earmark-excel',
+          label: this.$t('view.sale.invoiceDetail.exportExcel'),
+          command: this.exportInvoiceExcel
+        },
+        {
+          key: 'excel-summary',
+          icon: 'bi-file-earmark-excel',
+          label: this.$t('view.sale.invoiceDetail.exportSummaryExcel'),
+          disabled: !this.invoiceItems.length,
+          command: this.exportSummaryExcel
+        }
+      ]
+    },
+
+    moreMenuItems() {
+      return [
+        {
+          key: 'cancel',
+          icon: 'bi-arrow-counterclockwise',
+          label: this.$t('view.sale.invoiceDetail.cancelDocument'),
+          danger: true,
+          command: this.confirmReverseInvoice
+        }
+      ]
     },
 
     continuousPaperLabel() {
@@ -955,6 +1024,66 @@ export default {
       // Open delivery print modal instead of direct print
       this.showDeliveryPrintModal = true
     },
+    printGuaranteeCard() {
+      if (!this.canPrintGuarantee) {
+        warning(this.$t('view.sale.invoiceDetail.guaranteeNeedPaid'), this.$t('common.label.incompleteData'))
+        return
+      }
+      this.showGuaranteeModal = true
+    },
+    async handlePreviewGuarantee({ cards, signerTitle }) {
+      try {
+        const res = await guaranteeCardPdfService.generateGuaranteeCardPDF(cards, {
+          preview: true,
+          signerTitle,
+          invoiceNumber: this.invoiceData.invoiceNumber
+        })
+        this.lastGuaranteeCards = { cards, signerTitle }
+        this.previewSource = 'guarantee'
+        this.previewUrl = res.previewUrl
+        this.isShowPreviewModal = true
+      } catch (err) {
+        error(err.message, this.$t('view.sale.invoiceDetail.error.cannotCreatePDF'))
+      }
+    },
+    async handleConfirmGuaranteePrint({ cards, signerTitle }) {
+      try {
+        await guaranteeCardPdfService.generateGuaranteeCardPDF(cards, {
+          download: true,
+          signerTitle,
+          invoiceNumber: this.invoiceData.invoiceNumber
+        })
+
+        try {
+          await this.invoiceStore.createPrintLog({
+            invoiceNumber: this.invoiceData.invoiceNumber,
+            paperType: 'guarantee-card',
+            data: JSON.stringify({
+              signerTitle,
+              count: cards.length,
+              stockNumbers: cards.map((c) => c.stockNumber),
+              cards: cards.map((c) => ({
+                stockNumber: c.stockNumber,
+                productNumber: c.productNumber,
+                code: c.code,
+                goodsSpecify: c.goodsSpecify,
+                goldWeight: c.goldWeight,
+                gemRows: c.gemRows,
+                diamondWeight: c.diamondWeight,
+                diamondQuality: c.diamondQuality
+              }))
+            })
+          })
+        } catch {
+          warning(this.$t('view.sale.guaranteeCard.warn.logFailed'), this.$t('view.sale.guaranteeCard.title'))
+        }
+        this.guaranteeHistoryVersion++
+
+        success(this.$t('view.sale.guaranteeCard.success.generated'), this.$t('view.sale.guaranteeCard.title'))
+      } catch (err) {
+        error(err.message, this.$t('view.sale.invoiceDetail.error.cannotCreatePDF'))
+      }
+    },
     async exportInvoiceExcel() {
       // Open confirm excel modal instead of direct export
       this.showConfirmExcelModal = true
@@ -1337,6 +1466,7 @@ export default {
           })
       this.previewUrl = res.previewUrl
       this.lastPreviewPrintData = printData
+      this.previewSource = 'invoice'
       this.isShowPreviewModal = true
     },
 
@@ -1346,10 +1476,15 @@ export default {
       }
       this.previewUrl = ''
       this.isShowPreviewModal = false
+      this.previewSource = 'invoice'
     },
 
     handlePreviewDownload() {
-      this.handleConfirmPrint(this.lastPreviewPrintData)
+      if (this.previewSource === 'guarantee') {
+        this.handleConfirmGuaranteePrint(this.lastGuaranteeCards)
+      } else {
+        this.handleConfirmPrint(this.lastPreviewPrintData)
+      }
       this.closePreviewModal()
     },
 
@@ -1507,10 +1642,6 @@ export default {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
-}
-
-.btn-header-action {
-  min-width: 140px;
 }
 
 .card-header {

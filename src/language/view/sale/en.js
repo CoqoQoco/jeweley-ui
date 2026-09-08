@@ -22,7 +22,13 @@ export const invoiceDetail = {
   testHelloUsb: 'Test Hello USB',
   exportExcel: 'Export Excel',
   printDelivery: 'Print Delivery Note',
+  printGuarantee: 'Guarantee Card',
+  guaranteeNeedPaid: 'Invoice must be fully paid before printing guarantee cards',
   printSummary: 'Summary by Type',
+  printSummaryPdf: 'Summary by type (PDF)',
+  menuOtherDocs: 'Other documents',
+  menuExcel: 'Excel',
+  menuMore: 'More',
   printVersionTooltip: 'Print PDF',
   exportSummaryExcel: 'Summary Excel',
   summaryTitle: 'SUMMARY BY PRODUCT TYPE',
@@ -213,6 +219,7 @@ export const invoiceDetail = {
   paperTypeA4Summary: 'A4 Summary',
   paperTypeBill: 'Continuous — Invoice',
   paperTypeVat: 'Continuous — Tax Invoice',
+  paperTypeGuarantee: 'Guarantee Card',
   placeholder: {
     currencyUnit: 'e.g. USD, THB',
     currencyRate: 'e.g. 35.50',
@@ -1219,6 +1226,49 @@ export const deliveryNote = {
   }
 }
 
+export const guaranteeCard = {
+  title: 'Guarantee Card',
+  docInfo: 'Document Info',
+  invoiceNumber: 'Invoice No.',
+  customer: 'Customer',
+  itemsCount: 'Card Count',
+  hint: '1 card = 1 product item, up to 8 cards per A4 page',
+  copiesPerItem: 'Copy {index}/{total}',
+  signerTitle: 'Signer Title',
+  printThisCard: 'Print this card',
+  code: 'Code',
+  goodsSpecify: 'Goods Specify',
+  goldWeight: 'Gold Weight',
+  gemName: 'Gem Name',
+  gemWeight: 'Gem Weight (cts.)',
+  addGem: 'Add Gem',
+  removeGem: 'Remove Gem',
+  diamondWeight: 'Diamond Weight',
+  diamondQuality: 'Quality of Diamond',
+  previewBtn: 'Preview',
+  downloadBtnCount: 'Download PDF ({selected}/{total})',
+  cancelBtn: 'Cancel',
+  historyTitle: 'Issue History',
+  historyEmpty: 'No guarantee card issued for this invoice yet',
+  historyRound: 'Round {round}',
+  historyItems: '{count} item(s)',
+  issuedCount: 'Issued {count} time(s)',
+  lastIssued: 'Last {date} by {by}',
+  neverIssued: 'Never issued',
+  selectAll: 'Select all',
+  selectNone: 'Select none',
+  selectedCount: 'Selected {selected}/{total}',
+  validation: {
+    noItemSelected: 'Please select at least 1 item to print a guarantee card'
+  },
+  success: {
+    generated: 'Guarantee card PDF generated successfully'
+  },
+  warn: {
+    logFailed: 'PDF created, but saving the issue history failed'
+  }
+}
+
 export const saleDashboard = {
   title: 'Sales Flow Overview',
   description: 'Complete sales flow from quotation to payment',
@@ -1797,6 +1847,7 @@ export default {
   stockBasket,
   stockReservation,
   deliveryNote,
+  guaranteeCard,
   paymentTracking,
   document,
   saleDashboard,

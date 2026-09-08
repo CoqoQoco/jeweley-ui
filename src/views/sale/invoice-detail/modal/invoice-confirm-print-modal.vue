@@ -854,7 +854,8 @@ export default {
         'a4': this.$t('view.sale.invoiceDetail.paperTypeA4'),
         'a4-summary': this.$t('view.sale.invoiceDetail.paperTypeA4Summary'),
         'bill': this.$t('view.sale.invoiceDetail.paperTypeBill'),
-        'vat': this.$t('view.sale.invoiceDetail.paperTypeVat')
+        'vat': this.$t('view.sale.invoiceDetail.paperTypeVat'),
+        'guarantee-card': this.$t('view.sale.invoiceDetail.paperTypeGuarantee')
       }
       return map[paperType] || paperType
     },

@@ -74,6 +74,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: var(--sp-md);
   padding: var(--sp-md) var(--sp-lg);
   background: var(--surface-inverse);
@@ -130,6 +131,18 @@ export default {
 
   &:hover {
     background: var(--color-card-bg) !important;
+    color: var(--base-font-color) !important;
+  }
+}
+
+// modifier: ปุ่ม primary filled ในกลุ่ม #actions (เช่น action หลักที่ใช้บ่อยสุด) — ใส่ class="is-primary" บน ButtonGeneric
+.page-header-actions :deep(.btn.is-primary) {
+  background: var(--on-inverse) !important;
+  border: 1px solid var(--on-inverse) !important;
+  color: var(--base-font-color) !important;
+
+  &:hover {
+    background: var(--on-inverse-muted) !important;
     color: var(--base-font-color) !important;
   }
 }

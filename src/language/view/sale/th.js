@@ -22,7 +22,13 @@ export const invoiceDetail = {
   testHelloUsb: 'Test Hello USB',
   exportExcel: 'Export Excel',
   printDelivery: 'พิมพ์ใบส่งสินค้า',
+  printGuarantee: 'ใบรับประกัน',
+  guaranteeNeedPaid: 'ต้องชำระเงินครบก่อนออกใบรับประกันครับ',
   printSummary: 'ใบสรุปตามประเภท',
+  printSummaryPdf: 'ใบสรุปตามประเภท (PDF)',
+  menuOtherDocs: 'เอกสารอื่น',
+  menuExcel: 'Excel',
+  menuMore: 'เพิ่มเติม',
   printVersionTooltip: 'พิมพ์ PDF',
   exportSummaryExcel: 'Excel ใบสรุปตามประเภท',
   summaryTitle: 'ใบสรุปตามประเภทสินค้า',
@@ -213,6 +219,7 @@ export const invoiceDetail = {
   paperTypeA4Summary: 'A4 สรุป',
   paperTypeBill: 'กระดาษต่อเนื่อง — ใบแจ้งหนี้',
   paperTypeVat: 'กระดาษต่อเนื่อง — ใบกำกับภาษี',
+  paperTypeGuarantee: 'ใบรับประกัน',
   placeholder: {
     currencyUnit: 'เช่น USD, THB',
     currencyRate: 'เช่น 35.50',
@@ -1213,6 +1220,49 @@ export const deliveryNote = {
   }
 }
 
+export const guaranteeCard = {
+  title: 'ใบรับประกันสินค้า',
+  docInfo: 'ข้อมูลเอกสาร',
+  invoiceNumber: 'เลขที่ Invoice',
+  customer: 'ลูกค้า',
+  itemsCount: 'จำนวนการ์ด',
+  hint: '1 การ์ด = 1 ชิ้นสินค้า พิมพ์ได้ 8 การ์ดต่อหน้ากระดาษ A4',
+  copiesPerItem: 'สำเนาที่ {index}/{total}',
+  signerTitle: 'ตำแหน่งผู้เซ็น',
+  printThisCard: 'พิมพ์การ์ดนี้',
+  code: 'รหัสสินค้า (Code)',
+  goodsSpecify: 'รายละเอียดสินค้า (Goods Specify)',
+  goldWeight: 'น้ำหนักทอง (Gold Weight)',
+  gemName: 'ชื่อพลอย',
+  gemWeight: 'น้ำหนักพลอย (cts.)',
+  addGem: 'เพิ่มพลอย',
+  removeGem: 'ลบรายการพลอย',
+  diamondWeight: 'น้ำหนักเพชร (Diamond Weight)',
+  diamondQuality: 'คุณภาพเพชร (Quality of Diamond)',
+  previewBtn: 'ดูตัวอย่าง',
+  downloadBtnCount: 'ดาวน์โหลด PDF ({selected}/{total})',
+  cancelBtn: 'ยกเลิก',
+  historyTitle: 'ประวัติการออกใบรับประกัน',
+  historyEmpty: 'ยังไม่เคยออกใบรับประกันสำหรับ Invoice นี้',
+  historyRound: 'ครั้งที่ {round}',
+  historyItems: '{count} ชิ้น',
+  issuedCount: 'ออกแล้ว {count} ครั้ง',
+  lastIssued: 'ล่าสุด {date} โดย {by}',
+  neverIssued: 'ยังไม่เคยออก',
+  selectAll: 'เลือกทั้งหมด',
+  selectNone: 'ไม่เลือกเลย',
+  selectedCount: 'เลือกแล้ว {selected}/{total}',
+  validation: {
+    noItemSelected: 'กรุณาเลือกสินค้าอย่างน้อย 1 รายการสำหรับพิมพ์ใบรับประกันครับ'
+  },
+  success: {
+    generated: 'สร้างใบรับประกันสินค้า PDF สำเร็จครับ'
+  },
+  warn: {
+    logFailed: 'สร้าง PDF แล้ว แต่บันทึกประวัติการออกใบรับประกันไม่สำเร็จครับ'
+  }
+}
+
 export const saleDashboard = {
   title: 'ภาพรวมระบบงานขาย',
   description: 'แสดงขั้นตอนการทำงานของระบบงานขายครบวงจร จากใบเสนอราคาถึงการชำระเงิน',
@@ -1791,6 +1841,7 @@ export default {
   stockBasket,
   stockReservation,
   deliveryNote,
+  guaranteeCard,
   paymentTracking,
   document,
   saleDashboard,
