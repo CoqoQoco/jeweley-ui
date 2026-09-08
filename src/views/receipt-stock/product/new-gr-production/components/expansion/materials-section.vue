@@ -145,7 +145,7 @@
                 type="number"
                 :placeholder="$t('view.receiptStock.product.grProduction.matQty')"
                 min="0"
-                step="0.01"
+                step="any"
                 :bgInput="getBgColor(false, materialData.qty)"
                 @blur="emitUpdateTypeBarcode(materialData)"
               />
@@ -185,7 +185,7 @@
                 type="number"
                 :placeholder="$t('view.receiptStock.product.grProduction.matWeight')"
                 min="0"
-                step="0.01"
+                step="any"
                 :bgInput="getBgColor(false, materialData.qtyWeight)"
                 @blur="emitUpdateTypeBarcode(materialData)"
               />

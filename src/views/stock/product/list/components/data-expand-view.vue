@@ -185,7 +185,8 @@ export default {
       return `${data.qty ?? `0`}${data.qtyUnit ? ` ${data.qtyUnit}` : ''}`
     },
     getWeight(data) {
-      return `${data.weight.toFixed(3) ?? `0`}${data.weightUnit ? ` ${data.weightUnit}` : ''}`
+      const weight = data.weight != null ? data.weight.toFixed(3) : '0.000'
+      return `${weight}${data.weightUnit ? ` ${data.weightUnit}` : ''}`
     }
   }
 }

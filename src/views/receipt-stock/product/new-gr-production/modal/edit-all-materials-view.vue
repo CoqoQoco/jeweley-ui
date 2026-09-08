@@ -141,7 +141,7 @@
                   type="number"
                   :placeholder="$t('view.receiptStock.product.grProduction.colQty')"
                   :min="0"
-                  :step="0.01"
+                  :step="'any'"
                   @blur="updateMaterialBarcode(materialData)"
                 />
                 <DropdownGeneric
@@ -164,7 +164,7 @@
                   type="number"
                   :placeholder="$t('view.receiptStock.product.grProduction.colQtyWeight')"
                   :min="0"
-                  :step="0.01"
+                  :step="'any'"
                   @blur="updateMaterialBarcode(materialData)"
                 />
                 <DropdownGeneric

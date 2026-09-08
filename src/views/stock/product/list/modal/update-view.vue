@@ -251,7 +251,7 @@
 
                 <template #qtyTemplate="{ data }">
                   <div class="input-pair">
-                    <InputTextGeneric type="number" v-model="data.qty" :placeholder="$t('common.field.quantity')" :min="0" />
+                    <InputTextGeneric type="number" v-model="data.qty" :placeholder="$t('common.field.quantity')" :min="0" :step="'any'" />
                     <DropdownGeneric
                       v-model="data.qtyUnit"
                       :options="unitOptions(data.qtyUnit, qtyUnitOptions)"
@@ -269,7 +269,7 @@
                       v-model="data.weight"
                       :placeholder="$t('common.field.weight')"
                       :min="0"
-                      :step="0.01"
+                      :step="'any'"
                     />
                     <DropdownGeneric
                       v-model="data.weightUnit"

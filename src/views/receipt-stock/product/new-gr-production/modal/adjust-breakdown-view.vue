@@ -120,7 +120,7 @@
                     :bgInput="getBgColor(false, materialData.qty)"
                     :placeholder="$t('view.receiptStock.product.grProduction.colQty')"
                     min="0"
-                    step="0.01"
+                    step="any"
                   />
                   <DropdownGeneric
                     :modelValue="materialData.qtyUnit"
@@ -156,7 +156,7 @@
                     :bgInput="getBgColor(false, materialData.qtyWeight)"
                     :placeholder="$t('view.receiptStock.product.grProduction.colQtyWeight')"
                     min="0"
-                    step="0.01"
+                    step="any"
                   />
                   <DropdownGeneric
                     :modelValue="materialData.qtyWeightUnit"
