@@ -15,12 +15,22 @@
                   <span>{{ $t('view.customer.field.customerCode') }}</span>
                   <span class="txt-required"> *</span>
                 </span>
-                <InputTextGeneric
-                  :modelValue="form.code"
-                  :trim="true"
-                  :required="true"
-                  @update:modelValue="form.code = $event"
-                />
+                <div class="code-input-row">
+                  <InputTextGeneric
+                    :modelValue="form.code"
+                    :trim="true"
+                    :required="true"
+                    :placeholder="$t('view.customer.placeholder.customerCodeAuto')"
+                    @update:modelValue="onCodeInput"
+                  />
+                  <ButtonGeneric
+                    variant="outline"
+                    icon="bi-arrow-clockwise"
+                    type="button"
+                    :title="$t('view.customer.tooltip.regenerateCode')"
+                    @click="generateCode"
+                  />
+                </div>
               </div>
               <div>
                 <span class="title-text">
@@ -202,6 +212,10 @@ const interfaceValidation = {
   isValCustomerType: false
 }
 
+// prefix รหัสลูกค้าตามประเภทลูกค้า — ยึดตามที่หน้า POS ใช้ (pos-header.vue): ต่างประเทศ = EX, นอกนั้น = TH
+const CODE_PREFIX_BY_TYPE = { E: 'EX' }
+const DEFAULT_CODE_PREFIX = 'TH'
+
 export default {
   name: 'CustomerCreateModal',
 
@@ -229,30 +243,40 @@ export default {
     return {
       isShowModal: this.showModal,
       form: { ...interfaceForm },
-      validation: { ...interfaceValidation }
+      validation: { ...interfaceValidation },
+      isCodeAuto: false,
+      autoCodeValue: null
     }
   },
 
   computed: {
     masterCustomerType() {
       return this.masterStore.customerType || []
+    },
+    codePrefix() {
+      return CODE_PREFIX_BY_TYPE[this.form.type?.code] || DEFAULT_CODE_PREFIX
     }
   },
 
   watch: {
-    showModal(val) {
+    async showModal(val) {
       this.isShowModal = val
       if (val) {
         this.resetForm()
-        this.loadMasterData()
+        await this.loadMasterData()
+        await this.generateCode()
       }
     },
     isShowModal(val) {
       if (!val) this.$emit('closeModal')
     },
-    'form.type'() {
+    async 'form.type'() {
       if (this.form.type) {
         this.validation.isValCustomerType = false
+      }
+      // เปลี่ยนประเภทลูกค้า → prefix เปลี่ยน ขอรหัสใหม่เฉพาะตอนยังเป็นโหมด auto (ไม่ทับรหัสที่ user พิมพ์เอง)
+      if (this.isCodeAuto === true) {
+        await this.generateCode()
       }
     }
   },
@@ -287,7 +311,6 @@ export default {
 
     async submitCustomer() {
       const formValue = {
-        code: this.form.code,
         type: this.form.type,
         nameTh: this.form.nameTh,
         nameEn: this.form.nameEn,
@@ -299,16 +322,27 @@ export default {
         remark: this.form.remark
       }
 
+      // โหมด auto ให้ backend ออกรหัสเองแบบ atomic (กันชนกันตอนมีคนสร้างพร้อมกัน) ไม่ต้องส่ง code ที่ preview ไว้
+      if (this.isCodeAuto) {
+        formValue.autoCode = true
+        formValue.codePrefix = this.codePrefix
+      } else {
+        formValue.code = this.form.code
+      }
+
       const result = await this.customerStore.fetchCreateCustomer({ formValue })
 
       if (result) {
+        // backend คืน "CODE - ชื่อไทย" — เอาส่วนหน้า " - " ตัวแรกเป็นรหัสจริง
+        // (โหมด autoCode รหัสที่ backend ออกอาจไม่ตรงกับที่ preview ไว้ ถ้ามีคนสร้างแทรก)
+        const createdCode = typeof result === 'string' ? result.split(' - ')[0].trim() : this.form.code
+
         success(
+          `${createdCode} - ${this.form.nameTh}`,
           this.$t('view.customer.success.create'),
-          null,
           () => {
             const customerData = {
-              id: result.id,
-              code: this.form.code,
+              code: createdCode,
               nameTh: this.form.nameTh,
               nameEn: this.form.nameEn,
               address: this.form.address,
@@ -333,10 +367,35 @@ export default {
     resetForm() {
       this.form = { ...interfaceForm }
       this.validation = { ...interfaceValidation }
+      this.isCodeAuto = false
+      this.autoCodeValue = null
     },
 
     async loadMasterData() {
       await this.masterStore.fetchCustomerType()
+    },
+
+    onCodeInput(val) {
+      this.form.code = val
+      // ถ้าค่าต่างจากรหัสที่ระบบออกให้ = user แก้เอง → เลิกโหมด auto (กันไม่ให้ระบบเขียนทับ)
+      this.isCodeAuto = !!this.autoCodeValue && val === this.autoCodeValue
+    },
+
+    async generateCode() {
+      try {
+        const res = await this.customerStore.fetchNextCode({
+          prefix: this.codePrefix,
+          skipLoading: true
+        })
+        this.form.code = res.code
+        this.autoCodeValue = res.code
+        this.isCodeAuto = true
+      } catch (err) {
+        // ออกรหัสอัตโนมัติไม่สำเร็จ → ปล่อยให้ user พิมพ์รหัสเอง ไม่ต้องเด้ง alert ซ้ำ
+        console.warn('generateCode failed', err)
+        this.form.code = null
+        this.isCodeAuto = false
+      }
     }
   }
 }
@@ -358,6 +417,16 @@ export default {
   overflow-y: auto;
 }
 
+.code-input-row {
+  display: flex;
+  gap: var(--sp-sm);
+  align-items: center;
+
+  > :first-child {
+    flex: 1;
+    min-width: 0;
+  }
+}
 
 .txt-required {
   color: #dc3545;

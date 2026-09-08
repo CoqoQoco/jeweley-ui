@@ -26,7 +26,12 @@ export default {
     customerType: 'Select customer type',
     customerTypeFilter: 'Select customer type',
     discountMin: 'Min discount',
-    discountMax: 'Max discount'
+    discountMax: 'Max discount',
+    customerCodeAuto: 'Auto-generated (editable)'
+  },
+
+  tooltip: {
+    regenerateCode: 'Generate new code'
   },
 
   confirm: {

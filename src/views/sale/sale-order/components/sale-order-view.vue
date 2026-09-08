@@ -1278,6 +1278,7 @@ export default {
     onCustomerCreated(customerData) {
       this.formSaleOrder = {
         ...this.formSaleOrder,
+        customerCode: customerData.code || '',
         customerName: customerData.nameTh || customerData.nameEn || '',
         customerAddress: customerData.address || '',
         customerPhone: customerData.telephone1 || '',

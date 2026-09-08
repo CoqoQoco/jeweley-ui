@@ -32,7 +32,8 @@ export const useCustomerDetailApiStore = defineStore('customerDetailApiStore', {
         tel1: formValue.tel1,
         tel2: formValue.tel2,
         email: formValue.email,
-        contactName: formValue.contact,
+        // รองรับ caller ทั้งสองแบบ: ส่ง contactName ตรง ๆ (เช่น customer-create-modal.vue) หรือส่ง contact (caller เดิม)
+        contactName: formValue.contactName ?? formValue.contact,
         remark: formValue.remark,
         discount: formValue.discount,
         taxId: formValue.taxId
@@ -50,7 +51,8 @@ export const useCustomerDetailApiStore = defineStore('customerDetailApiStore', {
         tel1: formValue.tel1,
         tel2: formValue.tel2,
         email: formValue.email,
-        contactName: formValue.contact,
+        // รองรับ caller ทั้งสองแบบ: ส่ง contactName ตรง ๆ (เช่น customer-create-modal.vue) หรือส่ง contact (caller เดิม)
+        contactName: formValue.contactName ?? formValue.contact,
         remark: formValue.remark,
         discount: formValue.discount,
         taxId: formValue.taxId

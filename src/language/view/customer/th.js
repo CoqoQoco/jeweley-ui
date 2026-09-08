@@ -26,7 +26,12 @@ export default {
     customerType: 'เลือกประเภทลูกค้า',
     customerTypeFilter: 'เลือกประเภทลูกค้า',
     discountMin: 'ส่วนลดต่ำสุด',
-    discountMax: 'ส่วนลดสูงสุด'
+    discountMax: 'ส่วนลดสูงสุด',
+    customerCodeAuto: 'ระบบออกรหัสให้อัตโนมัติ (แก้ไขได้)'
+  },
+
+  tooltip: {
+    regenerateCode: 'ขอรหัสลูกค้าใหม่'
   },
 
   confirm: {
