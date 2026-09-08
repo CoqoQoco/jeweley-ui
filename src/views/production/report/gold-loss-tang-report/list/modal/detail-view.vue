@@ -5,7 +5,7 @@
     </template>
 
     <template #content>
-      <div class="p-3" v-if="slip">
+      <div v-if="slip">
         <SectionCardGeneric :title="$t('view.production.goldLossTang.colDocumentNo')" headerStyle="legend" icon="bi-file-earmark-text" accent="main" class="modal-section">
           <div class="detail-header-grid">
             <div class="detail-field">

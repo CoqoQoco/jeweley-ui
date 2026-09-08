@@ -12,7 +12,7 @@
       </template>
       <template #content>
         <form @submit.prevent="onSubmit" id="mold-update-form">
-          <div class="p-3">
+          <div>
             <SectionCardGeneric class="modal-section">
               <div class="row">
                 <div class="col-md-7">

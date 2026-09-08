@@ -12,7 +12,7 @@
     </template>
 
     <template #content>
-      <div v-if="version" class="detail-content px-3 pb-3">
+      <div v-if="version" class="detail-content">
         <!-- Stock Information -->
         <div class="filter-container">
           <div class="vertical-center-container mb-2">

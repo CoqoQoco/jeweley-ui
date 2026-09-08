@@ -4,7 +4,7 @@
       <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.sale.billingNote.selectCustomerTitle') }}</span>
     </template>
     <template #content>
-      <div class="p-3">
+      <div>
         <div class="mb-3">
           <div class="search-input-wrapper">
             <InputTextGeneric

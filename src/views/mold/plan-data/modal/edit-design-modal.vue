@@ -11,7 +11,7 @@
     </template>
 
     <template #content>
-      <div class="p-3">
+      <div>
         <SectionCardGeneric
           :title="$t('view.mold.editDesign.sectionInfo')"
           icon="bi-vector-pen"

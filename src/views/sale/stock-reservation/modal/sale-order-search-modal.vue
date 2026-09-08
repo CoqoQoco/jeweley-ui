@@ -12,7 +12,7 @@
     </template>
 
     <template #content>
-      <div class="px-3 pb-3">
+      <div>
         <!-- Search Section -->
         <div class="filter-container mb-3">
           <div class="form-col-container">

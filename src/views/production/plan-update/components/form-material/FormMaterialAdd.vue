@@ -281,7 +281,6 @@ export default {
 @import '@/assets/scss/custom-style/standard-form.scss';
 
 .form-content-container {
-  padding: var(--sp-xl);
   overflow: auto;
   height: 570px;
 }

@@ -12,7 +12,7 @@
     </template>
 
     <template #content>
-      <div class="px-3 pb-3">
+      <div>
         <DataTableWithPaging
           :items="planList"
           :totalRecords="totalRecords"

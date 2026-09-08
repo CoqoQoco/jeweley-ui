@@ -21,7 +21,7 @@
         </button>
       </div>
       <!-- Content -->
-      <div class="content-container">
+      <div class="content-container" :class="{ 'content-container--flush': contentPadding === 'none' }">
         <slot name="content"></slot>
       </div>
       <!-- Footer (BTN Action) -->
@@ -63,6 +63,10 @@ export default {
     headerVariant: {
       type: String,
       default: 'default'
+    },
+    contentPadding: {
+      type: String,
+      default: 'default'
     }
   },
   data() {
@@ -93,11 +97,14 @@ export default {
 </script>
 
 <style lang="scss">
+// modal-view คือเจ้าของระยะห่างภายในกล่อง modal แหล่งเดียว (header / ✕ / content / footer)
+// consumer ห้ามใส่ padding เองที่ root ของ #content (ห้าม p-3/p-4/scss padding) — ให้ปล่อยให้
+// .content-container จัดการ ถ้าต้องการเนื้อหาเต็มกรอบ (รูป/PDF/iframe) ให้ส่ง prop contentPadding="none"
 // Base Class
 .base-modal {
   &__header {
     position: relative;
-    //padding: 20px;
+    padding: var(--sp-md) var(--sp-lg);
     //border-bottom: 1px solid #dddddd;
     width: 100%;
 
@@ -116,7 +123,7 @@ export default {
   }
   &__operation {
     border-top: 1px solid #dddddd;
-    padding: 20px;
+    padding: var(--sp-lg) var(--sp-xl);
     text-align: center;
   }
   border-radius: 15px;
@@ -134,10 +141,17 @@ export default {
   //padding: 0px 0px 0px 0px;
 }
 
+.content-container {
+  padding: var(--sp-xl);
+}
+.content-container--flush {
+  padding: 0;
+}
+
 .float-close {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: var(--sp-sm);
+  right: var(--sp-sm);
   font-size: 20px;
   //color: var(--base-sub-color);
   //border: 1px solid var(--base-sub-color);

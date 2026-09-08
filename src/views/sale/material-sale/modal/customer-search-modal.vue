@@ -4,7 +4,7 @@
       <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.sale.materialSale.customerSearchModal.title') }}</span>
     </template>
     <template #content>
-      <div class="p-3">
+      <div>
         <form class="mb-3" @submit.prevent="onSearch">
           <div class="d-flex">
             <div class="search-input-wrapper">

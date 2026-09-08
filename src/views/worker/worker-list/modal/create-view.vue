@@ -6,7 +6,7 @@
       </template>
       <template #content>
         <form @submit.prevent="onSubmit" id="worker-create-form">
-          <div class="p-3">
+          <div>
             <SectionCardGeneric class="modal-section">
               <div class="form-row two-col">
                 <FormFieldGeneric :label="$t('view.worker.workerList.fieldDept')" :required="true">

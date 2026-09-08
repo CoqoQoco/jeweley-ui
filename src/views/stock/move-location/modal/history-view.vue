@@ -7,7 +7,7 @@
     </template>
 
     <template #content>
-      <div class="p-3">
+      <div>
         <BaseDataTable :items="historyList" :totalRecords="historyList.length" :columns="columns" :paginator="false" dataKey="movementDate">
           <template #fromLocationTemplate="{ data }">
             <div>{{ data.fromLocation }} - {{ data.fromLocationName }}</div>

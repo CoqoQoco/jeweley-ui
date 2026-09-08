@@ -4,7 +4,7 @@
       <span class="title-text-lg">คำนวณราคาทอง/กรัม</span>
     </template> -->
     <template #content>
-      <div class="p-3">
+      <div>
         <span class="title-text-lg">คำนวณราคาทอง/กรัม</span>
         <!-- Input fields -->
         <div class="row mb-2">

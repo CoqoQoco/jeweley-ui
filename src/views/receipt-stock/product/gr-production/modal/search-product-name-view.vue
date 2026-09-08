@@ -10,7 +10,7 @@
 
           <div>
             <form @submit.prevent="handleSubmit">
-              <div class="input-group input-group-sm pr-1 pl-2">
+              <div class="input-group input-group-sm">
                 <div class="input-group input-group-inner">
                   <input
                     class="form-control"

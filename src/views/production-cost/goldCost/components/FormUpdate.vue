@@ -595,7 +595,6 @@ export default {
 @import '@/assets/scss/custom-style/form-modal.scss';
 
 .form-content-container-custom {
-  padding: var(--sp-lg) var(--sp-lg);
   overflow: auto;
 }
 

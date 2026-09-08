@@ -3,7 +3,7 @@
     <modal :showModal="isShowModal" @closeModal="closeModal" :width="'90%'">
       <template v-slot:content>
         <div class="invoice-version-container">
-          <div class="p-2">
+          <div>
             <!-- Modal Header -->
             <div class="title-text-lg-bg mb-3">
               <i class="bi bi-file-earmark-plus mr-2"></i>

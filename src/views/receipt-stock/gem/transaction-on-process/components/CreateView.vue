@@ -7,7 +7,7 @@
             <span class="mr-2"><i class="bi bi-journal-text"></i></span>
             <span>{{ $t('view.receiptStock.gem.create.title') }}</span>
           </div>
-          <div class="form-col-container p-2">
+          <div class="form-col-container">
             <!-- code -->
             <div>
               <div>

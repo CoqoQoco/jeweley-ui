@@ -9,7 +9,7 @@
         </div>
 
         <!-- Preview Title -->
-        <div class="pl-4 pt-2">
+        <div>
           <span class="title-text">{{ $t('view.stock.gem.previewLabel') }}</span>
         </div>
 

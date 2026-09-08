@@ -1,7 +1,7 @@
 <template>
   <modal :showModal="isShowModal" @closeModal="onCancel" width="400px">
     <template v-slot:content>
-      <div class="p-3">
+      <div>
         <div class="title-text-lg mb-3">
           <span><i class="bi bi-file-earmark-pdf mr-2"></i></span>
           <span>{{ $t('view.sale.quotation.confirmPdfTitle') }}</span>

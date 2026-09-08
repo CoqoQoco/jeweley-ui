@@ -5,7 +5,7 @@
         <div class="title-text-lg-header">
           <span>{{ `${$t('view.mold.updateMold.title')} - ${model.code}` }}</span>
         </div>
-        <form @submit.prevent="onSubmit" class="p-2">
+        <form @submit.prevent="onSubmit">
           <div class="form-col-container">
             <!-- main image -->
             <div class="mt-2">

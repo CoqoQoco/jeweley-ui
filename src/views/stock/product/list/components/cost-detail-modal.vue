@@ -12,7 +12,7 @@
 
     <template #content>
       <!-- Content -->
-      <div v-if="stockData && stockData.stockNumber" class="p-3">
+      <div v-if="stockData && stockData.stockNumber">
         <!-- Stock Information Section -->
         <div class="filter-container mt-2">
           <div class="vertical-center-container mb-2">

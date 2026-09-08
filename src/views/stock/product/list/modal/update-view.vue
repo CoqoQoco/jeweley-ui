@@ -6,7 +6,7 @@
       </template>
       <template #content>
         <form @submit.prevent="onSubmit" id="stock-update-form">
-          <div class="p-3">
+          <div>
             <!-- Image Section -->
             <SectionCardGeneric :title="$t('view.stock.product.imageProduct')" class="modal-section">
               <div v-if="imageStage === 'SHOW'" class="image-preview-box">

@@ -2,7 +2,7 @@
   <div>
     <modal :showModal="isShow" @closeModal="closeModal">
       <template v-slot:content>
-        <form @submit.prevent="onSubmit" class="p-2">
+        <form @submit.prevent="onSubmit">
           <div>
             <stepperStatus :events="events" :eventsIdActive="4"></stepperStatus>
           </div>

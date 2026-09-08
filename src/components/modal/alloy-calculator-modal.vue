@@ -1,7 +1,7 @@
 <template>
   <modal :showModal="isShow" @closeModal="$emit('closeModal')" width="500px">
     <template #content>
-      <div class="p-3">
+      <div>
         <span class="title-text-lg">{{ $t('view.sale.costStock.alloyCalculator.title') }}</span>
 
         <div class="row mb-2 mt-2">

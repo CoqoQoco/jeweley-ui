@@ -8,7 +8,7 @@
           <span>ข้อมูลเบิกผสมทอง</span>
         </div>
 
-        <div class="p-4">
+        <div>
           <div class="filter-container">
             <div class="form-col-sm-container">
               <div class="d-flex flex-column">

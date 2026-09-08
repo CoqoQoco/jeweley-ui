@@ -4,7 +4,7 @@
       <span class="title-text-lg px-3 pt-2 d-block">{{ $t('view.production.planCreate.selectPrePlanTitle') }}</span>
     </template>
     <template #content>
-      <div class="p-3">
+      <div>
         <div class="d-flex mb-3">
           <input
             type="text"

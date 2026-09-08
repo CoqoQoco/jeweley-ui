@@ -6,7 +6,7 @@
         <span>{{ $t('view.sale.document.editTag') }}</span>
       </div>
 
-      <form @submit.prevent="onSubmit" class="p-2">
+      <form @submit.prevent="onSubmit">
         <!-- ชื่อไฟล์ (read-only) -->
         <div class="mb-3">
           <span class="title-text">{{ $t('view.sale.document.fileName') }}</span>

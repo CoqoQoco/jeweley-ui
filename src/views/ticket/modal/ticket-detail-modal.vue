@@ -14,7 +14,7 @@
     </template>
 
     <template #content>
-      <div class="p-3" v-if="localTicket.id">
+      <div v-if="localTicket.id">
         <div class="detail-grid">
           <div class="detail-row">
             <span class="detail-label">{{ $t('view.ticket.field.type') }}:</span>

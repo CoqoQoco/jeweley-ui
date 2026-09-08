@@ -7,7 +7,7 @@
 
       <template #content>
         <form @submit.prevent="onSubmit" id="form-gold-size-update">
-          <div class="p-3">
+          <div>
             <SectionCardGeneric class="modal-section">
               <div class="form-row">
                 <FormFieldGeneric :label="$t('common.field.code')">

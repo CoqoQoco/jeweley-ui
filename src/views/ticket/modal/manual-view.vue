@@ -11,7 +11,7 @@
     </template>
 
     <template #content>
-      <div class="p-3">
+      <div>
         <div class="item-card">
           <div class="item-card-header">
             <span class="step-number">1</span>

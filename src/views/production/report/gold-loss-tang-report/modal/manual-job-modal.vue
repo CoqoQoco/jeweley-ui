@@ -11,7 +11,7 @@
     </template>
 
     <template #content>
-      <div class="p-3">
+      <div>
         <SectionCardGeneric class="modal-section">
           <div class="form-row two-col">
             <FormFieldGeneric :label="$t('view.production.goldLossTang.manualFieldWo')" :required="true">

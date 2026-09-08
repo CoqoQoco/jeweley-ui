@@ -158,7 +158,7 @@
         <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.sale.materialSale.cancelReasonTitle') }}</span>
       </template>
       <template #content>
-        <div class="p-3">
+        <div>
           <span class="title-text">{{ $t('view.sale.materialSale.cancelReasonLabel') }} <span class="text-danger">*</span></span>
           <TextareaGeneric
             v-model="cancelReasonText"

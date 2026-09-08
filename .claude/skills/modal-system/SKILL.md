@@ -22,6 +22,10 @@ description: การสร้าง Modal dialog — ใช้เมื่อ�
 | `clickToClose` | Boolean | `false` | คลิกนอก modal เพื่อปิด |
 | `fitHeight` | Boolean | `false` | ปรับความสูงตาม viewport |
 | `isShowActionPart` | Boolean | `false` | แสดง footer สำหรับ action buttons |
+| `headerVariant` | String | `'default'` | `'main'` = header filled สี main (ตัวอักษร/✕ ขาว) |
+| `contentPadding` | String | `'default'` | `'none'` = เนื้อหา full-bleed (ตัด padding ของ `.content-container` ออก) — ใช้กับรูป/PDF/iframe ที่ต้องเต็มกรอบเท่านั้น |
+
+**กฎสำคัญ**: `modal-view.vue` เป็นเจ้าของระยะห่างภายในกล่อง modal แหล่งเดียว (header/✕/content/footer) — **ห้าม** ใส่ padding เอง (`p-3`, `p-4`, scss padding) ที่ root ของ `#content` เด็ดขาด เนื้อหาปกติปล่อยว่างได้เลย ถ้าต้องการ full-bleed ให้ส่ง `contentPadding="none"` (ดู `docs/design-system.md` หัวข้อ "Modal Spacing Standard")
 
 ## Slots
 
@@ -133,16 +137,14 @@ export default {
       <span class="title-text-lg">สร้างรายการ</span>
     </template>
     <template #content>
-      <div class="p-3">
-        <div class="mb-2">
-          <span class="title-text">ชื่อ</span>
-          <input class="form-control" v-model="form.name" />
-        </div>
-        <div class="mb-2">
-          <span class="title-text">ประเภท</span>
-          <Dropdown v-model="form.type" :options="typeList"
-            optionLabel="name" optionValue="id" />
-        </div>
+      <div class="mb-2">
+        <span class="title-text">ชื่อ</span>
+        <input class="form-control" v-model="form.name" />
+      </div>
+      <div class="mb-2">
+        <span class="title-text">ประเภท</span>
+        <Dropdown v-model="form.type" :options="typeList"
+          optionLabel="name" optionValue="id" />
       </div>
     </template>
     <template #action>
@@ -168,21 +170,19 @@ export default {
       <span class="title-text-lg">รายการทั้งหมด</span>
     </template>
     <template #content>
-      <div class="p-3">
-        <BaseDataTable
-          :items="items"
-          :columns="columns"
-          :totalRecords="total"
-          :paginator="true"
-          @page="handlePageChange"
-        >
-          <template #actionTemplate="{ data }">
-            <button class="btn btn-sm btn-green" @click="onSelect(data)">
-              <i class="bi bi-eye"></i>
-            </button>
-          </template>
-        </BaseDataTable>
-      </div>
+      <BaseDataTable
+        :items="items"
+        :columns="columns"
+        :totalRecords="total"
+        :paginator="true"
+        @page="handlePageChange"
+      >
+        <template #actionTemplate="{ data }">
+          <button class="btn btn-sm btn-green" @click="onSelect(data)">
+            <i class="bi bi-eye"></i>
+          </button>
+        </template>
+      </BaseDataTable>
     </template>
   </modal>
 </template>

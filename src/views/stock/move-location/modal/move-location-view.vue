@@ -11,7 +11,7 @@
       </template>
 
       <template #content>
-        <div class="p-3">
+        <div>
           <div class="summary-box mb-3">
             <span class="title-text">{{ $t('view.stock.moveLocation.selectedItems', { count: selectedItems.length }) }}</span>
             <div class="summary-list mt-1">

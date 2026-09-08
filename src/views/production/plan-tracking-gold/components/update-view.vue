@@ -6,7 +6,7 @@
       </template>
       <template #content>
         <form @submit.prevent="onSubmit" id="gold-update-form">
-          <div class="p-4">
+          <div>
             <GoldInfoSection
               v-model="form"
               :errors="errors"

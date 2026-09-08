@@ -6,7 +6,7 @@
       </template>
       <template #content>
         <form @submit.prevent="onSubmit" id="customer-create-form">
-          <div class="p-3">
+          <div>
             <SectionCardGeneric :title="$t('view.customer.section.main')" class="modal-section">
               <div class="form-row two-col">
                 <FormFieldGeneric :label="$t('view.customer.field.customerCode')" :required="true">

@@ -4,7 +4,7 @@
       <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.sale.document.stockPickerTitle') }}</span>
     </template>
     <template #content>
-      <div class="p-3">
+      <div>
         <div class="search-row mb-3">
           <div class="form-row four-col">
             <div class="form-field">

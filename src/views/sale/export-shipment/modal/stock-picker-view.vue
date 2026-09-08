@@ -4,7 +4,7 @@
       <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.sale.exportShipment.stockPicker.title') }}</span>
     </template>
     <template #content>
-      <div class="p-3">
+      <div>
         <form class="filter-row mb-3" @submit.prevent="onSearch">
           <FormFieldGeneric :label="$t('view.sale.exportShipment.stockPicker.stockNumber')">
             <InputTextGeneric v-model.trim="form.stockNumber" @keyup.enter="onSearch" />

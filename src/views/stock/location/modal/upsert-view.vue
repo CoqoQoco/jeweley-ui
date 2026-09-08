@@ -14,7 +14,7 @@
       </template>
 
       <template #content>
-        <div class="p-3">
+        <div>
           <SectionCardGeneric class="modal-section">
             <div class="form-row two-col">
               <FormFieldGeneric :label="$t('view.stock.location.code')" :required="true">

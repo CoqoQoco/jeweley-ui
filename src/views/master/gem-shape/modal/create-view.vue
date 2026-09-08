@@ -7,7 +7,7 @@
 
       <template #content>
         <form @submit.prevent="onSubmit" id="form-gem-shape-create">
-          <div class="p-3">
+          <div>
             <SectionCardGeneric class="modal-section">
               <div class="form-row">
                 <FormFieldGeneric :label="$t('common.field.code')" :required="true">

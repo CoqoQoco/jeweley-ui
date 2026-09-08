@@ -31,7 +31,7 @@
         <span class="title-text-lg px-3 pt-3 d-block">{{ $t('common.label.barcode') }}</span>
       </template>
       <template #content>
-        <div class="p-3 barcode-button-generic__content">
+        <div class="barcode-button-generic__content">
           <BarcodeGeneric ref="barcodeRef" :value="value" />
         </div>
       </template>

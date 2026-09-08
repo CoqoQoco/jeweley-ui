@@ -8,7 +8,7 @@
       </template>
       <template #content>
         <form @submit.prevent="onSubmit" id="gem-update-form">
-          <div class="p-3">
+          <div>
             <SectionCardGeneric class="modal-section">
               <div class="form-row two-col">
                 <FormFieldGeneric :label="$t('view.stock.gem.code')" :required="true">

@@ -10,7 +10,7 @@
               <span>{{ $t('view.sale.invoiceDetail.recordPaymentTitle') }}</span>
             </div>
 
-            <div class="p-3">
+            <div>
               <!-- Payment Information -->
               <div class="filter-container mb-2">
                 <div class="title-text-lg mb-2">

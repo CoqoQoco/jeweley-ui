@@ -20,7 +20,7 @@
             </div>
           </div>
 
-          <div class="p-2">
+          <div>
             <!-- target status -->
             <div class="form-col-container">
               <div>

@@ -13,7 +13,7 @@
       </template>
 
       <template #content>
-        <div class="p-3">
+        <div>
           <div v-for="n in 3" :key="n" class="image-slot-container">
             <div class="image-slot-header">
               <span class="title-text">{{ $t('view.catalog.field.image') }} {{ n }}</span>

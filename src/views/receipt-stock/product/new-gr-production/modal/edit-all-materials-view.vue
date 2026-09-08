@@ -10,7 +10,7 @@
     </template>
 
     <template #content>
-      <div class="modal-body-content p-3">
+      <div class="modal-body-content">
         <!-- Header Info -->
         <div class="info-section mb-3">
           <div class="alert alert-info">

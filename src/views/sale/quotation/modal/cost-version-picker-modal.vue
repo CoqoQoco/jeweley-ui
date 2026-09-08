@@ -1,7 +1,7 @@
 <template>
   <modal :showModal="isShowModal" @closeModal="onCancel" width="1000px">
     <template v-slot:content>
-      <div class="p-3">
+      <div>
         <div class="title-text-lg mb-3">
           <span><i class="bi bi-clock-history mr-2"></i></span>
           <span>{{ $t('view.sale.costStock.selectFromAppraisal') }}</span>

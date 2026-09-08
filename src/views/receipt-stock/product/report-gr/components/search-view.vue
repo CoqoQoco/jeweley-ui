@@ -69,7 +69,7 @@
       </span>
     </template>
     <template #content>
-      <div class="p-3">
+      <div>
         <div class="form-row two-col">
           <div>
             <span class="title-text">{{ $t('view.receiptStock.product.reportGr.receiptType') }}</span>

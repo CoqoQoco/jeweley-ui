@@ -143,14 +143,12 @@ Section cards inside modals should use the legend header style (`headerStyle="le
     <span class="title-text-lg d-block">หัวข้อ Modal</span>
   </template>
   <template #content>
-    <div class="p-3">
-      <SectionCardGeneric :title="$t('view.x.section.main')" headerStyle="legend" icon="bi-card-list" accent="main" class="modal-section">
-        <!-- form rows -->
-      </SectionCardGeneric>
-      <SectionCardGeneric :title="$t('view.x.section.contact')" headerStyle="legend" icon="bi-card-list" accent="main" class="modal-section">
-        <!-- form rows -->
-      </SectionCardGeneric>
-    </div>
+    <SectionCardGeneric :title="$t('view.x.section.main')" headerStyle="legend" icon="bi-card-list" accent="main" class="modal-section">
+      <!-- form rows -->
+    </SectionCardGeneric>
+    <SectionCardGeneric :title="$t('view.x.section.contact')" headerStyle="legend" icon="bi-card-list" accent="main" class="modal-section">
+      <!-- form rows -->
+    </SectionCardGeneric>
   </template>
 </modal>
 ```
@@ -165,9 +163,54 @@ Section cards inside modals should use the legend header style (`headerStyle="le
 
 <!-- รวมทุก field กล่องเดียว -->
 <SectionCardGeneric title="ข้อมูลทั้งหมด">...</SectionCardGeneric>
+
+<!-- ใส่ padding เองที่ root ของ #content (modal-view เป็นเจ้าของระยะแล้ว) -->
+<template #content>
+  <div class="p-3">
+    <SectionCardGeneric ...>...</SectionCardGeneric>
+  </div>
+</template>
 ```
 
 **Reference implementation**: `src/views/customer/list-customer/modal/create-view.vue`
+
+---
+
+## Modal Spacing Standard
+
+`modal-view.vue` (shared modal component) เป็นเจ้าของระยะห่างภายในกล่อง modal **แหล่งเดียว** — แบ่งเป็น 4 โซน แต่ละโซนใช้ token คงที่ ไม่ขึ้นกับ consumer:
+
+| โซน | Element | Token |
+|---|---|---|
+| Header | `.base-modal__header` | `padding: var(--sp-md) var(--sp-lg)` |
+| ✕ (close button) | `.float-close` | `top: var(--sp-sm); right: var(--sp-sm)` |
+| Content | `.content-container` | `padding: var(--sp-xl)` (หรือ `0` เมื่อ `contentPadding="none"` ผ่าน `.content-container--flush`) |
+| Footer | `.base-modal__operation` | `padding: var(--sp-lg) var(--sp-xl)` |
+
+**consumer ห้ามใส่ padding ที่ root ของ `#content` เอง (ห้าม `p-3`/`p-4`/scss padding) — modal-view เป็นเจ้าของระยะเดียว; เนื้อหา full-bleed ใช้ `contentPadding="none"`**
+
+```vue
+<!-- ✅ Good — ไม่มี wrapper padding, ให้ modal-view จัดการระยะเอง -->
+<modal :showModal="isShow" @closeModal="$emit('closeModal')">
+  <template #content>
+    <SectionCardGeneric title="...">...</SectionCardGeneric>
+  </template>
+</modal>
+
+<!-- ✅ Good — เนื้อหา full-bleed (รูป/PDF/iframe เต็มกรอบ) ใช้ contentPadding="none" -->
+<modal :showModal="isShow" contentPadding="none" @closeModal="$emit('closeModal')">
+  <template #content>
+    <div class="receipt-preview-wrap">...</div>
+  </template>
+</modal>
+
+<!-- ❌ Bad — ใส่ p-3 เองที่ root ของ #content (ซ้ำซ้อนกับ .content-container) -->
+<template #content>
+  <div class="p-3">...</div>
+</template>
+```
+
+**Reference**: `src/components/modal/modal-view.vue`, `src/components/public/product-share-dialog.vue`, `src/views/customer/list-customer/modal/create-view.vue`
 
 ---
 
@@ -272,3 +315,4 @@ Section cards inside modals should use the legend header style (`headerStyle="le
 | 2026-08-31 | plan-gold Phase 3 follow-up fix | (1) แก้ regression: 17 จุดที่ใช้ `Number($event)` cast ช่องว่าง `''`→`0` แทน `null` (backend `decimal?` เพี้ยนความหมาย) → เพิ่ม shared helper `toNullableNumber()` ใน `decimal.js` ใช้แทนทั้ง 17 จุด (`cast-section`/`melt-section`/`body-return-table`/`gold-info-section`); (2) a11y `<label for>` ชี้ผิดที่ 8 จุด (id ตกที่ PrimeVue wrapper `.p-calendar`/`.p-dropdown` ไม่ใช่ `<input>` จริง) → เพิ่ม prop `inputId` (optional, backward compatible) ให้ `CalendarGeneric`/`DropdownGeneric`/`AutoCompleteGeneric` forward ตรงไปยัง PrimeVue `inputId` prop ที่ผูก `<input>` จริงอยู่แล้ว; เพิ่ม prop `ariaLabel` ให้ `AutoCompleteGeneric` (forward `aria-label` ไปยัง input จริงเช่นกัน) ใช้กับ input ซ้ำในตาราง (WO/จำนวน/น้ำหนัก/รายละเอียด) ที่ไม่มี id เดี่ยว |
 | 2026-09-08 | Public showcase (/p/:token) | เพิ่ม customer-facing surface แรกของระบบ — exempt จาก admin chrome (`PageHeaderGeneric`/`SearchBarGeneric`/`SectionCardGeneric`) ตามที่ตกลงไว้ (ลูกค้าสแกน QR ต้องไม่เห็น sidebar/topbar); ยังคงบังคับ token+i18n+generic component เหมือนเดิม; ใช้ axios instance แยก (`axios/axios-public.js`) ไม่มี interceptor เพราะ endpoint public ต้องไม่โชว์ swAlert modal/ไม่ redirect ไป /login เมื่อ error; ช่องทางติดต่อ (Facebook/IG/Email/Website) รวมไว้ที่ `config/public-contact-config.js` จุดเดียว |
 | 2026-09-08 | invoice-detail header | จัดกลุ่มปุ่ม header จาก 9 ปุ่ม `btn-green` สีเดียวกันหมด (ตกบรรทัดบนจอ 1366–1600px) เหลือ 5 control แถวเดียว: `เพิ่ม Version`, `พิมพ์ใบแจ้งหนี้` (primary filled ตัวเดียว), `เอกสารอื่น ▾`/`Excel ▾`/`⋯` (เมนู popup); header เปลี่ยนจาก `.card`/`.card-header` custom → `PageHeaderGeneric`; สร้าง generic ใหม่ `ActionMenuGeneric` (ปุ่ม `ButtonGeneric` trigger + PrimeVue `Menu` popup, item slot เอง รองรับ hint/danger/disabled); `PageHeaderGeneric` เพิ่ม modifier `.page-header-actions :deep(.btn.is-primary)` (filled ขาว ตัวอักษร `--base-font-color`) + `.page-header-bar { flex-wrap: wrap }` กันตกขอบจอแคบ; ปุ่มใบรับประกันที่ปิดอยู่ (ยังไม่ชำระครบ) ย้ายจาก tooltip บน `<span>` ครอบ → เมนูไอเท็ม disabled + hint บรรทัดเล็ก; ยกเลิกเอกสาร (destructive) ย้ายเข้าเมนู ⋯ เป็นรายการสีแดง — blueprint: `docs/claude-design/blueprints/invoice-detail-header-actions.md` |
+| 2026-09-08 | modal-view (global) | Modal Spacing Standard: `modal-view.vue` เป็นเจ้าของระยะห่างภายในกล่อง modal แหล่งเดียว — header `padding: var(--sp-md) var(--sp-lg)`, ✕ `top/right: var(--sp-sm)`, content `.content-container { padding: var(--sp-xl) }` (ใหม่ — เดิมไม่มี padding เลย), footer `.base-modal__operation` จาก hardcode `20px` → `var(--sp-lg) var(--sp-xl)`; เพิ่ม prop `contentPadding` (`'default'\|'none'`) → class `.content-container--flush` สำหรับเนื้อหา full-bleed (รูป/PDF/iframe); migrate consumer 46+ ไฟล์ทั่วระบบ (ลบ `p-0..5`/`px-*`/`py-*`/`pt-*`/`pb-*`/`pl-*`/`pr-*` ที่ root ของ `#content`) — reference: `product-share-dialog.vue`, `customer/list-customer/modal/create-view.vue`; full-bleed exception: `receipt/receipt-print-action.vue` (`contentPadding="none"`) |

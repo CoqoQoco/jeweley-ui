@@ -12,7 +12,7 @@
     </template>
 
     <template #content>
-      <div class="p-3">
+      <div>
         <moldSection
           :moldCode="form.moldCode || ''"
           :moldDetail="form.moldDetail || ''"

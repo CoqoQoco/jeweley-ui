@@ -6,7 +6,7 @@
       </span>
     </template>
     <template #content>
-      <div class="p-3">
+      <div>
         <!-- Search Form -->
         <div class="form-col-container mb-3">
           <div>

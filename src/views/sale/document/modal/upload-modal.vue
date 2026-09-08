@@ -6,7 +6,7 @@
         <span>{{ $t('view.sale.document.uploadTitle') }}</span>
       </div>
 
-      <form @submit.prevent="onSubmit" class="p-2">
+      <form @submit.prevent="onSubmit">
         <!-- เลือกไฟล์ -->
         <div class="mb-3">
           <span class="title-text">{{ $t('view.sale.document.pdfFile') }} <span class="text-danger">*</span></span>

@@ -2,7 +2,7 @@
   <modal :showModal="isShowModal" @closeModal="onCancel" width="800px">
     <template v-slot:content>
       <form @submit.prevent="onSubmit">
-        <div class="p-3">
+        <div>
           <div class="title-text-lg mb-3">
             <span><i class="bi bi-pencil-square mr-2"></i></span>
             <span>{{ $t('view.sale.saleOrder.editCustomerTitle') }}</span>

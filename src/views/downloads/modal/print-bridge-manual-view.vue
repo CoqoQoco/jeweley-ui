@@ -11,7 +11,7 @@
     </template>
 
     <template #content>
-      <div class="p-3">
+      <div>
         <h6 class="section-heading">{{ $t('view.downloads.manual.sectionInstall') }}</h6>
 
         <div class="item-card">

@@ -12,7 +12,7 @@
     </template>
 
     <template #content>
-      <div class="px-3 pb-3">
+      <div>
         <div class="responsive-text-note mb-3">
           {{ $t('view.sale.costStock.planCostNoteTemplate', { wo, woNumber, qty: planProductQty }) }}
         </div>

@@ -297,7 +297,7 @@
         <div class="title-text-lg-bg">
           <span>เลือกข้อมูลพิมพ์สลิป</span>
         </div>
-        <div class="btn-gold-wrapper p-4">
+        <div class="btn-gold-wrapper">
           <div v-for="(data, index) in groupGold" :key="index">
             <div class="btn-gold" @click="handleGeneratePDF(data)">{{ data.selectKey }}</div>
           </div>

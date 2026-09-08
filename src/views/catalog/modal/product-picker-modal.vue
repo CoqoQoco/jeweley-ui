@@ -11,7 +11,7 @@
       </template>
 
       <template #content>
-        <div class="p-3">
+        <div>
           <div class="search-row mb-3">
             <div class="input-group">
               <InputTextGeneric

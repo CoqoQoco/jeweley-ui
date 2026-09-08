@@ -5,7 +5,7 @@
         <div class="title-text-lg-header">
           <span>{{ `${$t('view.mold.returnMold.titleReturn')} - ${model.mold}` }}</span>
         </div>
-        <form @submit.prevent="onSubmit" class="p-2">
+        <form @submit.prevent="onSubmit">
           <div class="form-col-container">
             <!-- image -->
             <div class="image-container filter-container">

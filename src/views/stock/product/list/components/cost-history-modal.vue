@@ -12,7 +12,7 @@
 
     <template #content>
       <!-- Content -->
-      <div v-if="versions && versions.length > 0" class="history-layout p-3">
+      <div v-if="versions && versions.length > 0" class="history-layout">
         <!-- Left Panel: Version List -->
         <div class="version-sidebar">
           <div class="filter-container">

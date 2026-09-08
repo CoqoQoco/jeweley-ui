@@ -1221,7 +1221,6 @@ export default {
   margin-top: 0px !important;
 }
 .form-content-container {
-  padding: 20px 20px;
   overflow: auto;
   //height: 650px;
 }

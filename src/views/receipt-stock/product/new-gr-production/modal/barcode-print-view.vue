@@ -8,7 +8,7 @@
         </div>
 
         <!-- Tab เลือกแบบ -->
-        <div class="pl-3 pr-3 pt-2 pb-1">
+        <div>
           <div class="label-type-tabs">
             <button
               :class="['tab-btn', selectedType === 'original' ? 'tab-btn-active' : '']"

@@ -6,7 +6,7 @@
           <span class="mr-2"><i class="bi bi-house-exclamation"></i></span>
           <span>{{ $t('view.receiptStock.gem.pickReturnAndOutbound.confirmTitle') }}</span>
         </div>
-        <form @submit.prevent="onSubmit" class="p-2">
+        <form @submit.prevent="onSubmit">
           <!-- type && request date -->
           <div class="form-col-container">
             <div>

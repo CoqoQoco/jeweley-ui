@@ -6,7 +6,7 @@
     </template>
 
     <template #content>
-      <div class="p-3 product-share-dialog__content">
+      <div class="product-share-dialog__content">
         <imagePreview v-if="qrDataUrl" :src="qrDataUrl" :width="240" :height="240" :preview="false" />
 
         <div v-if="shareUrl" class="share-url-text">{{ shareUrl }}</div>

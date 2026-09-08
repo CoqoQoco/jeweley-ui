@@ -9,7 +9,7 @@
       <span class="title-text-lg px-3 pt-3 d-block">ระบุเหตุผลการปฏิเสธ</span>
     </template>
     <template #content>
-      <div class="p-3">
+      <div>
         <span class="title-text">เหตุผล <span class="text-danger">*</span></span>
         <textarea
           class="form-control mt-1"

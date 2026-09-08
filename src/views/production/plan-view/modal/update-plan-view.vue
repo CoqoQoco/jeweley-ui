@@ -6,7 +6,7 @@
           <span>{{ `เเก้ไขแผนงานผลิต ใบจ่าย-รับคืนงาน เลขที่: ${form.wo}-${form.woNumber}` }}</span>
         </div>
         <form @submit.prevent="onSubmit">
-          <div class="p-2">
+          <div>
             <div class="form-col-container">
               <div>
                 <span class="title-text">{{ $t('view.production.planTracking.mold') }}</span>

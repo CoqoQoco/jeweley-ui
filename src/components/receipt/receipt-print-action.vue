@@ -31,6 +31,7 @@
       :clickToClose="true"
       :isShowActionPart="true"
       headerVariant="main"
+      contentPadding="none"
       @closeModal="onCloseReceiptModal"
     >
       <template #title>

@@ -6,7 +6,7 @@
       </template>
       <template #content>
         <!-- Tab เลือกแบบ -->
-        <div class="pl-4 pr-4 pt-2">
+        <div>
           <div class="label-type-tabs">
             <button
               :class="['tab-btn', selectedType === 'original' ? 'tab-btn-active' : '']"

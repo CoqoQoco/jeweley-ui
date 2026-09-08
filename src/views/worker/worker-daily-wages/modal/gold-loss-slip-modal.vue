@@ -4,7 +4,7 @@
       <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.worker.workerDailyWages.btnPrintSuccess') }} — Gold Loss Slip</span>
     </template>
     <template #content>
-      <div class="p-3">
+      <div>
         <div class="d-flex justify-content-between mb-3">
           <span class="title-text">{{ $t('view.worker.workerList.fieldCode') }}: {{ worker.code }} - {{ worker.nameTh }}</span>
           <span class="title-text mr-4">

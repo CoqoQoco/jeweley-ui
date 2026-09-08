@@ -6,7 +6,7 @@
           <div class="title-text-lg-bg">
             <span class="title-text-white">{{ $t('planUpdate.addMaterial') }}</span>
           </div>
-          <div class="p-2">
+          <div>
             <div class="mb-2 title-text-lg">
               <span><i class="bi bi-clipboard2-plus-fill mr-2"></i></span>
               <span>{{ $t('planUpdate.goldSection') }}</span>

@@ -12,7 +12,7 @@
     </template>
 
     <template #content>
-      <div class="p-3">
+      <div>
         <div class="mb-3">
           <div class="ticket-ref">{{ ticket.ticketNo }} — {{ ticket.title }}</div>
         </div>

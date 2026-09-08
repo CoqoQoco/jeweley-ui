@@ -9,7 +9,7 @@
 
         <div>
           <form @submit.prevent="handleSubmit">
-            <div class="form-col-sm-container p-2">
+            <div class="form-col-sm-container">
               <div class="d-flex">
                 <AutoCompleteGeneric
                   v-model="search.mold"
