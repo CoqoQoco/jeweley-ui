@@ -23,10 +23,16 @@ const SUMMARY_VALUE_W = 12
 const ITEM_COL2 = 15
 const ITEM_COL3 = 14
 
-// คอลัมน์บรรทัดรายการวัตถุดิบ (ใต้รายละเอียดสินค้า): จำนวนเม็ด (อย่างน้อย 8) ชิดขวาจบคอลัมน์ 36
-// น้ำหนัก (อย่างน้อย 11) ชิดขวาจบคอลัมน์ 47 — ชื่อวัสดุด้านซ้ายกินพื้นที่ที่เหลือ (แนวคิดเดียวกับ itemDetailLine())
-const MATERIAL_QTY_W = 8
-const MATERIAL_WEIGHT_W = 11
+// คอลัมน์บรรทัดรายการวัตถุดิบ (ใต้รายละเอียดสินค้า) — ย้ายทั้งบล็อกมาชิดซ้ายแทนชิดขวาจบคอลัมน์ 47
+// เพราะขอบขวาเดิมชนกับคอลัมน์เงินของแถวสินค้า/summary (Subtotal/TOTAL) พอดี ลูกค้าอ่านแล้วเข้าใจผิดว่า
+// น้ำหนักวัสดุเป็นราคา — ให้จำนวนเม็ด/น้ำหนักอยู่ใกล้ชื่อวัสดุแทน ไม่ต้องดันสุดขอบกระดาษอีกต่อไป
+const MATERIAL_INDENT = '    '
+const MATERIAL_NAME_MIN_W = 12
+const MATERIAL_NAME_MAX_W = 18
+// จำนวนเม็ดชิดขวาในคอลัมน์แคบนี้ เพื่อให้หลักหน่วยตรงกันทุกแถว
+const MATERIAL_QTY_W = 7
+// ช่องว่างคั่นจำนวนเม็ดกับน้ำหนัก
+const MATERIAL_GAP = 2
 
 // จำนวนขีดของเส้นเซ็น — เยื้อง 2 + ขีด 45 ตัว = 47 พอดี
 const SIGNATURE_LINE_LEN = 45
@@ -111,20 +117,34 @@ function itemDetailLine(stockNumber, unitPrice, qty, total) {
   return clampLine(left + mid + right)
 }
 
-// บรรทัดวัตถุดิบต่อชิ้น (ใต้ itemDetailLine) — เยื้อง 4, ชื่อวัสดุชิดซ้าย, จำนวนเม็ดชิดขวาจบคอลัมน์ 36,
-// น้ำหนักชิดขวาจบคอลัมน์ 47 จองความกว้าง qty/weight ก่อนเสมอ (เหมือน itemDetailLine) กันตัวเลขถูกตัดหาง
+// ความกว้างคอลัมน์ชื่อวัสดุร่วมทั้งใบ — ไล่หาชื่อยาวสุดในทุก item เพื่อให้จำนวน/น้ำหนักตรงคอลัมน์กันทุกแถว
+// (ชื่อวัสดุยาวในชิ้นหนึ่ง เช่น 'DIAMOND (G,VS1)' ต้องไม่ทำให้แถวของชิ้นอื่นเยื้องไม่ตรงกัน)
+function materialNameWidth(items) {
+  const itemList = Array.isArray(items) ? items : []
+  let longest = 0
+  itemList.forEach((item) => {
+    const materials = Array.isArray(item?.materialSummary) ? item.materialSummary : []
+    materials.forEach((m) => {
+      const len = String(m?.name || '').length
+      if (len > longest) longest = len
+    })
+  })
+  // +1 บังคับช่องว่างคั่นชื่อกับจำนวนอย่างน้อย 1 ตัวเสมอ
+  return Math.min(MATERIAL_NAME_MAX_W, Math.max(MATERIAL_NAME_MIN_W, longest + 1))
+}
+
+// บรรทัดวัตถุดิบต่อชิ้น (ใต้ itemDetailLine) — เยื้อง 4, ชื่อวัสดุชิดซ้ายกว้างคงที่ตลอดทั้งใบ (nameWidth
+// มาจาก materialNameWidth() คำนวณครั้งเดียวก่อนวนทั้งใบ), จำนวนเม็ดชิดขวาในคอลัมน์แคบ แล้วน้ำหนักชิดซ้ายต่อท้าย
+// ไม่ดันไปจบคอลัมน์ 47 อีกต่อไป — กันลูกค้าอ่านสับสนว่าน้ำหนักเป็นราคา (ขอบขวาเดิมชนคอลัมน์เงินพอดี)
 // qty เป็น '' เมื่อวัสดุไม่มีจำนวนเม็ด (ทอง) — ปล่อยเป็นช่องว่างตามที่เป็น ไม่เติมค่าแทน
-function materialLine(name, qty, weight) {
-  const qtyRaw = qty || ''
-  const weightRaw = weight || ''
+function materialLine(name, qty, weight, nameWidth) {
+  const width = nameWidth || MATERIAL_NAME_MIN_W
+  const nameCol = padRight(String(name || '').slice(0, width), width)
+  const qtyCol = padLeft(qty || '', MATERIAL_QTY_W)
+  const weightStr = weight || ''
 
-  const qtyCol = padLeft(qtyRaw, Math.max(MATERIAL_QTY_W, qtyRaw.length + 1))
-  const weightCol = padLeft(weightRaw, Math.max(MATERIAL_WEIGHT_W, weightRaw.length + 1))
-
-  const leftW = Math.max(0, WIDTH - qtyCol.length - weightCol.length)
-  const left = padRight('    ' + (name || ''), leftW).slice(0, leftW)
-
-  return clampLine(left + qtyCol + weightCol)
+  const line = MATERIAL_INDENT + nameCol + qtyCol + ' '.repeat(MATERIAL_GAP) + weightStr
+  return clampLine(line.trimEnd())
 }
 
 // ตัดคำขึ้นบรรทัดใหม่เมื่อชื่อสินค้ายาวเกิน 47 — คำเดี่ยวที่ยาวเกิน width ก็ตัดเป็นท่อนแทนการดันบรรทัดยาวเกิน
@@ -291,6 +311,7 @@ export class ReceiptTextBuilder {
     }
 
     const lines = []
+    const nameW = materialNameWidth(this.items)
     this.items.forEach((item) => {
       const price = toNumber(item?.appraisalPrice)
       const qty = toNumber(item?.qty)
@@ -305,7 +326,7 @@ export class ReceiptTextBuilder {
 
       // รายการวัตถุดิบต่อชิ้น (ทอง/เพชร/พลอย) — ไม่มีข้อมูลก็ไม่พิมพ์บรรทัดใดๆ เลย (ไม่ขึ้น '-' หรือ 'No materials')
       const materials = Array.isArray(item?.materialSummary) ? item.materialSummary : []
-      materials.forEach((m) => lines.push(materialLine(m.name, m.qty, m.weight)))
+      materials.forEach((m) => lines.push(materialLine(m.name, m.qty, m.weight, nameW)))
     })
 
     return lines

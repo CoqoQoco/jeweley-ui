@@ -103,13 +103,13 @@ describe('buildReceiptText — รายการวัตถุดิบแท�
     expect(itemsSection.some((line) => line.includes('Discount'))).toBe(false)
   })
 
-  it('พิมพ์บรรทัดวัตถุดิบครบ 3 รายการ (ทอง/เพชร/พลอย) ตรงตามสเปกคอลัมน์', () => {
+  it('พิมพ์บรรทัดวัตถุดิบครบ 3 รายการ (ทอง/เพชร/พลอย) ตรงตามสเปกคอลัมน์ชิดซ้าย', () => {
     const text = buildReceiptText(baseData())
     const lines = text.split('\n')
 
-    expect(lines).toContain('    WHITE GOLD                          2.97 g.')
-    expect(lines).toContain('    DIAMOND (G,VS)            30 pcs   0.32 ct.')
-    expect(lines).toContain('    SAPPHIRE                   1 pcs   1.97 ct.')
+    expect(lines).toContain('    WHITE GOLD              2.97 g.')
+    expect(lines).toContain('    DIAMOND (G,VS)  30 pcs  0.32 ct.')
+    expect(lines).toContain('    SAPPHIRE         1 pcs  1.97 ct.')
   })
 
   it('item ไม่มี materialSummary (undefined) → ไม่พิมพ์บรรทัดวัตถุดิบ ไม่ error', () => {
@@ -165,7 +165,7 @@ describe('buildReceiptText — ความกว้างบรรทัด', (
     })
   })
 
-  it('ชื่อวัสดุยาวผิดปกติ ก็ยังไม่ทำให้ตัวเลข qty/weight ถูกตัดหาง (บรรทัดยังจบที่ 47 พอดี)', () => {
+  it('ชื่อวัสดุยาวผิดปกติ ก็ยังไม่ทำให้ตัวเลข qty/weight ถูกตัดหาง (ชื่อถูก clamp ที่ MATERIAL_NAME_MAX_W แทน)', () => {
     const data = baseData({
       items: [
         baseItem({
@@ -179,7 +179,70 @@ describe('buildReceiptText — ความกว้างบรรทัด', (
     const materialLine = lines.find((l) => l.includes('999 pcs'))
 
     expect(materialLine).toBeDefined()
-    expect(materialLine.length).toBe(47)
-    expect(materialLine).toMatch(/999 pcs\s+999\.99 ct\.$/)
+    expect(materialLine.length).toBeLessThan(WIDTH)
+    expect(materialLine).toMatch(/999 pcs {2}999\.99 ct\.$/)
+  })
+})
+
+describe('buildReceiptText — บรรทัดวัตถุดิบชิดซ้าย (ไม่ชนคอลัมน์เงิน)', () => {
+  it('บรรทัดวัตถุดิบขึ้นต้นด้วย 4 ช่องแล้วตามด้วยชื่อวัสดุทันที', () => {
+    const text = buildReceiptText(baseData())
+    const lines = text.split('\n')
+
+    const goldLine = lines.find((l) => l.includes('WHITE GOLD'))
+    const diamondLine = lines.find((l) => l.includes('DIAMOND'))
+    const gemLine = lines.find((l) => l.includes('SAPPHIRE'))
+
+    expect(goldLine.startsWith('    WHITE GOLD')).toBe(true)
+    expect(diamondLine.startsWith('    DIAMOND')).toBe(true)
+    expect(gemLine.startsWith('    SAPPHIRE')).toBe(true)
+  })
+
+  it('บรรทัดวัตถุดิบต้องไม่ยาวถึงคอลัมน์ 47 (ขอบขวาต้องว่าง) และไม่มีช่องว่างท้ายบรรทัด', () => {
+    const text = buildReceiptText(baseData())
+    const lines = text.split('\n')
+
+    const goldLine = lines.find((l) => l.includes('WHITE GOLD'))
+    const diamondLine = lines.find((l) => l.includes('DIAMOND'))
+    const gemLine = lines.find((l) => l.includes('SAPPHIRE'))
+    ;[goldLine, diamondLine, gemLine].forEach((line) => {
+      expect(line.length).toBeLessThan(WIDTH)
+      expect(line).toBe(line.trimEnd())
+    })
+  })
+
+  it('วัสดุที่ไม่มีจำนวนเม็ด (ทอง qty ว่าง) น้ำหนักต้องเริ่มคอลัมน์เดียวกับวัสดุที่มีจำนวนเม็ด', () => {
+    const text = buildReceiptText(baseData())
+    const lines = text.split('\n')
+
+    const goldLine = lines.find((l) => l.includes('WHITE GOLD'))
+    const diamondLine = lines.find((l) => l.includes('DIAMOND'))
+
+    expect(goldLine.indexOf('2.97')).toBe(diamondLine.indexOf('0.32'))
+  })
+
+  it('ชื่อวัสดุยาว (เช่น DIAMOND (G,VS1)) ทำให้ทุกแถวในใบเดียวกันใช้คอลัมน์ชื่อกว้างเท่ากัน (จำนวน/น้ำหนักยังตรงคอลัมน์)', () => {
+    const data = baseData({
+      items: [
+        baseItem({
+          materialSummary: [
+            { type: 'Gold', name: 'SIL', qty: '', weight: '4.11 g.' },
+            { type: 'Gem', name: 'CZ', qty: '34 pcs', weight: '1.33 ct.' },
+            { type: 'Diamond', name: 'DIAMOND (G,VS1)', qty: '24 pcs', weight: '0.41 ct.' }
+          ]
+        })
+      ]
+    })
+    const lines = buildReceiptText(data).split('\n')
+
+    const silLine = lines.find((l) => l.trimStart().startsWith('SIL'))
+    const czLine = lines.find((l) => l.trimStart().startsWith('CZ'))
+    const diamondLine = lines.find((l) => l.trimStart().startsWith('DIAMOND'))
+
+    expect(silLine.indexOf('4.11')).toBe(czLine.indexOf('1.33'))
+    expect(czLine.indexOf('1.33')).toBe(diamondLine.indexOf('0.41'))
+    ;[silLine, czLine, diamondLine].forEach((line) => {
+      expect(line.length).toBeLessThan(WIDTH)
+    })
   })
 })

@@ -23,9 +23,12 @@ const DESC_CHARS_PER_LINE = 28
 // ระยะที่ divider() แต่ละเส้นกินไป (margin บน 4 + ล่าง 4, ตัวเส้นเองสูง 0) — วัดจริงตรงกับค่านี้เป๊ะ
 const DIVIDER_HEIGHT = 8
 
-// ความกว้างคอลัมน์รายการวัตถุดิบต่อชิ้น (ใต้แถวรหัสสินค้า) — จำนวนเม็ด/น้ำหนักชิดขวา ชื่อวัสดุกินที่เหลือ
+// ความกว้างคอลัมน์รายการวัตถุดิบต่อชิ้น (ใต้แถวรหัสสินค้า) — เดิมจำนวนเม็ด/น้ำหนักชิดขวาจบขอบเดียวกับ
+// คอลัมน์เงินของแถวสินค้า (alignment: 'right' กว้างเท่ากันทั้งคู่) ลูกค้าอ่านแล้วเข้าใจผิดว่าน้ำหนักเป็นราคา
+// ย้ายมาเป็นบล็อกชิดซ้าย: ชื่อวัสดุกว้างคงที่ก่อน แล้วจำนวนเม็ดชิดขวาในคอลัมน์แคบ แล้วน้ำหนักชิดซ้ายเป็น
+// คอลัมน์สุดท้าย ('*') เพื่อไม่ให้ตัวเลขไปสุดขอบขวาอีก
+const MATERIAL_NAME_COL_W = 80
 const MATERIAL_QTY_COL_W = 50
-const MATERIAL_WEIGHT_COL_W = 50
 
 // ระยะห่างระหว่างช่อง Seller กับ Customer (เรียงลงมาเต็มความกว้าง CONTENT_WIDTH เหมือนฝั่งข้อความ —
 // user ปฏิเสธแบบ 2 ช่องเรียงข้างกันไปแล้วเพราะเซ็นไม่พอ)
@@ -233,9 +236,9 @@ export class Receipt80mmBuilder {
       materials.forEach((m) => {
         blocks.push({
           columns: [
-            { text: m.name, fontSize: 7, color: '#666666', width: '*' },
+            { text: m.name, fontSize: 7, color: '#666666', width: MATERIAL_NAME_COL_W },
             { text: m.qty || '', fontSize: 7, color: '#666666', alignment: 'right', width: MATERIAL_QTY_COL_W },
-            { text: m.weight, fontSize: 7, color: '#666666', alignment: 'right', width: MATERIAL_WEIGHT_COL_W }
+            { text: m.weight, fontSize: 7, color: '#666666', alignment: 'left', width: '*' }
           ],
           columnGap: 4,
           margin: [8, 0, 0, 0]
