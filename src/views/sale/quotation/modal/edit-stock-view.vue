@@ -352,6 +352,44 @@
             <div class="mb-2" style="color: #888; font-size: 14px">
               {{ $t('view.sale.costStock.perItemNote') }}
             </div>
+            <!-- แถบเตือนซิงก์เกรดเพชร: เกรดในตารางวัตถุดิบเปลี่ยนแต่ตารางประเมินราคายังไม่อัปเดตตาม -->
+            <div v-if="showGradeSyncNotice" class="grade-sync-notice mb-3">
+              <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="grade-sync-notice-title">
+                  <i class="bi bi-exclamation-triangle-fill mr-2"></i>
+                  <span>{{ $t('view.sale.costStock.gradeSyncTitle') }} ({{ gradeSyncPlan.length }})</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <button
+                    v-if="gradeSyncSuggestions.length > 0"
+                    type="button"
+                    class="btn btn-sm btn-main"
+                    @click="applyGradeSync"
+                  >
+                    {{ $t('view.sale.costStock.gradeSyncApply') }}
+                  </button>
+                  <button type="button" class="btn btn-sm btn-dark" @click="dismissGradeSync">
+                    {{ $t('view.sale.costStock.gradeSyncDismiss') }}
+                  </button>
+                </div>
+              </div>
+              <ul class="grade-sync-list mb-0">
+                <li v-for="row in gradeSyncPlan" :key="row.rowIndex">
+                  <span v-if="row.suggested !== null">
+                    {{
+                      $t('view.sale.costStock.gradeSyncDetail', {
+                        count: row.rowIndex + 1,
+                        from: row.current,
+                        to: row.suggested
+                      })
+                    }}
+                  </span>
+                  <span v-else>
+                    {{ row.current }} — {{ $t('view.sale.costStock.gradeSyncManualHint') }}
+                  </span>
+                </li>
+              </ul>
+            </div>
             <DataTable
               :value="tranItems"
               rowGroupMode="subheader"
@@ -390,7 +428,7 @@
               </Column>
               <Column field="nameDescription">
                 <template #body="slotProps">
-                  <div v-if="slotProps.data.isAdd">
+                  <div v-if="slotProps.data.isAdd" class="d-flex align-items-center gap-1">
                     <AutoCompleteGeneric
                       v-model="slotProps.data.nameDescription"
                       :useStaticList="true"
@@ -411,6 +449,11 @@
                         </div>
                       </template>
                     </AutoCompleteGeneric>
+                    <i
+                      v-if="isGradeSyncManualRow(slotProps.index)"
+                      class="bi bi-exclamation-triangle-fill grade-sync-manual-icon"
+                      :title="$t('view.sale.costStock.gradeSyncManualHint')"
+                    ></i>
                   </div>
                   <div v-else>
                     <span>{{ slotProps.data.nameDescription }}</span>
@@ -623,6 +666,7 @@ import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
 import { getTermHistory } from '@/services/helper/breakdown-term-history-store.js'
 import { isAlloyDescription } from '@/services/helper/breakdown-alloy-detect.js'
 import { getBreakdownTermOptions } from '@/services/helper/breakdown-item-presets.js'
+import { buildGradeSyncPlan } from '@/services/helper/quotation/diamond-grade-sync.js'
 
 export default {
   components: {
@@ -731,6 +775,23 @@ export default {
         { field: 'price', header: this.$t('common.field.price'), sortable: false, width: '100px' },
         { field: 'action', header: '', sortable: false, width: '50px' }
       ]
+    },
+    // แผนซิงก์เกรดเพชรจากตารางวัตถุดิบ (stock.materials) ไปตารางประเมินราคา (tranItems) — ดู diamond-grade-sync.js
+    gradeSyncPlan() {
+      return buildGradeSyncPlan({
+        materials: this.stock.materials || [],
+        originalGrades: this.originalDiamondGrades,
+        tranItems: this.tranItems
+      })
+    },
+    gradeSyncSuggestions() {
+      return this.gradeSyncPlan.filter((row) => row.suggested !== null)
+    },
+    gradeSyncManualRows() {
+      return this.gradeSyncPlan.filter((row) => row.mode === 'manual')
+    },
+    showGradeSyncNotice() {
+      return !this.gradeSyncDismissed && this.gradeSyncPlan.length > 0
     }
   },
 
@@ -748,6 +809,13 @@ export default {
         this.suppressRateRebase = true
         this.stock = { ...val }
         const rate = this.conversionRate
+
+        // เก็บ snapshot เกรดเพชรตอนเปิดโมดัล ไว้เทียบกับเกรดปัจจุบันตอนผู้ใช้แก้ (ดู diamond-grade-sync.js)
+        this.originalDiamondGrades = (this.stock.materials || []).reduce((acc, mat, index) => {
+          if (mat.type === 'Diamond') acc.push({ index, typeCode: mat.typeCode })
+          return acc
+        }, [])
+        this.gradeSyncDismissed = false
 
         // ใช้ข้อมูล priceTransactions เสมอถ้ามี — เก็บเป็นบาทใน DB เสมอ แปลงเป็น "หน่วยที่แสดง" ครั้งเดียวตรงนี้
         if (this.stock.priceTransactions && this.stock.priceTransactions.length > 0) {
@@ -850,7 +918,9 @@ export default {
       },
       useCostPerPiece: false,
       suppressRateRebase: false,
-      termHistory: {}
+      termHistory: {},
+      originalDiamondGrades: [],
+      gradeSyncDismissed: false
     }
   },
   async mounted() {
@@ -1091,6 +1161,22 @@ export default {
     isAlloyLike(description) {
       return isAlloyDescription(description)
     },
+    // อัปเดต nameDescription ของแถวที่มี suggestion ทุกแถวตาม gradeSyncPlan
+    // ไม่ rebase originalDiamondGrades — gradeSyncPlan เป็น computed คำนวณใหม่จาก tranItems ปัจจุบันอยู่แล้ว
+    // แถว exact/coded ที่ถูกเขียนทับแล้วจะไม่ match เงื่อนไขเดิมอีก จึงหลุดจาก plan เอง
+    // ส่วนแถว manual ต้องค้างเตือนไว้จนกว่าผู้ใช้จะแก้เอง — ห้าม reset snapshot ทำให้มันหายไปก่อน
+    applyGradeSync() {
+      this.gradeSyncSuggestions.forEach((row) => {
+        this.tranItems[row.rowIndex].nameDescription = row.suggested
+      })
+      success(this.$t('view.sale.costStock.gradeSyncDone'))
+    },
+    dismissGradeSync() {
+      this.gradeSyncDismissed = true
+    },
+    isGradeSyncManualRow(index) {
+      return this.gradeSyncManualRows.some((row) => row.rowIndex === index)
+    },
     // preset (คำคงที่ที่ต้องพิมพ์ลง PDF ลูกค้า) + คำที่เคยพิมพ์ (term history) ต่อ nameGroup — กันผู้ใช้พิมพ์ผิดซ้ำ เช่น "Aolly"
     getDescriptionOptions(nameGroup) {
       return getBreakdownTermOptions(nameGroup, this.termHistory)
@@ -1215,6 +1301,37 @@ input {
   display: block;
   text-align: center;
   color: var(--color-border);
+}
+
+.grade-sync-notice {
+  background: var(--status-open-bg);
+  border: 1px solid var(--base-warning);
+  border-radius: var(--radius-md);
+  padding: var(--sp-md) var(--sp-lg);
+  font-size: var(--fs-sm);
+  color: var(--base-font-color);
+}
+
+.grade-sync-notice-title {
+  font-weight: bold;
+
+  i {
+    color: var(--base-warning);
+  }
+}
+
+.grade-sync-list {
+  margin-top: var(--sp-sm);
+  padding-left: var(--sp-xl);
+
+  li {
+    margin-bottom: var(--sp-xs);
+  }
+}
+
+.grade-sync-manual-icon {
+  color: var(--base-warning);
+  cursor: help;
 }
 
 .form-col-fix-2-container {
