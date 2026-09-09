@@ -14,16 +14,25 @@
 
   ### Component Structure:
   ```
-  /stock/product/list/
-  ├── index-view.vue (Main orchestrator)
-  ├── components/
-  │   ├── search-view.vue (Search bar with filters)
-  │   ├── data-table-view.vue (Product list table)
-  │   └── data-expand-view.vue (Expandable material details)
-  └── modal/
-      ├── update-view.vue (Edit product modal)
-      └── barcode-view.vue (Print barcode modal)
+  /stock/product/
+  ├── components/                      (shared: list ↔ detail page)
+  │   ├── material-table.vue (ตารางวัตถุดิบ read-only — variant compact/full)
+  │   └── balance-panel.vue (ยอดคงเหลือล็อตนี้ + ยอดรวม SKU ตาม Storage Location)
+  ├── list/
+  │   ├── index-view.vue (Main orchestrator)
+  │   ├── components/
+  │   │   ├── search-view.vue (Search bar with filters)
+  │   │   ├── data-table-view.vue (Product list table)
+  │   │   ├── data-expand-view.vue (Row expansion: material-table + balance-panel ใน SectionCardGeneric legend, sticky-left)
+  │   │   ├── cost-detail-modal.vue (ดูต้นทุนสินค้า)
+  │   │   └── cost-history-modal.vue (ดูประวัติตีราคา)
+  │   └── modal/
+  │       ├── update-view.vue (Edit product modal)
+  │       └── barcode-view.vue (Print barcode modal)
+  └── detail/
+      └── index-view.vue (หน้าใหม่ "รายละเอียดสินค้า" /stock-product-detail/:stockNumber)
   ```
+  Composable ที่ยุบตรรกะ merge ยอดคงเหลือมาไว้ที่เดียว: `src/composables/useStockBalanceMerge.js` (`mergeBalanceIntoItems`) — ใช้ทั้งใน `data-table-view.vue` และหน้า `detail/index-view.vue`
 
   ### Features Implemented:
 
@@ -73,23 +82,27 @@
        15. ราคา - Product Price (decimal format)
        16. ผู้รับสินค้า - Received By (create by)
        17. หมายเหตุ - Remark
-     - **Action Buttons per Row**:
-       - 🖨️ พิมพ์ป้าย (Print Barcode) - Green button
-       - ✏️ แก้ไข (Edit) - Main button
-     - **Row Expansion**: Shows material details table
+     - **Action Buttons per Row** (`ButtonGeneric` ×2, icon-only + `:title`):
+       - 👁️ ดูรายละเอียด (View) - `variant="main"` - push `/stock-product-detail/:stockNumber`
+       - ✏️ แก้ไข (Edit) - `variant="outline"` - เปิด `update-view.vue` เดิม
+       - ปุ่มพิมพ์ป้าย/ต้นทุน/ประวัติ/QR ย้ายไปอยู่ header ของหน้า detail แล้ว (ถอด wiring ออกจากแถวนี้)
+     - **Row Expansion**: 2 `SectionCardGeneric headerStyle="legend"` (วัตถุดิบซ้าย / ยอดคงเหลือขวา) ใน grid `sticky-left`
 
-  ✅ **Material Details Expansion** (data-expand-view.vue)
-     - **Nested Table** (displayed when row expanded):
-       - ประเภท (Type): Gold/Silver/Diamond/Gem with color highlight
-       - ขนาด (Size)
-       - จำนวน (Quantity): qty + qtyUnit format
-       - น้ำหนัก (Weight): weight (3 decimals) + weightUnit format
-       - ราคา (Price): decimal format with 2 decimals
-     - **Material Type Display**:
+  ✅ **Material Details Expansion** (data-expand-view.vue → ใช้ shared components)
+     - **Layout**: `.expand-container { position: sticky; left: 0 }` + `.expand-grid` (`minmax(0,3fr) minmax(0,2fr)`, ≤1200px ยุบ 1 คอลัมน์) — แทนที่ fixed `width: 750px` เดิม
+     - กล่องซ้าย: `material-table.vue` (`variant="compact"`) — ประเภท/รหัส/ขนาด/แหล่งผลิต/จำนวน/น้ำหนัก/ราคา + รวมราคาวัตถุดิบ
+     - กล่องขวา: `balance-panel.vue` — 3 tile ล็อตนี้ (คงเหลือ/จอง/พร้อมขาย) + ตาราง SKU ตาม Storage Location (`slocHeader` ผ่าน i18n แล้ว)
+     - **Material Type Display** (ย้ายมาอยู่ที่เดียวใน `material-table.vue`):
        - Gold/Silver: Show master gold type name
-       - Diamond: Show "Diamond (grade)"
+       - Diamond: Show "Diamond (typeCode)"
        - Gem: Show gem type code
-     - **Styling**: Red highlight for type column, striped rows
+     - **Styling**: token เท่านั้น (ไม่มี hex/px hardcode เดิม), type column bold `var(--base-font-color)`
+
+  ✅ **หน้ารายละเอียดสินค้า** (`detail/index-view.vue` — ใหม่, route `/stock-product-detail/:stockNumber`)
+     - Archetype: Detail/View Page — `PageHeaderGeneric` (title + 4 ปุ่ม ghost: พิมพ์ป้าย/ต้นทุน/ประวัติ/QR + ปุ่มแก้ไข `is-primary`) + 5 `SectionCardGeneric legend` (รูปภาพ, ข้อมูลสินค้า, วัตถุดิบ `variant="full"`, ยอดคงเหลือ, การรับเข้า/ประวัติ)
+     - โหลดข้อมูลเองจาก `StockProduct/Get` (deep-link/refresh ได้) แล้ว merge ยอดคงเหลือด้วย `mergeBalanceIntoItems`
+     - ฝัง modal เดิมทั้ง 5: `update-view`, `barcode-view`, `cost-detail-modal`, `cost-history-modal`, `product-share-dialog` (ไม่แก้ไฟล์เหล่านี้)
+     - State ไม่พบสินค้า: การ์ด `notFoundTitle`/`notFoundDesc` + ปุ่มกลับหน้าตรวจคลัง
 
   ✅ **Update Product Modal** (update-view.vue)
      - **Modal Size**: 1200px width

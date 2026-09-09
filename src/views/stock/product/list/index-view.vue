@@ -9,39 +9,13 @@
     <dataTable
       v-model:modelForm="search"
       v-model:modelFormExport="formExport"
-      @view-cost="handleViewCost"
-      @view-history="handleViewHistory"
-      @show-share="handleShowShare"
     ></dataTable>
-
-    <!-- Cost Detail Modal -->
-    <costDetailModal
-      v-model:visible="costDetailVisible"
-      :stockNumber="selectedStockNumber"
-      :stockData="selectedStockData"
-    ></costDetailModal>
-
-    <!-- Cost History Modal -->
-    <costHistoryModal
-      v-model:visible="costHistoryVisible"
-      :stockNumber="selectedStockNumber"
-      :stockData="selectedStockData"
-    ></costHistoryModal>
-
-    <!-- Public Share Dialog -->
-    <productShareDialog
-      v-model:visible="shareVisible"
-      :stockNumber="selectedStockNumber"
-    ></productShareDialog>
   </div>
 </template>
 
 <script>
 import search from './components/search-view.vue'
 import dataTable from './components/data-table-view.vue'
-import costDetailModal from './components/cost-detail-modal.vue'
-import costHistoryModal from './components/cost-history-modal.vue'
-import productShareDialog from '@/components/public/product-share-dialog.vue'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
@@ -74,10 +48,7 @@ export default {
 
   components: {
     search,
-    dataTable,
-    costDetailModal,
-    costHistoryModal,
-    productShareDialog
+    dataTable
   },
 
   setup() {
@@ -103,12 +74,7 @@ export default {
       isExport: false,
       form: { ...interfaceForm },
       formExport: { ...interfaceForm },
-      search: {},
-      costDetailVisible: false,
-      costHistoryVisible: false,
-      shareVisible: false,
-      selectedStockNumber: '',
-      selectedStockData: {}
+      search: {}
     }
   },
 
@@ -123,30 +89,6 @@ export default {
 
     onExport(data) {
       this.formExport = { ...data }
-    },
-
-    handleViewCost(data) {
-      if (data && data.stockNumber) {
-        this.selectedStockNumber = data.stockNumber
-        this.selectedStockData = data
-        this.costDetailVisible = true
-      }
-    },
-
-    handleViewHistory(data) {
-      if (data && data.stockNumber) {
-        this.selectedStockNumber = data.stockNumber
-        this.selectedStockData = data
-        this.costHistoryVisible = true
-      }
-    },
-
-    handleShowShare(data) {
-      if (data && data.stockNumber) {
-        this.selectedStockNumber = data.stockNumber
-        this.selectedStockData = data
-        this.shareVisible = true
-      }
     }
   },
 

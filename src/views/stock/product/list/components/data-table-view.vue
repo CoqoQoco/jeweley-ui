@@ -13,29 +13,8 @@
     >
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
-          <button class="btn btn-sm btn-main" :title="$t('view.stock.product.printBarcode')" @click="onPrintBarcode(data)">
-            <i class="bi bi-upc-scan"></i>
-          </button>
-          <button class="btn btn-sm btn-main" :title="$t('common.btn.edit')" @click="onUpdate(data)">
-            <i class="bi bi-brush"></i>
-          </button>
-          <button class="btn btn-sm btn-main" :title="$t('view.stock.product.viewCost')" @click="onViewCost(data)">
-            <i class="bi bi-calculator"></i>
-          </button>
-          <button
-            class="btn btn-sm btn-outline-main"
-            :title="$t('view.stock.product.viewHistory')"
-            @click="onViewHistory(data)"
-          >
-            <i class="bi bi-clock-history"></i>
-          </button>
-          <button
-            class="btn btn-sm btn-outline-main"
-            :title="$t('view.public.share.buttonTitle')"
-            @click="onShowShare(data)"
-          >
-            <i class="bi bi-qr-code"></i>
-          </button>
+          <ButtonGeneric variant="main" icon="bi-eye" :title="$t('common.btn.view')" @click="onView(data)" />
+          <ButtonGeneric variant="outline" icon="bi-pencil" :title="$t('common.btn.edit')" @click="onUpdate(data)" />
         </div>
       </template>
 
@@ -93,11 +72,6 @@
       </template>
     </BaseDataTable>
 
-    <barcode
-      :isShow="isShow.isBarcode"
-      :modelStock="modelStock"
-      @closeModal="onCloseModal"
-    ></barcode>
     <update :isShow="isShow.isUpdate" :modelStock="modelStock" @closeModal="onCloseModal"></update>
   </div>
 </template>
@@ -106,20 +80,20 @@
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import BarcodeButtonGeneric from '@/components/generic/BarcodeButtonGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import { getPieceQty, getPieceQtyReserved, getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
+import { mergeBalanceIntoItems } from '@/composables/useStockBalanceMerge.js'
 
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { useStockBalanceApiStore } from '@/stores/modules/api/stock/stock-balance-api.js'
 import { useStockLocationApiStore } from '@/stores/modules/api/stock/stock-location-api.js'
 
 import dataExpand from './data-expand-view.vue'
-import barcode from '../modal/barcode-view.vue'
 import update from '../modal/update-view.vue'
 
 const interfaceShow = {
-  isBarcode: false,
   isUpdate: false
 }
 
@@ -130,8 +104,8 @@ export default {
     BaseDataTable,
     imagePreview,
     BarcodeButtonGeneric,
+    ButtonGeneric,
     dataExpand,
-    barcode,
     update
   },
 
@@ -164,7 +138,7 @@ export default {
         {
           field: 'action',
           header: '',
-          minWidth: '50px',
+          minWidth: '90px',
           sortable: false,
           align: 'center',
           bodyTemplate: 'actionTemplate'
@@ -327,22 +301,12 @@ export default {
         this.fetchData()
       }
     },
-    onPrintBarcode(val) {
-      this.modelStock = val
-      this.isShow.isBarcode = true
+    onView(val) {
+      this.$router.push({ name: 'stock-product-detail', params: { stockNumber: val.stockNumber } })
     },
     onUpdate(val) {
       this.modelStock = val
       this.isShow.isUpdate = true
-    },
-    onViewCost(val) {
-      this.$emit('view-cost', val)
-    },
-    onViewHistory(val) {
-      this.$emit('view-history', val)
-    },
-    onShowShare(val) {
-      this.$emit('show-share', val)
     },
 
     async fetchData() {
@@ -358,36 +322,7 @@ export default {
 
     async mergeBalanceIntoItems() {
       const items = this.productStore.dataSearch?.data || []
-      const stockNumbers = items.map((i) => i.stockNumber).filter(Boolean)
-      if (!stockNumbers.length) return
-
-      let nameMap = {}
-      try {
-        const allLocs = await this.locationStore.fetchAllForMap()
-        for (const loc of allLocs) {
-          nameMap[loc.code] = `${loc.code} — ${loc.nameTh}`
-        }
-      } catch {
-        // fallback: use code as name
-      }
-
-      const map = await this.balanceStore.fetchByStockNumbers(stockNumbers)
-      for (const item of items) {
-        const b = map[item.stockNumber]
-        // ยอดนี้เป็นยอดรวมทั้ง SKU (ทุกล็อต ทุกคลัง) — ห้ามเขียนทับ item.qty/qtyReserved/qtyAvailable
-        // ของ piece เอง (มาจาก StockProduct/List อยู่แล้ว) ใช้ prefix sku ชัดเจน
-        item.skuQtyOnHand = b?.qtyOnHand ?? null
-        item.skuQtyReserved = b?.qtyReserved ?? null
-        item.skuQtyAvailable = b?.qtyAvailable ?? null
-        if (b?.rows) {
-          item.slocBalances = b.rows.map((row) => ({
-            ...row,
-            location: nameMap[row.locationCode] || row.locationCode
-          }))
-        } else {
-          item.slocBalances = []
-        }
-      }
+      await mergeBalanceIntoItems(items, { balanceStore: this.balanceStore, locationStore: this.locationStore })
     },
 
     async fetchDataExport() {
@@ -407,6 +342,12 @@ export default {
 .base-data-table {
   :deep(.p-datatable) {
     z-index: 0 !important;
+  }
+
+  // แถวขยาย: td ต้อง overflow visible — ไม่งั้น position: sticky ของ .expand-container
+  // ไป "ติด" กับ td (ancestor ที่ overflow hidden) แทน .p-datatable-wrapper ที่เป็นตัวเลื่อนจริง
+  :deep(.p-datatable-row-expansion > td) {
+    overflow: visible;
   }
 }
 

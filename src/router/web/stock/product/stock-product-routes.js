@@ -1,6 +1,7 @@
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 
 const List = () => import('@/views/stock/product/list/index-view.vue')
+const Detail = () => import('@/views/stock/product/detail/index-view.vue')
 
 const StockLocationList = () => import('@/views/stock/location/index-view.vue')
 const StockMoveLocation = () => import('@/views/stock/move-location/index-view.vue')
@@ -52,6 +53,19 @@ const routes = [
           },
           minorShow: true,
           menuId: `stock-product`,
+          permissions: [PERMISSIONS.STOCK_PRODUCT]
+        }
+      },
+      {
+        path: '/stock-product-detail/:stockNumber',
+        name: 'stock-product-detail',
+        component: Detail,
+        meta: {
+          Displayname: {
+            en: 'Stock Product Detail',
+            th: 'รายละเอียดสินค้า'
+          },
+          minorShow: false,
           permissions: [PERMISSIONS.STOCK_PRODUCT]
         }
       },
