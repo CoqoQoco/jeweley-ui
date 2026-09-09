@@ -73,6 +73,7 @@ import { generateReceiptBlob } from '@/services/helper/pdf/receipt/receipt-80mm-
 import { canShareFiles, shareReceipt } from '@/services/helper/pdf/receipt/receipt-share.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
 import { loadInvoiceContext, toInvoicePdfData } from '@/services/helper/invoice/build-invoice-pdf-data.js'
+import { fetchReceiptMaterials } from '@/services/helper/receipt/fetch-receipt-materials.js'
 import { loadCompanyInfo } from '@/config/company-info.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
@@ -115,13 +116,26 @@ export default {
   data() {
     return {
       generatingA4Pdf: false,
-      companyInfo: null
+      companyInfo: null,
+      // ผล fetchReceiptMaterials(result.items) — เก็บไว้ที่นี่เพราะ receiptData เป็น computed (sync) await ในนั้นไม่ได้
+      itemsWithMaterials: []
     }
   },
 
   async mounted() {
     // receiptData เป็น computed (sync) จึง await ในนั้นไม่ได้ — โหลดล่วงหน้าเก็บไว้ที่นี่แทน
     this.companyInfo = await loadCompanyInfo()
+  },
+
+  watch: {
+    // ตะกร้าใหม่ขายเสร็จ (checkoutResult ถูก assign ใหม่ทั้งก้อน) → ดึงวัตถุดิบของรายการรอบนี้ล่วงหน้า
+    // ล้มเหลวเงียบๆ อยู่แล้วใน fetchReceiptMaterials — ใบเสร็จยังพิมพ์ได้แม้ดึงไม่สำเร็จ
+    'result.items': {
+      immediate: true,
+      async handler(items) {
+        this.itemsWithMaterials = await fetchReceiptMaterials(items || [])
+      }
+    }
   },
 
   computed: {
@@ -131,6 +145,14 @@ export default {
 
     hasRemaining() {
       return Number(this.result?.remainingAmount) > 0
+    },
+
+    materialSummaryByStockNumber() {
+      const map = {}
+      this.itemsWithMaterials.forEach((item) => {
+        if (item?.stockNumber) map[item.stockNumber] = item.materialSummary
+      })
+      return map
     },
 
     // แปลงเป็น shape ที่ receipt-80mm-builder.js รับ — grandTotal/paidAmount/remainingAmount ใช้ค่าจาก backend ตรงๆ ห้ามคำนวณทับ
@@ -148,7 +170,8 @@ export default {
           description: item.description,
           appraisalPrice: item.appraisalPrice ?? item.price,
           discountPercent: item.discountPercent,
-          qty: item.qty
+          qty: item.qty,
+          materialSummary: this.materialSummaryByStockNumber[item.stockNumber]
         })),
         payments: (r.payments || []).map((p) => ({
           payment: p.payment,

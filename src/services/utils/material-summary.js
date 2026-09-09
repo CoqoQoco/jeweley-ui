@@ -13,8 +13,10 @@ function resolveName(m) {
   if (m.type === 'Diamond') {
     return code ? `DIAMOND (${code})` : 'DIAMOND'
   }
-  // Gem
-  return code ? code.toUpperCase() : 'GEM'
+  // Gem — type_code บางเคสในข้อมูลจริงเป็นเกรดเพชรที่ติดมาผิด (เช่น 'G,VS1') ไม่ใช่ชื่อพลอย
+  // ใช้ typeOrigin (ชื่อพลอยจริง เช่น 'Morganite') ก่อนเสมอ แล้วค่อย fallback ไป typeCode
+  const gemName = (m.typeOrigin || m.typeCode || '').trim()
+  return gemName ? gemName.toUpperCase() : 'GEM'
 }
 
 export function summarizeMaterials(materials = []) {

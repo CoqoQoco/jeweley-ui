@@ -1,6 +1,7 @@
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { loadCompanyInfo } from '@/config/company-info.js'
+import { fetchReceiptMaterials } from '@/services/helper/receipt/fetch-receipt-materials.js'
 
 // สร้าง receiptData shape เดียวกับ computed.receiptData ใน pos-done-view.vue จากเลข invoice ที่ออกไปแล้ว
 // ใช้พิมพ์ซ้ำ/ดูใบเสร็จย้อนหลังจากหน้ารายการบิล (ไม่ต้องขายใหม่)
@@ -65,6 +66,8 @@ export async function buildReceiptFromInvoice(invoiceNumber) {
     })
     .filter((item) => item !== null)
 
+  const itemsWithMaterials = await fetchReceiptMaterials(items)
+
   const payments = (invoiceResponse.payments || []).map((p) => ({
     payment: p.payment,
     paymentName: p.paymentName,
@@ -82,7 +85,7 @@ export async function buildReceiptFromInvoice(invoiceNumber) {
     date: invoiceResponse.createDate,
     customer: { name: invoiceResponse.customerName || '' },
     seller: invoiceResponse.createBy || '',
-    items,
+    items: itemsWithMaterials,
     payments,
     currencyUnit: soResponse.currencyUnit || invoiceResponse.currencyUnit || 'THB',
     currencyRate: soResponse.currencyRate || invoiceResponse.currencyRate || 1,

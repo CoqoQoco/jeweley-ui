@@ -23,6 +23,14 @@ const SUMMARY_VALUE_W = 12
 const ITEM_COL2 = 15
 const ITEM_COL3 = 14
 
+// คอลัมน์บรรทัดรายการวัตถุดิบ (ใต้รายละเอียดสินค้า): จำนวนเม็ด (อย่างน้อย 8) ชิดขวาจบคอลัมน์ 36
+// น้ำหนัก (อย่างน้อย 11) ชิดขวาจบคอลัมน์ 47 — ชื่อวัสดุด้านซ้ายกินพื้นที่ที่เหลือ (แนวคิดเดียวกับ itemDetailLine())
+const MATERIAL_QTY_W = 8
+const MATERIAL_WEIGHT_W = 11
+
+// จำนวนขีดของเส้นเซ็น — เยื้อง 2 + ขีด 45 ตัว = 47 พอดี
+const SIGNATURE_LINE_LEN = 45
+
 // ป้ายวิธีชำระเงินบนใบเสร็จ — แม็ปจากโค้ดตัวเลขของ PAYMENT_METHODS ใน pos-checkout-sheet.vue
 // ห้ามใช้ paymentName จาก i18n เพราะเป็นภาษาไทย แล้วโดน toAsciiOnly() กรองทิ้งจนเหลือสตริงว่าง
 // (เจอจริงตอน E2E 2026-09-03) และใบเสร็จต้องเป็นอังกฤษเสมอ ไม่ผูกกับภาษาที่ผู้ใช้เลือกบนจอ
@@ -101,6 +109,22 @@ function itemDetailLine(stockNumber, unitPrice, qty, total) {
   const left = padRight('  ' + (stockNumber || ''), leftW).slice(0, leftW)
 
   return clampLine(left + mid + right)
+}
+
+// บรรทัดวัตถุดิบต่อชิ้น (ใต้ itemDetailLine) — เยื้อง 4, ชื่อวัสดุชิดซ้าย, จำนวนเม็ดชิดขวาจบคอลัมน์ 36,
+// น้ำหนักชิดขวาจบคอลัมน์ 47 จองความกว้าง qty/weight ก่อนเสมอ (เหมือน itemDetailLine) กันตัวเลขถูกตัดหาง
+// qty เป็น '' เมื่อวัสดุไม่มีจำนวนเม็ด (ทอง) — ปล่อยเป็นช่องว่างตามที่เป็น ไม่เติมค่าแทน
+function materialLine(name, qty, weight) {
+  const qtyRaw = qty || ''
+  const weightRaw = weight || ''
+
+  const qtyCol = padLeft(qtyRaw, Math.max(MATERIAL_QTY_W, qtyRaw.length + 1))
+  const weightCol = padLeft(weightRaw, Math.max(MATERIAL_WEIGHT_W, weightRaw.length + 1))
+
+  const leftW = Math.max(0, WIDTH - qtyCol.length - weightCol.length)
+  const left = padRight('    ' + (name || ''), leftW).slice(0, leftW)
+
+  return clampLine(left + qtyCol + weightCol)
 }
 
 // ตัดคำขึ้นบรรทัดใหม่เมื่อชื่อสินค้ายาวเกิน 47 — คำเดี่ยวที่ยาวเกิน width ก็ตัดเป็นท่อนแทนการดันบรรทัดยาวเกิน
@@ -278,9 +302,10 @@ export class ReceiptTextBuilder {
 
       wrapText(description).forEach((line) => lines.push(line))
       lines.push(itemDetailLine(item?.stockNumberOrigin || item?.stockNumber, unitPrice, qty, total))
-      if (discountPercent > 0) {
-        lines.push(`  Discount ${discountPercent}%`)
-      }
+
+      // รายการวัตถุดิบต่อชิ้น (ทอง/เพชร/พลอย) — ไม่มีข้อมูลก็ไม่พิมพ์บรรทัดใดๆ เลย (ไม่ขึ้น '-' หรือ 'No materials')
+      const materials = Array.isArray(item?.materialSummary) ? item.materialSummary : []
+      materials.forEach((m) => lines.push(materialLine(m.name, m.qty, m.weight)))
     })
 
     return lines
@@ -328,6 +353,29 @@ export class ReceiptTextBuilder {
     return lines
   }
 
+  // แสดงเฉพาะใบที่ชำระครบแล้วเท่านั้น (จ่ายบางส่วน/ยังไม่จ่าย = ไม่แสดงเลย ไม่กินบรรทัดใดๆ)
+  hasSignatureBlock() {
+    return this.grandTotal > 0 && this.remainingAmount <= 0
+  }
+
+  buildSignatureLines() {
+    if (!this.hasSignatureBlock()) return []
+
+    const signatureLine = '  ' + '_'.repeat(SIGNATURE_LINE_LEN)
+    return [
+      center('SIGNATURES'),
+      '',
+      '  Seller',
+      '',
+      signatureLine,
+      '',
+      '  Customer',
+      '',
+      signatureLine,
+      ''
+    ]
+  }
+
   buildFooterLines() {
     const { website, social } = this.company
     const lines = [center('Thank you for taking the first step with us'), '']
@@ -362,6 +410,7 @@ export class ReceiptTextBuilder {
       divider,
       ...this.buildPaymentLines(),
       divider,
+      ...this.buildSignatureLines(),
       ...this.buildFooterLines()
     ]
     return lines.join('\n')

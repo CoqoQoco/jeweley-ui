@@ -22,6 +22,14 @@ const LINE_HEIGHT_FACTOR = 1.301
 const DESC_CHARS_PER_LINE = 28
 // ระยะที่ divider() แต่ละเส้นกินไป (margin บน 4 + ล่าง 4, ตัวเส้นเองสูง 0) — วัดจริงตรงกับค่านี้เป๊ะ
 const DIVIDER_HEIGHT = 8
+
+// ความกว้างคอลัมน์รายการวัตถุดิบต่อชิ้น (ใต้แถวรหัสสินค้า) — จำนวนเม็ด/น้ำหนักชิดขวา ชื่อวัสดุกินที่เหลือ
+const MATERIAL_QTY_COL_W = 50
+const MATERIAL_WEIGHT_COL_W = 50
+
+// ระยะห่างระหว่างช่อง Seller กับ Customer (เรียงลงมาเต็มความกว้าง CONTENT_WIDTH เหมือนฝั่งข้อความ —
+// user ปฏิเสธแบบ 2 ช่องเรียงข้างกันไปแล้วเพราะเซ็นไม่พอ)
+const SIGNATURE_ROW_GAP = 10
 // เผื่อเกิน เพื่อกันพลาดจากการปัดเศษ/ความคลาดเคลื่อนของการประมาณความยาวบรรทัดที่ตัดคำ
 const SAFETY_BUFFER = 10
 
@@ -220,15 +228,19 @@ export class Receipt80mmBuilder {
         columnGap: 2
       })
 
-      if (discountPercent > 0) {
+      // รายการวัตถุดิบต่อชิ้น (ทอง/เพชร/พลอย) — ไม่มีข้อมูลก็ไม่วาดบล็อกนี้เลย
+      const materials = Array.isArray(item?.materialSummary) ? item.materialSummary : []
+      materials.forEach((m) => {
         blocks.push({
-          text: `${t('discount')} ${discountPercent}%`,
-          fontSize: 7,
-          color: '#ff4d4d',
-          alignment: 'right',
-          margin: [0, 0, 0, 2]
+          columns: [
+            { text: m.name, fontSize: 7, color: '#666666', width: '*' },
+            { text: m.qty || '', fontSize: 7, color: '#666666', alignment: 'right', width: MATERIAL_QTY_COL_W },
+            { text: m.weight, fontSize: 7, color: '#666666', alignment: 'right', width: MATERIAL_WEIGHT_COL_W }
+          ],
+          columnGap: 4,
+          margin: [8, 0, 0, 0]
         })
-      }
+      })
     })
 
     return blocks
@@ -278,6 +290,31 @@ export class Receipt80mmBuilder {
     }
 
     return rows
+  }
+
+  // แสดงเฉพาะใบที่ชำระครบแล้วเท่านั้น (จ่ายบางส่วน/ยังไม่จ่าย = ไม่แสดงเลย ไม่กินพื้นที่)
+  hasSignatureBlock() {
+    return this.grandTotal > 0 && this.remainingAmount <= 0
+  }
+
+  getSignatureContent() {
+    if (!this.hasSignatureBlock()) return []
+
+    // เรียงลงมาเต็มความกว้าง (เหมือน buildSignatureLines() ฝั่งข้อความ) — ไม่ใช่ 2 ช่องเคียงกัน
+    // เพราะช่องแคบเซ็นไม่พอ margin-bottom ของ label คือระยะเว้นให้เซ็นจริง เส้นยาวเต็ม CONTENT_WIDTH
+    const signatureRow = (label, marginBottom = 0) => ({
+      stack: [
+        { text: label, fontSize: 8, color: '#666666', margin: [0, 0, 0, 20] },
+        { canvas: [{ type: 'line', x1: 0, y1: 0, x2: CONTENT_WIDTH, y2: 0, lineWidth: 0.5, lineColor: '#393939' }] }
+      ],
+      margin: [0, 0, 0, marginBottom]
+    })
+
+    return [
+      { text: t('signatureTitle'), fontSize: 9, bold: true, alignment: 'center', margin: [0, 2, 0, 8] },
+      signatureRow(t('signatureSeller'), SIGNATURE_ROW_GAP),
+      signatureRow(t('signatureCustomer'))
+    ]
   }
 
   // ช่องทางติดต่อที่มีค่า (ไม่ว่าง) เท่านั้น — ใช้ร่วมกันทั้ง estimateFooterHeight() และ getFooterContent()
@@ -356,9 +393,8 @@ export class Receipt80mmBuilder {
       const wrappedLines = Math.max(1, Math.ceil(description.length / DESC_CHARS_PER_LINE))
       let itemHeight = 2 + lineHeight(9) * wrappedLines // description: margin top 2
       itemHeight += lineHeight(8) // stockNumber/price/qty/total row
-      if (toNumber(item?.discountPercent) > 0) {
-        itemHeight += lineHeight(7) + 2 // discount line: margin bottom 2
-      }
+      const materials = Array.isArray(item?.materialSummary) ? item.materialSummary : []
+      itemHeight += materials.length * lineHeight(7) // แถวรายการวัตถุดิบ (ไม่มี margin เพิ่ม)
       return sum + itemHeight
     }, 0)
   }
@@ -383,6 +419,15 @@ export class Receipt80mmBuilder {
       height += 2 + lineHeight(9) // remaining row
     }
     return height
+  }
+
+  // ต้องตรงกับ getSignatureContent() เป๊ะ — เรียงลงมา 2 แถว (Seller, Customer) ไม่ใช่เคียงข้างกันแล้ว
+  // แถวละ: label (margin-bottom 20 เผื่อเซ็น) + เส้น canvas สูง 0 → title + แถว×2 + ช่องว่างคั่นระหว่างแถว 1 จุด
+  estimateSignatureHeight() {
+    if (!this.hasSignatureBlock()) return 0
+    const titleHeight = 2 + lineHeight(9) + 8
+    const rowHeight = lineHeight(8) + 20
+    return titleHeight + rowHeight * 2 + SIGNATURE_ROW_GAP
   }
 
   // footerPlan มาจาก prepareFooterPlan() — ต้องเป็นอันเดียวกับที่ getFooterContent() ใช้วาดจริงเสมอ
@@ -412,6 +457,7 @@ export class Receipt80mmBuilder {
       DIVIDER_HEIGHT +
       this.estimatePaymentHeight() +
       DIVIDER_HEIGHT +
+      this.estimateSignatureHeight() +
       this.estimateFooterHeight(footerPlan) +
       SAFETY_BUFFER
 
@@ -433,6 +479,7 @@ export class Receipt80mmBuilder {
         divider(),
         ...this.getPaymentContent(),
         divider(),
+        ...this.getSignatureContent(),
         ...this.getFooterContent(footerPlan)
       ],
       defaultStyle: {
