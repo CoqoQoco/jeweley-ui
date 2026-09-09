@@ -15,6 +15,7 @@ export default {
   },
 
   pinnedTag: 'Pinned',
+  devOnlyTag: 'Dev only',
 
   list: {
     title: 'Manage Announcements',
@@ -23,6 +24,7 @@ export default {
     keywordPlaceholder: 'Title/body',
     status: 'Status',
     pinned: 'Pinned',
+    audience: 'Audience',
     create: 'Create Announcement',
     col: {
       id: '#',
@@ -47,7 +49,15 @@ export default {
     isPublished: 'Show on home page immediately',
     isPublishedHint: 'Unchecked = keep as draft',
     image: 'Image (optional)',
-    imageHint: 'jpg/png, max 5 MB, 1 image'
+    imageHint: 'jpg/png, max 5 MB, 1 image',
+    audience: 'Who can see this',
+    audienceHint: 'Choose "Dev only" to preview it on the real home page, then edit to "Everyone" when ready.'
+  },
+
+  audience: {
+    all: 'Everyone',
+    dev: 'Dev only (preview)',
+    filterAll: 'All'
   },
 
   status: {

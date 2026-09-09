@@ -24,3 +24,19 @@ export function statusFilterToIsPublished(value) {
   if (value === 'Hidden') return false
   return undefined
 }
+
+export const AUDIENCE = {
+  ALL: 'all',
+  DEV: 'dev'
+}
+
+export function getAudienceOptions(t) {
+  return [
+    { value: AUDIENCE.ALL, label: t('view.announcement.audience.all') },
+    { value: AUDIENCE.DEV, label: t('view.announcement.audience.dev') }
+  ]
+}
+
+export function getAudienceFilterOptions(t) {
+  return [{ value: null, label: t('view.announcement.audience.filterAll') }, ...getAudienceOptions(t)]
+}

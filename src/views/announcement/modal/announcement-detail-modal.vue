@@ -18,6 +18,10 @@
             <i class="bi bi-pin-angle-fill"></i>
             {{ $t('view.announcement.pinnedTag') }}
           </span>
+          <span v-if="item.audience === 'dev'" class="announcement-detail__dev-tag">
+            <i class="bi bi-eye-slash"></i>
+            {{ $t('view.announcement.devOnlyTag') }}
+          </span>
           <span class="announcement-detail__date">{{ formattedDate }}</span>
           <span class="announcement-detail__by">{{ $t('view.announcement.feed.by', { name: item.createBy }) }}</span>
         </div>
@@ -109,6 +113,17 @@ export default {
   border: 1px solid var(--base-warning);
   border-radius: var(--radius-sm);
   color: var(--base-warning);
+  font-weight: 600;
+}
+
+.announcement-detail__dev-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px var(--sp-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--base-sub-color);
   font-weight: 600;
 }
 

@@ -7,9 +7,13 @@
     @keydown.enter="$emit('open')"
   >
     <div class="announcement-card__header">
-      <span v-if="item.isPinned" class="announcement-card__pinned-tag">
+      <span v-if="item.isPinned" class="announcement-card__tag announcement-card__tag--pinned">
         <i class="bi bi-pin-angle-fill"></i>
         {{ $t('view.announcement.pinnedTag') }}
+      </span>
+      <span v-if="item.audience === 'dev'" class="announcement-card__tag announcement-card__tag--dev">
+        <i class="bi bi-eye-slash"></i>
+        {{ $t('view.announcement.devOnlyTag') }}
       </span>
       <span class="announcement-card__title">{{ item.title }}</span>
       <span class="announcement-card__date">{{ formattedDate }}</span>
@@ -95,17 +99,26 @@ export default {
   gap: var(--sp-sm);
 }
 
-.announcement-card__pinned-tag {
+.announcement-card__tag {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
   padding: 2px var(--sp-sm);
-  border: 1px solid var(--base-warning);
+  border: 1px solid;
   border-radius: var(--radius-sm);
-  color: var(--base-warning);
   font-size: var(--fs-sm);
   font-weight: 600;
+
+  &--pinned {
+    border-color: var(--base-warning);
+    color: var(--base-warning);
+  }
+
+  &--dev {
+    border-color: var(--color-border);
+    color: var(--base-sub-color);
+  }
 }
 
 .announcement-card__title {

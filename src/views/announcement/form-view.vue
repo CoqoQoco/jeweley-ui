@@ -25,6 +25,11 @@
         </FormFieldGeneric>
       </div>
 
+      <FormFieldGeneric :label="$t('view.announcement.field.audience')" class="mt-field">
+        <RadioGroupGeneric v-model="form.audience" :options="audienceOptions" optionLabel="label" optionValue="value" :inline="true" />
+        <small class="field-hint">{{ $t('view.announcement.field.audienceHint') }}</small>
+      </FormFieldGeneric>
+
       <div class="form-row two-col mt-field">
         <CheckboxGeneric v-model="form.isPinned" :label="$t('view.announcement.field.isPinned')" />
         <div>
@@ -67,6 +72,7 @@
 import { useAnnouncementStore } from '@/stores/modules/api/announcement/announcement-store.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { success, warning } from '@/services/alert/sweetAlerts.js'
+import { AUDIENCE, getAudienceOptions } from './constants/display-status.js'
 
 import PageHeaderGeneric from '@/components/generic/PageHeaderGeneric.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
@@ -76,6 +82,7 @@ import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
+import RadioGroupGeneric from '@/components/prime-vue/RadioGroupGeneric.vue'
 import UploadImage from '@/components/prime-vue/UploadImage.vue'
 
 const initForm = () => ({
@@ -85,6 +92,7 @@ const initForm = () => ({
   publishEnd: null,
   isPinned: false,
   isPublished: true,
+  audience: AUDIENCE.ALL,
   image: null
 })
 
@@ -100,6 +108,7 @@ export default {
     ButtonGeneric,
     CalendarGeneric,
     CheckboxGeneric,
+    RadioGroupGeneric,
     UploadImage
   },
 
@@ -126,6 +135,10 @@ export default {
     imagePreviewUrl() {
       if (this.removeImage) return null
       return this.newImagePreviewUrl || this.existingImageUrl
+    },
+
+    audienceOptions() {
+      return getAudienceOptions(this.$t)
     }
   },
 
@@ -146,6 +159,7 @@ export default {
         this.form.publishEnd = res.publishEnd ? new Date(res.publishEnd) : null
         this.form.isPinned = !!res.isPinned
         this.form.isPublished = !!res.isPublished
+        this.form.audience = res.audience || AUDIENCE.ALL
         this.existingImageUrl = res.imageUrl || null
       }
     },
@@ -214,6 +228,7 @@ export default {
           formData.append('publishEnd', this.toEndOfDayIso(this.form.publishEnd))
         }
         formData.append('isPublished', this.form.isPublished)
+        formData.append('audience', this.form.audience)
         if (this.form.image) {
           formData.append('image', this.form.image)
         }

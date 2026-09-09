@@ -15,6 +15,7 @@ export default {
   },
 
   pinnedTag: 'ปักหมุด',
+  devOnlyTag: 'เห็นเฉพาะ Dev',
 
   list: {
     title: 'จัดการประกาศข่าว',
@@ -23,6 +24,7 @@ export default {
     keywordPlaceholder: 'หัวข้อ/เนื้อหา',
     status: 'สถานะ',
     pinned: 'ปักหมุด',
+    audience: 'ผู้เห็น',
     create: 'สร้างประกาศ',
     col: {
       id: '#',
@@ -47,7 +49,15 @@ export default {
     isPublished: 'แสดงบนหน้าแรกทันที',
     isPublishedHint: 'ไม่ติ๊ก = เก็บเป็นแบบร่าง',
     image: 'รูปประกอบ (ไม่บังคับ)',
-    imageHint: 'jpg/png ไม่เกิน 5 MB 1 รูป'
+    imageHint: 'jpg/png ไม่เกิน 5 MB 1 รูป',
+    audience: 'ใครเห็นประกาศนี้',
+    audienceHint: 'เลือก "เฉพาะ Dev" เพื่อดูของจริงบนหน้าแรกก่อน แล้วค่อยแก้ไขเป็น "ทุกคน" เมื่อพร้อมครับ'
+  },
+
+  audience: {
+    all: 'ทุกคน',
+    dev: 'เฉพาะ Dev (ดูก่อน)',
+    filterAll: 'ทั้งหมด'
   },
 
   status: {

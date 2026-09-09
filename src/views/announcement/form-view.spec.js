@@ -59,6 +59,7 @@ function createWrapper(routeParams = {}) {
         ButtonGeneric: true,
         CalendarGeneric: true,
         CheckboxGeneric: true,
+        RadioGroupGeneric: true,
         UploadImage: true
       }
     }
@@ -136,5 +137,32 @@ describe('AnnouncementFormView onSubmit date normalisation', () => {
 
     expect(warning).not.toHaveBeenCalled()
     expect(mockCreate).toHaveBeenCalledTimes(1)
+  })
+
+  it('e) ค่า default ส่ง audience=all เข้า FormData', async () => {
+    const { vm } = createWrapper()
+    vm.form.title = 'ประกาศทดสอบ'
+    vm.form.body = 'เนื้อหาทดสอบ'
+    vm.form.publishStart = new Date(2026, 8, 1)
+
+    await vm.onSubmit()
+    await flushPromises()
+
+    const formData = mockCreate.mock.calls[0][0]
+    expect(formData.get('audience')).toBe('all')
+  })
+
+  it('f) form.audience="dev" ถูกส่งเข้า FormData เป็น audience=dev', async () => {
+    const { vm } = createWrapper()
+    vm.form.title = 'ประกาศทดสอบ'
+    vm.form.body = 'เนื้อหาทดสอบ'
+    vm.form.publishStart = new Date(2026, 8, 1)
+    vm.form.audience = 'dev'
+
+    await vm.onSubmit()
+    await flushPromises()
+
+    const formData = mockCreate.mock.calls[0][0]
+    expect(formData.get('audience')).toBe('dev')
   })
 })

@@ -10,7 +10,7 @@
 |---|---|
 | **Component / Archetype** | `src/views/announcement/components/announcement-card.vue` + feed widget `src/views/dashboard/home/components/announcement-feed.vue` |
 | **สถานะ** | ✅ approved |
-| **วันที่ (อัปเดตล่าสุด)** | 2026-09-08 (empty state แบบเต็มกล่อง + CTA เฉพาะผู้มีสิทธิ์) |
+| **วันที่ (อัปเดตล่าสุด)** | 2026-09-09 (เพิ่ม audience field all/dev + tag "เห็นเฉพาะ Dev") |
 | **Ref ที่ใช้** | mirror ของหน้า Ticket (`docs/design-system.md` baseline) + `recent-activities.vue` (empty state pattern) |
 | **Claude Design** | ไม่มี frame แยก — สืบทอด token/มาตรฐานจาก design-system.md ตรงๆ |
 | **ทางเลือกที่เลือก** | plan approved 2026-09-08 (feed บนหน้าแรก + management page /announcement) |
@@ -24,7 +24,7 @@
 │  ┏━ ประกาศข่าว ━┓                                                            │
 │  └───────────────┘                              [⚙ จัดการประกาศ] (canManage) │
 │  ┌─ announcement-card (compact) ───────────────────────────────────────────┐ │
-│  │ [ปักหมุด]  หัวข้อประกาศ...........................    12 ก.ย. 2569      │ │
+│  │ [ปักหมุด] [เห็นเฉพาะ Dev]  หัวข้อประกาศ..............    12 ก.ย. 2569    │ │
 │  │ [88x88]   เนื้อหาย่อ 3 บรรทัด แล้ว...(clamp)...                          │ │
 │  │           โดย admin                                        อ่านต่อ ▸    │ │
 │  └──────────────────────────────────────────────────────────────────────────┘ │
@@ -63,7 +63,7 @@ Detail modal (headerVariant="main"):
 ╔══════════════════════════════════════════════════════╗
 ║  หัวข้อประกาศ (ขาว)                          [ ✕ ]    ║
 ╠══════════════════════════════════════════════════════╣
-│  [ปักหมุด]  12 ก.ย. 2569 · โดย admin                  │
+│  [ปักหมุด] [เห็นเฉพาะ Dev]  12 ก.ย. 2569 · โดย admin  │
 │  [ภาพประกอบเต็มความกว้าง (ImagePreview, contain)]      │
 │  เนื้อหาเต็ม (white-space: pre-line)                   │
 ├──────────────────────────────────────────────────────┤
@@ -81,6 +81,7 @@ Detail modal (headerVariant="main"):
 | card hover/focus | border / shadow | `var(--base-font-color)` / `var(--shadow-sm)` |
 | card gap ภายใน | gap | `var(--sp-sm)` (header/body/footer), `var(--sp-md)` (body: thumb↔text) |
 | pinned tag | border / color / radius | `1px solid var(--base-warning)` / `var(--base-warning)` / `var(--radius-sm)` |
+| dev-only tag | border / color / radius | `1px solid var(--color-border)` / `var(--base-sub-color)` / `var(--radius-sm)` (neutral, ขนาด/รูปร่างเหมือน pinned tag — `.announcement-card__tag` base class + modifier `--pinned`/`--dev`) |
 | title | font-weight / color | `700` / `var(--base-font-color)` |
 | date/meta | font-size / color | `var(--fs-sm)` / `var(--base-sub-color)` |
 | thumbnail | size / radius / object-fit | `88px × 88px` / `var(--radius-md)` / `cover` (raw `<img>` — ดูเหตุผลใน Diff) |
@@ -107,6 +108,7 @@ Detail modal (headerVariant="main"):
 | compact (การ์ดในฟีดหน้าแรก) | body clamp 3 บรรทัด + แสดง "อ่านต่อ ▸" |
 | full (การ์ดใน detail modal / ไม่ compact) | body ไม่ clamp, `white-space: pre-line`, ไม่แสดง "อ่านต่อ" |
 | pinned | แสดง pinned tag ก่อน title |
+| audience=dev | แสดง dev-only tag ("เห็นเฉพาะ Dev", `bi-eye-slash`) ต่อจาก pinned tag — ทั้งในการ์ด, detail modal (meta line), และ list column สถานะ |
 | มีรูป | แสดง thumbnail 88px (การ์ด) หรือรูปเต็มความกว้าง (modal) |
 | ไม่มีรูป | ไม่ render thumbnail — text เต็มความกว้าง |
 | empty + canManage=false (viewer) | icon circle `bi-megaphone` + emptyTitle + emptyHint — ไม่มี CTA/tips |
@@ -122,6 +124,7 @@ Detail modal (headerVariant="main"):
 - **manage toolbar ไม่ได้อยู่ใน `#header-actions`**: `SectionCardGeneric` รองรับ slot `#header-actions` เฉพาะ `headerStyle="filled"` เท่านั้น (ไม่รองรับ `legend`) — ปุ่ม "จัดการประกาศ" จึงย้ายมาเป็นแถว toolbar right-align บนสุดของ default slot แทน
 - status badge (หน้า `/announcement` list) reuse token `--status-open/-resolved/-closed/-cancelled` เดิมจากโมดูล Ticket (scheduled=open, visible=resolved, hidden=closed, expired=cancelled) แทนการเพิ่ม token ใหม่ใน `variable.scss`
 - **empty state (2026-09-08 follow-up)**: เปลี่ยนจาก icon 28px + ข้อความสั้น เป็น empty state เต็มกล่อง (icon circle 72px + title + hint + CTA เฉพาะผู้มีสิทธิ์ + tips 3 ข้อ) กันการ์ดดูโหว่บนหน้าแรก; hint แยก 2 ข้อความตามสิทธิ์ (`emptyHint` viewer / `emptyHintManager` manager); manage toolbar (`.feed-toolbar`) เปลี่ยนเป็น render เฉพาะเมื่อ `canManage && items.length` กันมี 2 ปุ่มจัดการซ้อนกับปุ่ม `createFirst` ใน empty state
+- **audience field all/dev (2026-09-09 follow-up)**: เพิ่ม field `audience` (`all` default / `dev`) — ประกาศที่ตั้งเป็น `dev` เห็นเฉพาะ role Dev บนหน้าแรก (โหมด "ดูของจริงก่อน publish"); ฟอร์มใช้ `RadioGroupGeneric` (2 ตัวเลือก, `inline`) แทน `DropdownGeneric` เพราะมีแค่ 2 ค่าคงที่ ไม่ต้อง search/scroll; list filter ใช้ `DropdownGeneric` ตาม Core Principle #11 (exception เดียวกับ status/pinned — single-choice โดยธรรมชาติ); tag "เห็นเฉพาะ Dev" ดึง `.announcement-card__tag` เดิมมาทำเป็น base class + modifier (`--pinned` คงสีเดิม, `--dev` เป็น neutral border+sub-color) แทนการเขียน class ใหม่แยกจากกัน
 
 ---
 

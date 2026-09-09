@@ -37,6 +37,17 @@
             @update:modelValue="filter.pinned = $event"
           />
         </div>
+        <div class="form-field">
+          <span class="title-text">{{ $t('view.announcement.list.audience') }}</span>
+          <DropdownGeneric
+            :modelValue="filter.audience"
+            :options="audienceFilterOptions"
+            optionLabel="label"
+            optionValue="value"
+            :placeholder="$t('view.announcement.audience.filterAll')"
+            @update:modelValue="filter.audience = $event"
+          />
+        </div>
       </template>
 
       <template #actions-right>
@@ -71,6 +82,7 @@
 
         <template #displayStatusTemplate="{ data }">
           <span :class="['status-badge', statusClass(data.displayStatus)]">{{ statusLabel(data.displayStatus) }}</span>
+          <span v-if="data.audience === 'dev'" class="status-badge status-dev">{{ $t('view.announcement.devOnlyTag') }}</span>
         </template>
 
         <template #actionTemplate="{ data }">
@@ -108,7 +120,12 @@ import { useAnnouncementStore } from '@/stores/modules/api/announcement/announce
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { success } from '@/services/alert/sweetAlerts.js'
-import { getDisplayStatusOptions, DISPLAY_STATUS_META, statusFilterToIsPublished } from './constants/display-status.js'
+import {
+  getDisplayStatusOptions,
+  DISPLAY_STATUS_META,
+  statusFilterToIsPublished,
+  getAudienceFilterOptions
+} from './constants/display-status.js'
 
 import SearchBarGeneric from '@/components/generic/SearchBarGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
@@ -141,7 +158,8 @@ export default {
       filter: {
         keyword: null,
         status: null,
-        pinned: null
+        pinned: null,
+        audience: null
       }
     }
   },
@@ -157,6 +175,10 @@ export default {
         { value: true, label: this.$t('view.announcement.pinnedFilter.yes') },
         { value: false, label: this.$t('view.announcement.pinnedFilter.no') }
       ]
+    },
+
+    audienceFilterOptions() {
+      return getAudienceFilterOptions(this.$t)
     },
 
     columns() {
@@ -184,7 +206,8 @@ export default {
         sort: this.sort,
         keyword: this.filter.keyword || undefined,
         isPublished: statusFilterToIsPublished(this.filter.status),
-        isPinned: this.filter.pinned === null ? undefined : this.filter.pinned
+        isPinned: this.filter.pinned === null ? undefined : this.filter.pinned,
+        audience: this.filter.audience || undefined
       })
       if (res) {
         this.dataList = res.data
@@ -197,7 +220,7 @@ export default {
     },
 
     onClear() {
-      this.filter = { keyword: null, status: null, pinned: null }
+      this.filter = { keyword: null, status: null, pinned: null, audience: null }
       this.resetPaging()
     },
 
@@ -287,6 +310,13 @@ export default {
   &.status-expired {
     background: var(--status-cancelled-bg);
     color: var(--status-cancelled);
+  }
+
+  &.status-dev {
+    margin-left: var(--sp-xs);
+    background: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--base-sub-color);
   }
 }
 </style>
