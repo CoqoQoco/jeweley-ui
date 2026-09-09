@@ -2,7 +2,10 @@ import { describe, it, expect } from 'vitest'
 import {
   splitRuns,
   isTotalLine,
+  parseQrMarkerLine,
+  buildLineEntries,
   computeRunPositions,
+  computeLinesContentHeight,
   computeCanvasHeight,
   applyOneBitThreshold
 } from './receipt-image-preview.js'
@@ -71,6 +74,49 @@ describe('isTotalLine', () => {
 
   it('คำที่ขึ้นต้นคล้ายกันแต่ไม่ใช่ TOTAL → false', () => {
     expect(isTotalLine('Not-A-Total-Line')).toBe(false)
+  })
+})
+
+describe('parseQrMarkerLine', () => {
+  it('บรรทัดสัญญาณ [[QR:<url>]] → คืน url', () => {
+    expect(parseQrMarkerLine('[[QR:https://www.dkbangkok.com]]')).toBe('https://www.dkbangkok.com')
+  })
+
+  it('มี whitespace ท้ายบรรทัด (trimEnd) ก็ยังตรวจจับได้', () => {
+    expect(parseQrMarkerLine('[[QR:https://www.dkbangkok.com]]  ')).toBe('https://www.dkbangkok.com')
+  })
+
+  it('บรรทัดข้อความปกติ → คืน null', () => {
+    expect(parseQrMarkerLine('Web        www.dkbangkok.com')).toBeNull()
+  })
+
+  it('บรรทัดว่าง → คืน null', () => {
+    expect(parseQrMarkerLine('')).toBeNull()
+  })
+
+  it('[[QR:]] (url ว่าง) → คืน string ว่าง ไม่ใช่ null — ต้องตรงกับ C# ที่เช็ค prefix/suffix เฉยๆ ไม่บังคับมีตัวอักษร', () => {
+    expect(parseQrMarkerLine('[[QR:]]')).toBe('')
+  })
+
+  it('[[QR:   ]] (เว้นวรรคล้วน) → คืน string เว้นวรรค ไม่ใช่ null', () => {
+    expect(parseQrMarkerLine('[[QR:   ]]')).toBe('   ')
+  })
+})
+
+describe('buildLineEntries', () => {
+  it('[[QR:]] (url ว่าง) → entry เป็น qr-skip ทันที ไม่เรียกสร้าง QR', async () => {
+    const entries = await buildLineEntries(['[[QR:]]'])
+    expect(entries).toEqual([{ type: 'qr-skip' }])
+  })
+
+  it('[[QR:   ]] (เว้นวรรคล้วน) → entry เป็น qr-skip เหมือนกัน (ตรงกับ C# IsNullOrWhiteSpace)', async () => {
+    const entries = await buildLineEntries(['[[QR:   ]]'])
+    expect(entries).toEqual([{ type: 'qr-skip' }])
+  })
+
+  it('บรรทัดข้อความปกติ → entry เป็น text', async () => {
+    const entries = await buildLineEntries(['Hello World'])
+    expect(entries).toEqual([{ type: 'text', text: 'Hello World' }])
   })
 })
 
@@ -152,25 +198,51 @@ describe('applyOneBitThreshold', () => {
   })
 })
 
+describe('computeLinesContentHeight', () => {
+  it('บรรทัดข้อความล้วน: รวม lineHeight ต่อบรรทัด', () => {
+    const entries = [{ type: 'text', text: 'a' }, { type: 'text', text: 'b' }, { type: 'text', text: 'c' }]
+    expect(computeLinesContentHeight(entries, 20)).toBe(60)
+  })
+
+  it('บรรทัด QR สำเร็จ: กินคงที่ 176 (160 + 8*2) ไม่ว่า lineHeight เท่าไหร่', () => {
+    const entries = [{ type: 'qr', image: {} }]
+    expect(computeLinesContentHeight(entries, 20)).toBe(176)
+  })
+
+  it('บรรทัด QR ล้มเหลว (qr-skip): กินความสูง 0', () => {
+    const entries = [{ type: 'qr-skip' }]
+    expect(computeLinesContentHeight(entries, 20)).toBe(0)
+  })
+
+  it('ผสมกันทั้งสามชนิด: รวมตามชนิดของแต่ละ entry', () => {
+    const entries = [
+      { type: 'text', text: 'a' },
+      { type: 'qr', image: {} },
+      { type: 'qr-skip' },
+      { type: 'text', text: 'b' }
+    ]
+    expect(computeLinesContentHeight(entries, 20)).toBe(20 + 176 + 0 + 20)
+  })
+})
+
 describe('computeCanvasHeight', () => {
-  it('ไม่มีโลโก้ (textTop=0): height = ceil(lines*lineHeight) + bottomMargin', () => {
-    const height = computeCanvasHeight(10, 20, 0, 60)
+  it('ไม่มีโลโก้ (textTop=0): height = ceil(linesContentHeight) + bottomMargin', () => {
+    const height = computeCanvasHeight(200, 0, 60)
     expect(height).toBe(0 + 200 + 60)
   })
 
   it('มีโลโก้ (textTop>0): บวก textTop เข้าไปด้วย', () => {
-    const height = computeCanvasHeight(10, 20, 130, 60)
+    const height = computeCanvasHeight(200, 130, 60)
     expect(height).toBe(130 + 200 + 60)
   })
 
-  it('ปัดเศษขึ้นเสมอเมื่อ lines*lineHeight ไม่ลงตัว', () => {
-    const height = computeCanvasHeight(3, 20.5, 0, 60)
-    // 3 * 20.5 = 61.5 → ceil = 62
+  it('ปัดเศษขึ้นเสมอเมื่อ linesContentHeight ไม่ลงตัว', () => {
+    const height = computeCanvasHeight(61.5, 0, 60)
     expect(height).toBe(62 + 60)
   })
 
   it('ใช้ bottomMarginDots default เมื่อไม่ส่งมา', () => {
-    const height = computeCanvasHeight(5, 10)
+    const height = computeCanvasHeight(50)
     expect(height).toBe(0 + 50 + 60)
   })
 })

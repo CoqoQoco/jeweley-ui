@@ -66,7 +66,7 @@
             </div>
           </div>
 
-          <pre v-else class="receipt-preview-text">{{ receiptText }}</pre>
+          <pre v-else class="receipt-preview-text">{{ receiptTextFallback }}</pre>
         </div>
       </template>
       <template #action>
@@ -84,7 +84,7 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
-import { buildReceiptText } from '@/services/helper/pdf/receipt/receipt-text-builder.js'
+import { buildReceiptText, stripQrMarkers } from '@/services/helper/pdf/receipt/receipt-text-builder.js'
 import { buildReceiptFromInvoice } from '@/services/helper/receipt/build-receipt-from-invoice.js'
 import { renderReceiptCanvas, RECEIPT_WIDTH_MM } from '@/services/helper/receipt/receipt-image-preview.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
@@ -157,6 +157,12 @@ export default {
     receiptText() {
       if (!this.effectiveReceiptData) return ''
       return buildReceiptText(this.effectiveReceiptData)
+    },
+
+    // fallback <pre> เป็นข้อความล้วนให้คนอ่าน — ต้องลบบรรทัดสัญญาณ [[QR:...]] ออกก่อนเสมอ (receiptText ต้นทาง
+    // ต้องคงบรรทัดสัญญาณไว้เพราะส่งเข้าคิวพิมพ์จริงด้วย ห้ามแก้ที่ต้นทาง)
+    receiptTextFallback() {
+      return stripQrMarkers(this.receiptText)
     },
 
     // ผูก CSS var จาก RECEIPT_WIDTH_MM (73.152mm) ให้ preview กว้าง "เท่าตัวจริง" — ห้าม hardcode ค่า mm ซ้ำ

@@ -146,13 +146,11 @@ export const pos = {
   donePaid: 'ยอดที่รับแล้ว',
   doneRemaining: 'ยอดค้างชำระ',
   shareReceiptBtn: 'แชร์ใบเสร็จ',
-  printReceiptBtn: 'พิมพ์ใบเสร็จ',
   printA4InvoiceBtn: 'ใบกำกับสินค้า A4',
   printA4InvoiceErrorMsg: 'ดึงข้อมูลใบกำกับสินค้าไม่สำเร็จ',
   sellMoreBtn: 'ขายต่อ',
   viewAllBillsBtn: 'ดูบิลทั้งหมด',
   shareUnavailableMsg: 'อุปกรณ์นี้แชร์ไฟล์โดยตรงไม่ได้ ระบบดาวน์โหลดไฟล์ใบเสร็จให้แทน',
-  printUnavailableMsg: 'พิมพ์ใบเสร็จไม่สำเร็จ กรุณาตรวจสอบว่าติดตั้งแอป RawBT แล้ว หรือใช้ปุ่มแชร์ใบเสร็จแทน',
 
   // print queue — ส่งใบเสร็จเข้าคิวพิมพ์ที่บูธ (สำหรับ iOS ที่สั่งเครื่องพิมพ์ Bluetooth จากหน้าเว็บไม่ได้)
   viewReceiptBtn: 'ดูใบเสร็จ',
@@ -714,7 +712,13 @@ export const receipt = {
   paidBy: 'ชำระโดย',
   paid: 'รับเงิน',
   remaining: 'คงเหลือ',
-  thankYou: 'ขอบคุณครับ'
+  thankYou: 'ขอบคุณครับ',
+  scanToShopFollow: 'สแกนเพื่อช้อปและติดตามเรา',
+  channelWeb: 'Web',
+  channelLine: 'LINE',
+  channelFacebook: 'Facebook',
+  channelInstagram: 'Instagram',
+  channelTiktok: 'TikTok'
 }
 
 // posHelp — คู่มือใช้งาน POS ในแอป (เนื้อหา static ล้วน อ่านได้แม้เน็ตหลุด)

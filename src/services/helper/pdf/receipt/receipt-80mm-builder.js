@@ -1,7 +1,9 @@
 import dayjs from 'dayjs'
+import QRCode from 'qrcode'
 
 import { initPdfMake } from '@/services/utils/pdf-make.js'
 import { i18n } from '@/plugins/i18n/config.js'
+import { COMPANY_INFO, COMPANY_SOCIAL, socialUrl } from '@/config/company-info.js'
 
 // 80mm thermal paper in pt (1mm = 2.83465pt)
 const PAGE_WIDTH = 226.77
@@ -10,7 +12,7 @@ const CONTENT_WIDTH = PAGE_WIDTH - PAGE_MARGINS[0] - PAGE_MARGINS[2]
 const RECEIPT_FONT = 'THSarabunNew'
 
 // pageSize.height:'auto' ทำให้ pdfmake ตั้งความสูงหน้าเป็น Infinity ภายใน (ดูคอมเมนต์ fixPageSize
-// ใน node_modules/pdfmake) — เครื่องพิมพ์ความร้อนบางรุ่น (เช่น HPRT HM-A300E ผ่าน RawBT) เดินกระดาษ
+// ใน node_modules/pdfmake) — เครื่องพิมพ์ความร้อนบางรุ่น (เช่น HPRT HM-A300E) เดินกระดาษ
 // ตามความสูงหน้าที่ MediaBox รายงานจริง ไม่ใช่ตามเนื้อหา จึงต้องคำนวณความสูงจากเนื้อหาเองเป็นตัวเลข
 // LINE_HEIGHT_FACTOR วัดจริงด้วย harness (pdfmake + font THSarabunNew.ttf จริง) ได้ค่าคงที่ ~1.301
 // ทุก fontSize ที่ใช้ในใบเสร็จนี้ (7/8/9/10/12/15, ทั้ง regular และ bold ให้ค่าเท่ากัน)
@@ -22,6 +24,11 @@ const DESC_CHARS_PER_LINE = 28
 const DIVIDER_HEIGHT = 8
 // เผื่อเกิน เพื่อกันพลาดจากการปัดเศษ/ความคลาดเคลื่อนของการประมาณความยาวบรรทัดที่ตัดคำ
 const SAFETY_BUFFER = 10
+
+// QR ท้ายใบเสร็จ — ทาง PDF วาดอิสระด้วย pdfmake ไม่ต้องใช้บรรทัดสัญญาณเหมือนทางภาพ/CPCL
+const FOOTER_QR_WIDTH = 90 // pt ≈ 32mm บนกระดาษ 80mm — QR ที่สร้างเป็นภาพสี่เหลี่ยมจัตุรัส สูง≈กว้าง
+const FOOTER_QR_MARGIN_TOP = 6
+const FOOTER_QR_MARGIN_BOTTOM = 2
 
 function lineHeight(fontSize) {
   return fontSize * LINE_HEIGHT_FACTOR
@@ -46,6 +53,15 @@ function formatMoney(value) {
 function formatDateTime(date) {
   const parsed = date ? dayjs(date) : dayjs()
   return parsed.isValid() ? parsed.format('DD/MM/YYYY HH:mm') : dayjs().format('DD/MM/YYYY HH:mm')
+}
+
+// สร้าง QR เป็น dataURL — คืน null เมื่อสร้างไม่สำเร็จ (ไม่ throw ให้ footer วาดต่อโดยไม่มี QR)
+async function buildQrDataUrl(url) {
+  try {
+    return await QRCode.toDataURL(url, { errorCorrectionLevel: 'M', width: 300, margin: 1 })
+  } catch {
+    return null
+  }
 }
 
 function divider() {
@@ -95,6 +111,9 @@ export class Receipt80mmBuilder {
     this.currencyUnit = this.data.currencyUnit || 'THB'
     this.currencyRate = toNumber(this.data.currencyRate) || 1
 
+    // fallback ไปค่า default จาก config เสมอ — ใบเสร็จมี footer ช่องทางติดต่อไม่ว่า caller จะส่ง company มาหรือไม่
+    this.company = this.normalizeCompany(this.data.company)
+
     this.specialDiscount = toNumber(this.data.specialDiscount)
     this.specialAddition = toNumber(this.data.specialAddition)
     this.freightAndInsurance = toNumber(this.data.freightAndInsurance)
@@ -122,6 +141,21 @@ export class Receipt80mmBuilder {
 
   isProvided(value) {
     return value !== undefined && value !== null && value !== ''
+  }
+
+  // shape: { website, social: { facebook, instagram, tiktok, lineOa } } — field ไหนไม่ส่งมา fallback ไป config เสมอ
+  normalizeCompany(company) {
+    const source = company && typeof company === 'object' ? company : {}
+    const social = source.social && typeof source.social === 'object' ? source.social : {}
+    return {
+      website: source.website || COMPANY_INFO.website,
+      social: {
+        facebook: social.facebook || COMPANY_SOCIAL.facebook,
+        instagram: social.instagram || COMPANY_SOCIAL.instagram,
+        tiktok: social.tiktok || COMPANY_SOCIAL.tiktok,
+        lineOa: social.lineOa || COMPANY_SOCIAL.lineOa
+      }
+    }
   }
 
   calculateSubtotal() {
@@ -246,8 +280,61 @@ export class Receipt80mmBuilder {
     return rows
   }
 
-  getFooterContent() {
-    return { text: t('thankYou'), fontSize: 10, bold: true, alignment: 'center', margin: [0, 6, 0, 0] }
+  // ช่องทางติดต่อที่มีค่า (ไม่ว่าง) เท่านั้น — ใช้ร่วมกันทั้ง estimateFooterHeight() และ getFooterContent()
+  // เพื่อให้จำนวนแถวที่ประมาณความสูงกับที่วาดจริงตรงกันเสมอ
+  getFooterChannelEntries() {
+    const { website, social } = this.company
+    const entries = [
+      [t('channelWeb'), website],
+      [t('channelLine'), social.lineOa],
+      [t('channelFacebook'), social.facebook],
+      [t('channelInstagram'), social.instagram],
+      [t('channelTiktok'), social.tiktok]
+    ]
+    return entries.filter(([, value]) => !!value)
+  }
+
+  // เตรียม QR (async) + รายการช่องทางไว้ล่วงหน้าครั้งเดียว — ใช้ทั้งคำนวณความสูงหน้า (estimateReceiptHeight)
+  // และวาดเนื้อหาจริง (getFooterContent) ให้ผลตรงกันเป๊ะ ไม่ว่า QR จะสร้างสำเร็จหรือไม่
+  async prepareFooterPlan() {
+    const qrUrl = socialUrl('website', this.company.website)
+    const qrDataUrl = qrUrl ? await buildQrDataUrl(qrUrl) : null
+    return { qrDataUrl, channelEntries: this.getFooterChannelEntries() }
+  }
+
+  getFooterContent(footerPlan) {
+    const blocks = [
+      { text: t('thankYou'), fontSize: 10, bold: true, alignment: 'center', margin: [0, 6, 0, 0] }
+    ]
+
+    if (footerPlan.qrDataUrl) {
+      blocks.push({
+        image: footerPlan.qrDataUrl,
+        width: FOOTER_QR_WIDTH,
+        alignment: 'center',
+        margin: [0, FOOTER_QR_MARGIN_TOP, 0, FOOTER_QR_MARGIN_BOTTOM]
+      })
+      blocks.push({
+        text: t('scanToShopFollow'),
+        fontSize: 8,
+        alignment: 'center',
+        color: '#666666',
+        margin: [0, 0, 0, 4]
+      })
+    }
+
+    footerPlan.channelEntries.forEach(([label, value]) => {
+      blocks.push({
+        columns: [
+          { text: label, fontSize: 7, bold: true, width: 60, color: '#666666' },
+          { text: value, fontSize: 7, width: '*', color: '#666666' }
+        ],
+        columnGap: 4,
+        margin: [0, 0, 0, 1]
+      })
+    })
+
+    return blocks
   }
 
   // ประเมินความสูงหน้าเป็นตัวเลข (pt) จากเนื้อหาจริงที่จะ render — สูตรอิงตาม margin/fontSize
@@ -298,11 +385,22 @@ export class Receipt80mmBuilder {
     return height
   }
 
-  estimateFooterHeight() {
-    return 6 + lineHeight(10) // margin top 6
+  // footerPlan มาจาก prepareFooterPlan() — ต้องเป็นอันเดียวกับที่ getFooterContent() ใช้วาดจริงเสมอ
+  // ไม่งั้นความสูงหน้ากับเนื้อหาจริงจะไม่ตรงกัน (เครื่องพิมพ์เดินกระดาษตาม MediaBox ไม่ใช่ตามเนื้อหา)
+  estimateFooterHeight(footerPlan) {
+    let height = 6 + lineHeight(10) // thankYou text, margin top 6
+
+    if (footerPlan.qrDataUrl) {
+      height += FOOTER_QR_MARGIN_TOP + FOOTER_QR_WIDTH + FOOTER_QR_MARGIN_BOTTOM // QR ภาพสี่เหลี่ยมจัตุรัส สูง≈กว้าง
+      height += lineHeight(8) + 4 // "Scan to shop & follow" caption, margin bottom 4
+    }
+
+    height += footerPlan.channelEntries.length * (lineHeight(7) + 1) // แถวช่องทาง margin bottom 1
+
+    return height
   }
 
-  estimateReceiptHeight() {
+  estimateReceiptHeight(footerPlan) {
     const height =
       PAGE_MARGINS[1] +
       PAGE_MARGINS[3] +
@@ -314,15 +412,17 @@ export class Receipt80mmBuilder {
       DIVIDER_HEIGHT +
       this.estimatePaymentHeight() +
       DIVIDER_HEIGHT +
-      this.estimateFooterHeight() +
+      this.estimateFooterHeight(footerPlan) +
       SAFETY_BUFFER
 
     return Math.ceil(height)
   }
 
-  getDocDefinition() {
+  async getDocDefinition() {
+    const footerPlan = await this.prepareFooterPlan()
+
     return {
-      pageSize: { width: PAGE_WIDTH, height: this.estimateReceiptHeight() },
+      pageSize: { width: PAGE_WIDTH, height: this.estimateReceiptHeight(footerPlan) },
       pageMargins: PAGE_MARGINS,
       content: [
         this.getHeaderContent(),
@@ -333,7 +433,7 @@ export class Receipt80mmBuilder {
         divider(),
         ...this.getPaymentContent(),
         divider(),
-        this.getFooterContent()
+        ...this.getFooterContent(footerPlan)
       ],
       defaultStyle: {
         font: RECEIPT_FONT,
@@ -343,20 +443,20 @@ export class Receipt80mmBuilder {
   }
 }
 
-export function buildReceiptDocDefinition(data) {
+export async function buildReceiptDocDefinition(data) {
   return new Receipt80mmBuilder(data).getDocDefinition()
 }
 
-export function generateReceiptBlob(data) {
+export async function generateReceiptBlob(data) {
   const pdfMake = initPdfMake()
-  const docDefinition = buildReceiptDocDefinition(data)
+  const docDefinition = await buildReceiptDocDefinition(data)
   return new Promise((resolve) => {
     pdfMake.createPdf(docDefinition).getBlob((blob) => resolve(blob))
   })
 }
 
-export function openReceipt(data) {
+export async function openReceipt(data) {
   const pdfMake = initPdfMake()
-  const docDefinition = buildReceiptDocDefinition(data)
+  const docDefinition = await buildReceiptDocDefinition(data)
   pdfMake.createPdf(docDefinition).open()
 }

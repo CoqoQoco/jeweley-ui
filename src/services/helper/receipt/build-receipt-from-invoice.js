@@ -1,5 +1,6 @@
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
+import { loadCompanyInfo } from '@/config/company-info.js'
 
 // สร้าง receiptData shape เดียวกับ computed.receiptData ใน pos-done-view.vue จากเลข invoice ที่ออกไปแล้ว
 // ใช้พิมพ์ซ้ำ/ดูใบเสร็จย้อนหลังจากหน้ารายการบิล (ไม่ต้องขายใหม่)
@@ -71,6 +72,9 @@ export async function buildReceiptFromInvoice(invoiceNumber) {
     amount: p.amount
   }))
 
+  // ให้พิมพ์ซ้ำบิลเก่าได้ footer ช่องทางติดต่อเหมือนบิลใหม่
+  const companyInfo = await loadCompanyInfo()
+
   return {
     invoiceNumber: invoiceResponse.invoiceNumber,
     soNumber: invoiceResponse.soNumber,
@@ -87,7 +91,8 @@ export async function buildReceiptFromInvoice(invoiceNumber) {
     freightAndInsurance: invoiceResponse.freightAndInsurance,
     vatPercent: invoiceResponse.vat,
     // ยอดจริงถูกปัดขึ้นด้วย CeilMoney ที่ backend แล้ว — ห้ามคำนวณเองฝั่ง client
-    grandTotal: invoiceResponse.grandTotalRounded ?? invoiceResponse.grandTotalRaw
+    grandTotal: invoiceResponse.grandTotalRounded ?? invoiceResponse.grandTotalRaw,
     // paidAmount / remainingAmount ไม่ส่ง — ปล่อยให้ buildReceiptText() คำนวณเอง
+    company: { website: companyInfo.info?.website, social: companyInfo.social }
   }
 }

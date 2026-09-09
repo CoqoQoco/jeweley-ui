@@ -42,13 +42,6 @@
           <ReceiptPrintAction :receipt-data="receiptData" />
           <ButtonGeneric
             variant="outline"
-            icon="bi-printer"
-            :label="$t('view.mobile.pos.printReceiptBtn')"
-            :block="true"
-            @click="onPrint"
-          />
-          <ButtonGeneric
-            variant="outline"
             icon="bi-file-earmark-text"
             :label="$t('view.mobile.pos.printA4InvoiceBtn')"
             :block="true"
@@ -78,10 +71,9 @@
 import dayjs from 'dayjs'
 import { generateReceiptBlob } from '@/services/helper/pdf/receipt/receipt-80mm-builder.js'
 import { canShareFiles, shareReceipt } from '@/services/helper/pdf/receipt/receipt-share.js'
-import { buildReceiptText } from '@/services/helper/pdf/receipt/receipt-text-builder.js'
-import { printReceiptText } from '@/services/helper/pdf/receipt/receipt-rawbt.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
 import { loadInvoiceContext, toInvoicePdfData } from '@/services/helper/invoice/build-invoice-pdf-data.js'
+import { loadCompanyInfo } from '@/config/company-info.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
@@ -122,8 +114,14 @@ export default {
 
   data() {
     return {
-      generatingA4Pdf: false
+      generatingA4Pdf: false,
+      companyInfo: null
     }
+  },
+
+  async mounted() {
+    // receiptData เป็น computed (sync) จึง await ในนั้นไม่ได้ — โหลดล่วงหน้าเก็บไว้ที่นี่แทน
+    this.companyInfo = await loadCompanyInfo()
   },
 
   computed: {
@@ -166,7 +164,11 @@ export default {
         vatPercent: r.vatPercent,
         grandTotal: r.grandTotal,
         paidAmount: r.paidAmount,
-        remainingAmount: r.remainingAmount
+        remainingAmount: r.remainingAmount,
+        // ไม่มีก็ปล่อย undefined ให้ ReceiptTextBuilder fallback ไปค่า default จาก config เอง
+        company: this.companyInfo
+          ? { website: this.companyInfo.info?.website, social: this.companyInfo.social }
+          : undefined
       }
     }
   },
@@ -179,16 +181,6 @@ export default {
       const outcome = await shareReceipt(blob, filename)
       if (!canShare && outcome?.method === 'download') {
         warning(this.$t('view.mobile.pos.shareUnavailableMsg'))
-      }
-    },
-
-    // ปุ่มพิมพ์ใช้เส้นทางข้อความล้วน (ไม่ใช่ PDF/ภาพ) เพราะเครื่องพิมพ์หน้างานพ่นกระดาษมั่วเมื่อเจอ raster —
-    // receiptData เดียวกับที่ onShare ใช้ (data shape เดียวกับ receipt-80mm-builder.js)
-    async onPrint() {
-      const text = buildReceiptText(this.receiptData)
-      const result = await printReceiptText(text)
-      if (!result.success) {
-        warning(this.$t('view.mobile.pos.printUnavailableMsg'))
       }
     },
 

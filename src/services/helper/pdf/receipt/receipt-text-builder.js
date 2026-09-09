@@ -1,7 +1,12 @@
 import dayjs from 'dayjs'
 
-// เครื่องพิมพ์ HPRT HM-A300E: โหมดข้อความทำงานปกติ แต่โหมดภาพ/กราฟิกพัง (พ่นกระดาษจนหมดม้วน)
-// ไฟล์นี้จึงสร้างใบเสร็จเป็น "ข้อความล้วนอังกฤษ" ส่งตรงไป RawBT ผ่าน receipt-rawbt.js — ไม่ผ่าน pdfmake/ภาพใดๆ ทั้งสิ้น
+import { COMPANY_INFO, COMPANY_SOCIAL, socialUrl } from '@/config/company-info.js'
+
+// ไฟล์นี้สร้างใบเสร็จเป็น "ข้อความล้วนอังกฤษ" (ASCII-only, ไม่ผ่าน pdfmake/ภาพ) แล้วส่งเข้าคิวงานพิมพ์ —
+// เครื่องกลางที่หน้า /print-station (views/print-station/index-view.vue) ดึงงานจากคิวแล้วส่งต่อให้
+// jewelry-print-bridge วาดทั้งใบเป็นภาพ CPCL เป็นเส้นทางหลัก (printImage) ส่วน stripQrMarkers() ด้านล่าง
+// มีไว้ให้เส้นทางที่ไม่ได้วาดภาพ (printRaw ที่ /print-station และ preview <pre> ใน receipt-print-action.vue)
+// ต้องเป็น ASCII ล้วนเสมอเพราะ toAsciiOnly() ที่ทางออกกรองอักขระนอก ASCII ทิ้ง — โหมดข้อความของเครื่องพิมพ์รับได้แค่นี้
 // กระดาษกว้าง 48 ตัวอักษร แต่ใช้ 47 โดยตั้งใจ
 // พิมพ์ครบ 48 ตัวเมื่อไหร่ เครื่องขึ้นบรรทัดใหม่ให้เอง แล้ว \n ของเราขึ้นซ้ำอีก = ได้บรรทัดว่างแถมทุกบรรทัด
 // (พิสูจน์ด้วยการพิมพ์จริง 2026-09-03: บล็อก 10 บรรทัดกว้าง 48 ยาวเป็น 2 เท่าของบล็อกกว้าง 46)
@@ -77,6 +82,11 @@ function summaryLine(label, value) {
   return clampLine(' '.repeat(indent) + padRight(label, labelCol) + padLeft(value, valueCol))
 }
 
+// แถวช่องทางติดต่อท้ายใบเสร็จ — ป้ายกว้าง 11 ตัวอักษรคงที่ เยื้องซ้าย 2 ช่อง เหมือนบรรทัด 'Customer : ' ที่หัวใบ
+function footerChannelLine(label, value) {
+  return clampLine('  ' + padRight(label, 11) + value)
+}
+
 // ตัวเงินได้ความกว้างที่ต้องการก่อนเสมอ — คอลัมน์รหัสสินค้าค่อยยืดหยุ่นรับส่วนที่เหลือ
 // กันยอดเงินยาว (หลักล้านขึ้นไป) ถูก clampLine() ตัดหางทิ้งเมื่อคอลัมน์รหัสสินค้าตายตัวดันบรรทัดล้น
 function itemDetailLine(stockNumber, unitPrice, qty, total) {
@@ -138,6 +148,19 @@ function isAsciiOnly(text) {
   return /^[\x20-\x7e]*$/.test(String(text || ''))
 }
 
+// ตรวจจับบรรทัดสัญญาณ QR — ต้องตรงกับตรรกะฝั่ง ReceiptImageBuilder.cs (print-bridge) เป๊ะ:
+// trim ท้ายแล้วขึ้นต้น [[QR: และลงท้าย ]]
+const QR_MARKER_LINE_PATTERN = /^\[\[QR:.*\]\]$/
+
+// ลบบรรทัดสัญญาณ [[QR:...]] ออกทั้งบรรทัด (รวม newline) — เรียกที่ทางออกที่ไม่ได้วาดภาพ (printRaw / <pre> fallback)
+// กันบรรทัดสัญญาณโผล่เป็นตัวหนังสือดิบๆ ให้ผู้ใช้เห็น
+export function stripQrMarkers(text) {
+  return String(text ?? '')
+    .split('\n')
+    .filter((line) => !QR_MARKER_LINE_PATTERN.test(line.trimEnd()))
+    .join('\n')
+}
+
 // ป้ายวิธีชำระเงินต่อแถว: ใช้โค้ดตัวเลข (p.payment) แม็ปเป็นอังกฤษก่อนเสมอ
 // fallback ไป paymentName เฉพาะเมื่อเป็น ASCII ล้วน แล้วสุดท้าย fallback 'Payment' — ห้ามปล่อยว่างเด็ดขาด
 function paymentLabel(p) {
@@ -157,6 +180,9 @@ export class ReceiptTextBuilder {
 
     this.currencyUnit = this.data.currencyUnit || 'THB'
     this.currencyRate = toNumber(this.data.currencyRate) || 1
+
+    // fallback ไปค่า default จาก config เสมอ — ใบเสร็จมี footer ช่องทางติดต่อไม่ว่า caller จะส่ง company มาหรือไม่
+    this.company = this.normalizeCompany(this.data.company)
 
     this.specialDiscount = toNumber(this.data.specialDiscount)
     this.specialAddition = toNumber(this.data.specialAddition)
@@ -185,6 +211,21 @@ export class ReceiptTextBuilder {
 
   isProvided(value) {
     return value !== undefined && value !== null && value !== ''
+  }
+
+  // shape: { website, social: { facebook, instagram, tiktok, lineOa } } — field ไหนไม่ส่งมา fallback ไป config เสมอ
+  normalizeCompany(company) {
+    const source = company && typeof company === 'object' ? company : {}
+    const social = source.social && typeof source.social === 'object' ? source.social : {}
+    return {
+      website: source.website || COMPANY_INFO.website,
+      social: {
+        facebook: social.facebook || COMPANY_SOCIAL.facebook,
+        instagram: social.instagram || COMPANY_SOCIAL.instagram,
+        tiktok: social.tiktok || COMPANY_SOCIAL.tiktok,
+        lineOa: social.lineOa || COMPANY_SOCIAL.lineOa
+      }
+    }
   }
 
   calculateSubtotal() {
@@ -288,8 +329,25 @@ export class ReceiptTextBuilder {
   }
 
   buildFooterLines() {
+    const { website, social } = this.company
+    const lines = [center('Thank you for taking the first step with us'), '']
+
+    // บรรทัดสัญญาณ QR ให้โหมดพิมพ์เป็นภาพ (receipt-image-preview.js / ReceiptImageBuilder.cs) วาด QR แทน —
+    // push ดิบ ห้ามผ่าน center()/clampLine() เพราะไม่ได้ถูกพิมพ์เป็นตัวอักษรจริง (ยาวเกิน 47 ได้)
+    const qrUrl = socialUrl('website', website)
+    if (qrUrl) lines.push(`[[QR:${qrUrl}]]`)
+
+    lines.push(center('Scan to shop & follow'))
+
+    if (website) lines.push(footerChannelLine('Web', website))
+    if (social.lineOa) lines.push(footerChannelLine('LINE', social.lineOa))
+    if (social.facebook) lines.push(footerChannelLine('Facebook', social.facebook))
+    if (social.instagram) lines.push(footerChannelLine('Instagram', social.instagram))
+    if (social.tiktok) lines.push(footerChannelLine('TikTok', social.tiktok))
+
     // เว้น 4 บรรทัดท้ายให้ฉีกกระดาษได้พอดี
-    return [center('Thank you for taking the first step with us'), '', '', '', '']
+    lines.push('', '', '', '')
+    return lines
   }
 
   build() {

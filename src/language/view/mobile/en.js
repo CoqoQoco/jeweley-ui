@@ -146,13 +146,11 @@ export const pos = {
   donePaid: 'Paid',
   doneRemaining: 'Outstanding',
   shareReceiptBtn: 'Share Receipt',
-  printReceiptBtn: 'Print Receipt',
   printA4InvoiceBtn: 'Tax Invoice (A4)',
   printA4InvoiceErrorMsg: 'Failed to load tax invoice data',
   sellMoreBtn: 'Sell More',
   viewAllBillsBtn: 'View All Bills',
   shareUnavailableMsg: 'This device cannot share files directly — the receipt will be downloaded instead',
-  printUnavailableMsg: 'Could not print the receipt. Please make sure RawBT is installed, or use the Share Receipt button instead',
 
   // print queue — send receipt to the booth printer queue (for iOS which cannot use Web Bluetooth)
   viewReceiptBtn: 'View Receipt',
@@ -714,7 +712,13 @@ export const receipt = {
   paidBy: 'Paid By',
   paid: 'Paid',
   remaining: 'Remaining',
-  thankYou: 'Thank you'
+  thankYou: 'Thank you',
+  scanToShopFollow: 'Scan to shop & follow',
+  channelWeb: 'Web',
+  channelLine: 'LINE',
+  channelFacebook: 'Facebook',
+  channelInstagram: 'Instagram',
+  channelTiktok: 'TikTok'
 }
 
 // posHelp — in-app POS user guide (fully static content, works offline)
