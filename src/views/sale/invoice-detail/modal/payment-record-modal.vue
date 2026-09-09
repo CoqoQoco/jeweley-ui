@@ -196,6 +196,7 @@ import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { useMasterBankStore } from '@/stores/modules/api/master/master-bank-store.js'
+import { compressImage } from '@/services/utils/image-compress.js'
 import dayjs from 'dayjs'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
@@ -332,69 +333,12 @@ export default {
       if (!file) return
 
       try {
-        const compressedFile = await this.compressImage(file)
+        const compressedFile = await compressImage(file)
         this.compressedImage = compressedFile
         this.paymentData.receiptImage = file.name
       } catch (err) {
         warning(this.$t('view.sale.invoiceDetail.validation.compressError'))
       }
-    },
-
-    async compressImage(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.readAsDataURL(file)
-        reader.onload = (event) => {
-          const img = new Image()
-          img.src = event.target.result
-
-          img.onload = () => {
-            const canvas = document.createElement('canvas')
-            const ctx = canvas.getContext('2d')
-
-            // Set max width/height for compression
-            const maxWidth = 1200
-            const maxHeight = 1200
-            let width = img.width
-            let height = img.height
-
-            // Calculate new dimensions
-            if (width > height) {
-              if (width > maxWidth) {
-                height *= maxWidth / width
-                width = maxWidth
-              }
-            } else {
-              if (height > maxHeight) {
-                width *= maxHeight / height
-                height = maxHeight
-              }
-            }
-
-            canvas.width = width
-            canvas.height = height
-
-            // Draw image on canvas
-            ctx.drawImage(img, 0, 0, width, height)
-
-            // Convert canvas to blob with compression
-            canvas.toBlob(
-              (blob) => {
-                const compressedFile = new File([blob], file.name, {
-                  type: 'image/jpeg',
-                  lastModified: Date.now()
-                })
-                resolve(compressedFile)
-              },
-              'image/jpeg',
-              0.7 // Compression quality (0-1)
-            )
-          }
-
-          img.onerror = reject
-        }
-        reader.onerror = reject
-      })
     },
 
     onBankChange(value) {

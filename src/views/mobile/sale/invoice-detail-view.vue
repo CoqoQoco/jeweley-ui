@@ -145,6 +145,12 @@
             <span class="info-label">{{ $t('view.mobile.sale.invoiceOutstandingLabel') }}</span>
             <span class="info-value">{{ formatCurrency(outstandingAmountDisplay) }} {{ displayCurrency }}</span>
           </div>
+          <div v-if="showRecordPaymentBtn" class="record-payment-action">
+            <button class="mobile-btn mobile-btn-primary" @click="showPaymentSheet = true">
+              <i class="bi bi-cash-coin"></i>
+              {{ $t('view.mobile.sale.invoiceRecordPaymentBtn') }}
+            </button>
+          </div>
           <div v-if="hasPayments" class="payment-records">
             <div class="payment-records-title">{{ $t('view.mobile.sale.invoicePaymentRecordsTitle') }}</div>
             <div
@@ -155,6 +161,14 @@
               <span class="payment-record-date">{{ formatDate(payment.paymentDate) }}</span>
               <span class="payment-record-method">{{ payment.paymentMethod || '-' }}</span>
               <span class="payment-record-amount">{{ formatCurrency(payment.amount) }}</span>
+              <button
+                type="button"
+                class="btn-remove-payment"
+                :title="$t('view.mobile.sale.invoiceDeletePaymentBtn')"
+                @click="confirmDeletePayment(payment)"
+              >
+                <i class="bi bi-trash"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -242,6 +256,16 @@
           {{ $t('view.mobile.sale.invoiceBackBtn') }}
         </button>
       </div>
+
+      <!-- Payment Record Sheet -->
+      <PaymentRecordSheet
+        :visible="showPaymentSheet"
+        :invoice-number="invoiceData.invoiceNumber"
+        :outstanding-amount="outstandingAmountDisplay"
+        :currency-unit="displayCurrency"
+        @close="showPaymentSheet = false"
+        @save-payment="handleSavePayment"
+      />
     </div>
 
     <!-- Error State -->
@@ -270,6 +294,7 @@ import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { getPaymentStatus } from '@/services/utils/payment-status.js'
 import dayjs from 'dayjs'
 import SoItemCard from './components/so-item-card.vue'
+import PaymentRecordSheet from './components/payment-record-sheet.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import ReceiptPrintAction from '@/components/receipt/receipt-print-action.vue'
@@ -279,6 +304,7 @@ export default {
 
   components: {
     SoItemCard,
+    PaymentRecordSheet,
     InputTextGeneric,
     CheckboxGeneric,
     ReceiptPrintAction
@@ -303,7 +329,9 @@ export default {
       printShowSeller: true,
       exportingPDF: false,
       // Cancel
-      cancelling: false
+      cancelling: false,
+      // Payment
+      showPaymentSheet: false
     }
   },
 
@@ -408,6 +436,12 @@ export default {
         unpaid: 'mobile-badge-danger'
       }
       return map[this.paymentStatus] || 'mobile-badge-secondary'
+    },
+
+    // แสดงปุ่มบันทึกรับเงินเมื่อยังจ่ายไม่ครบเท่านั้น — ใช้ paymentStatus (คิดจากยอดเงินจริง)
+    // ห้ามใช้ invoiceData.paymantName ตัดสิน เพราะเป็นวิธีชำระตอนออกบิล ไม่ใช่สถานะจ่ายแล้ว
+    showRecordPaymentBtn() {
+      return this.paymentStatus !== 'paid'
     }
   },
 
@@ -530,6 +564,74 @@ export default {
         },
         { confirmText: this.$t('view.mobile.sale.invoiceCancelConfirmBtn') }
       )
+    },
+
+    // ==================== Payment ====================
+    async handleSavePayment(paymentData) {
+      const formData = new FormData()
+      formData.append('InvoiceNumber', paymentData.invoiceNumber)
+      formData.append('PaymentDate', paymentData.paymentDate.toISOString())
+      formData.append('Amount', paymentData.amount)
+      formData.append('Payment', paymentData.payment)
+      formData.append('PaymentName', paymentData.paymentName)
+
+      if (paymentData.bankCode) {
+        formData.append('BankCode', paymentData.bankCode)
+      }
+
+      if (paymentData.bankBranch) {
+        formData.append('BankBranch', paymentData.bankBranch)
+      }
+
+      if (paymentData.referenceNumber) {
+        formData.append('ReferenceNumber', paymentData.referenceNumber)
+      }
+
+      if (paymentData.remark) {
+        formData.append('Remark', paymentData.remark)
+      }
+
+      if (paymentData.receiptImage) {
+        formData.append('ReceiptImage', paymentData.receiptImage)
+      }
+
+      const response = await this.invoiceStore.createPayment(formData)
+
+      if (response) {
+        success(this.$t('view.mobile.sale.invoicePaymentSuccessMsg'))
+        await this.loadInvoiceData()
+      }
+
+      this.showPaymentSheet = false
+    },
+
+    confirmDeletePayment(payment) {
+      confirmThenSubmit(
+        this.$t('view.mobile.sale.invoiceConfirmDeletePaymentMsg', {
+          amount: this.formatCurrency(payment.amount),
+          currency: this.displayCurrency,
+          date: this.formatDate(payment.paymentDate)
+        }),
+        this.$t('view.mobile.sale.invoiceConfirmDeletePaymentTitle'),
+        async () => {
+          await this.deletePayment(payment)
+        },
+        { confirmText: this.$t('view.mobile.sale.invoiceConfirmDeletePaymentBtn'), cancelText: this.$t('common.btn.cancel') },
+        'warning'
+      )
+    },
+
+    async deletePayment(payment) {
+      if (!payment || !payment.running) return
+
+      const response = await this.invoiceStore.deletePayment({
+        formValue: { paymentRunning: payment.running }
+      })
+
+      if (!response) return
+
+      success(this.$t('view.mobile.sale.invoiceDeletePaymentSuccessMsg'))
+      await this.loadInvoiceData()
     },
 
     // ==================== Helpers ====================
@@ -659,6 +761,19 @@ export default {
   line-height: 1.5;
 }
 
+// ==================== Record Payment Action ====================
+.record-payment-action {
+  margin-top: var(--sp-md);
+
+  .mobile-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+  }
+}
+
 // ==================== Payment Records ====================
 .payment-records {
   margin-top: var(--sp-md);
@@ -692,6 +807,21 @@ export default {
     font-weight: 600;
     color: var(--base-font-color);
     flex-shrink: 0;
+  }
+
+  .btn-remove-payment {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 1.1rem;
+    padding: 4px;
+    line-height: 1;
+    flex-shrink: 0;
+    cursor: pointer;
+
+    &:active {
+      color: var(--base-red);
+    }
   }
 }
 

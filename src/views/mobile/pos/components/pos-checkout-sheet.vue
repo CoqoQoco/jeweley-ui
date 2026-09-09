@@ -182,19 +182,11 @@
 import { useMasterBankStore } from '@/stores/modules/api/master/master-bank-store.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { PAYMENT_METHODS } from '@/constants/payment-methods.js'
 
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
-
-// payment code ตาม contract ของ POST /Pos/Checkout — 1=เงินสด 2=โอน 3=เช็ค 4=บัตรเครดิต 5=เครดิต(กำหนดวัน)
-const PAYMENT_METHODS = [
-  { code: 1, key: 'cash', icon: 'bi-cash-stack', labelKey: 'paymentMethodCash' },
-  { code: 2, key: 'transfer', icon: 'bi-bank', labelKey: 'paymentMethodTransfer' },
-  { code: 3, key: 'cheque', icon: 'bi-journal-check', labelKey: 'paymentMethodCheque' },
-  { code: 4, key: 'creditCard', icon: 'bi-credit-card', labelKey: 'paymentMethodCreditCard' },
-  { code: 5, key: 'credit', icon: 'bi-calendar-week', labelKey: 'paymentMethodCredit' }
-]
 
 function emptyEntry() {
   return {
