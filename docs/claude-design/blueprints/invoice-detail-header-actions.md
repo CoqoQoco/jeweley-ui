@@ -51,7 +51,7 @@
 3. `พิมพ์ใบแจ้งหนี้` — **primary filled** (ใช้บ่อยสุด กดได้ทันที ไม่อยู่ในเมนู)
 4. `เอกสารอื่น ▾` — ghost + เมนู 3 รายการ
 5. `Excel ▾` — ghost + เมนู 2 รายการ
-6. `⋯` — ghost icon-only + เมนู 1 รายการ (danger)
+6. `⋯` — ghost icon-only + เมนู danger (ตอนนี้แยกเป็น group "การยกเลิก" 2 รายการ — ดู `docs/claude-design/blueprints/invoice-detail-cancel-menu.md` สำหรับ spec ล่าสุดของ popup นี้)
 
 ---
 

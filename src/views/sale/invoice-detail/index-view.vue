@@ -417,11 +417,27 @@ export default {
     moreMenuItems() {
       return [
         {
-          key: 'cancel',
-          icon: 'bi-arrow-counterclockwise',
-          label: this.$t('view.sale.invoiceDetail.cancelDocument'),
-          danger: true,
-          command: this.confirmReverseInvoice
+          key: 'cancel-group',
+          label: this.$t('view.sale.invoiceDetail.menuCancelGroup'),
+          items: [
+            { separator: true },
+            {
+              key: 'cancel-invoice',
+              icon: 'bi-x-circle',
+              danger: true,
+              label: this.$t('view.sale.invoiceDetail.cancelInvoiceOnly'),
+              hint: this.$t('view.sale.invoiceDetail.cancelInvoiceOnlyHint'),
+              command: this.confirmReverseInvoice
+            },
+            {
+              key: 'cancel-unconfirm',
+              icon: 'bi-x-octagon',
+              danger: true,
+              label: this.$t('view.sale.invoiceDetail.cancelInvoiceUnconfirm'),
+              hint: this.$t('view.sale.invoiceDetail.cancelInvoiceUnconfirmHint'),
+              command: this.confirmCancelAndUnconfirm
+            }
+          ]
         }
       ]
     },
@@ -1104,12 +1120,64 @@ export default {
 
       if (this.fromRoute === 'sale-order' && this.invoiceData.soNumber) {
         this.$router.push({
-          path: '/sale/sale-order',
+          path: '/sale-order',
           query: { soNumber: this.invoiceData.soNumber, mode: 'view' }
         })
       } else {
         this.$router.back()
       }
+    },
+    confirmCancelAndUnconfirm() {
+      const lines = [
+        this.$t('view.sale.invoiceDetail.confirm.cancelInvoiceUnconfirm', {
+          invoiceNumber: this.invoiceData.invoiceNumber,
+          soNumber: this.invoiceData.soNumber,
+          count: this.invoiceItems.length
+        })
+      ]
+
+      if (this.paidAmount > 0) {
+        lines.push(
+          this.$t('view.sale.invoiceDetail.confirm.cancelPaymentWarning', {
+            amount: this.formatNumber(this.paidAmount),
+            currency: this.invoiceData.currencyUnit
+          })
+        )
+      }
+
+      lines.push(this.$t('view.sale.invoiceDetail.confirm.cancelIrreversible'))
+
+      confirmThenSubmit(
+        lines.join('<br/>'),
+        this.$t('view.sale.invoiceDetail.confirm.cancelInvoiceUnconfirmTitle'),
+        async () => {
+          await this.cancelAndUnconfirmInvoice()
+        },
+        { confirmText: this.$t('common.btn.confirm'), cancelText: this.$t('common.btn.cancel') },
+        'warning'
+      )
+    },
+    async cancelAndUnconfirmInvoice() {
+      if (!this.invoiceData || !this.invoiceData.invoiceNumber) {
+        error(this.$t('view.sale.invoiceDetail.error.noInvoiceData'), this.$t('view.sale.invoiceDetail.error.cannotCancel'))
+        return
+      }
+
+      const res = await this.invoiceStore.fetchCancelAndUnconfirm({
+        invoiceNumber: this.invoiceData.invoiceNumber
+      })
+      if (!res) return
+
+      const count = res.unconfirmedItemCount ?? this.invoiceItems.length
+      success(
+        this.$t('view.sale.invoiceDetail.success.cancelInvoiceUnconfirm', { count }),
+        this.$t('view.sale.invoiceDetail.success.cancelInvoiceUnconfirmTitle')
+      )
+
+      this.$router.push({
+        path: '/sale-order',
+        query: { soNumber: res.soNumber || this.invoiceData.soNumber, mode: 'view' }
+      })
     },
     openVersionModal() {
       this.showVersionModal = true

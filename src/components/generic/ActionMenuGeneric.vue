@@ -12,15 +12,20 @@
   ตัวอย่างการใช้งาน (icon-only — ไม่ส่ง label ต้องส่ง :title เสมอเพื่อ tooltip):
   <ActionMenuGeneric icon="bi-three-dots" :title="$t('view.sale.invoiceDetail.menuMore')" :items="moreMenuItems" />
 
-  items: [{
-    key: 'delivery',              // unique, ใช้เป็น :key
-    label: 'ใบส่งสินค้า',
-    icon: 'bi-truck',
-    command: () => {...},         // เรียกเมื่อคลิก (ไม่เรียกถ้า disabled — PrimeVue Menu จัดการเอง)
-    disabled: false,
-    hint: 'ต้องชำระเงินครบก่อน',   // optional บรรทัดเล็กใต้ label
-    danger: false                 // true = label + icon สีแดง
-  }]
+  items รองรับ 3 แบบ ผสมกันใน array เดียวได้ (PrimeVue Menu v3 native):
+
+  1) item ปกติ:
+  { key: 'delivery', label: 'ใบส่งสินค้า', icon: 'bi-truck', command: () => {...}, disabled: false,
+    hint: 'ต้องชำระเงินครบก่อน', danger: false }
+    - command      เรียกเมื่อคลิก (ไม่เรียกถ้า disabled — PrimeVue Menu จัดการเอง)
+    - hint         optional บรรทัดเล็กใต้ label
+    - danger:true  label สีแดง + icon ขึ้น chip วงกลมพื้นแดงอ่อน (แทน icon เปล่า) + hover/focus พื้นแดงอ่อน
+
+  2) separator (เส้นคั่น — PrimeVue render เอง ไม่ต้องทำอะไรเพิ่ม):
+  { separator: true }
+
+  3) group (หัวข้อ section + รายการย่อย — render label ผ่าน slot #submenuheader):
+  { key: 'cancel-group', label: 'การยกเลิก', items: [ ...item ปกติ/danger... ] }
 
   Props:
     label    — trigger button label (ไม่ส่ง = icon-only)
@@ -41,9 +46,18 @@
     </ButtonGeneric>
 
     <PvMenu ref="menu" :model="items" :popup="true" appendTo="body">
+      <template #submenuheader="{ item }">
+        <span class="action-menu-group-label">{{ item.label }}</span>
+      </template>
       <template #item="{ item }">
-        <div class="action-menu-item" :class="{ 'action-menu-item--danger': item.danger }">
-          <i v-if="item.icon" :class="['bi', item.icon, 'action-menu-item__icon']"></i>
+        <div
+          class="action-menu-item"
+          :class="{ 'action-menu-item--danger': item.danger, 'action-menu-item--disabled': item.disabled }"
+        >
+          <span v-if="item.icon && item.danger" class="action-menu-item__icon-chip">
+            <i :class="['bi', item.icon]"></i>
+          </span>
+          <i v-else-if="item.icon" :class="['bi', item.icon, 'action-menu-item__icon']"></i>
           <span class="action-menu-item__body">
             <span class="action-menu-item__label">{{ item.label }}</span>
             <span v-if="item.hint" class="action-menu-item__hint">{{ item.hint }}</span>
@@ -123,13 +137,46 @@ export default {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
-  min-width: 220px;
+  min-width: 260px;
+  max-width: 340px;
   padding: var(--sp-xs) 0;
 }
 
 :deep(.p-menuitem.p-disabled) {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+:deep(.p-menu .p-submenu-header) {
+  font-size: var(--fs-sm);
+  color: var(--base-sub-color);
+  opacity: 0.6;
+  padding: var(--sp-sm) var(--sp-md) var(--sp-xs);
+  background: transparent;
+}
+
+:deep(.p-menu .p-menuitem-separator) {
+  border-top: 1px solid var(--color-border);
+  margin: var(--sp-xs) 0;
+}
+
+// keyboard focus (.p-focus ถูกใส่บน <li class="p-menuitem"> โดย PrimeVue — ต้องใช้ :deep เพราะเป็น element
+// ของ Menuitem.vue ไม่ใช่ template ของ component นี้) ให้ผลเดียวกับ :hover ด้านล่างของ .action-menu-item
+:deep(.p-menuitem.p-focus) .action-menu-item:not(.action-menu-item--disabled) {
+  background: var(--color-highlight-bg);
+}
+
+:deep(.p-menuitem.p-focus) .action-menu-item--danger:not(.action-menu-item--disabled) {
+  background: var(--status-cancelled-bg);
+
+  .action-menu-item__icon-chip {
+    background: var(--base-red);
+    color: var(--color-card-bg);
+  }
+}
+
+.action-menu-group-label {
+  display: block;
 }
 
 .action-menu-item {
@@ -140,12 +187,31 @@ export default {
   font-size: var(--fs-base);
   color: var(--base-sub-color);
   cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: var(--color-highlight-bg);
+  }
 
   &__icon {
     width: 1.25rem;
     flex-shrink: 0;
     text-align: center;
     color: var(--base-font-color);
+  }
+
+  &__icon-chip {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--status-cancelled-bg);
+    color: var(--base-red);
+    font-size: 0.95rem;
+    transition: background 0.15s ease, color 0.15s ease;
   }
 
   &__body {
@@ -166,9 +232,24 @@ export default {
   }
 
   &--danger {
-    .action-menu-item__icon,
     .action-menu-item__label {
       color: var(--base-red);
+      font-weight: 600;
+    }
+
+    &:hover {
+      background: var(--status-cancelled-bg);
+
+      .action-menu-item__icon-chip {
+        background: var(--base-red);
+        color: var(--color-card-bg);
+      }
+    }
+  }
+
+  &--disabled {
+    &:hover {
+      background: transparent;
     }
   }
 }

@@ -113,6 +113,20 @@ export const useInvoiceApiStore = defineStore('invoice', {
         throw error
       }
     },
+    async fetchCancelAndUnconfirm({ invoiceNumber }) {
+      try {
+        return await api.jewelry.post(
+          'Invoice/CancelAndUnconfirm',
+          { invoiceNumber },
+          {
+            skipLoading: false
+          }
+        )
+      } catch (error) {
+        console.error('Error cancelling invoice and unconfirming items:', error)
+        throw error
+      }
+    },
     async fetchGenerateNumber() {
       try {
         return await api.jewelry.get('Invoice/GenerateInvoiceNumber', {
