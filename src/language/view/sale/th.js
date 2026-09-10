@@ -24,6 +24,8 @@ export const invoiceDetail = {
   printDelivery: 'พิมพ์ใบส่งสินค้า',
   printGuarantee: 'ใบรับประกัน',
   guaranteeNeedPaid: 'ต้องชำระเงินครบก่อนออกใบรับประกันครับ',
+  printCertificate: 'ใบรับรองสินค้า',
+  certificateNeedPaid: 'ต้องชำระเงินครบก่อนออกใบรับรองสินค้าครับ',
   printSummary: 'ใบสรุปตามประเภท',
   printSummaryPdf: 'ใบสรุปตามประเภท (PDF)',
   menuOtherDocs: 'เอกสารอื่น',
@@ -1291,6 +1293,64 @@ export const guaranteeCard = {
   }
 }
 
+export const certificate = {
+  title: 'ใบรับรองสินค้า',
+  invoiceNumber: 'เลขที่ Invoice',
+  customer: 'ลูกค้า',
+  itemsCount: 'จำนวนใบรับรอง',
+  hint: '1 ใบรับรอง = 1 ชิ้นสินค้า พิมพ์แบบ A4 แนวนอน พับกลาง 1 ชิ้นต่อ 1 หน้า',
+  copiesPerItem: 'สำเนาที่ {index}/{total}',
+  signerTitle: 'ตำแหน่งผู้เซ็น',
+  printThisCertificate: 'พิมพ์ใบรับรองนี้',
+  groupItemInfo: 'ข้อมูลชิ้นงาน',
+  groupDiamond: 'เพชร',
+  groupGem: 'พลอย',
+  groupRemark: 'หมายเหตุ',
+  certificateNo: 'เลขที่ใบรับรอง',
+  itemNo: 'เลขที่ชิ้นงาน',
+  issueDate: 'วันที่ออกใบรับรอง',
+  description: 'รายละเอียดสินค้า',
+  model: 'แบบ (Model)',
+  metal: 'โลหะ (Metal)',
+  metalWeight: 'น้ำหนักโลหะ (Metal Weight)',
+  itemSize: 'ขนาด (Size)',
+  diamondPcs: 'จำนวนเม็ดเพชร (Pcs)',
+  diamondWeight: 'น้ำหนักเพชรรวม (Total Weight)',
+  diamondQuality: 'คุณภาพเพชร (Quality)',
+  gemVariety: 'ชนิดพลอย (Variety)',
+  gemSpecies: 'กลุ่มพลอย (Species)',
+  gemOrigin: 'แหล่งกำเนิด (Origin)',
+  gemWeight: 'น้ำหนักพลอย (Weight)',
+  gemMeasurement: 'ขนาดพลอย (Measurement)',
+  gemShape: 'รูปทรง (Shape)',
+  gemCut: 'การเจียระไน (Cut)',
+  gemColor: 'สี (Color)',
+  treatment: 'การปรับปรุงคุณภาพ (Treatment)',
+  comment: 'หมายเหตุเพิ่มเติม (Comment)',
+  previewBtn: 'ดูตัวอย่าง',
+  downloadBtnCount: 'ดาวน์โหลด PDF ({selected}/{total})',
+  cancelBtn: 'ยกเลิก',
+  historyTitle: 'ประวัติการออกใบรับรอง',
+  historyEmpty: 'ยังไม่เคยออกใบรับรองสำหรับ Invoice นี้',
+  historyRound: 'ครั้งที่ {round}',
+  historyItems: '{count} ชิ้น',
+  issuedCount: 'ออกแล้ว {count} ครั้ง',
+  lastIssued: 'ล่าสุด {date} โดย {by}',
+  neverIssued: 'ยังไม่เคยออก',
+  selectAll: 'เลือกทั้งหมด',
+  selectNone: 'ไม่เลือกเลย',
+  selectedCount: 'เลือกแล้ว {selected}/{total}',
+  validation: {
+    noItemSelected: 'กรุณาเลือกสินค้าอย่างน้อย 1 รายการสำหรับพิมพ์ใบรับรองครับ'
+  },
+  success: {
+    generated: 'สร้างใบรับรองสินค้า PDF สำเร็จครับ'
+  },
+  warn: {
+    logFailed: 'สร้าง PDF แล้ว แต่บันทึกประวัติการออกใบรับรองไม่สำเร็จครับ'
+  }
+}
+
 export const saleDashboard = {
   title: 'ภาพรวมระบบงานขาย',
   description: 'แสดงขั้นตอนการทำงานของระบบงานขายครบวงจร จากใบเสนอราคาถึงการชำระเงิน',
@@ -1870,6 +1930,7 @@ export default {
   stockReservation,
   deliveryNote,
   guaranteeCard,
+  certificate,
   paymentTracking,
   document,
   saleDashboard,

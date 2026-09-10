@@ -210,6 +210,17 @@
         @confirm-print="handleConfirmGuaranteePrint"
       />
 
+      <!-- Certificate Print Modal -->
+      <CertificatePrintModal
+        :isShowModal="showCertificateModal"
+        :invoiceData="invoiceData"
+        :invoiceItems="invoiceItems"
+        :historyVersion="certificateHistoryVersion"
+        @close-modal="showCertificateModal = false"
+        @preview-print="handlePreviewCertificate"
+        @confirm-print="handleConfirmCertificatePrint"
+      />
+
       <!-- Invoice Confirm Excel Modal -->
       <ExcelExportConfirmModal
         :isShowModal="showConfirmExcelModal"
@@ -240,6 +251,7 @@ import InvoicePdfPreviewModal from './modal/invoice-pdf-preview-modal.vue'
 import ContinuousPrintPreviewPanel from './modal/continuous-print-preview-panel.vue'
 import DeliveryConfirmPrintModal from './modal/delivery-confirm-print-modal.vue'
 import GuaranteeCardPrintModal from './modal/guarantee-card-print-modal.vue'
+import CertificatePrintModal from './modal/certificate-print-modal.vue'
 import ExcelExportConfirmModal from '@/components/modal/excel-export-confirm-modal.vue'
 import PaymentRecordModal from './modal/payment-record-modal.vue'
 import InvoiceInfoCard from './components/invoice-info-card.vue'
@@ -260,6 +272,7 @@ import { invoiceSummaryPdfService } from '@/services/helper/pdf/invoice-summary/
 import { invoiceExcelService } from '@/services/helper/excel/invoice/invoice-excel-integration.js'
 import { deliveryPdfService } from '@/services/helper/pdf/delivery/delivery-pdf-integration.js'
 import { guaranteeCardPdfService } from '@/services/helper/pdf/guarantee-card/guarantee-card-pdf-integration.js'
+import { certificatePdfService } from '@/services/helper/pdf/certificate/certificate-pdf-integration.js'
 import { SaleSummaryPdfBuilder } from '@/services/helper/pdf/sale-summary/sale-summary-pdf-builder.js'
 import { SaleSummaryExcelBuilder } from '@/services/helper/excel/sale-summary/sale-summary-excel-builder.js'
 import { buildProductTypeLabelMap } from '@/services/helper/sale-summary/sale-summary-data.js'
@@ -276,6 +289,7 @@ export default {
     ContinuousPrintPreviewPanel,
     DeliveryConfirmPrintModal,
     GuaranteeCardPrintModal,
+    CertificatePrintModal,
     ExcelExportConfirmModal,
     PaymentRecordModal,
     InvoiceInfoCard,
@@ -305,12 +319,15 @@ export default {
       showDeliveryPrintModal: false,
       showGuaranteeModal: false,
       guaranteeHistoryVersion: 0,
+      showCertificateModal: false,
+      certificateHistoryVersion: 0,
       showConfirmExcelModal: false,
       showPaymentModal: false,
       isShowPreviewModal: false,
       previewUrl: '',
       previewSource: 'invoice',
       lastGuaranteeCards: null,
+      lastCertificateData: null,
       isShowContinuousPreview: false,
       continuousPreviewModel: null,
       lastPreviewPrintData: null,
@@ -370,6 +387,15 @@ export default {
       )
     },
 
+    canPrintCertificate() {
+      return (
+        !!this.invoiceData &&
+        this.invoiceItems.length > 0 &&
+        this.remainingBalance <= 0 &&
+        this.invoiceData.statusName !== 'Cancelled'
+      )
+    },
+
     otherDocMenuItems() {
       return [
         {
@@ -385,6 +411,14 @@ export default {
           disabled: !this.canPrintGuarantee,
           hint: this.canPrintGuarantee ? '' : this.$t('view.sale.invoiceDetail.guaranteeNeedPaid'),
           command: this.printGuaranteeCard
+        },
+        {
+          key: 'certificate',
+          icon: 'bi-award',
+          label: this.$t('view.sale.invoiceDetail.printCertificate'),
+          disabled: !this.canPrintCertificate,
+          hint: this.canPrintCertificate ? '' : this.$t('view.sale.invoiceDetail.certificateNeedPaid'),
+          command: this.printCertificate
         },
         {
           key: 'summary-pdf',
@@ -945,6 +979,60 @@ export default {
         error(err.message, this.$t('view.sale.invoiceDetail.error.cannotCreatePDF'))
       }
     },
+    printCertificate() {
+      if (!this.canPrintCertificate) {
+        warning(this.$t('view.sale.invoiceDetail.certificateNeedPaid'), this.$t('common.label.incompleteData'))
+        return
+      }
+      this.showCertificateModal = true
+    },
+    async handlePreviewCertificate({ certificates, signerTitle }) {
+      try {
+        const res = await certificatePdfService.generateCertificatePDF(certificates, {
+          preview: true,
+          signerTitle,
+          invoiceNumber: this.invoiceData.invoiceNumber
+        })
+        this.lastCertificateData = { certificates, signerTitle }
+        this.previewSource = 'certificate'
+        this.previewUrl = res.previewUrl
+        this.isShowPreviewModal = true
+      } catch (err) {
+        error(err.message, this.$t('view.sale.invoiceDetail.error.cannotCreatePDF'))
+      }
+    },
+    async handleConfirmCertificatePrint({ certificates, signerTitle }) {
+      try {
+        await certificatePdfService.generateCertificatePDF(certificates, {
+          download: true,
+          signerTitle,
+          invoiceNumber: this.invoiceData.invoiceNumber
+        })
+
+        try {
+          await this.invoiceStore.createPrintLog({
+            invoiceNumber: this.invoiceData.invoiceNumber,
+            paperType: 'certificate',
+            data: JSON.stringify({
+              signerTitle,
+              count: certificates.length,
+              stockNumbers: certificates.map((c) => c.stockNumber),
+              certificates: certificates.map((c) => ({
+                stockNumber: c.stockNumber,
+                certificateNo: c.certificateNo
+              }))
+            })
+          })
+        } catch {
+          warning(this.$t('view.sale.certificate.warn.logFailed'), this.$t('view.sale.certificate.title'))
+        }
+        this.certificateHistoryVersion++
+
+        success(this.$t('view.sale.certificate.success.generated'), this.$t('view.sale.certificate.title'))
+      } catch (err) {
+        error(err.message, this.$t('view.sale.invoiceDetail.error.cannotCreatePDF'))
+      }
+    },
     async exportInvoiceExcel() {
       // Open confirm excel modal instead of direct export
       this.showConfirmExcelModal = true
@@ -1395,6 +1483,8 @@ export default {
     handlePreviewDownload() {
       if (this.previewSource === 'guarantee') {
         this.handleConfirmGuaranteePrint(this.lastGuaranteeCards)
+      } else if (this.previewSource === 'certificate') {
+        this.handleConfirmCertificatePrint(this.lastCertificateData)
       } else {
         this.handleConfirmPrint(this.lastPreviewPrintData)
       }

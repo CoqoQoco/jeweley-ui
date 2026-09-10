@@ -47,6 +47,7 @@ import { defineAsyncComponent } from 'vue'
 import QRCode from 'qrcode'
 
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
+import { buildPublicUrl } from '@/config/public-site-config.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
@@ -118,7 +119,7 @@ export default {
       const res = await this.productStore.fetchPublicLink(this.stockNumber)
       if (!res?.path) return
 
-      this.shareUrl = `${window.location.origin}${res.path}`
+      this.shareUrl = buildPublicUrl(res.path)
       this.qrDataUrl = await QRCode.toDataURL(this.shareUrl, { width: 240, margin: 1 })
     },
 

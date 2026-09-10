@@ -24,6 +24,8 @@ export const invoiceDetail = {
   printDelivery: 'Print Delivery Note',
   printGuarantee: 'Guarantee Card',
   guaranteeNeedPaid: 'Invoice must be fully paid before printing guarantee cards',
+  printCertificate: 'Certificate of Authenticity',
+  certificateNeedPaid: 'Invoice must be fully paid before printing certificates',
   printSummary: 'Summary by Type',
   printSummaryPdf: 'Summary by type (PDF)',
   menuOtherDocs: 'Other documents',
@@ -1297,6 +1299,64 @@ export const guaranteeCard = {
   }
 }
 
+export const certificate = {
+  title: 'Certificate of Authenticity',
+  invoiceNumber: 'Invoice No.',
+  customer: 'Customer',
+  itemsCount: 'Certificate Count',
+  hint: '1 certificate = 1 product item, printed as landscape A4, folded in half, 1 item per page',
+  copiesPerItem: 'Copy {index}/{total}',
+  signerTitle: 'Signer Title',
+  printThisCertificate: 'Print this certificate',
+  groupItemInfo: 'Item Info',
+  groupDiamond: 'Diamond',
+  groupGem: 'Gemstone',
+  groupRemark: 'Remark',
+  certificateNo: 'Certificate No.',
+  itemNo: 'Item No.',
+  issueDate: 'Issue Date',
+  description: 'Description',
+  model: 'Model',
+  metal: 'Metal',
+  metalWeight: 'Metal Weight',
+  itemSize: 'Size',
+  diamondPcs: 'Diamond Pieces',
+  diamondWeight: 'Diamond Total Weight',
+  diamondQuality: 'Diamond Quality',
+  gemVariety: 'Gemstone Variety',
+  gemSpecies: 'Gemstone Species',
+  gemOrigin: 'Origin',
+  gemWeight: 'Gemstone Weight',
+  gemMeasurement: 'Measurement',
+  gemShape: 'Shape',
+  gemCut: 'Cut',
+  gemColor: 'Color',
+  treatment: 'Treatment',
+  comment: 'Comment',
+  previewBtn: 'Preview',
+  downloadBtnCount: 'Download PDF ({selected}/{total})',
+  cancelBtn: 'Cancel',
+  historyTitle: 'Issue History',
+  historyEmpty: 'No certificate issued for this invoice yet',
+  historyRound: 'Round {round}',
+  historyItems: '{count} item(s)',
+  issuedCount: 'Issued {count} time(s)',
+  lastIssued: 'Last {date} by {by}',
+  neverIssued: 'Never issued',
+  selectAll: 'Select all',
+  selectNone: 'Select none',
+  selectedCount: 'Selected {selected}/{total}',
+  validation: {
+    noItemSelected: 'Please select at least 1 item to print a certificate'
+  },
+  success: {
+    generated: 'Certificate PDF generated successfully'
+  },
+  warn: {
+    logFailed: 'PDF created, but saving the issue history failed'
+  }
+}
+
 export const saleDashboard = {
   title: 'Sales Flow Overview',
   description: 'Complete sales flow from quotation to payment',
@@ -1876,6 +1936,7 @@ export default {
   stockReservation,
   deliveryNote,
   guaranteeCard,
+  certificate,
   paymentTracking,
   document,
   saleDashboard,
