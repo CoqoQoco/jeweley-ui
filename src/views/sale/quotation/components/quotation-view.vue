@@ -92,7 +92,10 @@
             headerStyle="filled"
           >
             <template #header-actions>
-              <span :class="['breakdown-status-badge', breakdownComplete ? 'is-complete' : 'is-incomplete']">
+              <span
+                :class="['breakdown-status-badge', breakdownComplete ? 'is-complete' : 'is-incomplete']"
+                :title="breakdownComplete ? '' : $t('view.sale.quotation.breakdownIncompleteTooltip', { fields: breakdownMissingLabels })"
+              >
                 {{ breakdownComplete
                   ? $t('view.sale.quotation.breakdownComplete')
                   : $t('view.sale.quotation.breakdownIncomplete', { count: breakdownMissingCount }) }}
@@ -152,6 +155,11 @@
                   class="input-narrow"
                 />
               </div>
+            </div>
+
+            <div v-if="!breakdownComplete" class="breakdown-missing-hint">
+              <i class="bi bi-exclamation-triangle"></i>
+              <span>{{ $t('view.sale.quotation.breakdownIncompleteHint', { fields: breakdownMissingLabels }) }}</span>
             </div>
           </SectionCardGeneric>
 
@@ -702,6 +710,9 @@ export default {
     },
     breakdownMissingCount() {
       return this.breakdownMissingFields.length
+    },
+    breakdownMissingLabels() {
+      return this.breakdownMissingFields.map((field) => field.label).join(', ')
     },
     breakdownComplete() {
       return this.breakdownMissingCount === 0
@@ -1367,9 +1378,8 @@ export default {
 
     validateBreakdownComplete() {
       if (this.breakdownComplete) return true
-      const fields = this.breakdownMissingFields.map((field) => field.label).join(', ')
       warning(
-        this.$t('view.sale.quotation.breakdownIncompleteWarning', { fields }),
+        this.$t('view.sale.quotation.breakdownIncompleteWarning', { fields: this.breakdownMissingLabels }),
         this.$t('common.label.incompleteData')
       )
       return false
@@ -1599,6 +1609,24 @@ export default {
   &.is-incomplete {
     background: var(--base-warning);
     color: var(--base-font-color);
+  }
+}
+
+.breakdown-missing-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-sm);
+  margin-top: var(--sp-md);
+  padding: var(--sp-sm) var(--sp-md);
+  border-radius: var(--radius-sm);
+  background: var(--base-warning);
+  color: var(--base-font-color);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+
+  i {
+    flex-shrink: 0;
+    margin-top: 2px;
   }
 }
 

@@ -351,9 +351,11 @@ export const quotation = {
   currencyRateLabel: 'Currency Rate',
   breakdownSection: 'Break Down',
   goldLossPercent: 'Gold Loss (%)',
-  breakdownComplete: 'Complete',
-  breakdownIncomplete: '{count} field(s) missing',
-  breakdownIncompleteWarning: 'Please complete the Break Down fields before generating the document: {fields}'
+  breakdownComplete: 'Break Down complete',
+  breakdownIncomplete: 'Break Down: {count} field(s) missing',
+  breakdownIncompleteTooltip: 'Missing fields: {fields}',
+  breakdownIncompleteHint: 'Missing {fields} — fill these in to print, preview, or export the Break Down document.',
+  breakdownIncompleteWarning: 'Complete the Break Down fields before generating the document. Missing: {fields}'
 }
 
 export const quotationList = {

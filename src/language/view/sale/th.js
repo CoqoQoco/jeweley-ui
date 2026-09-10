@@ -351,9 +351,11 @@ export const quotation = {
   currencyRateLabel: 'Currency Rate',
   breakdownSection: 'Break Down',
   goldLossPercent: 'Gold Loss (%)',
-  breakdownComplete: 'ครบแล้ว',
-  breakdownIncomplete: 'ยังไม่ได้กรอก {count} ช่อง',
-  breakdownIncompleteWarning: 'กรุณากรอกข้อมูล Break Down ให้ครบก่อนออกเอกสาร: {fields}'
+  breakdownComplete: 'ข้อมูล Break Down ครบแล้ว',
+  breakdownIncomplete: 'Break Down ยังไม่ครบ {count} ช่อง',
+  breakdownIncompleteTooltip: 'ช่องที่ยังไม่ได้กรอก: {fields}',
+  breakdownIncompleteHint: 'ยังไม่ได้กรอก {fields} — กรอกให้ครบก่อน จึงจะพิมพ์ / พรีวิว / ออก Excel ใบ Break Down ได้',
+  breakdownIncompleteWarning: 'กรอก Break Down ให้ครบก่อนออกเอกสาร ยังขาด: {fields}'
 }
 
 export const quotationList = {
