@@ -40,6 +40,52 @@ export const isAzureBlobPath = (path) => {
          path.includes('/')
 }
 
+// Cache สำหรับผลลัพธ์ base64 ของรูป (คีย์ = `${blobPath}|${imageType}`)
+// เก็บทั้งกรณีโหลดเสร็จแล้ว (resolved promise) และกำลังโหลดอยู่ (pending promise)
+// เพื่อ dedupe request ซ้ำ + กันโหลดรูปเดิมซ้ำหลายรอบ
+const AZURE_BLOB_CACHE_LIMIT = 200
+const azureBlobCache = new Map()
+
+/**
+ * ล้าง cache รูปภาพที่โหลดจาก Azure Blob Storage ทั้งหมด
+ */
+export const clearAzureBlobCache = () => {
+  azureBlobCache.clear()
+}
+
+const setAzureBlobCache = (cacheKey, promise) => {
+  azureBlobCache.set(cacheKey, promise)
+
+  if (azureBlobCache.size > AZURE_BLOB_CACHE_LIMIT) {
+    azureBlobCache.delete(azureBlobCache.keys().next().value)
+  }
+}
+
+// Semaphore อย่างง่ายเพื่อจำกัดจำนวน request โหลดรูปพร้อมกัน
+const AZURE_BLOB_MAX_CONCURRENCY = 5
+let azureBlobActiveCount = 0
+const azureBlobWaitQueue = []
+
+const acquireAzureBlobSlot = () => {
+  if (azureBlobActiveCount < AZURE_BLOB_MAX_CONCURRENCY) {
+    azureBlobActiveCount += 1
+    return Promise.resolve()
+  }
+
+  return new Promise((resolve) => {
+    azureBlobWaitQueue.push(resolve)
+  })
+}
+
+const releaseAzureBlobSlot = () => {
+  const next = azureBlobWaitQueue.shift()
+  if (next) {
+    next()
+  } else {
+    azureBlobActiveCount = Math.max(0, azureBlobActiveCount - 1)
+  }
+}
+
 /**
  * ดึงรูปจาก Azure Blob Storage และแปลงเป็น Base64 dataURL
  * สำหรับใช้กับ pdfMake ที่ต้องการ Base64 เท่านั้น
@@ -53,87 +99,111 @@ export const isAzureBlobPath = (path) => {
 export const getAzureBlobAsBase64 = async (blobPath, imageType = 'mold') => {
   if (!blobPath) return ''
 
-  try {
-    // Import api helper (dynamic import to avoid circular dependency)
-    const { default: api } = await import('@/axios/axios-helper.js')
-
-    // แยกชื่อไฟล์ออกจาก path
-    // เช่น "Mold/ABC-001-Mold.png" -> "ABC-001-Mold.png"
-    const fileName = blobPath.includes('/') ? blobPath.split('/').pop() : blobPath
-
-    // ตรวจ blobPath prefix ก่อน แล้ว fallback ไปใช้ imageType
-    let resolvedType = imageType
-    if (blobPath.startsWith('Stock/')) resolvedType = 'stock'
-    else if (blobPath.startsWith('Mold/')) resolvedType = 'mold'
-    else if (blobPath.startsWith('ProductionPlan/')) resolvedType = 'plan'
-    else if (blobPath.startsWith('PrePlan/')) resolvedType = 'preplan'
-    else if (blobPath.startsWith('MoldPlanDesign/')) resolvedType = 'molddesign'
-    else if (blobPath.startsWith('User/')) resolvedType = 'user'
-
-    // เรียก API backend เพื่อดึงรูป (backend จะดึงจาก Azure Blob)
-    let base64String = ''
-
-    if (resolvedType === 'mold') {
-      // ดึงรูป Mold
-      const res = await api.jewelry.get('FileExtension/GetMoldImage', {
-        imageName: fileName
-      })
-      if (res) {
-        base64String = `data:image/png;base64,${res}`
-      }
-    } else if (resolvedType === 'plan') {
-      // ดึงรูป Production Plan
-      const res = await api.jewelry.get('FileExtension/GetPlanImage', {
-        imageName: fileName
-      })
-      if (res) {
-        base64String = `data:image/png;base64,${res}`
-      }
-    } else if (resolvedType === 'stock') {
-      // ดึงรูป Stock Product
-      const res = await api.jewelry.get('FileExtension/GetStockProductImage', {
-        imageName: fileName
-      })
-      if (res) {
-        base64String = `data:image/png;base64,${res}`
-      }
-    } else if (resolvedType === 'preplan') {
-      // ดึงรูป PrePlan Product
-      const res = await api.jewelry.get('FileExtension/GetImage', {
-        imageName: fileName,
-        path: 'PrePlan/Product'
-      })
-      if (res) {
-        base64String = `data:image/png;base64,${res}`
-      }
-    } else if (resolvedType === 'molddesign') {
-      // ดึงรูป Mold Plan Design (สำหรับ PrePlan ที่ใช้รูป design ของแม่พิมพ์ตรงๆ)
-      const res = await api.jewelry.get('FileExtension/GetImage', {
-        imageName: fileName,
-        path: 'MoldPlanDesign'
-      })
-      if (res) {
-        base64String = `data:image/png;base64,${res}`
-      }
-    } else if (resolvedType === 'user') {
-      // ดึงรูป User Profile
-      const res = await api.jewelry.get('FileExtension/GetImage', {
-        imageName: fileName,
-        path: 'User/Profile' // ระบุ path สำหรับ user profile
-      })
-      if (res) {
-        base64String = `data:image/png;base64,${res}`
-      }
-    } else {
-      console.warn('Unknown image type for blob path:', blobPath)
-      return ''
-    }
-
-    return base64String
-  } catch (error) {
-    console.error('Error converting Azure Blob to Base64:', error)
-    return ''
+  const cacheKey = `${blobPath}|${imageType}`
+  if (azureBlobCache.has(cacheKey)) {
+    return azureBlobCache.get(cacheKey)
   }
+
+  const loadPromise = (async () => {
+    await acquireAzureBlobSlot()
+
+    try {
+      // Import api helper (dynamic import to avoid circular dependency)
+      const { default: api } = await import('@/axios/axios-helper.js')
+
+      // แยกชื่อไฟล์ออกจาก path
+      // เช่น "Mold/ABC-001-Mold.png" -> "ABC-001-Mold.png"
+      const fileName = blobPath.includes('/') ? blobPath.split('/').pop() : blobPath
+
+      // ตรวจ blobPath prefix ก่อน แล้ว fallback ไปใช้ imageType
+      let resolvedType = imageType
+      if (blobPath.startsWith('Stock/')) resolvedType = 'stock'
+      else if (blobPath.startsWith('Mold/')) resolvedType = 'mold'
+      else if (blobPath.startsWith('ProductionPlan/')) resolvedType = 'plan'
+      else if (blobPath.startsWith('PrePlan/')) resolvedType = 'preplan'
+      else if (blobPath.startsWith('MoldPlanDesign/')) resolvedType = 'molddesign'
+      else if (blobPath.startsWith('User/')) resolvedType = 'user'
+
+      // เรียก API backend เพื่อดึงรูป (backend จะดึงจาก Azure Blob)
+      let base64String = ''
+
+      if (resolvedType === 'mold') {
+        // ดึงรูป Mold
+        const res = await api.jewelry.get(
+          'FileExtension/GetMoldImage',
+          { imageName: fileName },
+          { skipLoading: true }
+        )
+        if (res) {
+          base64String = `data:image/png;base64,${res}`
+        }
+      } else if (resolvedType === 'plan') {
+        // ดึงรูป Production Plan
+        const res = await api.jewelry.get(
+          'FileExtension/GetPlanImage',
+          { imageName: fileName },
+          { skipLoading: true }
+        )
+        if (res) {
+          base64String = `data:image/png;base64,${res}`
+        }
+      } else if (resolvedType === 'stock') {
+        // ดึงรูป Stock Product
+        const res = await api.jewelry.get(
+          'FileExtension/GetStockProductImage',
+          { imageName: fileName },
+          { skipLoading: true }
+        )
+        if (res) {
+          base64String = `data:image/png;base64,${res}`
+        }
+      } else if (resolvedType === 'preplan') {
+        // ดึงรูป PrePlan Product
+        const res = await api.jewelry.get(
+          'FileExtension/GetImage',
+          { imageName: fileName, path: 'PrePlan/Product' },
+          { skipLoading: true }
+        )
+        if (res) {
+          base64String = `data:image/png;base64,${res}`
+        }
+      } else if (resolvedType === 'molddesign') {
+        // ดึงรูป Mold Plan Design (สำหรับ PrePlan ที่ใช้รูป design ของแม่พิมพ์ตรงๆ)
+        const res = await api.jewelry.get(
+          'FileExtension/GetImage',
+          { imageName: fileName, path: 'MoldPlanDesign' },
+          { skipLoading: true }
+        )
+        if (res) {
+          base64String = `data:image/png;base64,${res}`
+        }
+      } else if (resolvedType === 'user') {
+        // ดึงรูป User Profile
+        const res = await api.jewelry.get(
+          'FileExtension/GetImage',
+          { imageName: fileName, path: 'User/Profile' }, // ระบุ path สำหรับ user profile
+          { skipLoading: true }
+        )
+        if (res) {
+          base64String = `data:image/png;base64,${res}`
+        }
+      } else {
+        console.warn('Unknown image type for blob path:', blobPath)
+        return ''
+      }
+
+      return base64String
+    } catch (error) {
+      console.error('Error converting Azure Blob to Base64:', error)
+      return ''
+    } finally {
+      releaseAzureBlobSlot()
+    }
+  })()
+
+  setAzureBlobCache(cacheKey, loadPromise)
+
+  return loadPromise
 }
 
 /**
@@ -159,5 +229,6 @@ export default {
   AZURE_FOLDERS,
   getAzureBlobUrl,
   isAzureBlobPath,
-  getAzureBlobAsBase64
+  getAzureBlobAsBase64,
+  clearAzureBlobCache
 }

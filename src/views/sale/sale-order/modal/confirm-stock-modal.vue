@@ -123,9 +123,10 @@
               <!-- scrollHeight="400px" -->
               <DataTable
                 :value="filteredStockItems"
-                dataKey="id"
-                :paginator="false"
+                dataKey="stockNumber"
+                :paginator="filteredStockItems.length > 10"
                 :rows="10"
+                :rowsPerPageOptions="[10, 25, 50]"
                 class="p-datatable-sm"
                 :scrollable="true"
                 responsiveLayout="scroll"
@@ -134,8 +135,8 @@
                   <template #body="slotProps">
                     <div class="text-center">
                       <CheckboxGeneric
-                        :modelValue="selectedItems.includes(slotProps.data.stockNumber)"
-                        @update:modelValue="toggleItemSelection(slotProps.data)"
+                        :modelValue="selectedItemsSet.has(slotProps.data.stockNumber)"
+                        @update:modelValue="(value) => toggleItemSelection(slotProps.data, value)"
                         :disabled="slotProps.data.isConfirm"
                         :binary="true"
                       />
@@ -418,6 +419,10 @@ export default {
       return this.selectedItems.length
     },
 
+    selectedItemsSet() {
+      return new Set(this.selectedItems)
+    },
+
     confirmedItemsCount() {
       return this.stockItems.filter((item) => item.isConfirm).length
     },
@@ -464,17 +469,21 @@ export default {
       }
     },
 
-    toggleItemSelection(item) {
+    toggleItemSelection(item, value) {
       // Don't allow selection of already confirmed items
       if (item.isConfirm) {
         return
       }
 
-      const index = this.selectedItems.indexOf(item.stockNumber)
-      if (index > -1) {
-        this.selectedItems.splice(index, 1)
+      if (value) {
+        if (!this.selectedItems.includes(item.stockNumber)) {
+          this.selectedItems.push(item.stockNumber)
+        }
       } else {
-        this.selectedItems.push(item.stockNumber)
+        const index = this.selectedItems.indexOf(item.stockNumber)
+        if (index > -1) {
+          this.selectedItems.splice(index, 1)
+        }
       }
     },
 
@@ -550,8 +559,6 @@ export default {
         return
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
       // Get selected items data
       const selectedStockItems = this.stockItems.filter((item) =>
         this.selectedItems.includes(item.stockNumber)
@@ -582,9 +589,6 @@ export default {
           confirmedItems: selectedStockItems,
           totalConfirmed: this.selectedItemsCount
         })
-
-        // Wait for parent to refresh data before showing success and closing modal
-        await new Promise((resolve) => setTimeout(resolve, 1000))
 
         // Show success message
         success(this.$t('view.sale.saleOrder.success.confirmSale'), this.$t('view.sale.saleOrder.success.confirmSaleMessage', { count: this.selectedItemsCount }))

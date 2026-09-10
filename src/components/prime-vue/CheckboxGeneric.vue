@@ -2,6 +2,12 @@
   CheckboxGeneric — wrap PrimeVue Checkbox
   รองรับทั้ง binary mode (true/false) และ array mode (push value)
 
+  ⚠️ Controlled component — ไม่มี internal state
+  component นี้ไม่เก็บค่าเอง แต่ bind `modelValue` ตรงจาก parent และ emit
+  `update:modelValue` ต่อทุกครั้งที่ผู้ใช้กด parent ต้องรับค่าที่ emit มาเขียนกลับเข้า
+  v-model/modelValue เองเสมอ ไม่งั้น checkbox จะไม่เปลี่ยนสถานะที่ UI
+  เมื่อ parent เป็นคนเปลี่ยนค่า (programmatic) component จะไม่ emit ซ้ำกลับไปหา parent
+
   ตัวอย่างการใช้งาน:
   Binary mode (default):
   <CheckboxGeneric v-model="form.isActive" label="เปิดใช้งาน" />
@@ -29,11 +35,12 @@
 <template>
   <div class="checkbox-wrapper">
     <Checkbox
-      v-model="localValue"
+      :modelValue="modelValue"
       :value="value"
       :binary="binary"
       :disabled="disabled"
       :inputId="inputId"
+      @update:modelValue="$emit('update:modelValue', $event)"
     />
     <label v-if="label" :for="inputId" class="checkbox-label">{{ label }}</label>
   </div>
@@ -77,17 +84,7 @@ export default {
   data() {
     _uid++
     return {
-      localValue: this.modelValue,
       inputId: `checkbox-generic-${_uid}`
-    }
-  },
-
-  watch: {
-    modelValue(newVal) {
-      this.localValue = newVal
-    },
-    localValue(newVal) {
-      this.$emit('update:modelValue', newVal)
     }
   }
 }

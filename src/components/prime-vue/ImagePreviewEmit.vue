@@ -195,11 +195,6 @@ export default {
       immediate: true
     }
   },
-  mounted() {
-    if (this.imagePath) {
-      this.loadImage()
-    }
-  },
   methods: {
     /**
      * โหลดรูปภาพจาก Azure Blob Storage แบบ async
