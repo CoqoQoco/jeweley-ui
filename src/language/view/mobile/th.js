@@ -260,7 +260,8 @@ export const stockProduct = {
   lotBadge: 'ล็อตนี้',
   skuTotalLabel: 'ยอดรวม SKU',
   selectVersion: 'เลือกเวอร์ชัน',
-  notFoundTitle: 'ไม่พบข้อมูลสินค้า'
+  notFoundTitle: 'ไม่พบข้อมูลสินค้า',
+  loadingText: 'กำลังโหลดข้อมูล...'
 }
 
 export const tasks = {
@@ -287,6 +288,9 @@ export const profile = {
 }
 
 export const quotation = {
+  // Loading state
+  loadingText: 'กำลังโหลดข้อมูล...',
+
   // index
   dateFilterLabel: 'วันที่ใบเสนอราคา',
   dateFilterPlaceholder: 'เลือกวันที่',
@@ -432,6 +436,9 @@ export const components = {
 }
 
 export const sale = {
+  // Loading state
+  loadingText: 'กำลังโหลดข้อมูล...',
+
   // add-item-method-selector
   methodAppraisal: 'จากรายการตีราคา',
   methodScan: 'สแกนสินค้า',

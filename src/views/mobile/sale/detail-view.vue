@@ -1,7 +1,15 @@
 <template>
   <div class="mobile-sale-detail-view">
+    <!-- Loading State -->
+    <div v-if="isLoading" class="mobile-container mobile-mt-2">
+      <div class="mobile-loading">
+        <div class="spinner"></div>
+        <div class="loading-text">{{ $t('view.mobile.sale.loadingText') }}</div>
+      </div>
+    </div>
+
     <!-- SO Detail Content -->
-    <div v-if="soData" class="mobile-container mobile-mt-1">
+    <div v-else-if="soData" class="mobile-container mobile-mt-1">
       <!-- SO Info Card -->
       <div class="info-card">
         <div class="card-header">
@@ -410,6 +418,7 @@ export default {
   data() {
     return {
       soData: null,
+      isLoading: true,
       stockItems: [],
       copyItems: [],
       exportingPDF: false,
@@ -547,17 +556,22 @@ export default {
   methods: {
     // ==================== Load ====================
     async loadSaleOrder() {
-      this.soData = null
-      this.stockItems = []
-      this.copyItems = []
+      this.isLoading = true
+      try {
+        this.soData = null
+        this.stockItems = []
+        this.copyItems = []
 
-      const response = await this.saleOrderStore.fetchGet({
-        formValue: { soNumber: this.soNumber }
-      })
+        const response = await this.saleOrderStore.fetchGet({
+          formValue: { soNumber: this.soNumber }
+        })
 
-      if (response) {
-        this.soData = response
-        this.parseItems(response)
+        if (response) {
+          this.soData = response
+          this.parseItems(response)
+        }
+      } finally {
+        this.isLoading = false
       }
     },
 

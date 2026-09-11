@@ -1,6 +1,13 @@
 <template>
   <div class="mobile-stock-detail-view">
-    <template v-if="item">
+    <div v-if="isLoading" class="mobile-container mobile-mt-2">
+      <div class="mobile-loading">
+        <div class="spinner"></div>
+        <div class="loading-text">{{ $t('view.mobile.stockProduct.loadingText') }}</div>
+      </div>
+    </div>
+
+    <template v-else-if="item">
       <div class="mobile-container mobile-mt-2">
         <div class="detail-stock-caption-row">
           <div class="detail-stock-caption">{{ displayCode }}</div>
@@ -89,6 +96,7 @@ export default {
   data() {
     return {
       item: null,
+      isLoading: true,
       activeTab: 'info',
       visitedTabs: { info: true, balance: false, cost: false, history: false },
       shareVisible: false
@@ -128,17 +136,22 @@ export default {
 
   methods: {
     async loadItem() {
-      await this.productStore.fetchDataSearch({
-        skip: 0,
-        take: 1,
-        sort: [],
-        formValue: { stockNumber: this.stockNumber }
-      })
+      this.isLoading = true
+      try {
+        await this.productStore.fetchDataSearch({
+          skip: 0,
+          take: 1,
+          sort: [],
+          formValue: { stockNumber: this.stockNumber }
+        })
 
-      const data = this.productStore.dataSearch?.data || []
-      if (data.length) {
-        this.item = data[0]
-        await this.mergeBalanceIntoItems([this.item])
+        const data = this.productStore.dataSearch?.data || []
+        if (data.length) {
+          this.item = data[0]
+          await this.mergeBalanceIntoItems([this.item])
+        }
+      } finally {
+        this.isLoading = false
       }
     },
 

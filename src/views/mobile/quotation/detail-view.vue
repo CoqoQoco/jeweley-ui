@@ -20,8 +20,16 @@
       </div>
     </div> -->
 
+    <!-- Loading State -->
+    <div v-if="isLoading" class="mobile-container mobile-mt-2">
+      <div class="mobile-loading">
+        <div class="spinner"></div>
+        <div class="loading-text">{{ $t('view.mobile.quotation.loadingText') }}</div>
+      </div>
+    </div>
+
     <!-- Quotation Details -->
-    <div v-if="quotation" class="mobile-container mobile-mt-2">
+    <div v-else-if="quotation" class="mobile-container mobile-mt-2">
       <!-- Quotation Info Card -->
       <div class="info-card">
         <div class="card-header">
@@ -206,6 +214,7 @@ export default {
     return {
       quotation: null,
       items: [],
+      isLoading: true,
       exportingPDF: false
     }
   },
@@ -266,15 +275,20 @@ export default {
 
   methods: {
     async loadQuotation() {
-      const number = this.$route.params.number
+      this.isLoading = true
+      try {
+        const number = this.$route.params.number
 
-      const res = await this.quotationStore.fetchGet({
-        formValue: { number }
-      })
+        const res = await this.quotationStore.fetchGet({
+          formValue: { number }
+        })
 
-      if (res) {
-        this.quotation = res
-        this.items = res.data ? JSON.parse(res.data) : []
+        if (res) {
+          this.quotation = res
+          this.items = res.data ? JSON.parse(res.data) : []
+        }
+      } finally {
+        this.isLoading = false
       }
     },
 

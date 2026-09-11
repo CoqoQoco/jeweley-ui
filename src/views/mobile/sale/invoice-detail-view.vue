@@ -1,7 +1,15 @@
 <template>
   <div class="mobile-invoice-detail-view">
+    <!-- Loading State -->
+    <div v-if="isLoading" class="mobile-container mobile-mt-2">
+      <div class="mobile-loading">
+        <div class="spinner"></div>
+        <div class="loading-text">{{ $t('view.mobile.sale.loadingText') }}</div>
+      </div>
+    </div>
+
     <!-- Invoice Detail Content -->
-    <div v-if="invoiceData" class="mobile-container mobile-mt-1">
+    <div v-else-if="invoiceData" class="mobile-container mobile-mt-1">
       <!-- Invoice Info Card -->
       <div class="info-card">
         <div class="card-header">
@@ -321,6 +329,7 @@ export default {
     return {
       invoiceData: null,
       invoiceItems: [],
+      isLoading: true,
       // Print form
       showPrintForm: false,
       printInvoiceNumber: '',
@@ -451,18 +460,23 @@ export default {
 
   methods: {
     async loadInvoiceData() {
-      this.invoiceData = null
-      this.invoiceItems = []
+      this.isLoading = true
+      try {
+        this.invoiceData = null
+        this.invoiceItems = []
 
-      const context = await loadInvoiceContext(this.invoiceNumber, {
-        invoiceStore: this.invoiceStore,
-        saleOrderStore: this.saleOrderStore
-      })
+        const context = await loadInvoiceContext(this.invoiceNumber, {
+          invoiceStore: this.invoiceStore,
+          saleOrderStore: this.saleOrderStore
+        })
 
-      if (!context) return
+        if (!context) return
 
-      this.invoiceData = context.invoiceData
-      this.invoiceItems = context.invoiceItems
+        this.invoiceData = context.invoiceData
+        this.invoiceItems = context.invoiceItems
+      } finally {
+        this.isLoading = false
+      }
     },
 
     // ==================== Print ====================

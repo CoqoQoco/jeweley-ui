@@ -260,7 +260,8 @@ export const stockProduct = {
   lotBadge: 'This Lot',
   skuTotalLabel: 'SKU Total',
   selectVersion: 'Select version',
-  notFoundTitle: 'Product not found'
+  notFoundTitle: 'Product not found',
+  loadingText: 'Loading...'
 }
 
 export const tasks = {
@@ -287,6 +288,9 @@ export const profile = {
 }
 
 export const quotation = {
+  // Loading state
+  loadingText: 'Loading...',
+
   // index
   dateFilterLabel: 'Quotation Date',
   dateFilterPlaceholder: 'Select date',
@@ -432,6 +436,9 @@ export const components = {
 }
 
 export const sale = {
+  // Loading state
+  loadingText: 'Loading...',
+
   // add-item-method-selector
   methodAppraisal: 'From Appraisal List',
   methodScan: 'Scan Product',
