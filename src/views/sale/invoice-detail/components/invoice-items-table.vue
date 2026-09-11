@@ -479,7 +479,7 @@ import Column from 'primevue/column'
 import ColumnGroup from 'primevue/columngroup'
 // eslint-disable-next-line no-restricted-imports
 import Row from 'primevue/row'
-import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
+import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import dayjs from 'dayjs'
 import { isForeignCurrency, formatDocCurrency } from '@/services/utils/decimal.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'

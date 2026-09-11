@@ -429,7 +429,6 @@ import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import QuotationItemsTable from './quotation-items-table.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
-import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
 import InputWithButton from '@/components/input/input-with-button.vue'
 import editStockView from '@/views/sale/quotation/modal/edit-stock-view.vue'
 
@@ -865,12 +864,6 @@ export default {
           discountPercent: this.customer.discountPercent || 0
         }
 
-        // load image as base64 เพื่อเก็บใน quotation JSON
-        if (data.imagePath) {
-          const blobPath = data.imagePath.includes('/') ? data.imagePath : `Stock/${data.imagePath}`
-          data.imageBase64 = await getAzureBlobAsBase64(blobPath)
-        }
-
         this.customer.quotationItems.push(data)
       }
     },
@@ -1096,12 +1089,6 @@ export default {
           source: 'costVersion',
           costVersionRunning: version.running,
           discountPercent: this.customer.discountPercent || 0
-        }
-
-        // load image as base64 เพื่อเก็บใน quotation JSON
-        if (data.imagePath) {
-          const blobPath = data.imagePath.includes('/') ? data.imagePath : `Stock/${data.imagePath}`
-          item.imageBase64 = await getAzureBlobAsBase64(blobPath)
         }
 
         this.customer.quotationItems.push(item)

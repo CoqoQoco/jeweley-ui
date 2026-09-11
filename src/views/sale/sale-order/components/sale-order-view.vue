@@ -335,7 +335,6 @@
       @delete-item="deleteStockItem($event)"
       @edit-item="onEditStock($event)"
       @cancel-confirmation="reverseStockConfirm($event)"
-      @image-loaded="handleImageLoaded($event.imageData, $event.stockNumber)"
       @blur-price="onBlurPrice($event.item, $event.stockNumber, $event.field)"
       @blur-qty="onBlurQty($event.item, $event.stockNumber, $event.field)"
       @blur-description="onBlurDescription($event.item, $event.stockNumber, $event.field)"
@@ -355,7 +354,6 @@
       @blur-price="onBlurCopyPrice($event.item, $event.stockNumber, $event.field)"
       @blur-qty="onBlurCopyQty($event.item, $event.stockNumber, $event.field)"
       @blur-description="onBlurDescription($event.item, $event.stockNumber, $event.field)"
-      @image-loaded="handleImageLoaded($event.imageData, $event.stockNumber)"
     />
 
     <!-- Order Summary -->
@@ -1391,16 +1389,6 @@ export default {
       }
       this.modelEditStock = {}
       this.editStockNumber = null
-    },
-
-    handleImageLoaded(imageData, stockNumber) {
-      const realIndex = this.stockItems.findIndex((i) => i.stockNumber === stockNumber)
-      if (realIndex !== -1) {
-        this.stockItems[realIndex] = {
-          ...this.stockItems[realIndex],
-          imageBlobPath: imageData.blobPath // เก็บ blobPath แทน base64
-        }
-      }
     },
 
     // ============================================

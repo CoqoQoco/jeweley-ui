@@ -98,7 +98,6 @@
                 type="STOCK-PRODUCT"
                 :width="25"
                 :height="25"
-                :emitImage="false"
               />
             </div>
           </div>
@@ -606,7 +605,7 @@ import Row from 'primevue/row'
 import { isForeignCurrency, formatDocCurrency } from '@/services/utils/decimal.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
-import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
+import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 
 export default {
   name: 'QuotationItemsTable',

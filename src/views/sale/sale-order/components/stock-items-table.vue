@@ -146,8 +146,6 @@
                   type="STOCK-PRODUCT"
                   :width="25"
                   :height="25"
-                  :emitImage="true"
-                  @image-loaded="$emit('image-loaded', { imageData: $event, stockNumber: slotProps.data.stockNumber })"
                 />
               </div>
             </div>
@@ -832,7 +830,7 @@ import Column from 'primevue/column'
 import ColumnGroup from 'primevue/columngroup'
 // eslint-disable-next-line no-restricted-imports
 import Row from 'primevue/row'
-import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
+import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import { formatDecimal, isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
 import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
@@ -886,7 +884,7 @@ export default {
     }
   },
 
-  emits: ['delete-item', 'edit-item', 'cancel-confirmation', 'image-loaded', 'blur-price', 'blur-qty', 'blur-description', 'update:special-discount', 'update:special-addition', 'update:freight', 'update:vat-percent'],
+  emits: ['delete-item', 'edit-item', 'cancel-confirmation', 'blur-price', 'blur-qty', 'blur-description', 'update:special-discount', 'update:special-addition', 'update:freight', 'update:vat-percent'],
 
   data() {
     return {

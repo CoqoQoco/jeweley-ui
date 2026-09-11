@@ -80,8 +80,6 @@
                   type="STOCK-PRODUCT"
                   :width="25"
                   :height="25"
-                  :emitImage="true"
-                  @image-loaded="$emit('image-loaded', { imageData: $event, stockNumber: slotProps.data.stockNumber })"
                 />
               </div>
             </div>
@@ -422,7 +420,7 @@ import Column from 'primevue/column'
 import ColumnGroup from 'primevue/columngroup'
 // eslint-disable-next-line no-restricted-imports
 import Row from 'primevue/row'
-import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
+import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
@@ -450,7 +448,7 @@ export default {
     }
   },
 
-  emits: ['delete-item', 'edit-item', 'blur-price', 'blur-qty', 'blur-description', 'image-loaded'],
+  emits: ['delete-item', 'edit-item', 'blur-price', 'blur-qty', 'blur-description'],
 
   computed: {
     activeRowItems() {

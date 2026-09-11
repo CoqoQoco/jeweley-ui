@@ -1,13 +1,20 @@
 <template>
   <div>
     <PvImage
+      v-if="imageUrl && !hasError"
       :src="imageUrl"
       :alt="alt"
       :width="width"
       :height="height"
       :preview="preview"
       :style="imageStyle"
+      :loading="loading"
+      :decoding="decoding"
+      @error="handleImageError"
     />
+    <div v-else-if="hasError" :style="placeholderStyle">
+      <i class="bi bi-image"></i>
+    </div>
   </div>
 </template>
 
@@ -81,6 +88,26 @@ export default {
     alt: {
       type: String,
       default: 'Preview Image'
+    },
+    // native loading attribute ของ <img> เช่น 'lazy' / 'eager'
+    loading: {
+      type: String,
+      default: 'lazy'
+    },
+    // native decoding attribute ของ <img> เช่น 'async' / 'sync'
+    decoding: {
+      type: String,
+      default: 'async'
+    }
+  },
+  data() {
+    return {
+      hasError: false
+    }
+  },
+  watch: {
+    imageUrl() {
+      this.hasError = false
     }
   },
   computed: {
@@ -120,9 +147,32 @@ export default {
         borderRadius: '8px',
         objectFit: 'contain'
       }
+    },
+    /**
+     * สร้าง style object สำหรับ placeholder เมื่อโหลดรูปไม่สำเร็จ
+     * @returns {object} - Style object
+     */
+    placeholderStyle() {
+      return {
+        width: `${this.width}px`,
+        height: `${this.height}px`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: this.borderShow ? '1px solid var(--base-color)' : 'none',
+        borderRadius: '8px',
+        backgroundColor: '#f5f5f5',
+        color: '#ccc'
+      }
     }
   },
   methods: {
+    /**
+     * จัดการเมื่อโหลดรูปจาก Azure Blob ไม่สำเร็จ (404/CORS/network)
+     */
+    handleImageError() {
+      this.hasError = true
+    },
     /**
      * สร้าง blob path จาก type และ imageName สำหรับ backward compatibility
      * @returns {string} - Blob path

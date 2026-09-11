@@ -356,7 +356,7 @@ import DataTable from 'primevue/datatable'
 // eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
-import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
+import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { success, warning } from '@/services/alert/sweetAlerts.js'
 
