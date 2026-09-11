@@ -359,6 +359,7 @@ import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { success, warning } from '@/services/alert/sweetAlerts.js'
+import { convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -508,16 +509,18 @@ export default {
 
     // คำนวณราคาแปลงสกุลเงิน
     getConvertedPrice(item) {
-      const discountedPrice = this.getDiscountedPrice(item)
-      const currencyRate = this.saleOrderData.currencyRate || 1
-      return discountedPrice / currencyRate
+      const shapedItem = { appraisalPrice: this.getAppraisalPrice(item), discountPercent: item.discountPercent }
+      return convertedUnitPrice(shapedItem, this.saleOrderData.currencyRate, this.saleOrderData.currencyUnit)
     },
 
     // คำนวณราคารวมของแต่ละรายการ
     getTotalConvertedPrice(item) {
-      const convertedPrice = this.getConvertedPrice(item)
-      const qty = item.qty || 0
-      return convertedPrice * qty
+      const shapedItem = {
+        appraisalPrice: this.getAppraisalPrice(item),
+        discountPercent: item.discountPercent,
+        qty: item.qty
+      }
+      return lineAmount(shapedItem, this.saleOrderData.currencyRate, this.saleOrderData.currencyUnit)
     },
 
     // คำนวณราคาตาม currency rate (เก่า - เก็บไว้เพื่อ backward compatibility)

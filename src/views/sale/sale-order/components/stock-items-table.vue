@@ -417,11 +417,7 @@
           <template #body="slotProps">
             <div class="qty-container">
               <span>{{
-                formatDocMoney(
-                  (Number(slotProps.data.appraisalPrice || 0) *
-                    (1 - (slotProps.data.discountPercent || 0) / 100)) /
-                  (formSaleOrder.currencyRate || 1)
-                )
+                formatDocMoney(convertedUnitPrice(slotProps.data, formSaleOrder.currencyRate, formSaleOrder.currencyUnit))
               }}</span>
             </div>
           </template>
@@ -461,12 +457,7 @@
           <template #body="slotProps">
             <div class="qty-container">
               <span>{{
-                formatDocMoney(
-                  ((Number(slotProps.data.appraisalPrice || 0) *
-                    (1 - (slotProps.data.discountPercent || 0) / 100)) /
-                    (formSaleOrder.currencyRate || 1)) *
-                  (Number(slotProps.data.qty) || 0)
-                )
+                formatDocMoney(lineAmount(slotProps.data, formSaleOrder.currencyRate, formSaleOrder.currencyUnit))
               }}</span>
             </div>
           </template>
@@ -832,6 +823,7 @@ import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import { formatDecimal, isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
+import { convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
@@ -1020,6 +1012,9 @@ export default {
       })
     },
 
+    convertedUnitPrice,
+    lineAmount,
+
     getAppraisalPrice(item) {
       return item.appraisalPrice || item.price || 0
     },
@@ -1031,15 +1026,17 @@ export default {
     },
 
     getConvertedPrice(item) {
-      const discountedPrice = this.getDiscountedPrice(item)
-      const currencyRate = this.formSaleOrder.currencyRate || 1
-      return discountedPrice / currencyRate
+      const shapedItem = { appraisalPrice: this.getAppraisalPrice(item), discountPercent: item.discountPercent }
+      return convertedUnitPrice(shapedItem, this.formSaleOrder.currencyRate, this.formSaleOrder.currencyUnit)
     },
 
     getTotalConvertedPrice(item) {
-      const convertedPrice = this.getConvertedPrice(item)
-      const qty = item.qty || 0
-      return convertedPrice * qty
+      const shapedItem = {
+        appraisalPrice: this.getAppraisalPrice(item),
+        discountPercent: item.discountPercent,
+        qty: item.qty
+      }
+      return lineAmount(shapedItem, this.formSaleOrder.currencyRate, this.formSaleOrder.currencyUnit)
     },
 
     getNetWeight(items) {
@@ -1165,7 +1162,7 @@ export default {
 
     formatDocMoney(value) {
       return isForeignCurrency(this.formSaleOrder.currencyUnit)
-        ? String(Math.floor(Number(value) || 0))
+        ? String(Number(value) || 0)
         : (Number(value) || 0).toFixed(2)
     }
   }

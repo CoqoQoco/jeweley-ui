@@ -267,11 +267,7 @@
           <template #body="slotProps">
             <div class="qty-container">
               <span>{{
-                (
-                  (Number(slotProps.data.appraisalPrice || 0) *
-                    (1 - (slotProps.data.discountPercent || 0) / 100)) /
-                  (formSaleOrder.currencyRate || 1)
-                ).toFixed(2)
+                formatDocMoney(convertedUnitPrice(slotProps.data, formSaleOrder.currencyRate, formSaleOrder.currencyUnit))
               }}</span>
             </div>
           </template>
@@ -301,12 +297,7 @@
           <template #body="slotProps">
             <div class="qty-container">
               <span>{{
-                (
-                  ((Number(slotProps.data.appraisalPrice || 0) *
-                    (1 - (slotProps.data.discountPercent || 0) / 100)) /
-                    (formSaleOrder.currencyRate || 1)) *
-                  (Number(slotProps.data.qty) || 0)
-                ).toFixed(2)
+                formatDocMoney(lineAmount(slotProps.data, formSaleOrder.currencyRate, formSaleOrder.currencyUnit))
               }}</span>
             </div>
           </template>
@@ -421,7 +412,8 @@ import ColumnGroup from 'primevue/columngroup'
 // eslint-disable-next-line no-restricted-imports
 import Row from 'primevue/row'
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
-import { formatDecimal } from '@/services/utils/decimal.js'
+import { formatDecimal, isForeignCurrency } from '@/services/utils/decimal.js'
+import { convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
 export default {
@@ -461,6 +453,15 @@ export default {
   },
 
   methods: {
+    convertedUnitPrice,
+    lineAmount,
+
+    formatDocMoney(value) {
+      return isForeignCurrency(this.formSaleOrder.currencyUnit)
+        ? String(Number(value) || 0)
+        : (Number(value) || 0).toFixed(2)
+    },
+
     getAppraisalPrice(item) {
       return item.appraisalPrice || item.price || 0
     },
@@ -472,15 +473,17 @@ export default {
     },
 
     getConvertedPrice(item) {
-      const discountedPrice = this.getDiscountedPrice(item)
-      const currencyRate = this.formSaleOrder.currencyRate || 1
-      return discountedPrice / currencyRate
+      const shapedItem = { appraisalPrice: this.getAppraisalPrice(item), discountPercent: item.discountPercent }
+      return convertedUnitPrice(shapedItem, this.formSaleOrder.currencyRate, this.formSaleOrder.currencyUnit)
     },
 
     getTotalConvertedPrice(item) {
-      const convertedPrice = this.getConvertedPrice(item)
-      const qty = item.qty || 0
-      return convertedPrice * qty
+      const shapedItem = {
+        appraisalPrice: this.getAppraisalPrice(item),
+        discountPercent: item.discountPercent,
+        qty: item.qty
+      }
+      return lineAmount(shapedItem, this.formSaleOrder.currencyRate, this.formSaleOrder.currencyUnit)
     },
 
     getNetWeight(items) {
@@ -562,14 +565,14 @@ export default {
     },
 
     getSumConvertedPrice(items) {
-      if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
+      if (!items || !Array.isArray(items) || items.length === 0) return this.formatDocMoney(0)
 
       const total = items.reduce((sum, item) => {
         const price = this.getConvertedPrice(item)
         return sum + (Number(price) || 0)
       }, 0)
 
-      return Number(total).toFixed(2)
+      return this.formatDocMoney(total)
     },
 
     getSumQty(items) {

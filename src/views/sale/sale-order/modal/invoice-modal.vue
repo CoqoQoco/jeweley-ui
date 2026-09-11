@@ -335,11 +335,7 @@
                   <template #body="slotProps">
                     <div class="qty-container">
                       <span>{{
-                        (
-                          (Number(slotProps.data.appraisalPrice || 0) *
-                            (1 - (slotProps.data.discountPercent || 0) / 100)) /
-                          (saleOrderData.currencyRate || 1)
-                        ).toFixed(2)
+                        formatDocMoney(convertedUnitPrice(slotProps.data, saleOrderData.currencyRate, saleOrderData.currencyUnit))
                       }}</span>
                     </div>
                   </template>
@@ -363,12 +359,7 @@
                   <template #body="slotProps">
                     <div class="qty-container">
                       <span>{{
-                        (
-                          ((Number(slotProps.data.appraisalPrice || 0) *
-                            (1 - (slotProps.data.discountPercent || 0) / 100)) /
-                            (saleOrderData.currencyRate || 1)) *
-                          (Number(slotProps.data.qty) || 0)
-                        ).toFixed(2)
+                        formatDocMoney(lineAmount(slotProps.data, saleOrderData.currencyRate, saleOrderData.currencyUnit))
                       }}</span>
                     </div>
                   </template>
@@ -771,6 +762,7 @@ import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { useSaleChannelApiStore } from '@/stores/modules/api/sale/sale-channel-store.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { getPaymentApiName } from '@/constants/payment-methods.js'
+import { computeDocumentTotals, convertedUnitPrice, lineAmount, isForeignCurrency } from '@/services/utils/money.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -861,8 +853,25 @@ export default {
       return this.stockItems.filter((item) => item.isConfirm).length
     },
 
+    selectedStockItemsForTotals() {
+      return this.stockItems.filter((item) => this.selectedItems.includes(item.id))
+    },
+
+    // ยอดรวม F.O.B. ของรายการที่เลือก — ต้องคิดจากตัวกลาง computeDocumentTotals เพื่อให้เกณฑ์การปัดตรงกับใบ PDF (half-up)
+    documentTotals() {
+      return computeDocumentTotals({
+        items: this.selectedStockItemsForTotals,
+        currencyRate: this.saleOrderData.currencyRate,
+        currencyUnit: this.saleOrderData.currencyUnit,
+        specialDiscount: this.specialDiscount,
+        specialAddition: this.specialAddition,
+        freight: this.freightAndInsurance,
+        vatPercent: this.vatPercent
+      })
+    },
+
     totalSelectedAmount() {
-      return Number(this.getSumTotalConvertedPrice() || 0)
+      return Number(this.documentTotals.subTotal) || 0
     },
 
     // ข้อความเตือนใต้ dropdown วิธีชำระเงิน — ต้องยิงชื่อวิธี "เครดิต/เช็ค" ปัจจุบันเข้าไปเสมอ
@@ -877,25 +886,28 @@ export default {
     // ยอดรวมหลังหักส่วนลดพิเศษและเพิ่มส่วนพิเศษ
     totalAfterDiscountAndAddition() {
       const baseTotal = this.totalSelectedAmount
-      const afterDiscount = baseTotal - Number(this.specialDiscount || 0)
-      const afterAddition = afterDiscount + Number(this.specialAddition || 0)
+      const afterDiscount = baseTotal - this.documentTotals.specialDiscount
+      const afterAddition = afterDiscount + this.documentTotals.specialAddition
       return afterAddition
     },
 
     // ยอดรวมก่อน VAT (รวม Freight & Insurance แล้ว)
     totalBeforeVat() {
-      return this.totalAfterDiscountAndAddition + Number(this.freightAndInsurance || 0)
+      return this.totalAfterDiscountAndAddition + this.documentTotals.freight
     },
 
     // คำนวณค่า VAT จากเปอร์เซ็นต์
     vatAmount() {
-      const vatPercent = Number(this.vatPercent || 0)
-      return (this.totalBeforeVat * vatPercent) / 100
+      return this.documentTotals.vatAmount
     },
 
-    // ยอดรวมสุดท้ายรวม VAT
+    grandTotalRaw() {
+      return this.documentTotals.grandTotalRaw
+    },
+
+    // ยอดรวมสุดท้ายรวม VAT — ปัดครึ่งขึ้นเป็นจำนวนเต็มเสมอ ให้ตรงกับยอดที่พิมพ์บนใบแจ้งหนี้
     grandTotal() {
-      return this.totalBeforeVat + this.vatAmount
+      return this.documentTotals.grandTotalRounded
     }
   },
 
@@ -962,6 +974,15 @@ export default {
       }).format(amount || 0)
     },
 
+    convertedUnitPrice,
+    lineAmount,
+
+    formatDocMoney(value) {
+      return isForeignCurrency(this.saleOrderData.currencyUnit)
+        ? String(Number(value) || 0)
+        : (Number(value) || 0).toFixed(2)
+    },
+
     // คำนวณราคาประเมิน
     getAppraisalPrice(item) {
       return item.appraisalPrice || item.price || 0
@@ -976,16 +997,18 @@ export default {
 
     // คำนวณราคาแปลงสกุลเงิน
     getConvertedPrice(item) {
-      const discountedPrice = this.getDiscountedPrice(item)
-      const currencyRate = this.saleOrderData.currencyRate || 1
-      return discountedPrice / currencyRate
+      const shapedItem = { appraisalPrice: this.getAppraisalPrice(item), discountPercent: item.discountPercent }
+      return convertedUnitPrice(shapedItem, this.saleOrderData.currencyRate, this.saleOrderData.currencyUnit)
     },
 
     // คำนวณราคารวมของแต่ละรายการ
     getTotalConvertedPrice(item) {
-      const convertedPrice = this.getConvertedPrice(item)
-      const qty = item.qty || 0
-      return convertedPrice * qty
+      const shapedItem = {
+        appraisalPrice: this.getAppraisalPrice(item),
+        discountPercent: item.discountPercent,
+        qty: item.qty
+      }
+      return lineAmount(shapedItem, this.saleOrderData.currencyRate, this.saleOrderData.currencyUnit)
     },
 
     // Format ราคาพร้อม currency
@@ -1130,14 +1153,16 @@ export default {
       const selectedStockItems = this.stockItems.filter((item) =>
         this.selectedItems.includes(item.id)
       )
-      if (!selectedStockItems || selectedStockItems.length === 0) return '0.00'
+      if (!selectedStockItems || selectedStockItems.length === 0) {
+        return isForeignCurrency(this.saleOrderData.currencyUnit) ? '0' : '0.00'
+      }
 
       const total = selectedStockItems.reduce((sum, item) => {
         const price = this.getConvertedPrice(item)
         return sum + (Number(price) || 0)
       }, 0)
 
-      return Number(total).toFixed(2)
+      return isForeignCurrency(this.saleOrderData.currencyUnit) ? String(total) : Number(total).toFixed(2)
     },
 
     getSumQty() {
@@ -1155,14 +1180,16 @@ export default {
       const selectedStockItems = this.stockItems.filter((item) =>
         this.selectedItems.includes(item.id)
       )
-      if (!selectedStockItems || selectedStockItems.length === 0) return '0.00'
+      if (!selectedStockItems || selectedStockItems.length === 0) {
+        return isForeignCurrency(this.saleOrderData.currencyUnit) ? '0' : '0.00'
+      }
 
       const total = selectedStockItems.reduce((sum, item) => {
         const price = this.getTotalConvertedPrice(item)
         return sum + (Number(price) || 0)
       }, 0)
 
-      return Number(total).toFixed(2)
+      return isForeignCurrency(this.saleOrderData.currencyUnit) ? String(total) : Number(total).toFixed(2)
     },
 
     // Helper method to get payment ID from payment terms value

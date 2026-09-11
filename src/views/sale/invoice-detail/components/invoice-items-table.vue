@@ -326,11 +326,7 @@
           <template #body="slotProps">
             <div class="qty-container">
               <span>{{
-                formatDocMoney(
-                  (Number(slotProps.data.appraisalPrice || 0) *
-                    (1 - (slotProps.data.discountPercent || 0) / 100)) /
-                  (formSaleOrder.currencyRate || 1)
-                )
+                formatDocMoney(convertedUnitPrice(slotProps.data, formSaleOrder.currencyRate, formSaleOrder.currencyUnit))
               }}</span>
             </div>
           </template>
@@ -368,12 +364,7 @@
           <template #body="slotProps">
             <div class="qty-container">
               <span>{{
-                formatDocMoney(
-                  ((Number(slotProps.data.appraisalPrice || 0) *
-                    (1 - (slotProps.data.discountPercent || 0) / 100)) /
-                    (formSaleOrder.currencyRate || 1)) *
-                  (Number(slotProps.data.qty) || 0)
-                )
+                formatDocMoney(lineAmount(slotProps.data, formSaleOrder.currencyRate, formSaleOrder.currencyUnit))
               }}</span>
             </div>
           </template>
@@ -482,6 +473,7 @@ import Row from 'primevue/row'
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import dayjs from 'dayjs'
 import { isForeignCurrency, formatDocCurrency } from '@/services/utils/decimal.js'
+import { convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
 export default {
@@ -594,9 +586,11 @@ export default {
       if (!value && value !== 0) return '0.00'
       return formatDocCurrency(value, this.invoiceData.currencyUnit || this.formSaleOrder.currencyUnit, 'en-US')
     },
+    convertedUnitPrice,
+    lineAmount,
     formatDocMoney(value) {
       return isForeignCurrency(this.formSaleOrder.currencyUnit)
-        ? String(Math.floor(Number(value) || 0))
+        ? String(Number(value) || 0)
         : (Number(value) || 0).toFixed(2)
     },
     formatPriceWithCurrency(value) {
@@ -676,17 +670,18 @@ export default {
       return appraisalPrice * (1 - discountPercent / 100)
     },
     getConvertedPrice(item) {
-      const discountedPrice = this.getDiscountedPrice(item)
-      const currencyRate = this.invoiceData.currencyRate || 1
-      const converted = discountedPrice / currencyRate
-      return isForeignCurrency(this.invoiceData.currencyUnit || this.formSaleOrder.currencyUnit)
-        ? Math.floor(converted)
-        : converted
+      const shapedItem = { appraisalPrice: this.getAppraisalPrice(item), discountPercent: item.discountPercent }
+      const currencyUnit = this.invoiceData.currencyUnit || this.formSaleOrder.currencyUnit
+      return convertedUnitPrice(shapedItem, this.invoiceData.currencyRate, currencyUnit)
     },
     getTotalConvertedPrice(item) {
-      const convertedPrice = this.getConvertedPrice(item)
-      const qty = item.qty || 0
-      return convertedPrice * qty
+      const shapedItem = {
+        appraisalPrice: this.getAppraisalPrice(item),
+        discountPercent: item.discountPercent,
+        qty: item.qty
+      }
+      const currencyUnit = this.invoiceData.currencyUnit || this.formSaleOrder.currencyUnit
+      return lineAmount(shapedItem, this.invoiceData.currencyRate, currencyUnit)
     },
     getSumAppraisalPrice(items) {
       if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
@@ -711,7 +706,7 @@ export default {
         return sum + (Number(price) || 0)
       }, 0)
       return isForeignCurrency(this.invoiceData.currencyUnit || this.formSaleOrder.currencyUnit)
-        ? String(Math.floor(total))
+        ? String(total)
         : Number(total).toFixed(2)
     },
     getSumQty(items) {
@@ -727,7 +722,7 @@ export default {
         return sum + (Number(price) || 0)
       }, 0)
       return isForeignCurrency(this.invoiceData.currencyUnit || this.formSaleOrder.currencyUnit)
-        ? String(Math.floor(total))
+        ? String(total)
         : Number(total).toFixed(2)
     }
   }

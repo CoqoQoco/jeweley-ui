@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
+import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 import {
   PAGE_WIDTH,
@@ -42,6 +43,7 @@ export class InvoiceBillPdfBuilder {
     this.customer = this.saleOrderData.customer || {}
     this.invoiceNo = this.saleOrderData.invoiceNo || ''
     this.invoiceDate = this.saleOrderData.invoiceDate || dayjs()
+    this.currencyUnit = this.saleOrderData.currencyUnit || 'THB'
     this.currencyRate = Number(this.saleOrderData.currencyRate) || 1
     this.remark = this.saleOrderData.remark || ''
 
@@ -51,26 +53,25 @@ export class InvoiceBillPdfBuilder {
     this.vatPercent =
       Number(this.saleOrderData.vatPercent) || Number(this.saleOrderData.vat) || 0
 
-    this.subtotal = this.calculateSubtotal()
-    this.totalAfterDiscountAndAddition =
-      this.subtotal - this.specialDiscount + this.specialAddition
-    this.totalBeforeVat = this.totalAfterDiscountAndAddition + this.freightAndInsurance
-    this.vatAmount = (this.totalBeforeVat * this.vatPercent) / 100
-    this.totalAmount = this.totalBeforeVat + this.vatAmount
-    this.totalQty = this.items.reduce((sum, item) => sum + (Number(item.qty) || 0), 0)
-  }
-
-  calculateSubtotal() {
-    let total = 0
-    this.items.forEach((item) => {
-      const price = Number(item.appraisalPrice) || 0
-      const qty = Number(item.qty) || 0
-      const discountPercent = Number(item.discountPercent) || 0
-      const priceAfterDiscount = price * (1 - discountPercent / 100)
-      const convertedPrice = priceAfterDiscount / this.currencyRate
-      total += convertedPrice * qty
+    // ปัดเศษที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
+    const totals = computeDocumentTotals({
+      items: this.items,
+      currencyRate: this.currencyRate,
+      currencyUnit: this.currencyUnit,
+      specialDiscount: this.specialDiscount,
+      specialAddition: this.specialAddition,
+      freight: this.freightAndInsurance,
+      vatPercent: this.vatPercent
     })
-    return total
+    this.subtotal = totals.subTotal
+    this.specialDiscount = totals.specialDiscount
+    this.specialAddition = totals.specialAddition
+    this.freightAndInsurance = totals.freight
+    this.totalAfterDiscountAndAddition = this.subtotal - this.specialDiscount + this.specialAddition
+    this.totalBeforeVat = totals.afterSpecial
+    this.vatAmount = totals.vatAmount
+    this.totalAmount = totals.grandTotalRaw
+    this.totalQty = this.items.reduce((sum, item) => sum + (Number(item.qty) || 0), 0)
   }
 
   formatNumber(num) {
@@ -145,12 +146,9 @@ export class InvoiceBillPdfBuilder {
       const y = ITEMS_BASE_Y + rowIndex * LINE_HEIGHT + this.offsetY
       const itemNo = pageIndex * MAX_ROWS_PER_PAGE + rowIndex + 1
 
-      const appraisalPrice = Number(item.appraisalPrice) || 0
       const qty = Number(item.qty) || 0
-      const discountPercent = Number(item.discountPercent) || 0
-      const priceAfterDiscount = appraisalPrice * (1 - discountPercent / 100)
-      const unitPrice = priceAfterDiscount / this.currencyRate
-      const amount = unitPrice * qty
+      const unitPrice = convertedUnitPrice(item, this.currencyRate, this.currencyUnit)
+      const amount = lineAmount(item, this.currencyRate, this.currencyUnit)
 
       const stockNo =
         item.stockNumber && item.productNumber

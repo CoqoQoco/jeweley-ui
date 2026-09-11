@@ -251,6 +251,7 @@ import { success, error, warning } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { PAYMENT_METHODS, MOBILE_SALE_PAYMENT_LABEL_KEYS, getPaymentApiName } from '@/constants/payment-methods.js'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 
 // value string ที่ v-model ของฟอร์มนี้ใช้ ('credit_card'/'credit_term' มี underscore ต่างจาก key ของ constants)
 const VALUE_BY_KEY = {
@@ -328,30 +329,46 @@ export default {
       return this.availableItems.length > 0 && this.selectedItems.length === this.availableItems.length
     },
 
+    selectedStockItemsForTotals() {
+      return this.stockItems.filter(item => this.selectedItems.includes(item.stockNumber))
+    },
+
+    // ยอดรวม F.O.B. ของรายการที่เลือก — ต้องคิดจากตัวกลาง computeDocumentTotals เพื่อให้เกณฑ์การปัดตรงกับใบ PDF (half-up)
+    documentTotals() {
+      return computeDocumentTotals({
+        items: this.selectedStockItemsForTotals,
+        currencyRate: this.currencyRate,
+        currencyUnit: this.displayCurrency,
+        specialDiscount: this.specialDiscount,
+        specialAddition: this.specialAddition,
+        freight: this.freightAndInsurance,
+        vatPercent: this.vatPercent
+      })
+    },
+
     // ยอดรวมสินค้าที่เลือก (แปลงสกุลเงินแล้ว)
     totalSelectedAmount() {
-      const selected = this.stockItems.filter(item => this.selectedItems.includes(item.stockNumber))
-      return selected.reduce((sum, item) => sum + this.getItemTotalConverted(item), 0)
+      return Number(this.documentTotals.subTotal) || 0
     },
 
     // ยอดรวมหลังหักส่วนลดพิเศษและเพิ่มส่วนพิเศษ
     totalAfterDiscountAndAddition() {
-      return this.totalSelectedAmount - Number(this.specialDiscount || 0) + Number(this.specialAddition || 0)
+      return this.totalSelectedAmount - this.documentTotals.specialDiscount + this.documentTotals.specialAddition
     },
 
     // ยอดรวมก่อน VAT (รวม Freight & Insurance)
     totalBeforeVat() {
-      return this.totalAfterDiscountAndAddition + Number(this.freightAndInsurance || 0)
+      return this.totalAfterDiscountAndAddition + this.documentTotals.freight
     },
 
     // คำนวณ VAT
     vatAmount() {
-      return (this.totalBeforeVat * Number(this.vatPercent || 0)) / 100
+      return this.documentTotals.vatAmount
     },
 
-    // ยอดรวมสุดท้าย
+    // ยอดรวมสุดท้าย — ปัดครึ่งขึ้นเป็นจำนวนเต็มเสมอ ให้ตรงกับยอดที่พิมพ์บนใบแจ้งหนี้
     grandTotal() {
-      return this.totalBeforeVat + this.vatAmount
+      return this.documentTotals.grandTotalRounded
     }
   },
 
@@ -372,11 +389,12 @@ export default {
 
     // ราคารวมต่อรายการ (แปลงสกุลเงินแล้ว)
     getItemTotalConverted(item) {
-      const appraisalPrice = this.getAppraisalPrice(item)
-      const discountPercent = Number(item.discountPercent) || 0
-      const qty = Number(item.qty) || 1
-      const priceAfterDiscount = appraisalPrice * (1 - discountPercent / 100)
-      return (priceAfterDiscount / this.currencyRate) * qty
+      const shapedItem = {
+        appraisalPrice: this.getAppraisalPrice(item),
+        discountPercent: item.discountPercent,
+        qty: Number(item.qty) || 1
+      }
+      return lineAmount(shapedItem, this.currencyRate, this.displayCurrency)
     },
 
     toggleSelectAll() {
@@ -446,7 +464,11 @@ export default {
         const appraisalPrice = Number(item.appraisalPrice) || Number(item.price) || 0
         const discountPercent = Number(item.discountPercent) || 0
         const priceAfterDiscount = appraisalPrice * (1 - discountPercent / 100)
-        const convertedPrice = priceAfterDiscount / currencyRate
+        const convertedPrice = convertedUnitPrice(
+          { appraisalPrice, discountPercent },
+          currencyRate,
+          currencyUnit
+        )
 
         return {
           stockNumber: item.stockNumber,

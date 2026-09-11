@@ -276,11 +276,7 @@
         <template #body="slotProps">
           <div class="qty-container">
             <span>{{
-              formatDocMoney(
-                (Number(slotProps.data.appraisalPrice || 0) *
-                  (1 - (slotProps.data.discountPercent || 0) / 100)) /
-                (customer.currencyMultiplier || 1)
-              )
+              formatDocMoney(convertedUnitPrice(slotProps.data, customer.currencyMultiplier, customer.currencyUnit))
             }}</span>
           </div>
         </template>
@@ -310,12 +306,7 @@
         <template #body="slotProps">
           <div class="qty-container">
             <span>{{
-              formatDocMoney(
-                ((Number(slotProps.data.appraisalPrice || 0) *
-                  (1 - (slotProps.data.discountPercent || 0) / 100)) /
-                  (customer.currencyMultiplier || 1)) *
-                (Number(slotProps.data.qty) || 0)
-              )
+              formatDocMoney(lineAmount(slotProps.data, customer.currencyMultiplier, customer.currencyUnit))
             }}</span>
           </div>
         </template>
@@ -603,6 +594,7 @@ import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 
 import { isForeignCurrency, formatDocCurrency } from '@/services/utils/decimal.js'
+import { convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
@@ -670,13 +662,15 @@ export default {
   },
 
   methods: {
+    convertedUnitPrice,
+    lineAmount,
     formatPrice(price) {
       return formatDocCurrency(price, this.customer.currencyUnit, 'th-TH')
     },
 
     formatDocMoney(value) {
       return isForeignCurrency(this.customer.currencyUnit)
-        ? String(Math.floor(Number(value) || 0))
+        ? String(Number(value) || 0)
         : (Number(value) || 0).toFixed(2)
     }
   }

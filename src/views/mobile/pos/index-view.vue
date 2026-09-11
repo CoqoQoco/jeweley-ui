@@ -119,19 +119,7 @@ import PosCartLine from './components/pos-cart-line.vue'
 import PosCustomerChip from './components/pos-customer-chip.vue'
 import PosCheckoutSheet from './components/pos-checkout-sheet.vue'
 import PosDoneView from './components/pos-done-view.vue'
-
-// ปัดยอดให้ตรงกับ backend MathHelper.CeilMoney เป๊ะ: Math.Ceiling(Math.Round(v, 2, AwayFromZero))
-// ห้ามใช้ ceilToInteger จาก services/utils/decimal.js ตรงๆ — พบว่ามี floating-point bug ที่ค่า x.005 บางค่า
-// (เช่น 1.005, 8192.005 ปัดผิดทิศทาง เพราะ 1.005*100 ได้ 100.49999999999999 ใน JS ตรงๆ)
-// ใช้ trick "ต่อ string exponent" (num.toString() + 'e2') แทนการคูณลอยตัวตรงๆ กัน drift นี้
-function ceilMoney(value) {
-  const num = Number(value)
-  if (!Number.isFinite(num) || num <= 0) return 0
-  const str = num.toString()
-  const scaled = /e/i.test(str) ? num * 100 : Number(`${str}e2`)
-  const roundedScaled = Math.round(scaled)
-  return Math.ceil(roundedScaled / 100)
-}
+import { roundToInteger } from '@/services/utils/money.js'
 
 export default {
   name: 'MobilePosIndexView',
@@ -225,9 +213,9 @@ export default {
       return this.afterSpecialTotal + this.vatAmount
     },
 
-    // ยอดที่ใช้ "เก็บเงิน" จริง ต้องตรงกับ backend GrandTotalRounded เป๊ะ (CeilMoney)
+    // ยอดที่ใช้ "เก็บเงิน" จริง ต้องตรงกับ backend GrandTotalRounded เป๊ะ (ปัดครึ่งขึ้น half-up)
     displayTotal() {
-      return ceilMoney(this.grandTotalRaw)
+      return roundToInteger(this.grandTotalRaw)
     },
 
     checkoutLabel() {

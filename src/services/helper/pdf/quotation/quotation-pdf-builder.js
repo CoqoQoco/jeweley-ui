@@ -1,7 +1,8 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
-import { ceilToInteger, isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
+import { isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
+import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
 
@@ -45,36 +46,25 @@ export class InvoicePdfBuilder {
       ? customer.showDecimals
       : !isForeignCurrency(this.currencyUnit)
 
-    // เพิ่มการคำนวณ totalAmount ใน constructor
-    this.totalAmount = this.calculateTotalAmount()
-
-    // rounding fields (computed after totalAmount is set — using subTotal + freight + vat)
-    // grandTotalRaw computed inline here after full summary calculation
-    const _totalAfterSpecial = this.totalAmount - this.specialDiscount + this.specialAddition
-    const _subTotal = _totalAfterSpecial + this.freight
-    const _vatAmount = _subTotal * (this.vatPercent / 100)
-    const _grandTotalRaw = _subTotal + _vatAmount
-    this.grandTotalRaw = _grandTotalRaw
-    this.grandTotalRounded = ceilToInteger(_grandTotalRaw)
-    this.roundingAdjustment = this.grandTotalRounded - this.grandTotalRaw
-  }
-
-  // เพิ่มเมธอดคำนวณ totalAmount
-  calculateTotalAmount() {
-    let total = 0
-    if (this.data && Array.isArray(this.data)) {
-      this.data.forEach((item) => {
-        const appraisalPrice = Number(item.appraisalPrice) || 0
-        const discountPercent = item.discountPercent || 0
-        const priceAfterDiscount = appraisalPrice * (1 - discountPercent / 100)
-
-        const qtyVal = Number(item.qty) || 0
-        const convertedPrice = this.roundPriceForCalc(priceAfterDiscount / this.currencyMultiplier)
-
-        total += convertedPrice * qtyVal
-      })
-    }
-    return total
+    // เพิ่มการคำนวณยอดรวมทั้งใบ — ปัดเศษที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
+    const totals = computeDocumentTotals({
+      items: this.data,
+      currencyRate: this.currencyMultiplier,
+      currencyUnit: this.currencyUnit,
+      specialDiscount: this.specialDiscount,
+      specialAddition: this.specialAddition,
+      freight: this.freight,
+      vatPercent: this.vatPercent
+    })
+    this.totalAmount = totals.subTotal
+    this.specialDiscount = totals.specialDiscount
+    this.specialAddition = totals.specialAddition
+    this.freight = totals.freight
+    this.totalAfterSpecial = totals.afterSpecial
+    this.vatAmount = totals.vatAmount
+    this.grandTotalRaw = totals.grandTotalRaw
+    this.grandTotalRounded = totals.grandTotalRounded
+    this.roundingAdjustment = totals.roundingAdjustment
   }
 
   // เมธอดใหม่สำหรับเตรียมข้อมูล PDF ซึ่งจะโหลดโลโก้ก่อน
@@ -620,12 +610,8 @@ export class InvoicePdfBuilder {
       const qty = Number(item.qty) || 0
       // --- ปรับ logic ตรงนี้ ---
 
-      const price = this.roundPriceForCalc(
-        ((Number(item.appraisalPrice) || 0) * (1 - (item.discountPercent || 0) / 100)) /
-          this.currencyMultiplier
-      )
-
-      const amount = price * qty
+      const price = convertedUnitPrice(item, this.currencyMultiplier, this.currencyUnit)
+      const amount = lineAmount(item, this.currencyMultiplier, this.currencyUnit)
       sumQty += qty
       sumAmount += amount
 
@@ -723,10 +709,8 @@ export class InvoicePdfBuilder {
     const hasVat = this.vatPercent > 0
     const hasAnyExtra = hasSpecialDiscount || hasSpecialAddition || hasFreight || hasVat
 
-    const totalAfterSpecial = this.totalAmount - this.specialDiscount + this.specialAddition
-    const subTotal = totalAfterSpecial + this.freight
-    const vatAmount = subTotal * (this.vatPercent / 100)
-    const grandTotal = subTotal + vatAmount
+    const subTotal = this.totalAfterSpecial
+    const vatAmount = this.vatAmount
 
     // F.O.B Bangkok row — แสดงเฉพาะเมื่อมี row อื่นต่อท้าย (ถ้าไม่มีอะไรเลย ข้ามไปแสดง C.I.F เลย)
     if (hasAnyExtra) {
@@ -814,14 +798,15 @@ export class InvoicePdfBuilder {
       ])
     }
 
-    // ROUNDING row (only when adjustment > 0)
-    if (this.roundingAdjustment > 0) {
+    // ROUNDING row — ส่วนต่างระหว่าง C.I.F ที่พิมพ์กับผลบวกของบรรทัดเหนือมันทั้งหมด (แสดงเมื่อไม่เท่ากับ 0 เท่านั้น)
+    if (this.roundingAdjustment !== 0) {
+      const roundingSign = this.roundingAdjustment > 0 ? '+' : '-'
       body.push([
         ...emptyLeftCells,
         { text: 'ROUNDING', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
         {},
         {
-          text: '+' + this.roundNoDecimal(this.roundingAdjustment),
+          text: roundingSign + this.roundNoDecimal(Math.abs(this.roundingAdjustment)),
           style: 'totalSummaryLabelColored',
           alignment: 'right'
         }
@@ -1165,21 +1150,10 @@ export class InvoicePdfBuilder {
     return formatMoney(price, { showDecimals: this.showDecimals, locale: 'th-TH' })
   }
 
-  // Numeric rounding used for internal calculations (price/amount build-up) — returns a Number,
-  // never used for display. Preserves the pre-existing calc behavior: round to whole number for
-  // THB, floor for foreign currency.
-  roundPriceForCalc(num) {
-    if (typeof num !== 'number' || isNaN(num)) return 0
-    return this.showDecimals ? Math.round(num) : Math.floor(num)
-  }
-
-  // Display-only formatter for amounts/summary totals.
+  // Display-only formatter for amounts/summary totals — ปัดครึ่งขึ้นผ่านตัวกลาง formatMoney เสมอ
   roundNoDecimal(num) {
     if (typeof num !== 'number' || isNaN(num)) return '0.00'
-    if (!this.showDecimals) {
-      return Math.floor(num).toLocaleString('th-TH', { maximumFractionDigits: 0 })
-    }
-    return Math.round(num).toFixed(2)
+    return formatMoney(num, { showDecimals: this.showDecimals, locale: 'th-TH' })
   }
 
   getDocDefinition() {

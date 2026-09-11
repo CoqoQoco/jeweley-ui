@@ -591,7 +591,8 @@ import CustomerEditModal from '../modal/customer-edit-modal.vue'
 import SaleOrderInvoiceModal from '../modal/invoice-modal.vue'
 import ConfirmStockModal from '../modal/confirm-stock-modal.vue'
 import ConfirmAndInvoiceModal from '../modal/confirm-and-invoice-modal.vue'
-import { formatDecimal, ceilToInteger, isForeignCurrency } from '@/services/utils/decimal.js'
+import { formatDecimal, isForeignCurrency } from '@/services/utils/decimal.js'
+import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import { success, error, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
 import { storage } from '@/services/storage.js'
@@ -923,27 +924,39 @@ export default {
       return !!(this.formSaleOrder.customerCode && this.formSaleOrder.customerName)
     },
 
+    // ยอดรวม F.O.B. ของใบสั่งขาย — ต้องคิดจากตัวกลาง computeDocumentTotals เพื่อให้เกณฑ์การปัดตรงกับใบ PDF (half-up)
+    documentTotals() {
+      return computeDocumentTotals({
+        items: this.stockItems,
+        currencyRate: this.formSaleOrder.currencyRate,
+        currencyUnit: this.formSaleOrder.currencyUnit,
+        specialDiscount: this.formSaleOrder.specialDiscount,
+        specialAddition: this.formSaleOrder.specialAddition,
+        freight: this.formSaleOrder.freight,
+        vatPercent: this.formSaleOrder.vatPercent
+      })
+    },
     soTotalAfterSpecial() {
-      const total = Number(this.getSumTotalConvertedPrice(this.stockItems)) || 0
-      return total - (this.formSaleOrder.specialDiscount || 0) + (this.formSaleOrder.specialAddition || 0)
+      const total = Number(this.documentTotals.subTotal) || 0
+      return total - this.documentTotals.specialDiscount + this.documentTotals.specialAddition
     },
     soTotalBeforeVat() {
-      return this.soTotalAfterSpecial + Number(this.formSaleOrder.freight || 0)
+      return this.soTotalAfterSpecial + this.documentTotals.freight
     },
     soVatAmount() {
-      return this.soTotalBeforeVat * ((this.formSaleOrder.vatPercent || 0) / 100)
+      return this.documentTotals.vatAmount
     },
     soGrandTotal() {
-      return this.soTotalBeforeVat + this.soVatAmount
+      return this.documentTotals.grandTotalRaw
     },
     grandTotalRaw() {
-      return Number(this.soGrandTotal)
+      return this.documentTotals.grandTotalRaw
     },
     grandTotalRounded() {
-      return ceilToInteger(this.grandTotalRaw)
+      return this.documentTotals.grandTotalRounded
     },
     roundingAdjustment() {
-      return this.grandTotalRounded - this.grandTotalRaw
+      return this.documentTotals.roundingAdjustment
     },
 
     editCustomerData() {
@@ -1544,7 +1557,7 @@ export default {
         remark: this.formSaleOrder.remark || '',
         salePerson: (this.formSaleOrder.salePerson || '').trim() || null,
         saleSupport: (this.formSaleOrder.saleSupport || '').trim() || null,
-        subTotal: Number(this.getSumTotalConvertedPrice(this.stockItems)) || 0,
+        subTotal: Number(this.documentTotals.subTotal) || 0,
         grandTotalRaw: this.grandTotalRaw,
         data: JSON.stringify({
           stockItems: stockItemsData,
@@ -1937,15 +1950,17 @@ export default {
     },
 
     getConvertedPrice(item) {
-      const discountedPrice = this.getDiscountedPrice(item)
-      const currencyRate = this.formSaleOrder.currencyRate || 1
-      return discountedPrice / currencyRate
+      const shapedItem = { appraisalPrice: this.getAppraisalPrice(item), discountPercent: item.discountPercent }
+      return convertedUnitPrice(shapedItem, this.formSaleOrder.currencyRate, this.formSaleOrder.currencyUnit)
     },
 
     getTotalConvertedPrice(item) {
-      const convertedPrice = this.getConvertedPrice(item)
-      const qty = item.qty || 0
-      return convertedPrice * qty
+      const shapedItem = {
+        appraisalPrice: this.getAppraisalPrice(item),
+        discountPercent: item.discountPercent,
+        qty: item.qty
+      }
+      return lineAmount(shapedItem, this.formSaleOrder.currencyRate, this.formSaleOrder.currencyUnit)
     },
 
     recalculateAll() {
@@ -2114,14 +2129,16 @@ export default {
     },
 
     getSumConvertedPrice(items) {
-      if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
+      if (!items || !Array.isArray(items) || items.length === 0) {
+        return isForeignCurrency(this.formSaleOrder.currencyUnit) ? '0' : '0.00'
+      }
 
       const total = items.reduce((sum, item) => {
         const price = this.getConvertedPrice(item)
         return sum + (Number(price) || 0)
       }, 0)
 
-      return Number(total).toFixed(2)
+      return isForeignCurrency(this.formSaleOrder.currencyUnit) ? String(total) : Number(total).toFixed(2)
     },
 
     getSumQty(items) {
@@ -2133,14 +2150,16 @@ export default {
     },
 
     getSumTotalConvertedPrice(items) {
-      if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
+      if (!items || !Array.isArray(items) || items.length === 0) {
+        return isForeignCurrency(this.formSaleOrder.currencyUnit) ? '0' : '0.00'
+      }
 
       const total = items.reduce((sum, item) => {
         const price = this.getTotalConvertedPrice(item)
         return sum + (Number(price) || 0)
       }, 0)
 
-      return Number(total).toFixed(2)
+      return isForeignCurrency(this.formSaleOrder.currencyUnit) ? String(total) : Number(total).toFixed(2)
     },
 
     updateItemTotal(item) {

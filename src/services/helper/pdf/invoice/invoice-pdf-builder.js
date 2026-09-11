@@ -1,7 +1,8 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
-import { ceilToInteger, isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
+import { isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
+import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 import { COMPANY_INFO, loadCompanyInfo } from '@/config/company-info.js'
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
@@ -47,32 +48,27 @@ export class InvoicePdfBuilder {
     this.sellerName = saleOrderData?.sellerName || ''
     this.supportName = saleOrderData?.supportName || ''
 
-    // Calculate totals with new fields
-    this.subtotal = this.calculateSubtotal()
-    this.totalAfterDiscountAndAddition = this.subtotal - this.specialDiscount + this.specialAddition
-    this.totalBeforeVat = this.totalAfterDiscountAndAddition + this.freightAndInsurance
-    this.vatAmount = (this.totalBeforeVat * this.vatPercent) / 100
-    this.totalAmount = this.totalBeforeVat + this.vatAmount
-    this.grandTotalRaw = this.totalAmount
-    this.grandTotalRounded = ceilToInteger(this.totalAmount)
-    this.roundingAdjustment = this.grandTotalRounded - this.grandTotalRaw
-  }
-
-  calculateSubtotal() {
-    if (!this.data || !Array.isArray(this.data)) return 0
-
-    let total = 0
-    this.data.forEach(item => {
-      const price = Number(item.appraisalPrice) || 0
-      const qty = Number(item.qty) || 0
-      // Apply item-level discount
-      const discountPercent = Number(item.discountPercent) || 0
-      const priceAfterDiscount = price * (1 - discountPercent / 100)
-      // Convert currency
-      const convertedPrice = priceAfterDiscount / this.currencyRate
-      total += convertedPrice * qty
+    // Calculate totals with new fields — ปัดเศษที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
+    const totals = computeDocumentTotals({
+      items: this.data,
+      currencyRate: this.currencyRate,
+      currencyUnit: this.currencyUnit,
+      specialDiscount: this.specialDiscount,
+      specialAddition: this.specialAddition,
+      freight: this.freightAndInsurance,
+      vatPercent: this.vatPercent
     })
-    return total
+    this.subtotal = totals.subTotal
+    this.specialDiscount = totals.specialDiscount
+    this.specialAddition = totals.specialAddition
+    this.freightAndInsurance = totals.freight
+    this.totalAfterDiscountAndAddition = this.subtotal - this.specialDiscount + this.specialAddition
+    this.totalBeforeVat = totals.afterSpecial
+    this.vatAmount = totals.vatAmount
+    this.totalAmount = totals.grandTotalRaw
+    this.grandTotalRaw = totals.grandTotalRaw
+    this.grandTotalRounded = totals.grandTotalRounded
+    this.roundingAdjustment = totals.roundingAdjustment
   }
 
   // เมธอดใหม่สำหรับเตรียมข้อมูล PDF ซึ่งจะโหลดโลโก้ก่อน
@@ -437,7 +433,7 @@ export class InvoicePdfBuilder {
 
       // เพิ่มตารางพร้อม total
       if (isLastPage) {
-        pageContent.push(this.getFinalPageTableContent(pageItems, pageNum))
+        pageContent.push(this.getFinalPageTableContent(pageItems, pageNum, totalPages))
       } else {
         pageContent.push(this.getRegularPageTableContent(pageItems, pageNum))
       }
@@ -524,14 +520,14 @@ export class InvoicePdfBuilder {
   }
 
   // ตารางหน้าสุดท้าย (มี total, freight, discount, grand total)
-  getFinalPageTableContent(items, pageNum) {
+  getFinalPageTableContent(items, pageNum, totalPages) {
     return {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
         dontBreakRows: true,
         widths: [15, 43, 100, 49, 50, 58, '*', 20, 62, 72], // 10 columns
-        body: this.buildFinalTableBody(items, pageNum)
+        body: this.buildFinalTableBody(items, pageNum, totalPages)
       },
       layout: {
         hLineWidth: function () {
@@ -582,16 +578,12 @@ export class InvoicePdfBuilder {
     items = items || []
     
     items.forEach((item, index) => {
-      const actualIndex = pageNum * 10 + index
+      const actualIndex = pageNum * this.itemsPerPage + index
 
-      // คำนวณราคาและจำนวน
-      const appraisalPrice = Number(item.appraisalPrice) || 0
+      // คำนวณราคาและจำนวน — ปัดที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
       const qty = Number(item.qty) || 0
-      // Use item-level discount percent
-      const discountPercent = Number(item.discountPercent) || 0
-      const priceAfterDiscount = appraisalPrice * (1 - discountPercent / 100)
-      const convertedPrice = priceAfterDiscount / this.currencyRate
-      const amount = convertedPrice * qty
+      const convertedPrice = convertedUnitPrice(item, this.currencyRate, this.currencyUnit)
+      const amount = lineAmount(item, this.currencyRate, this.currencyUnit)
 
       sumQty += qty
       sumAmount += amount
@@ -638,8 +630,42 @@ export class InvoicePdfBuilder {
   }
 
   // สร้าง body ตาราง (หน้าสุดท้าย)
-  buildFinalTableBody(items, pageNum) {
+  buildFinalTableBody(items, pageNum, totalPages) {
     const body = this.buildRegularTableBody(items, pageNum)
+
+    // Grand Total row (น้ำหนักรวม + จำนวนชิ้นรวมทุกหน้า) — แสดงเฉพาะเมื่อเอกสารมีมากกว่า 1 หน้า
+    if (totalPages > 1) {
+      let sumGoldAll = 0,
+        sumDiamondAll = 0,
+        sumGemAll = 0,
+        sumQtyAll = 0
+
+      if (this.data && Array.isArray(this.data)) {
+        this.data.forEach((item) => {
+          sumQtyAll += Number(item.qty) || 0
+          if (item.materials && Array.isArray(item.materials)) {
+            item.materials.forEach((m) => {
+              if (m.type === 'Gold') sumGoldAll += Number(m.weight) || 0
+              if (m.type === 'Diamond') sumDiamondAll += Number(m.weight) || 0
+              if (m.type === 'Gem') sumGemAll += Number(m.weight) || 0
+            })
+          }
+        })
+      }
+
+      body.push([
+        { text: 'Grand Total', style: 'summaryLabel', alignment: 'right', colSpan: 4 },
+        {},
+        {},
+        {},
+        { text: this.formatPrice(sumGoldAll), style: 'summaryLabel', alignment: 'right' },
+        { text: this.formatPrice(sumDiamondAll), style: 'summaryLabel', alignment: 'right' },
+        { text: this.formatPrice(sumGemAll), style: 'summaryLabel', alignment: 'right' },
+        { text: sumQtyAll, style: 'summaryLabel', alignment: 'right' },
+        {},
+        {}
+      ])
+    }
 
     // SUBTOTAL row (F.O.B Bangkok)
     body.push([
@@ -766,8 +792,9 @@ export class InvoicePdfBuilder {
       ])
     }
 
-    // ROUNDING row (only when adjustment > 0)
-    if (this.roundingAdjustment > 0 && !this.hideRounding) {
+    // ROUNDING row — ส่วนต่างระหว่าง C.I.F ที่พิมพ์กับผลบวกของบรรทัดเหนือมันทั้งหมด (แสดงเมื่อไม่เท่ากับ 0 เท่านั้น)
+    if (this.roundingAdjustment !== 0 && !this.hideRounding) {
+      const roundingSign = this.roundingAdjustment > 0 ? '+' : '-'
       body.push([
         {
           text: '',
@@ -780,7 +807,7 @@ export class InvoicePdfBuilder {
         { text: 'ROUNDING', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
         {},
         {
-          text: '+' + this.roundNoDecimal(this.roundingAdjustment),
+          text: roundingSign + this.roundNoDecimal(Math.abs(this.roundingAdjustment)),
           style: 'totalSummaryLabelColored',
           alignment: 'right'
         }

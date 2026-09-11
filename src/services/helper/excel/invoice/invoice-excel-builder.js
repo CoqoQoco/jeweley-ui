@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import ExcelJS from 'exceljs'
-import { ceilToInteger, isForeignCurrency } from '@/services/utils/decimal.js'
+import { isForeignCurrency } from '@/services/utils/decimal.js'
+import { computeDocumentTotals, convertedUnitPrice, lineAmount, roundHalfUp } from '@/services/utils/money.js'
 
 export class InvoiceExcelBuilder {
   constructor(
@@ -36,15 +37,27 @@ export class InvoiceExcelBuilder {
     this.freightAndInsurance = Number(saleOrderData.freightAndInsurance) || 0
     this.vatPercent = Number(saleOrderData.vatPercent) || Number(saleOrderData.vat) || 0
 
-    // Calculate totals
-    this.subtotal = this.calculateSubtotal()
+    // Calculate totals — ปัดเศษที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
+    const totals = computeDocumentTotals({
+      items: this.data,
+      currencyRate: this.currencyRate,
+      currencyUnit: this.currencyUnit,
+      specialDiscount: this.specialDiscount,
+      specialAddition: this.specialAddition,
+      freight: this.freightAndInsurance,
+      vatPercent: this.vatPercent
+    })
+    this.subtotal = totals.subTotal
+    this.specialDiscount = totals.specialDiscount
+    this.specialAddition = totals.specialAddition
+    this.freightAndInsurance = totals.freight
     this.totalAfterDiscountAndAddition = this.subtotal - this.specialDiscount + this.specialAddition
-    this.totalBeforeVat = this.totalAfterDiscountAndAddition + this.freightAndInsurance
-    this.vatAmount = (this.totalBeforeVat * this.vatPercent) / 100
-    this.totalAmount = this.totalBeforeVat + this.vatAmount
-    this.grandTotalRaw = this.totalAmount
-    this.grandTotalRounded = ceilToInteger(this.totalAmount)
-    this.roundingAdjustment = this.grandTotalRounded - this.grandTotalRaw
+    this.totalBeforeVat = totals.afterSpecial
+    this.vatAmount = totals.vatAmount
+    this.totalAmount = totals.grandTotalRaw
+    this.grandTotalRaw = totals.grandTotalRaw
+    this.grandTotalRounded = totals.grandTotalRounded
+    this.roundingAdjustment = totals.roundingAdjustment
 
     // Options (configurable per document type)
     this.documentTitle = options.documentTitle || 'QUOTATION'
@@ -57,23 +70,9 @@ export class InvoiceExcelBuilder {
     this.logoBase64 = null
   }
 
-  calculateSubtotal() {
-    if (!this.data || !Array.isArray(this.data)) return 0
-    let total = 0
-    this.data.forEach((item) => {
-      const price = Number(item.appraisalPrice) || 0
-      const qty = Number(item.qty) || 0
-      const discountPercent = Number(item.discountPercent) || 0
-      const priceAfterDiscount = price * (1 - discountPercent / 100)
-      const convertedPrice = priceAfterDiscount / this.currencyRate
-      total += convertedPrice * qty
-    })
-    return total
-  }
-
   formatCurrency(amount) {
     if (!this.showDecimals) {
-      return new Intl.NumberFormat('th-TH', { maximumFractionDigits: 0 }).format(Math.floor(Number(amount) || 0))
+      return new Intl.NumberFormat('th-TH', { maximumFractionDigits: 0 }).format(roundHalfUp(Number(amount) || 0, 0))
     }
     return new Intl.NumberFormat('th-TH', {
       minimumFractionDigits: 2,
@@ -444,12 +443,10 @@ export class InvoiceExcelBuilder {
       sumAmount = 0
 
     this.data.forEach((item, index) => {
-      const appraisalPrice = Number(item.appraisalPrice) || 0
+      // ปัดที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
       const qty = Number(item.qty) || 0
-      const discountPercent = Number(item.discountPercent) || 0
-      const priceAfterDiscount = appraisalPrice * (1 - discountPercent / 100)
-      const convertedPrice = priceAfterDiscount / this.currencyRate
-      const amount = convertedPrice * qty
+      const convertedPrice = convertedUnitPrice(item, this.currencyRate, this.currencyUnit)
+      const amount = lineAmount(item, this.currencyRate, this.currencyUnit)
 
       // Build multiline material text (matching PDF mini-table layout)
       const buildMaterialText = (type) => {
@@ -632,13 +629,14 @@ export class InvoiceExcelBuilder {
       row++
     }
 
-    // ROUNDING row (only when adjustment > 0)
-    if (this.roundingAdjustment > 0 && !this.hideRounding) {
+    // ROUNDING row — ส่วนต่างระหว่าง C.I.F ที่พิมพ์กับผลบวกของบรรทัดเหนือมันทั้งหมด (แสดงเมื่อไม่เท่ากับ 0 เท่านั้น)
+    if (this.roundingAdjustment !== 0 && !this.hideRounding) {
+      const roundingSign = this.roundingAdjustment > 0 ? '+' : '-'
       this.addSummaryRow(
         worksheet,
         row,
         'ROUNDING',
-        '+' + this.formatCurrency(this.roundingAdjustment)
+        roundingSign + this.formatCurrency(Math.abs(this.roundingAdjustment))
       )
       row++
     }

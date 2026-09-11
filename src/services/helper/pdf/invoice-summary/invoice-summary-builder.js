@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
-import { ceilToInteger } from '@/services/utils/decimal.js'
+import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import { COMPANY_INFO, COMPANY_TAX_ID, COMPANY_BANK, loadCompanyInfo } from '@/config/company-info.js'
 import { PDF_COLORS, PDF_STYLES, PDF_FONT } from '../shared/pdf-theme.js'
 import { formatPrice } from '../shared/pdf-format.js'
@@ -54,15 +54,27 @@ export class InvoiceSummaryPdfBuilder {
     this.itemsPerPage = Number(itemsPerPage) || 10
     this.showCifLabel = saleOrderData?.showCifLabel !== undefined ? saleOrderData.showCifLabel : true
 
-    // Compute financial totals
-    this.subtotal = this.calculateSubtotal()
+    // Compute financial totals — ปัดเศษที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
+    const totals = computeDocumentTotals({
+      items: this.data,
+      currencyRate: this.currencyRate,
+      currencyUnit: this.currencyUnit,
+      specialDiscount: this.specialDiscount,
+      specialAddition: this.specialAddition,
+      freight: this.freightAndInsurance,
+      vatPercent: this.vatPercent
+    })
+    this.subtotal = totals.subTotal
+    this.specialDiscount = totals.specialDiscount
+    this.specialAddition = totals.specialAddition
+    this.freightAndInsurance = totals.freight
     this.totalAfterDiscountAndAddition = this.subtotal - this.specialDiscount + this.specialAddition
-    this.totalBeforeVat = this.totalAfterDiscountAndAddition + this.freightAndInsurance
-    this.vatAmount = (this.totalBeforeVat * this.vatPercent) / 100
-    this.totalAmount = this.totalBeforeVat + this.vatAmount
-    this.grandTotalRaw = this.totalAmount
-    this.grandTotalRounded = ceilToInteger(this.totalAmount)
-    this.roundingAdjustment = this.grandTotalRounded - this.grandTotalRaw
+    this.totalBeforeVat = totals.afterSpecial
+    this.vatAmount = totals.vatAmount
+    this.totalAmount = totals.grandTotalRaw
+    this.grandTotalRaw = totals.grandTotalRaw
+    this.grandTotalRounded = totals.grandTotalRounded
+    this.roundingAdjustment = totals.roundingAdjustment
 
     // Seek-specific fields
     this.deposit = Number(saleOrderData.deposit) || 0
@@ -72,21 +84,6 @@ export class InvoiceSummaryPdfBuilder {
     this.createDate = saleOrderData.createDate || null
     this.paymentDay = Number(saleOrderData.paymentDay) || 0
     this.remark = saleOrderData.remark || ''
-  }
-
-  calculateSubtotal() {
-    if (!this.data || !Array.isArray(this.data)) return 0
-
-    let total = 0
-    this.data.forEach(item => {
-      const price = Number(item.appraisalPrice) || 0
-      const qty = Number(item.qty) || 0
-      const discountPercent = Number(item.discountPercent) || 0
-      const priceAfterDiscount = price * (1 - discountPercent / 100)
-      const convertedPrice = priceAfterDiscount / this.currencyRate
-      total += convertedPrice * qty
-    })
-    return total
   }
 
   async preparePDF() {
@@ -138,12 +135,10 @@ export class InvoiceSummaryPdfBuilder {
     safeItems.forEach((item, index) => {
       const actualIndex = pageNum * this.itemsPerPage + index
 
-      const appraisalPrice = Number(item.appraisalPrice) || 0
+      // ปัดที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
       const qty = Number(item.qty) || 0
-      const discountPercent = Number(item.discountPercent) || 0
-      const priceAfterDiscount = appraisalPrice * (1 - discountPercent / 100)
-      const convertedPrice = priceAfterDiscount / this.currencyRate
-      const amount = convertedPrice * qty
+      const convertedPrice = convertedUnitPrice(item, this.currencyRate, this.currencyUnit)
+      const amount = lineAmount(item, this.currencyRate, this.currencyUnit)
 
       body.push([
         setTableCell((actualIndex + 1).toString()),

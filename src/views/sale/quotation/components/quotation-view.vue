@@ -450,7 +450,8 @@ import { buildProductTypeLabelMap } from '@/services/helper/sale-summary/sale-su
 import { getBreakdownSetting } from '@/services/helper/breakdown-setting-store.js'
 
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
-import { ceilToInteger, isForeignCurrency, formatDocCurrency } from '@/services/utils/decimal.js'
+import { isForeignCurrency, formatDocCurrency } from '@/services/utils/decimal.js'
+import { computeDocumentTotals, convertedUnitPrice } from '@/services/utils/money.js'
 import { warning, success, error } from '@/services/alert/sweetAlerts.js'
 import { storage } from '@/services/storage.js'
 import dayjs from 'dayjs'
@@ -617,21 +618,25 @@ export default {
     sumConvertedPrice() {
       let sum = 0
       this.customer.quotationItems.forEach((item) => {
-        sum +=
-          ((Number(item.appraisalPrice) || 0) * (1 - (item.discountPercent || 0) / 100)) /
-          (this.customer.currencyMultiplier || 1)
+        sum += convertedUnitPrice(item, this.customer.currencyMultiplier, this.customer.currencyUnit)
       })
-      return isForeignCurrency(this.customer.currencyUnit) ? String(Math.floor(sum)) : sum.toFixed(2)
+      return isForeignCurrency(this.customer.currencyUnit) ? String(sum) : sum.toFixed(2)
+    },
+    // ยอดรวม F.O.B. — ต้องคิดจากตัวกลาง computeDocumentTotals เพื่อให้เกณฑ์การปัดตรงกับใบ PDF (half-up)
+    documentTotals() {
+      return computeDocumentTotals({
+        items: this.customer.quotationItems,
+        currencyRate: this.customer.currencyMultiplier,
+        currencyUnit: this.customer.currencyUnit,
+        specialDiscount: this.customer.specialDiscount,
+        specialAddition: this.customer.specialAddition,
+        freight: this.customer.freight,
+        vatPercent: this.customer.vatPercent
+      })
     },
     sumTotalConvertedPrice() {
-      let sum = 0
-      this.customer.quotationItems.forEach((item) => {
-        sum +=
-          (((Number(item.appraisalPrice) || 0) * (1 - (item.discountPercent || 0) / 100)) /
-            (this.customer.currencyMultiplier || 1)) *
-          (Number(item.qty) || 0)
-      })
-      return isForeignCurrency(this.customer.currencyUnit) ? String(Math.floor(sum)) : sum.toFixed(2)
+      const value = this.documentTotals.subTotal
+      return isForeignCurrency(this.customer.currencyUnit) ? String(value) : Number(value).toFixed(2)
     },
     sumNetWeight() {
       let gold = 0
@@ -650,26 +655,23 @@ export default {
       return net ? net.toFixed(2) : (0).toFixed(2)
     },
     totalAfterDiscountAndAddition() {
-      const total = Number(this.sumTotalConvertedPrice) || 0
-      return total - (this.customer.specialDiscount || 0) + (this.customer.specialAddition || 0)
+      const total = Number(this.documentTotals.subTotal) || 0
+      return total - this.documentTotals.specialDiscount + this.documentTotals.specialAddition
     },
     totalBeforeVat() {
-      return this.totalAfterDiscountAndAddition + Number(this.customer.freight || 0)
+      return this.totalAfterDiscountAndAddition + this.documentTotals.freight
     },
     vatAmount() {
-      return this.totalBeforeVat * ((this.customer.vatPercent || 0) / 100)
-    },
-    grandTotal() {
-      return (this.totalBeforeVat + this.vatAmount).toFixed(2)
+      return this.documentTotals.vatAmount
     },
     grandTotalRaw() {
-      return Number(this.totalBeforeVat) + Number(this.vatAmount)
+      return this.documentTotals.grandTotalRaw
     },
     grandTotalRounded() {
-      return ceilToInteger(this.grandTotalRaw)
+      return this.documentTotals.grandTotalRounded
     },
     roundingAdjustment() {
-      return this.grandTotalRounded - this.grandTotalRaw
+      return this.documentTotals.roundingAdjustment
     },
     editCustomerData() {
       return {

@@ -3,6 +3,10 @@
  * Helper functions for decimal number operations
  */
 
+import { roundHalfUp, isForeignCurrency } from './money.js'
+
+export { isForeignCurrency } from './money.js'
+
 /**
  * Format number to decimal with fixed positions
  * @param {number|string} value - The number to format
@@ -176,12 +180,6 @@ const parseDecimal = (value, decimals = 2) => {
   return roundDecimal(parsedValue, decimals)
 }
 
-const ceilToInteger = (value) => {
-  const parsed = parseFloat(value)
-  if (isNaN(parsed)) return 0
-  return Math.ceil(Math.round(parsed * 100) / 100)
-}
-
 /**
  * Cast a form input event value to a nullable Number.
  * Keeps '' / null / undefined as null instead of coercing to 0 — needed for
@@ -195,15 +193,8 @@ const toNullableNumber = (value) => {
 }
 
 /**
- * Check if a currency unit is foreign (not THB)
- * @param {string} unit - Currency unit code
- * @returns {boolean} true if foreign currency
- */
-const isForeignCurrency = (unit) => String(unit || '').trim().toUpperCase() !== 'THB'
-
-/**
  * Format a money value denominated in a document currency.
- * Foreign currency values are floored (truncated) to whole numbers.
+ * Foreign currency values are rounded half-up (away-from-zero) to whole numbers.
  * THB values keep the existing 2-decimal behavior.
  * @param {number|string} value - Value to format
  * @param {string} unit - Currency unit code
@@ -212,7 +203,7 @@ const isForeignCurrency = (unit) => String(unit || '').trim().toUpperCase() !== 
  */
 const formatDocCurrency = (value, unit, locale = 'th-TH') => {
   const num = Number(value) || 0
-  if (isForeignCurrency(unit)) return Math.floor(num).toLocaleString(locale, { maximumFractionDigits: 0 })
+  if (isForeignCurrency(unit)) return roundHalfUp(num, 0).toLocaleString(locale, { maximumFractionDigits: 0 })
   return num.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
@@ -220,13 +211,13 @@ const formatDocCurrency = (value, unit, locale = 'th-TH') => {
  * Format a money value based on an explicit showDecimals flag.
  * @param {number|string} value - Value to format
  * @param {Object} options
- * @param {boolean} [options.showDecimals=true] - true = 2 decimals, false = floor to whole number
+ * @param {boolean} [options.showDecimals=true] - true = 2 decimals, false = round half-up to whole number
  * @param {string} [options.locale='th-TH'] - Locale for toLocaleString
  * @returns {string} Formatted value
  */
 const formatMoney = (value, { showDecimals = true, locale = 'th-TH' } = {}) => {
   const num = Number(value) || 0
-  if (!showDecimals) return Math.floor(num).toLocaleString(locale, { maximumFractionDigits: 0 })
+  if (!showDecimals) return roundHalfUp(num, 0).toLocaleString(locale, { maximumFractionDigits: 0 })
   return num.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
@@ -240,9 +231,7 @@ export {
   multiplyDecimal,
   divideDecimal,
   parseDecimal,
-  ceilToInteger,
   toNullableNumber,
-  isForeignCurrency,
   formatDocCurrency,
   formatMoney
 }

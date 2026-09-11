@@ -300,6 +300,7 @@ import { loadInvoiceContext, toInvoicePdfData } from '@/services/helper/invoice/
 import { success, error } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { getPaymentStatus } from '@/services/utils/payment-status.js'
+import { computeDocumentTotals } from '@/services/utils/money.js'
 import { PAYMENT_METHOD_BY_CODE, MOBILE_SALE_PAYMENT_LABEL_KEYS } from '@/constants/payment-methods.js'
 import dayjs from 'dayjs'
 import SoItemCard from './components/so-item-card.vue'
@@ -378,39 +379,44 @@ export default {
       return Number(this.invoiceData?.currencyRate) || 1
     },
 
-    // Σ(appraisalPrice * (1 - discount%) / currencyRate * qty)
+    // ยอดรวม F.O.B. — ต้องคิดจากตัวกลาง computeDocumentTotals เพื่อให้เกณฑ์การปัดตรงกับใบ PDF (half-up)
+    documentTotals() {
+      return computeDocumentTotals({
+        items: this.invoiceItems,
+        currencyRate: this.invoiceData?.currencyRate,
+        currencyUnit: this.invoiceData?.currencyUnit,
+        specialDiscount: this.invoiceData?.specialDiscount,
+        specialAddition: this.invoiceData?.specialAddition,
+        freight: this.invoiceData?.freightAndInsurance,
+        vatPercent: this.invoiceData?.vatPercent
+      })
+    },
+
     totalSelectedAmount() {
-      return this.invoiceItems.reduce((sum, item) => {
-        const price = Number(item.appraisalPrice || item.price) || 0
-        const qty = Number(item.qty) || 1
-        const discountPercent = Number(item.discountPercent) || 0
-        const priceAfterDiscount = price * (1 - discountPercent / 100)
-        return sum + (priceAfterDiscount / this.currencyRate) * qty
-      }, 0)
+      return Number(this.documentTotals.subTotal) || 0
     },
 
     totalAfterDiscountAndAddition() {
       const base = this.totalSelectedAmount
-      return base - Number(this.invoiceData?.specialDiscount || 0) + Number(this.invoiceData?.specialAddition || 0)
+      return base - this.documentTotals.specialDiscount + this.documentTotals.specialAddition
     },
 
     totalBeforeVat() {
-      return this.totalAfterDiscountAndAddition + Number(this.invoiceData?.freightAndInsurance || 0)
+      return this.totalAfterDiscountAndAddition + this.documentTotals.freight
     },
 
     vatAmount() {
-      const vatPercent = Number(this.invoiceData?.vatPercent || 0)
-      return (this.totalBeforeVat * vatPercent) / 100
+      return this.documentTotals.vatAmount
     },
 
+    // ยอดปัดครึ่งขึ้นเป็นจำนวนเต็ม — ใช้เป็น fallback ของ grandTotalRounded เมื่อ API ไม่ส่งมา
     grandTotal() {
-      return this.totalBeforeVat + this.vatAmount
+      return this.documentTotals.grandTotalRounded
     },
 
-    // grandTotal (ด้านบน) คือยอดดิบก่อนปัด — backend เก็บ grandTotalRounded = CeilMoney(raw)
-    // ซึ่งเป็นยอดที่ปัดขึ้นเป็นจำนวนเต็มและเป็นยอดที่เก็บเงินจริงจากลูกค้า (เหมือน web + badge หน้าลิสต์)
+    // grandTotalRounded ที่ backend เก็บไว้ (CeilMoney เดิม/ปัดครึ่งขึ้นใหม่) คือยอดที่เก็บเงินจริงจากลูกค้า (เหมือน web + badge หน้าลิสต์)
     // ต้องใช้ตัวนี้คิดสถานะ/ยอดคงเหลือ ไม่งั้นหน้า detail จะไม่ตรงกับหน้าลิสต์และ web
-    // fallback เป็น grandTotal ดิบเมื่อ API ไม่ส่งมา (ใบเก่าจำนวนมากมี grand_total_rounded = null จริงใน DB)
+    // fallback เป็น grandTotal ที่คำนวณสดเมื่อ API ไม่ส่งมา (ใบเก่าจำนวนมากมี grand_total_rounded = null จริงใน DB)
     // เช็ค null/undefined ตรง ๆ ห้ามใช้ || เพราะ 0 เป็นค่าที่ถูกต้อง
     effectiveGrandTotal() {
       const rounded = this.invoiceData?.grandTotalRounded

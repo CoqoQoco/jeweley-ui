@@ -391,6 +391,7 @@ import AppraisalJobList from './components/appraisal-job-list.vue'
 import ItemList from './components/item-list.vue'
 import InvoiceCreationForm from './components/invoice-creation-form.vue'
 import QrScanner from '@/views/mobile/scan/components/qr-scanner.vue'
+import { computeDocumentTotals, lineAmount } from '@/services/utils/money.js'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 
@@ -486,12 +487,15 @@ export default {
       return this.allCurrentItems.length
     },
 
+    // ยอดอ้างอิงบาท (ไม่แปลงสกุล) — ปัดครึ่งขึ้นเป็นรายชิ้นด้วยตัวกลางเดียวกับยอดที่แปลงสกุลแล้ว
     currentTotalAmountTHB() {
       return this.allCurrentItems.reduce((sum, item) => {
-        const price = Number(item.appraisalPrice || item.price) || 0
-        const qty = Number(item.qty) || 1
-        const discountPercent = Number(item.discountPercent) || 0
-        return sum + price * qty * (1 - discountPercent / 100)
+        const shapedItem = {
+          appraisalPrice: item.appraisalPrice || item.price,
+          discountPercent: item.discountPercent,
+          qty: Number(item.qty) || 1
+        }
+        return sum + lineAmount(shapedItem, 1, 'THB')
       }, 0)
     },
 
@@ -504,10 +508,21 @@ export default {
       return !!(this.soData?.currencyUnit && rate && rate !== 1)
     },
 
+    // ยอดรวม F.O.B. ของรายการทั้งหมด — ต้องคิดจากตัวกลาง computeDocumentTotals เพื่อให้เกณฑ์การปัดตรงกับใบ PDF (half-up)
+    documentTotals() {
+      return computeDocumentTotals({
+        items: this.allCurrentItems,
+        currencyRate: this.soData?.currencyRate,
+        currencyUnit: this.soData?.currencyUnit,
+        specialDiscount: this.soData?.specialDiscount,
+        specialAddition: this.soData?.specialAddition,
+        freight: this.soData?.freight,
+        vatPercent: this.soData?.vat
+      })
+    },
+
     displayTotalAmount() {
-      if (!this.hasCurrencyConversion) return this.currentTotalAmountTHB
-      const rate = Number(this.soData?.currencyRate) || 1
-      return this.currentTotalAmountTHB / rate
+      return this.documentTotals.subTotal
     },
 
     searchFieldPlaceholder() {
@@ -526,22 +541,21 @@ export default {
 
     soTotalAfterSpecial() {
       return this.displayTotalAmount
-        - Number(this.soData?.specialDiscount || 0)
-        + Number(this.soData?.specialAddition || 0)
+        - this.documentTotals.specialDiscount
+        + this.documentTotals.specialAddition
     },
 
     soTotalBeforeVat() {
-      return this.soTotalAfterSpecial + Number(this.soData?.freight || 0)
+      return this.soTotalAfterSpecial + this.documentTotals.freight
     },
 
     soVatAmount() {
-      const vatPercent = Number(this.soData?.vat || 0)
-      return (this.soTotalBeforeVat * vatPercent) / 100
+      return this.documentTotals.vatAmount
     },
 
+    // ปัดครึ่งขึ้นเป็นจำนวนเต็มเสมอ ให้ตรงกับยอดที่พิมพ์บนใบสั่งขาย/ใบแจ้งหนี้
     soGrandTotal() {
-      if (!this.hasFinancialFields) return this.displayTotalAmount
-      return this.soTotalBeforeVat + this.soVatAmount
+      return this.documentTotals.grandTotalRounded
     }
   },
 

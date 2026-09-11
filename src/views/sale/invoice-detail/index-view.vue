@@ -285,7 +285,8 @@ import { SaleSummaryPdfBuilder } from '@/services/helper/pdf/sale-summary/sale-s
 import { SaleSummaryExcelBuilder } from '@/services/helper/excel/sale-summary/sale-summary-excel-builder.js'
 import { buildProductTypeLabelMap } from '@/services/helper/sale-summary/sale-summary-data.js'
 import dayjs from 'dayjs'
-import { ceilToInteger, formatDocCurrency } from '@/services/utils/decimal.js'
+import { formatDocCurrency, isForeignCurrency } from '@/services/utils/decimal.js'
+import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 
 export default {
   name: 'InvoiceDetailView',
@@ -350,38 +351,49 @@ export default {
   },
 
   computed: {
+    // ยอดรวม F.O.B. ของใบแจ้งหนี้ — ต้องคิดจากตัวกลาง computeDocumentTotals เพื่อให้เกณฑ์การปัดตรงกับใบ PDF (half-up)
+    documentTotals() {
+      return computeDocumentTotals({
+        items: this.invoiceItems,
+        currencyRate: this.invoiceData?.currencyRate,
+        currencyUnit: this.invoiceData?.currencyUnit,
+        specialDiscount: this.invoiceData?.specialDiscount,
+        specialAddition: this.invoiceData?.specialAddition,
+        freight: this.invoiceData?.freightAndInsurance,
+        vatPercent: this.invoiceData?.vatPercent
+      })
+    },
+
     totalSelectedAmount() {
-      return Number(this.getSumTotalConvertedPrice(this.invoiceItems) || 0)
+      return Number(this.documentTotals.subTotal) || 0
     },
 
     // ยอดรวมหลังหักส่วนลดพิเศษและเพิ่มส่วนพิเศษ
     totalAfterDiscountAndAddition() {
       const baseTotal = this.totalSelectedAmount
-      const afterDiscount = baseTotal - Number(this.invoiceData?.specialDiscount || 0)
-      const afterAddition = afterDiscount + Number(this.invoiceData?.specialAddition || 0)
+      const afterDiscount = baseTotal - this.documentTotals.specialDiscount
+      const afterAddition = afterDiscount + this.documentTotals.specialAddition
       return afterAddition
     },
 
     // ยอดรวมก่อน VAT (รวม Freight & Insurance แล้ว)
     totalBeforeVat() {
-      return this.totalAfterDiscountAndAddition + Number(this.invoiceData?.freightAndInsurance || 0)
+      return this.totalAfterDiscountAndAddition + this.documentTotals.freight
     },
 
     // คำนวณค่า VAT จากเปอร์เซ็นต์
     vatAmount() {
-      const vatPercent = Number(this.invoiceData?.vatPercent || 0)
-      return (this.totalBeforeVat * vatPercent) / 100
+      return this.documentTotals.vatAmount
     },
 
-    // ยอดรวมสุดท้ายรวม VAT
-    grandTotal() {
-      return this.totalBeforeVat + this.vatAmount
-    },
     grandTotalRaw() {
-      return Number(this.totalBeforeVat) + Number(this.vatAmount)
+      return this.documentTotals.grandTotalRaw
     },
     grandTotalRounded() {
-      return ceilToInteger(this.grandTotalRaw)
+      return this.documentTotals.grandTotalRounded
+    },
+    roundingAdjustment() {
+      return this.documentTotals.roundingAdjustment
     },
 
     remainingBalance() {
@@ -847,15 +859,17 @@ export default {
     },
 
     getConvertedPrice(item) {
-      const discountedPrice = this.getDiscountedPrice(item)
-      const currencyRate = this.invoiceData.currencyRate || 1
-      return discountedPrice / currencyRate
+      const shapedItem = { appraisalPrice: this.getAppraisalPrice(item), discountPercent: item.discountPercent }
+      return convertedUnitPrice(shapedItem, this.invoiceData?.currencyRate, this.invoiceData?.currencyUnit)
     },
 
     getTotalConvertedPrice(item) {
-      const convertedPrice = this.getConvertedPrice(item)
-      const qty = item.qty || 0
-      return convertedPrice * qty
+      const shapedItem = {
+        appraisalPrice: this.getAppraisalPrice(item),
+        discountPercent: item.discountPercent,
+        qty: item.qty
+      }
+      return lineAmount(shapedItem, this.invoiceData?.currencyRate, this.invoiceData?.currencyUnit)
     },
 
     // Sum calculation methods
@@ -882,14 +896,16 @@ export default {
     },
 
     getSumConvertedPrice(items) {
-      if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
+      if (!items || !Array.isArray(items) || items.length === 0) {
+        return isForeignCurrency(this.invoiceData?.currencyUnit) ? '0' : '0.00'
+      }
 
       const total = items.reduce((sum, item) => {
         const price = this.getConvertedPrice(item)
         return sum + (Number(price) || 0)
       }, 0)
 
-      return Number(total).toFixed(2)
+      return isForeignCurrency(this.invoiceData?.currencyUnit) ? String(total) : Number(total).toFixed(2)
     },
 
     getSumQty(items) {
@@ -901,14 +917,16 @@ export default {
     },
 
     getSumTotalConvertedPrice(items) {
-      if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
+      if (!items || !Array.isArray(items) || items.length === 0) {
+        return isForeignCurrency(this.invoiceData?.currencyUnit) ? '0' : '0.00'
+      }
 
       const total = items.reduce((sum, item) => {
         const price = this.getTotalConvertedPrice(item)
         return sum + (Number(price) || 0)
       }, 0)
 
-      return Number(total).toFixed(2)
+      return isForeignCurrency(this.invoiceData?.currencyUnit) ? String(total) : Number(total).toFixed(2)
     },
 
     calculateGrandTotal() {
