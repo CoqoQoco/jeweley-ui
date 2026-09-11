@@ -13,6 +13,7 @@ export const invoice = {
   remark: 'Remark',
   status: 'Status',
   customerCode: 'Customer Code',
+  currencyUnitCol: 'Currency',
   grandTotalCol: 'Grand Total',
   paidAmountCol: 'Paid',
   outstandingAmountCol: 'Outstanding',

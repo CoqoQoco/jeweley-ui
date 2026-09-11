@@ -40,6 +40,13 @@
         </div>
       </template>
 
+      <template #currencyUnitTemplate="{ data }">
+        <div class="status-container">
+          <span v-if="isForeignCurrencyUnit(data)" class="badge badge-currency-foreign">{{ getCurrencyUnit(data) }}</span>
+          <span v-else>{{ getCurrencyUnit(data) }}</span>
+        </div>
+      </template>
+
       <template #grandTotalRoundedTemplate="{ data }">
         <div class="text-right">{{ formatMoney(data.grandTotalRounded) }}</div>
       </template>
@@ -87,7 +94,7 @@
 import dayjs from 'dayjs'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
-import { formatNumber } from '@/services/utils/decimal.js'
+import { formatNumber, isForeignCurrency } from '@/services/utils/decimal.js'
 import { getPaymentStatus } from '@/services/utils/payment-status.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
@@ -189,6 +196,13 @@ export default {
           minWidth: '150px'
         },
         {
+          field: 'currencyUnit',
+          header: this.$t('view.sale.invoice.currencyUnitCol'),
+          sortable: true,
+          minWidth: '100px',
+          template: 'currencyUnitTemplate'
+        },
+        {
           field: 'grandTotalRounded',
           header: this.$t('view.sale.invoice.grandTotalCol'),
           sortable: false,
@@ -267,6 +281,14 @@ export default {
         4: 'badge badge-status-danger'
       }
       return statusClasses[status] || 'badge badge-status-default'
+    },
+
+    getCurrencyUnit(data) {
+      return data.currencyUnit || 'THB'
+    },
+
+    isForeignCurrencyUnit(data) {
+      return isForeignCurrency(this.getCurrencyUnit(data))
     },
 
     async fetchData() {
@@ -380,6 +402,12 @@ export default {
 .badge-status-default {
   background-color: #6c757d;
   color: white;
+}
+
+.badge-currency-foreign {
+  background-color: transparent;
+  border: 1px solid var(--base-font-color);
+  color: var(--base-font-color);
 }
 
 .badge-payment-paid {
