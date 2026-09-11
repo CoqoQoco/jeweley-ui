@@ -607,8 +607,7 @@ export default {
           countInCalc: r.countInCalc
         })),
         items: this.selectedItems.map((i) => ({
-          productionPlanStatusDetailId: i.id,
-          productionPlanId: i.productionPlanId,
+          productionPlanId: i.id,
           itemNo: i.itemNo,
           wo: i.wo,
           woNumber: i.woNumber,

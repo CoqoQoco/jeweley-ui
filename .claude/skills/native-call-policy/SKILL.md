@@ -26,6 +26,8 @@ description: ตารางกฎ "ห้ามเรียกตรงๆ → 
 | PrimeVue `<Checkbox>` ตรงๆ | `CheckboxGeneric` | `@/components/prime-vue/CheckboxGeneric.vue` |
 | `<input type="radio">` group | `RadioGroupGeneric` | `@/components/prime-vue/RadioGroupGeneric.vue` |
 | PrimeVue `<Dialog>` | `ModalView` | `@/components/modal/modal-view.vue` |
+| PrimeVue `<TabView>`/`<TabPanel>` ตรงๆ | `TabViewGeneric` | `@/components/generic/TabViewGeneric.vue` |
+| tab bar เขียนเอง (bootstrap `nav-tabs` มือ) | `TabViewGeneric` | `@/components/generic/TabViewGeneric.vue` |
 | `alert()` / `confirm()` native | `sweetAlerts` service | `@/services/alert/sweetAlerts.js` |
 | `localStorage.getItem/setItem` | `storage` service | `@/services/storage.js` |
 | `<FormField>` (label+input เอง) | `FormFieldGeneric` | `@/components/generic/FormFieldGeneric.vue` |

@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-2">
+  <div>
     <SectionCardGeneric
       :title="$t('view.production.goldLossByStage.chartRawLoss')"
       icon="bi-bar-chart"
@@ -16,12 +16,21 @@
       />
     </SectionCardGeneric>
 
+    <div class="coverage-banner" :class="`coverage-banner--${coverageVariant}`">
+      <i class="bi" :class="report.total.rowsPendingReturn > 0 ? 'bi-exclamation-triangle' : 'bi-check-circle'"></i>
+      <span>{{ coverageText }}</span>
+    </div>
+
     <BaseDataTable
       :items="report.rows"
       :columns="columns"
       :paginator="false"
       dataKey="statusCode"
     >
+      <template #rowsPendingReturnTemplate="{ data }">
+        <div style="text-align: right">{{ formatPendingReturn(data) }}</div>
+      </template>
+
       <template #footer>
         <div class="result-footer">
           <span class="result-footer-label">{{ $t('view.production.goldLossByStage.totalLabel') }}</span>
@@ -41,6 +50,9 @@
             <span class="result-footer-item">
               {{ $t('view.production.goldLossByStage.colJobCount') }}: {{ report.total.jobCount || 0 }}
             </span>
+            <span class="result-footer-item">
+              {{ $t('view.production.goldLossByStage.colPendingReturn') }}: {{ formatPendingReturn(report.total) }}
+            </span>
           </div>
         </div>
       </template>
@@ -58,7 +70,7 @@ import ChartGeneric from '@/components/prime-vue/ChartGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 export default {
-  name: 'GoldLossByStageReportResultView',
+  name: 'GoldLossByStageView',
 
   components: {
     SectionCardGeneric,
@@ -90,8 +102,22 @@ export default {
         { field: 'sumGoldWeightCheck', header: this.$t('view.production.goldLossByStage.colCheck'), sortable: false, minWidth: '120px', align: 'right', format: 'decimal2' },
         { field: 'rawLoss', header: this.$t('view.production.goldLossByStage.colRawLoss'), sortable: false, minWidth: '110px', align: 'right', format: 'decimal2' },
         { field: 'rawLossPercent', header: this.$t('view.production.goldLossByStage.colRawLossPercent'), sortable: false, minWidth: '110px', align: 'right', format: 'decimal2' },
-        { field: 'jobCount', header: this.$t('view.production.goldLossByStage.colJobCount'), sortable: false, minWidth: '100px', align: 'right', format: 'number' }
+        { field: 'jobCount', header: this.$t('view.production.goldLossByStage.colJobCount'), sortable: false, minWidth: '100px', align: 'right', format: 'number' },
+        { field: 'rowsPendingReturn', header: this.$t('view.production.goldLossByStage.colPendingReturn'), sortable: false, minWidth: '150px', align: 'right' }
       ]
+    },
+
+    coverageVariant() {
+      return (this.report.total.rowsPendingReturn || 0) > 0 ? 'warning' : 'green'
+    },
+
+    coverageText() {
+      return this.$t('view.production.goldLossByStage.coverageText', {
+        returned: this.report.total.rowsReturned || 0,
+        pending: this.report.total.rowsPendingReturn || 0,
+        weight: this.formatDecimal(this.report.total.pendingWeight),
+        unit: this.$t('view.production.goldLossByStage.unitGram')
+      })
     },
 
     chartSeries() {
@@ -122,7 +148,8 @@ export default {
           this.fetchData()
         }
       },
-      deep: true
+      deep: true,
+      immediate: true
     }
   },
 
@@ -138,14 +165,25 @@ export default {
       }).format(value || 0)
     },
 
+    formatPendingReturn(row) {
+      const count = row?.rowsPendingReturn || 0
+      const weight = this.formatDecimal(row?.pendingWeight)
+      const unit = this.$t('view.production.goldLossByStage.unitGram')
+      return `${count} (${weight} ${unit})`
+    },
+
     async exportExcel() {
       if (!this.report.rows || this.report.rows.length === 0) {
-        warning('ไม่มีข้อมูลสำหรับส่งออก', 'ไม่พบข้อมูล')
+        warning(
+          this.$t('view.production.goldLossByStage.exportNoDataMsg'),
+          this.$t('view.production.goldLossByStage.exportNoDataTitle')
+        )
         return
       }
 
       const columns = this.columns.map((col) => ({ header: col.header, key: col.field }))
-      const filename = `รายงาน-gold-loss-แยก-stage-${this.modelForm.year}-${String(this.modelForm.month).padStart(2, '0')}.xlsx`
+      const filenamePrefix = this.$t('view.production.goldLossByStage.exportFileNamePrefix')
+      const filename = `${filenamePrefix}-${this.modelForm.year}-${String(this.modelForm.month).padStart(2, '0')}.xlsx`
 
       await ExcelHelper.exportToExcel(this.report.rows, {
         filename,
@@ -162,6 +200,31 @@ export default {
 
 .chart-card {
   margin-bottom: var(--sp-lg);
+}
+
+.coverage-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: var(--sp-sm) var(--sp-lg);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-base);
+  font-weight: 600;
+  margin-bottom: var(--sp-lg);
+
+  i {
+    font-size: var(--fs-lg);
+  }
+
+  &--green {
+    background: var(--color-green-bg);
+    color: var(--base-green);
+  }
+
+  &--warning {
+    background: var(--status-open-bg);
+    color: var(--base-font-sub-color);
+  }
 }
 
 .result-footer {

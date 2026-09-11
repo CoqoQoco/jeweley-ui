@@ -1,10 +1,5 @@
 <template>
-  <div class="mt-2">
-    <div class="note-banner">
-      <i class="bi bi-info-circle-fill"></i>
-      <span>{{ $t('view.production.goldLossByWorkerAllStages.noteBanner') }}</span>
-    </div>
-
+  <div>
     <div class="stats-grid">
       <StatCardGeneric
         icon="bi-people-fill"
@@ -34,33 +29,6 @@
     </div>
 
     <SectionCardGeneric
-      :title="$t('view.production.goldLossByWorkerAllStages.monthlyTopTitle')"
-      icon="bi-trophy"
-      accent="main"
-      headerStyle="legend"
-      class="section-card-block"
-    >
-      <div class="dept-filter-row">
-        <span class="title-text">{{ $t('view.production.goldLossByWorkerAllStages.department') }}</span>
-        <DropdownGeneric
-          v-model="monthlyTopDept"
-          :options="departmentFilterOptions"
-          optionLabel="label"
-          optionValue="value"
-          :placeholder="$t('common.label.all')"
-          :showClear="true"
-        />
-      </div>
-
-      <BaseDataTable :items="filteredMonthlyTop" :columns="monthlyTopColumns" :paginator="false" dataKey="rowKey">
-        <template #ymTemplate="{ data }">{{ formatYearMonth(data.year, data.month) }}</template>
-        <template #lossPercentTemplate="{ data }">
-          <div class="text-right">{{ formatPercentValue(data.lossPercent) }}</div>
-        </template>
-      </BaseDataTable>
-    </SectionCardGeneric>
-
-    <SectionCardGeneric
       :title="$t('view.production.goldLossByWorkerAllStages.mainTableTitle')"
       icon="bi-table"
       accent="main"
@@ -87,10 +55,56 @@
           <div class="text-right">{{ formatPercentValue(data.stageAvgLossPercent) }}</div>
         </template>
         <template #diffFromStageAvgPercentTemplate="{ data }">
-          <div class="text-right" :class="diffClass(data)">{{ formatSignedPercentValue(data.diffFromStageAvgPercent) }}</div>
+          <div class="diff-cell">
+            <span class="diff-cell__bar-track">
+              <span class="diff-cell__bar-fill" :style="{ width: diffBarWidth(data) + '%' }"></span>
+            </span>
+            <span class="diff-cell__value" :class="diffClass(data)">
+              {{ formatSignedPercentValue(data.diffFromStageAvgPercent) }}
+              <i v-if="isDiffWarning(data)" class="bi bi-exclamation-triangle-fill diff-cell__warn-icon"></i>
+            </span>
+          </div>
         </template>
         <template #rankInStageTemplate="{ data }">
           <div class="text-center">{{ rankLabel(data) }}</div>
+        </template>
+      </BaseDataTable>
+
+      <div class="note-banner">
+        <i class="bi bi-info-circle-fill"></i>
+        <span>{{ $t('view.production.goldLossByWorkerAllStages.tangDeptNote') }}</span>
+        <ButtonGeneric
+          variant="green"
+          icon="bi-arrow-right-circle"
+          :label="$t('view.production.goldLossByWorkerAllStages.tangDeptNoteBtn')"
+          @click="$emit('navigate-tab', 'slip-tang')"
+        />
+      </div>
+    </SectionCardGeneric>
+
+    <SectionCardGeneric
+      :title="$t('view.production.goldLossByWorkerAllStages.monthlyTopTitle')"
+      icon="bi-trophy"
+      accent="main"
+      headerStyle="legend"
+      class="section-card-block"
+    >
+      <div class="dept-filter-row">
+        <span class="title-text">{{ $t('view.production.goldLossByWorkerAllStages.department') }}</span>
+        <DropdownGeneric
+          v-model="monthlyTopDept"
+          :options="departmentFilterOptions"
+          optionLabel="label"
+          optionValue="value"
+          :placeholder="$t('common.label.all')"
+          :showClear="true"
+        />
+      </div>
+
+      <BaseDataTable :items="filteredMonthlyTop" :columns="monthlyTopColumns" :paginator="false" dataKey="rowKey">
+        <template #ymTemplate="{ data }">{{ formatYearMonth(data.year, data.month) }}</template>
+        <template #lossPercentTemplate="{ data }">
+          <div class="text-right">{{ formatPercentValue(data.lossPercent) }}</div>
         </template>
       </BaseDataTable>
     </SectionCardGeneric>
@@ -131,16 +145,23 @@ import { formatDate, formatYearMonth } from '@/services/utils/dayjs.js'
 
 import StatCardGeneric from '@/components/generic/StatCardGeneric.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import ChartGeneric from '@/components/prime-vue/ChartGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
+// ห่างจากเฉลี่ยแผนกที่ถือว่า "เต็มแถบ" ในคอลัมน์ห่างจากเฉลี่ย (จุด %) — ใช้ปรับสเกลแถบเท่านั้น ไม่กระทบตัวเลข
+const DIFF_BAR_MAX_SCALE = 5
+// เกินกี่จุดถึงติดไอคอนเตือน (ตามพิมพ์เขียว Fig. 5)
+const DIFF_WARNING_THRESHOLD = 2
+
 export default {
-  name: 'GoldLossByWorkerReportResultView',
+  name: 'GoldLossByWorkerView',
 
   components: {
     StatCardGeneric,
     SectionCardGeneric,
+    ButtonGeneric,
     ChartGeneric,
     BaseDataTable,
     DropdownGeneric
@@ -155,8 +176,14 @@ export default {
     modelForm: {
       type: Object,
       default: null
+    },
+    hideTestWorkers: {
+      type: Boolean,
+      default: true
     }
   },
+
+  emits: ['navigate-tab'],
 
   data() {
     return {
@@ -191,19 +218,65 @@ export default {
       return map
     },
 
+    // ซ่อนช่างทดสอบ (รหัส/ชื่อมีคำว่า TEST) ที่ฝั่ง UI เท่านั้น — ไม่แตะข้อมูล prod
+    // หมายเหตุ: การ์ด KPI ด้านบน (จำนวนช่าง/จำนวนงาน) มาจาก summary รวมของ backend โดยตรง
+    // จึงยังนับช่างทดสอบรวมอยู่ — ตัวกรองนี้มีผลเฉพาะตาราง/กราฟด้านล่างเท่านั้น
+    filteredWorkerRows() {
+      if (!this.hideTestWorkers) return this.report.rows
+      return this.report.rows.filter((r) => !this.isTestWorker(r))
+    },
+
+    filteredMonthlyRows() {
+      if (!this.hideTestWorkers) return this.report.monthlyRows
+      return this.report.monthlyRows.filter((r) => !this.isTestWorker(r))
+    },
+
+    // "อันดับในแผนก" (rankInStage) มาจาก backend ซึ่งยังนับช่างทดสอบรวมอยู่เสมอ — พอ UI ซ่อนช่างทดสอบออก
+    // เลขอันดับดิบจะขาดช่วง (เช่น 1,3,4,5 ไม่มี 2) ต้องคำนวณอันดับใหม่จากแถวที่เหลือจริงเมื่อเปิดการซ่อน
+    // เรียงภายในแผนกเดียวกันตาม diffFromStageAvgPercent มาก→น้อย (แย่สุดก่อน) ตามที่ backend ใช้คำนวณ rankInStage เดิม
+    // ปิดการซ่อน (hideTestWorkers=false) ให้กลับไปใช้ rankInStage ดิบจาก backend ตามเดิม
+    rowsWithDisplayRank() {
+      if (!this.hideTestWorkers) return this.filteredWorkerRows
+
+      const rowsByStage = {}
+      this.filteredWorkerRows
+        .filter((r) => !r.isBelowMinJobs)
+        .forEach((r) => {
+          if (!rowsByStage[r.statusCode]) rowsByStage[r.statusCode] = []
+          rowsByStage[r.statusCode].push(r)
+        })
+
+      const displayRankByKey = {}
+      Object.values(rowsByStage).forEach((rows) => {
+        ;[...rows]
+          .sort((a, b) => (b.diffFromStageAvgPercent || 0) - (a.diffFromStageAvgPercent || 0))
+          .forEach((r, index) => {
+            displayRankByKey[`${r.statusCode}-${r.workerCode}`] = index + 1
+          })
+      })
+
+      return this.filteredWorkerRows.map((r) => ({
+        ...r,
+        rankInStage: r.isBelowMinJobs ? r.rankInStage : displayRankByKey[`${r.statusCode}-${r.workerCode}`]
+      }))
+    },
+
     sortedRows() {
-      return [...this.report.rows]
+      return this.rowsWithDisplayRank
         .map((r) => ({ ...r, rowKey: `${r.statusCode}-${r.workerCode}` }))
         .sort((a, b) => {
-          if (a.statusCode !== b.statusCode) return a.statusCode - b.statusCode
-          const rankA = a.isBelowMinJobs || !a.rankInStage ? Infinity : a.rankInStage
-          const rankB = b.isBelowMinJobs || !b.rankInStage ? Infinity : b.rankInStage
-          return rankA - rankB
+          const diffA = a.isBelowMinJobs ? -Infinity : (a.diffFromStageAvgPercent ?? -Infinity)
+          const diffB = b.isBelowMinJobs ? -Infinity : (b.diffFromStageAvgPercent ?? -Infinity)
+          return diffB - diffA
         })
     },
 
     filteredMonthlyTop() {
-      const rows = this.report.monthlyTop
+      const source = this.hideTestWorkers
+        ? this.report.monthlyTop.filter((r) => !this.isTestWorker(r))
+        : this.report.monthlyTop
+
+      const rows = source
         .map((r) => ({ ...r, rowKey: `${r.year}-${r.month}-${r.statusCode}-${r.workerCode}` }))
         .filter((r) => !this.monthlyTopDept || r.statusCode === this.monthlyTopDept)
 
@@ -244,7 +317,7 @@ export default {
     trendChartCategories() {
       if (!this.trendDept) return []
       const set = new Set(
-        this.report.monthlyRows
+        this.filteredMonthlyRows
           .filter((r) => r.statusCode === this.trendDept)
           .map((r) => `${r.year}-${String(r.month).padStart(2, '0')}`)
       )
@@ -254,7 +327,7 @@ export default {
     trendChartSeries() {
       if (!this.trendDept) return []
       const byWorker = {}
-      this.report.monthlyRows
+      this.filteredMonthlyRows
         .filter((r) => r.statusCode === this.trendDept)
         .forEach((r) => {
           const code = r.workerCode || '-'
@@ -297,7 +370,8 @@ export default {
           this.fetchData()
         }
       },
-      deep: true
+      deep: true,
+      immediate: true
     },
 
     report() {
@@ -354,6 +428,21 @@ export default {
       return data.isBelowMinJobs ? 'row-below-min' : null
     },
 
+    isTestWorker(row) {
+      const code = (row.workerCode || '').toUpperCase()
+      const name = (row.workerName || '').toUpperCase()
+      return code.includes('TEST') || name.includes('TEST')
+    },
+
+    diffBarWidth(data) {
+      const diff = Math.abs(data.diffFromStageAvgPercent || 0)
+      return Math.min(100, (diff / DIFF_BAR_MAX_SCALE) * 100)
+    },
+
+    isDiffWarning(data) {
+      return (data.diffFromStageAvgPercent || 0) > DIFF_WARNING_THRESHOLD
+    },
+
     formatYearMonth,
 
     async exportExcel() {
@@ -383,19 +472,25 @@ export default {
 
 .note-banner {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
   gap: var(--sp-sm);
   background: var(--color-highlight-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--sp-md) var(--sp-lg);
-  margin-bottom: var(--sp-lg);
+  margin-top: var(--sp-lg);
   color: var(--base-font-color);
   font-size: var(--fs-base);
   line-height: var(--lh-md);
 
   i {
-    margin-top: 2px;
+    font-size: var(--fs-lg);
+  }
+
+  span {
+    flex: 1;
+    min-width: 200px;
   }
 }
 
@@ -445,6 +540,39 @@ export default {
 .diff-better {
   color: var(--base-green);
   font-weight: 700;
+}
+
+.diff-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-sm);
+}
+
+.diff-cell__bar-track {
+  display: inline-block;
+  width: 48px;
+  height: 6px;
+  border-radius: var(--radius-sm);
+  background: var(--color-border);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.diff-cell__bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--base-sub-color);
+  border-radius: var(--radius-sm);
+}
+
+.diff-cell__value {
+  white-space: nowrap;
+}
+
+.diff-cell__warn-icon {
+  color: var(--base-warning);
+  margin-left: 2px;
 }
 
 :deep(.row-below-min) {

@@ -1,13 +1,13 @@
 <template>
   <SearchBarGeneric
-    :title="$t('view.production.goldLossByWorkerAllStages.searchTitle')"
-    :description="$t('view.production.goldLossByWorkerAllStages.searchDesc')"
+    :title="$t('view.production.goldLossDashboard.filterTitle')"
+    :description="$t('view.production.goldLossDashboard.filterDesc')"
     @search="onSearch"
     @clear="onClear"
   >
     <template #fields>
       <div>
-        <span class="title-text">{{ $t('view.production.goldLossByWorkerAllStages.dateRange') }}</span>
+        <span class="title-text">{{ $t('view.production.goldLossDashboard.filterDateRange') }}</span>
         <DateRangeGeneric
           :startDate="form.start"
           :endDate="form.end"
@@ -19,10 +19,16 @@
       </div>
 
       <div>
-        <span class="title-text">{{ $t('view.production.goldLossByWorkerAllStages.department') }}</span>
+        <span
+          class="title-text"
+          :class="{ 'title-text--faded': !isDeptUsed }"
+          :title="isDeptUsed ? '' : $t('view.production.goldLossDashboard.filterDeptDisabledTooltip')"
+        >
+          {{ $t('view.production.goldLossDashboard.filterDepartment') }}
+        </span>
         <MultiSelectGeneric
           v-model="form.status"
-          :options="masterApiStore.planStatus"
+          :options="departmentOptions"
           optionLabel="nameTh"
           optionValue="id"
           :placeholder="$t('common.label.all')"
@@ -31,19 +37,13 @@
       </div>
 
       <div>
-        <span class="title-text">{{ $t('view.production.goldLossByWorkerAllStages.gold') }}</span>
-        <MultiSelectGeneric
-          v-model="form.gold"
-          :options="masterApiStore.gold"
-          optionLabel="nameTh"
-          optionValue="nameEn"
-          :placeholder="$t('common.label.all')"
-          :showClear="true"
-        />
-      </div>
-
-      <div>
-        <span class="title-text">{{ $t('view.production.goldLossByWorkerAllStages.workerCode') }}</span>
+        <span
+          class="title-text"
+          :class="{ 'title-text--faded': !isWorkerUsed }"
+          :title="isWorkerUsed ? '' : $t('view.production.goldLossDashboard.filterWorkerDisabledTooltip')"
+        >
+          {{ $t('view.production.goldLossDashboard.filterWorker') }}
+        </span>
         <DropdownGeneric
           v-model="form.workerCode"
           :options="workers"
@@ -51,26 +51,14 @@
           optionValue="code"
           :filter="true"
           :showClear="true"
-          :placeholder="$t('view.production.goldLossByWorkerAllStages.placeholder.workerCode')"
+          :placeholder="$t('view.production.goldLossDashboard.filterWorkerPlaceholder')"
         />
-      </div>
-
-      <div>
-        <span class="title-text">{{ $t('view.production.goldLossByWorkerAllStages.minJobCount') }}</span>
-        <InputTextGeneric v-model.number="form.minJobCount" type="number" :min="1" />
       </div>
     </template>
 
     <template #actions-right>
       <ButtonGeneric variant="main" icon="bi-search" type="submit" :label="$t('common.btn.search')" />
       <ButtonGeneric variant="dark" icon="bi-x-circle" class="ml-2" :title="$t('common.btn.clear')" @click="onClear" />
-      <ButtonGeneric
-        variant="green"
-        icon="bi-file-earmark-excel"
-        class="ml-2"
-        :title="$t('common.btn.export')"
-        @click="$emit('export')"
-      />
     </template>
   </SearchBarGeneric>
 </template>
@@ -81,18 +69,23 @@ import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
 import SearchBarGeneric from '@/components/generic/SearchBarGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
-import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import DateRangeGeneric from '@/components/prime-vue/DateRangeGeneric.vue'
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
+// แผนกที่มีการคืนทองจริง — ห้ามรวม 95 (บัตรต้นทุน) / 100 (สำเร็จ) / 500 เพราะไม่มีการคืนทองให้คำนวณ loss
+const GOLD_LOSS_STAGE_CODES = [50, 60, 70, 80, 90]
+
+// tab ที่ "ไม่ใช้" ตัวกรองแผนก/ช่าง ตามตาราง "พฤติกรรมของ filter" ในพิมพ์เขียว ข้อ 09
+const TABS_WITHOUT_DEPARTMENT = ['slip-tang', 'slip-setter']
+const TABS_WITHOUT_WORKER = ['overview', 'stage']
+
 export default {
-  name: 'GoldLossByWorkerReportSearchView',
+  name: 'GoldLossDashboardFilterView',
 
   components: {
     SearchBarGeneric,
     ButtonGeneric,
-    InputTextGeneric,
     DateRangeGeneric,
     MultiSelectGeneric,
     DropdownGeneric
@@ -107,10 +100,14 @@ export default {
     modelForm: {
       type: Object,
       default: () => ({})
+    },
+    activeTab: {
+      type: String,
+      default: 'overview'
     }
   },
 
-  emits: ['search', 'clear', 'export'],
+  emits: ['search', 'clear'],
 
   watch: {
     modelForm: {
@@ -125,6 +122,20 @@ export default {
     return {
       form: { ...this.modelForm },
       workers: []
+    }
+  },
+
+  computed: {
+    departmentOptions() {
+      return this.masterApiStore.planStatus.filter((item) => GOLD_LOSS_STAGE_CODES.includes(item.id))
+    },
+
+    isDeptUsed() {
+      return !TABS_WITHOUT_DEPARTMENT.includes(this.activeTab)
+    },
+
+    isWorkerUsed() {
+      return !TABS_WITHOUT_WORKER.includes(this.activeTab)
     }
   },
 
@@ -154,7 +165,6 @@ export default {
 
   created() {
     this.masterApiStore.fetchPlanStatus()
-    this.masterApiStore.fetchGold()
     this.loadWorkers()
   }
 }
@@ -162,4 +172,8 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+
+.title-text--faded {
+  opacity: 0.45;
+}
 </style>

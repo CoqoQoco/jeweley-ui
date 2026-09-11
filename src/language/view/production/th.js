@@ -707,7 +707,12 @@ export default {
     manualFieldQty: 'จำนวน',
     manualFieldProductNumber: 'รหัสสินค้า',
     validationManualJobIncomplete: 'กรุณากรอกข้อมูลงานเพิ่มเองให้ครบ (เลขที่งาน, วันที่, ทอง, ขนาดทอง, น้ำหนักจ่าย, น้ำหนักรับ)',
-    validationManualJobIncompleteRow: 'งานเพิ่มเองลำดับที่ {n}: กรอกข้อมูลไม่ครบ (เลขที่งาน, วันที่, ทอง, ขนาดทอง, น้ำหนักจ่าย, น้ำหนักรับ)'
+    validationManualJobIncompleteRow: 'งานเพิ่มเองลำดับที่ {n}: กรอกข้อมูลไม่ครบ (เลขที่งาน, วันที่, ทอง, ขนาดทอง, น้ำหนักจ่าย, น้ำหนักรับ)',
+    negativeLossWarning: 'น้ำหนักคืนรวม {returned} g มากกว่าน้ำหนักจ่ายรวม {issued} g',
+    negativeLossConfirmTitle: 'ยืนยันบันทึกทั้งที่คืนมากกว่าจ่าย',
+    negativeLossConfirmMessage: 'น้ำหนักคืนรวม {returned} g มากกว่าน้ำหนักจ่ายรวม {issued} g (ต่างกัน {diff} g) ต้องการบันทึกใบงานนี้ต่อหรือไม่?',
+    priceHint: 'ราคาล่าสุด {price} บาท/กรัม จากใบ {doc} วันที่ {date}',
+    priceDiffWarning: 'ราคาที่กรอกต่างจากราคาล่าสุดเกิน 20% ({diff}%)'
   },
 
   goldCostReport: {
@@ -746,7 +751,14 @@ export default {
     month: 'เดือน',
     stage: 'แผนก',
     btnFetch: 'ดึงข้อมูล',
-    savedBadge: 'บันทึกแล้ว',
+    savedBanner: 'บันทึกค่าของเดือนนี้แล้ว',
+    usingDefaultBanner: 'ใช้ค่าตั้งต้นจากเดือน {month}/{year} — กดบันทึกเพื่อยืนยันค่าของเดือนนี้',
+    neverConfiguredBanner: 'ยังไม่เคยตั้งค่า % สูญเสียและราคาทอง — ช่องเงินส่วนต่างจะเป็น 0 จนกว่าจะกรอกและบันทึก',
+    coverageText: 'คำนวณจาก {returned} รายการที่คืนทองแล้ว · ยังไม่คืน {pending} รายการ ({weight} {unit})',
+    unitGram: 'g',
+    exportNoDataTitle: 'ไม่พบข้อมูล',
+    exportNoDataMsg: 'ไม่มีข้อมูลสำหรับส่งออก',
+    exportFileNamePrefix: 'รายงาน-gold-loss-รายเดือน',
     colGoldType: 'ทอง',
     colSumGoldWeightSend: 'นน.จ่ายรวม',
     colSumGoldWeightCheck: 'นน.รับรวม',
@@ -779,9 +791,10 @@ export default {
 
   goldLossByStage: {
     searchTitle: 'รายงาน Gold Loss แยกตาม Stage',
-    searchDesc: 'เลือกปีและเดือน เพื่อดึงข้อมูล Gold Loss แยกตามแต่ละ Stage การผลิต',
+    searchDesc: 'เลือกปี เดือน และแผนก เพื่อดึงข้อมูล Gold Loss แยกตามแต่ละ Stage การผลิต',
     year: 'ปี',
     month: 'เดือน',
+    stage: 'แผนก',
     btnFetch: 'ดึงข้อมูล',
     colGoldStage: 'Stage',
     colSend: 'นน.จ่ายรวม',
@@ -789,8 +802,14 @@ export default {
     colRawLoss: 'loss ดิบ',
     colRawLossPercent: '%loss ดิบ',
     colJobCount: 'จำนวนงาน',
+    colPendingReturn: 'ยังไม่คืน',
     chartRawLoss: 'loss ดิบ แยกตาม Stage',
     totalLabel: 'รวม',
+    coverageText: 'คำนวณจาก {returned} รายการที่คืนทองแล้ว · ยังไม่คืน {pending} รายการ ({weight} {unit})',
+    unitGram: 'g',
+    exportNoDataTitle: 'ไม่พบข้อมูล',
+    exportNoDataMsg: 'ไม่มีข้อมูลสำหรับส่งออก',
+    exportFileNamePrefix: 'รายงาน-gold-loss-แยก-stage',
     months: {
       jan: 'ม.ค.',
       feb: 'ก.พ.',
@@ -984,7 +1003,43 @@ export default {
     colTotalMoneyDiff: 'เงินส่วนต่าง',
     totalWorkers: 'รวม {total} คน',
     printMonthly: 'พิมพ์ใบสรุปรายเดือน',
-    noDataPrint: 'ไม่มีข้อมูลสำหรับพิมพ์ใบสรุป'
+    noDataPrint: 'ไม่มีข้อมูลสำหรับพิมพ์ใบสรุป',
+    statTotalSlips: 'จำนวนใบทั้งหมด',
+    statTotalIssued: 'น้ำหนักจ่ายรวม',
+    statTotalReturned: 'น้ำหนักคืนรวม',
+    statTotalDiffLoss: 'ส่วนต่างรวม (g)',
+    statTotalMoney: 'ยอดเงินรวม',
+    byGoldTypeTitle: 'แยกตามชนิดทอง',
+    colGoldSize: 'ชนิดทอง',
+    colPricePerGram: 'ราคา/กรัม',
+    mixedPriceTooltip: 'กลุ่มนี้มีใบที่ใช้ราคาทองต่างกัน ค่าที่แสดงเป็นค่าเฉลี่ยถ่วงน้ำหนัก'
+  },
+
+  goldLossSlipByWorker: {
+    searchTitle: 'ค้นหารายงาน Gold Loss ช่างฝังต่อคน',
+    searchDesc: 'ค้นหาสรุป Gold Loss ช่างฝังต่อคนตามช่วงวันที่และเงื่อนไขอื่นๆ',
+    dateRange: 'ช่วงวันที่',
+    workerCode: 'รหัส/ค้นหาช่าง',
+    placeholder: {
+      workerCode: 'เลือกช่าง'
+    },
+    groupByMonth: 'แยกรายเดือน',
+    colWorkerCode: 'รหัสช่าง',
+    colWorkerName: 'ชื่อช่าง',
+    colMonth: 'เดือน',
+    colSlipCount: 'จำนวนใบ',
+    colTotalWeightSend: 'น้ำหนักส่งรวม',
+    colTotalWeightCheck: 'น้ำหนักตรวจรวม',
+    colTotalWeightLossAllowed: 'Loss ที่ยอมรวม',
+    colTotalWeightLossActual: 'Loss จริงรวม',
+    colTotalMoneyDiff: 'เงินส่วนต่างรวม',
+    colTotalGoldReturnAmount: 'มูลค่าทองคืนรวม',
+    totalWorkers: 'รวม {total} คน',
+    statTotalSlips: 'จำนวนใบทั้งหมด',
+    statTotalWeightSend: 'น้ำหนักส่งรวม',
+    statTotalWeightCheck: 'น้ำหนักตรวจรวม',
+    statTotalWeightLossActual: 'Loss จริงรวม',
+    statTotalMoneyDiff: 'เงินส่วนต่างรวม'
   },
 
   preplanFunnel: {
@@ -1176,6 +1231,9 @@ export default {
     },
     minJobCount: 'จำนวนงานขั้นต่ำ',
     minJobCountHint: 'ช่างที่มีงานน้อยกว่าเกณฑ์นี้จะไม่ถูกจัดอันดับ',
+    hideTestWorkers: 'ซ่อนช่างทดสอบ',
+    tangDeptNote: 'ช่างแต่งทุกคนอยู่ที่ประมาณ 17–24% เป็นเรื่องปกติของแผนกนี้ เพราะเศษที่ตัดจากก้านคืนผ่านใบ ไม่ใช่ทำงานหาย ถ้าอยากรู้ตัวเลขที่ใช้คิดเงินจริง ให้ไปดูที่แท็บ "ใบช่างแต่ง"',
+    tangDeptNoteBtn: 'ไปดูใบช่างแต่ง',
     noteBanner: 'หมายเหตุ: ตัวเลขในหน้านี้คือ "ส่วนต่างทองจ่าย-รับคืน" ไม่ใช่ทองหาย — ที่แผนกแต่งมีเนื้อทองส่วนหนึ่งถูกตัดออกโดยชอบระหว่างการแต่งชิ้นงาน (เก็บแยกเป็นเศษทองต่างหาก) ห้ามเทียบข้ามแผนกเพราะลักษณะงานต่างกันมาก ควรเทียบเฉพาะช่างในแผนกเดียวกันเท่านั้นครับ',
     statWorkers: 'จำนวนช่าง',
     statJobs: 'จำนวนงาน',
@@ -1202,5 +1260,174 @@ export default {
     excelFileName: 'รายงาน-ส่วนต่างทองต่อช่าง-ทุกแผนก',
     noDataExportTitle: 'ไม่พบข้อมูล',
     noDataExportMsg: 'ไม่มีข้อมูลสำหรับส่งออก'
+  },
+
+  goldLossReconcile: {
+    searchTitle: 'รายงานกระทบยอด Gold Loss (plan ↔ ใบ)',
+    searchDesc: 'เทียบตัวเลข Gold Loss ฝั่งแผนผลิตกับฝั่งใบ GLT/ใบช่างฝัง เพื่อดูว่าส่วนต่างมาจากเศษ/ก้าน/ลวดที่คืนเพิ่ม หรือใบครอบคลุมงานไม่ครบ',
+    dateRange: 'ช่วงวันที่',
+    department: 'แผนก',
+    workerCode: 'ช่าง',
+    placeholder: {
+      workerCode: 'เลือกช่าง (ทั้งหมด)'
+    },
+    statPlanRawLoss: 'ส่วนต่างฝั่งแผน',
+    statSlipRawLoss: 'ส่วนต่างฝั่งใบ',
+    statGapExplained: 'ช่องว่างที่อธิบายได้ (เศษคืน)',
+    statGapUnexplained: 'ช่องว่างที่ยังอธิบายไม่ได้',
+    statLinkCoverage: '% การผูกใบกับงาน',
+    chartTitle: 'แนวโน้ม %ส่วนต่างรายเดือน: แผน เทียบ ใบ',
+    chartSeriesPlanSuffix: 'แผน',
+    chartSeriesSlipSuffix: 'ใบ',
+    noteBannerTitle: 'ทำไมตัวเลข 2 ฝั่งไม่เท่ากัน',
+    noteBanner: 'ฝั่งแผนนับเฉพาะน้ำหนักตัวเรือนที่คืนจากช่าง ส่วนฝั่งใบ (GLT/ใบช่างฝัง) นับรวมเศษทอง/ก้าน/ลวดที่ช่างคืนมาด้วย ทำให้ %loss สองฝั่งต่างกันได้มาก ถ้า "ช่องว่างที่ยังอธิบายไม่ได้" สูง แปลว่าใบยังผูกกับงานในแผนไม่ครบ ควรตรวจสอบการออกใบเพิ่มเติมครับ ถ้าค่านี้ติดลบในบางเดือน แปลว่าใบครอบคลุมมากกว่าที่แผนบันทึกไว้ในเดือนนั้น ไม่ใช่ข้อมูลผิด เพราะใบเป็นเอกสารรายงวดที่อาจคร่อม 2 เดือนปฏิทิน — ควรดูยอดรวมทั้งช่วงด้านบนเป็นหลัก มากกว่ารายเดือนเดี่ยวๆ ในตารางครับ',
+    periodSummaryLabel: 'สรุปยอดรวมทั้งช่วงที่เลือก (ยึดตัวเลขนี้เป็นหลัก มากกว่ารายเดือนในตารางด้านล่าง)',
+    gapUnexplainedTooltip: 'ค่าติดลบ = ใบครอบคลุมมากกว่าที่แผนบันทึกไว้ในเดือนนั้น ไม่ใช่ข้อมูลผิด เพราะใบเป็นเอกสารรายงวดที่อาจคร่อม 2 เดือนปฏิทิน',
+    mainTableTitle: 'ตารางกระทบยอดรายเดือน',
+    colYearMonth: 'เดือน',
+    colDept: 'แผนก',
+    colPlanSumSend: 'แผน: นน.จ่าย',
+    colPlanSumCheck: 'แผน: นน.รับคืน',
+    colPlanRawLoss: 'แผน: ส่วนต่าง',
+    colPlanLossPercent: 'แผน: %ส่วนต่าง',
+    colPlanRowsReturned: 'แผน: งานคืนแล้ว',
+    colPlanRowsPending: 'แผน: งานค้างคืน',
+    colSlipCount: 'ใบ: จำนวนใบ',
+    colSlipIssued: 'ใบ: นน.เบิก',
+    colSlipReturned: 'ใบ: นน.คืน',
+    colSlipRawLoss: 'ใบ: ส่วนต่าง',
+    colSlipAllowedLoss: 'ใบ: Loss ที่ยอมรับ',
+    colSlipDiffLoss: 'ใบ: Loss เกินยอมรับ',
+    colSlipMoneyDiff: 'ใบ: เงินส่วนต่าง',
+    colSlipLossPercent: 'ใบ: %ส่วนต่าง',
+    colExtraIssuedWeight: 'เศษ: เบิกเพิ่ม',
+    colExtraReturnedWeight: 'เศษ: คืนเพิ่ม',
+    colExtraReturnedNotCounted: 'เศษ: คืนไม่นับ',
+    colGapWeight: 'ช่องว่าง: รวม',
+    colGapExplainedByExtras: 'ช่องว่าง: อธิบายได้',
+    colGapUnexplained: 'ช่องว่าง: อธิบายไม่ได้',
+    colLinkedDetailRows: 'การผูกใบ: ผูกแล้ว',
+    colUnlinkedDetailRows: 'การผูกใบ: ยังไม่ผูก',
+    colLinkCoveragePercent: 'การผูกใบ: %ครอบคลุม',
+    footerTotalLabel: 'รวมทั้งช่วง',
+    footerPlanRawLoss: 'ส่วนต่างแผน',
+    footerSlipRawLoss: 'ส่วนต่างใบ',
+    footerGapExplained: 'อธิบายได้',
+    footerGapUnexplained: 'อธิบายไม่ได้',
+    footerLinkCoverage: '%ผูกใบ',
+    unitGram: 'g',
+    excelFileName: 'รายงาน-กระทบยอด-gold-loss',
+    noDataExportTitle: 'ไม่พบข้อมูล',
+    noDataExportMsg: 'ไม่มีข้อมูลสำหรับส่งออก'
+  },
+
+  goldLossDashboard: {
+    title: 'แดชบอร์ด Gold Loss',
+    subtitle: 'ข้อมูลมาจาก 2 ต้นทางที่คีย์คนละที่ คนละนิยาม — ห้ามเทียบตัวเลขข้ามแท็บกันตรงๆ',
+
+    filterTitle: 'ตัวกรองข้อมูล',
+    filterDesc: 'ตัวกรองนี้ใช้ร่วมกันทุกแท็บ ค่าที่เลือกจะคงอยู่เมื่อสลับแท็บ',
+    filterDateRange: 'ช่วงวันที่',
+    filterDepartment: 'แผนก',
+    filterWorker: 'ช่าง',
+    filterWorkerPlaceholder: 'เลือกช่าง (ทั้งหมด)',
+    filterDeptDisabledTooltip: 'แท็บนี้ไม่ใช้ตัวกรองแผนก — ตัวเลขไม่ได้แยกตามแผนก',
+    filterWorkerDisabledTooltip: 'แท็บนี้ไม่ใช้ตัวกรองช่าง — เป็นตัวเลขสรุปรวม',
+
+    tabOverview: 'ภาพรวม',
+    tabStage: 'แยกตาม Stage',
+    tabWorker: 'ต่อช่าง',
+    tabSlipTang: 'ใบช่างแต่ง',
+    tabSlipSetter: 'ใบช่างฝัง',
+    tabReconcile: 'กระทบยอด',
+    groupPlan: 'จากแผนผลิต (PLAN)',
+    groupSlip: 'จากใบ (SLIP)',
+    groupBoth: 'รวม',
+
+    overview: {
+      sourcePlanTitle: 'จากแผนผลิต',
+      sourceSlipTitle: 'จากใบ',
+
+      kpiPlanLossPercent: '%loss รวม',
+      kpiPlanRawLoss: 'ทองที่หาย',
+      kpiPlanRawLossSub: '{count} งาน',
+      kpiPlanPending: 'ยังไม่คืน',
+      kpiPlanPendingSub: '{count} งาน',
+      kpiPlanFarthestWorker: 'ช่างที่ห่างเฉลี่ยแผนกสุด',
+      kpiPlanFarthestWorkerEmpty: 'ไม่มีใครเกินเกณฑ์',
+
+      kpiSlipTotalCount: 'ใบทั้งหมด',
+      kpiSlipTotalIssued: 'เบิกรวม',
+      kpiSlipTotalReturned: 'คืนรวม',
+      kpiSlipTotalLoss: 'Loss รวม',
+
+      slipDeptLabel: 'แผนก:',
+      slipDeptTang: 'ช่างแต่ง',
+      slipDeptSetter: 'ช่างฝัง',
+
+      chartSlipCompareTitle: 'เทียบ Loss รายเดือน: ช่างแต่ง vs ช่างฝัง',
+      chartSlipComparePctSeries: '%loss {dept}',
+      chartSlipByWorkerTitle: 'อันดับ Loss ต่อช่าง',
+      otherWorkersLabel: 'อื่นๆ',
+
+      tableSlipMonthlyTitle: 'รายงานรายเดือนแยกช่าง',
+      tableSlipByWorkerTitle: 'รายช่าง',
+      tableSlipTotalLabel: 'รวมทั้งช่วง',
+      colMonth: 'เดือน',
+      colSlipCount: 'ใบ',
+      colIssued: 'เบิก (g)',
+      colReturned: 'คืน (g)',
+      colLoss: 'Loss (g)',
+      colLossPercent: '%loss',
+      colWorkerCode: 'รหัสช่าง',
+      colWorkerName: 'ชื่อช่าง',
+
+      pointUnit: ' จุด',
+
+      reconcileNote: 'สองแถวนี้คนละนิยาม ห้ามนำมาลบกันเอง · ส่วนต่างที่ยังอธิบายไม่ได้ {gap}',
+      goReconcile: 'ไปดูกระทบยอด',
+
+      chartTitle: 'แนวโน้ม %loss รายเดือน: แผน เทียบ ใบ',
+
+      actionTitle: 'ต้องดำเนินการ',
+      actionEmpty: 'ไม่มีเรื่องเร่งด่วนตอนนี้ ตัวเลขทุกฝั่งอยู่ในเกณฑ์ปกติ',
+      actionPlanHighDiff: '{code} {name} ({dept}) {percent}% สูงกว่าเฉลี่ยแผนก {diff} จุด · {jobCount} งาน',
+      actionPlanTestWorker: 'พบช่างชื่อ {name} ปนอยู่ในข้อมูลจริง {jobCount} งาน {weight}',
+      actionSlipNegative: 'ช่าง {code} {name} มีทองคืนมากกว่าจ่ายรวม {weight} ({slipCount} ใบ)',
+      actionLowCoverage: '% ผูกใบกับงานอยู่ที่ {percent} ต่ำกว่าเกณฑ์ 80%',
+      actionMoreItems: 'และอีก {count} รายการ'
+    },
+
+    groupByLabel: 'จัดกลุ่มตาม:',
+    groupByStage: 'Stage',
+    groupByGold: 'ชนิดทอง',
+    goldTypeDeptLabel: 'แผนก',
+    goldTypeDeptPlaceholder: 'เลือกแผนก',
+    goldTypePendingReturn: 'ยังไม่คืน',
+
+    sourceStrip: {
+      showInfo: 'อธิบายเพิ่ม',
+      hideInfo: 'ซ่อนคำอธิบาย',
+
+      plan: {
+        summary: 'ที่มา: ตาราง plan_status_detail · คีย์จากหน้า "อัปเดตแผนผลิต" · นับเฉพาะน้ำหนักตัวเรือนที่คืน ไม่รวมเศษ/ก้าน',
+        detail: 'ฝ่ายผลิตคีย์น้ำหนักทองที่จ่าย/รับคืนทุกวันที่หน้าอัปเดตแผนผลิต ระบบนับเฉพาะน้ำหนักตัวเรือนที่ช่างส่งคืนแล้วเท่านั้น งานที่ยังไม่คืนทองจะไม่ถูกนับใน %loss แต่จะแยกแสดงในช่อง "ยังไม่คืน" เสมอ ตัวเลขชุดนี้เหมาะกับการดูประสิทธิภาพการผลิตและเทียบฝีมือช่างในแผนกเดียวกัน ไม่เหมาะกับการคิดเงินครับ'
+      },
+
+      slipTang: {
+        summary: 'ที่มา: ตาราง tang_slip · คีย์จากหน้า "ออกใบ Gold Loss ช่างแต่ง" · รวมเศษ/ก้าน/ลวดที่คืนด้วย',
+        detail: 'ฝ่ายบัญชี/หัวหน้าคีย์ตอนปิดงวดผ่านใบ GLT ตัวเลขนับรวมทั้งตัวเรือน เศษ ก้าน และลวดที่ช่างคืนมา จึงมีค่า %loss ต่ำกว่าฝั่งแผนผลิตเสมอ ใช้ตัวเลขชุดนี้คิดเงินกับช่างแต่ง ห้ามนำไปเทียบกับฝั่งแผนผลิตตรงๆ ครับ'
+      },
+
+      slipSetter: {
+        summary: 'ที่มา: ตาราง worker_slip · คีย์จากหน้า "ออกใบ Gold Loss ช่างฝัง" · เกณฑ์ % มาจากหน้าอัปเดตแผนผลิต',
+        detail: 'ออกใบตอนปิดงวด เกณฑ์ % ที่ยอมรับได้ดึงมาจากค่าที่คีย์ไว้ที่หน้าอัปเดตแผนผลิตตอนดึงงานมาออกใบ ตัวเลขชุดนี้ใช้คิดเงินกับช่างฝัง ห้ามนำไปเทียบกับฝั่งแผนผลิตตรงๆ ครับ'
+      },
+
+      both: {
+        summary: 'ที่มา: plan_status_detail + tang_slip + worker_slip · เทียบ 2 ฝั่งรายเดือน × แผนก',
+        detail: 'แท็บนี้เป็นที่เดียวที่นำตัวเลขฝั่งแผนผลิตกับฝั่งใบมาวางคู่กันได้ ส่วนต่างที่เกิดจากเศษ/ก้าน/ลวดที่คืนผ่านใบถือว่า "อธิบายได้" ส่วนที่เหลือคือช่องโหว่จริง ซึ่งมักแปลว่าออกใบไม่ครบทุกงานครับ'
+      }
+    }
   }
 }

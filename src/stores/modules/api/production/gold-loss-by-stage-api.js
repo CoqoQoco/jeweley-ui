@@ -10,7 +10,10 @@ const emptyReport = () => ({
     sumGoldWeightCheck: 0,
     rawLoss: 0,
     rawLossPercent: 0,
-    jobCount: 0
+    jobCount: 0,
+    rowsReturned: 0,
+    rowsPendingReturn: 0,
+    pendingWeight: 0
   }
 })
 
@@ -20,10 +23,11 @@ export const useGoldLossByStageApiStore = defineStore('goldLossByStageApi', {
   }),
 
   actions: {
-    async fetchReport({ year, month } = {}) {
+    async fetchReport({ year, month, status } = {}) {
       const res = await api.jewelry.post('Production/Plan/GoldLossByStageReport', {
         year,
-        month
+        month,
+        status
       })
       this.reportData = res ? { ...res } : emptyReport()
     }

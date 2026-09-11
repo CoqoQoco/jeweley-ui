@@ -8,10 +8,8 @@ const PlanBOMReport = () => import('@/views/production/plan-bom/index-view.vue')
 const GoldCostReport = () => import('@/views/production/report/gold-cost-report/index-view.vue')
 const WipByStageReport = () => import('@/views/production/report/wip-by-stage-report/index-view.vue')
 const TransferReport = () => import('@/views/production/report/transfer-report/index-view.vue')
-const GoldLossMonthlyReport = () =>
-  import('@/views/production/report/gold-loss-monthly-report/index-view.vue')
-const GoldLossByStageReport = () =>
-  import('@/views/production/report/gold-loss-by-stage-report/index-view.vue')
+const GoldLossDashboard = () =>
+  import('@/views/production/gold-loss-dashboard/index-view.vue')
 const ProductionPriceReport = () =>
   import('@/views/production/report/production-price-report/index-view.vue')
 const LeadTimeReport = () =>
@@ -45,10 +43,6 @@ const ReportSaleByChannel = () => import('@/views/report-sale-by-channel/index-v
 const ReportProductionWages = () => import('@/views/report-production-wages/index-view.vue')
 const WorkerWagesByPersonReport = () =>
   import('@/views/production/report/worker-wages-by-person-report/index-view.vue')
-const GoldLossTangByWorkerReport = () =>
-  import('@/views/production/report/gold-loss-tang-by-worker-report/index-view.vue')
-const GoldLossByWorkerReport = () =>
-  import('@/views/production/report/gold-loss-by-worker-report/index-view.vue')
 const WagesByProcessReport = () =>
   import('@/views/production/report/wages-by-process-report/index-view.vue')
 const WagesMonthlyTrendReport = () =>
@@ -154,28 +148,59 @@ const routes = [
         }
       },
       {
+        path: '/gold-loss-dashboard',
+        name: 'gold-loss-dashboard',
+        component: GoldLossDashboard,
+        meta: {
+          Displayname: {
+            en: 'Gold Loss Dashboard',
+            th: 'แดชบอร์ด Gold Loss'
+          },
+          minorShow: true,
+          // ต้องมีทั้ง PRODUCTION_VIEW และ WORKER_VIEW (OR) — 3 หน้าเดิมที่ redirect เข้ามา
+          // (tang-by-worker/slip-by-worker/by-worker) ใช้ WORKER_VIEW เดี่ยวๆ มาก่อน guard เป็น hasAnyPermission (OR)
+          permissions: [PERMISSIONS.PRODUCTION_VIEW, PERMISSIONS.WORKER_VIEW]
+        }
+      },
+      {
+        // ย้ายเข้า gold-loss-dashboard (?tab=stage&group=gold) แล้ว — เหลือไว้เพื่อ redirect ลิงก์เก่า
         path: '/report-gold-loss-monthly',
         name: 'report-gold-loss-monthly',
-        component: GoldLossMonthlyReport,
+        redirect: '/gold-loss-dashboard?tab=stage&group=gold',
         meta: {
           Displayname: {
             en: 'Monthly Gold Loss Report',
             th: 'รายงาน Gold Loss รายเดือน'
           },
-          minorShow: true,
+          minorShow: false,
           permissions: [PERMISSIONS.PRODUCTION_VIEW]
         }
       },
       {
+        // ย้ายเข้า gold-loss-dashboard (?tab=stage) แล้ว — เหลือไว้เพื่อ redirect ลิงก์เก่า
         path: '/report-gold-loss-by-stage',
         name: 'report-gold-loss-by-stage',
-        component: GoldLossByStageReport,
+        redirect: '/gold-loss-dashboard?tab=stage',
         meta: {
           Displayname: {
             en: 'Gold Loss by Stage Report',
             th: 'รายงาน Gold Loss แยกตาม Stage'
           },
-          minorShow: true,
+          minorShow: false,
+          permissions: [PERMISSIONS.PRODUCTION_VIEW]
+        }
+      },
+      {
+        // ย้ายเข้า gold-loss-dashboard (?tab=reconcile) แล้ว — เหลือไว้เพื่อ redirect ลิงก์เก่า
+        path: '/report-gold-loss-reconcile',
+        name: 'report-gold-loss-reconcile',
+        redirect: '/gold-loss-dashboard?tab=reconcile',
+        meta: {
+          Displayname: {
+            en: 'Gold Loss Reconciliation Report',
+            th: 'รายงานกระทบยอด Gold Loss'
+          },
+          minorShow: false,
           permissions: [PERMISSIONS.PRODUCTION_VIEW]
         }
       },
@@ -501,28 +526,44 @@ const routes = [
         }
       },
       {
+        // ย้ายเข้า gold-loss-dashboard (?tab=slip-tang) แล้ว — เหลือไว้เพื่อ redirect ลิงก์เก่า
         path: '/report-gold-loss-tang-by-worker',
         name: 'report-gold-loss-tang-by-worker',
-        component: GoldLossTangByWorkerReport,
+        redirect: '/gold-loss-dashboard?tab=slip-tang',
         meta: {
           Displayname: {
             en: 'Gold Loss by Worker Report',
             th: 'รายงาน Gold Loss ช่างแต่งต่อคน'
           },
-          minorShow: true,
+          minorShow: false,
           permissions: [PERMISSIONS.WORKER_VIEW]
         }
       },
       {
+        // ย้ายเข้า gold-loss-dashboard (?tab=slip-setter) แล้ว — เหลือไว้เพื่อ redirect ลิงก์เก่า
+        path: '/report-gold-loss-slip-by-worker',
+        name: 'report-gold-loss-slip-by-worker',
+        redirect: '/gold-loss-dashboard?tab=slip-setter',
+        meta: {
+          Displayname: {
+            en: 'Gold Loss by Setter Report',
+            th: 'รายงาน Gold Loss ช่างฝังต่อคน'
+          },
+          minorShow: false,
+          permissions: [PERMISSIONS.WORKER_VIEW]
+        }
+      },
+      {
+        // ย้ายเข้า gold-loss-dashboard (?tab=worker) แล้ว — เหลือไว้เพื่อ redirect ลิงก์เก่า
         path: '/report-gold-loss-by-worker',
         name: 'report-gold-loss-by-worker',
-        component: GoldLossByWorkerReport,
+        redirect: '/gold-loss-dashboard?tab=worker',
         meta: {
           Displayname: {
             en: 'Gold Loss by Worker (All Stages)',
             th: 'รายงานส่วนต่างทองต่อช่าง (ทุกแผนก)'
           },
-          minorShow: true,
+          minorShow: false,
           permissions: [PERMISSIONS.WORKER_VIEW]
         }
       },

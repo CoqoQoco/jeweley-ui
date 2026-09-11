@@ -31,6 +31,7 @@
 | 10 | **List page buttons** | ปุ่มใน search/action bar ของหน้า list: **ปุ่ม primary search ใส่ label ได้** (เช่น 'ค้นหา') เพื่อให้ action หลักเด่น — **ปุ่มรอง (clear/export/advanced/create) คง icon-only + `:title`** tooltip เท่านั้น (ไม่ส่ง `:label`) — ref: `/plan-order-tracking` |
 | 11 | **Filter = MultiSelect เป็น default** | filter field ที่เป็น choice ใช้ `MultiSelectGeneric` เสมอ **ห้ามใช้ `DropdownGeneric`** เว้นแต่ field นั้นเลือกได้ค่าเดียวโดยธรรมชาติจริงๆ (ระบุเหตุผลใน Decision Log) |
 | 12 | **Page title มี description เสมอ** | ทุก `SearchBarGeneric` ต้องส่ง prop `description` อธิบายหน้านั้น (i18n) — ห้ามมีแต่ title เปล่า |
+| 13 | **Chart palette** | กราฟทุกตัวใช้สีจาก `CHART_PALETTE` (`services/utils/chart-colors.js`, 5 สี mirror จาก `variable.scss`) เท่านั้น — ถ้าจำนวนชุดข้อมูลเกิน 5 ให้ยุบส่วนที่เหลือเป็น "อื่นๆ" หรือเปลี่ยนรูปแบบกราฟให้ใช้สีเดียว (เช่น ranking bar) **ห้ามเพิ่มสีใหม่เข้า palette เพื่อให้พอกับจำนวนชุดข้อมูล** |
 
 ---
 
@@ -53,6 +54,31 @@
 ```
 
 **ไฟล์อ้างอิงจริง**: `src/views/ticket/create-view.vue`
+
+---
+
+## Reference Layout — Dashboard (canonical — หน้า Ticket manage)
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│ (icon) <Dashboard Title>                        [ตัวกรอง▾] [⟳]      │  DashboardHeaderGeneric (+ slot #controls, ปุ่ม refresh)
+└────────────────────────────────────────────────────────────────────┘
+  [●12]     [●5]      [●7]      [●92%]     [●3]                        .kpi-grid (grid, ไม่มีกล่อง/ไม่มี title ครอบ)
+  ป้าย A    ป้าย B    ป้าย C    ป้าย D     ป้าย E                     → StatCardGeneric ×N (สูงเท่ากันทุกใบ, ≤1024px ยุบ 2-3 คอลัมน์)
+  ┌─ กราฟ A (legend) ─────────────┐  ┌─ กราฟ B (legend) ─────────────┐
+  │ SectionCardGeneric            │  │ SectionCardGeneric            │  section 2 คอลัมน์ (`.charts-row-b`)
+  │ headerStyle="legend" + icon   │  │ headerStyle="legend" + icon   │  grid-template-columns: 1fr 1fr
+  │ + accent                      │  │ + accent                      │  (≤1024px ยุบเป็น 1 คอลัมน์)
+  └────────────────────────────────┘  └────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────┐
+│ SearchBarGeneric — filter fields + ปุ่มค้นหา/ล้าง                     │
+└────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────┐
+│ DataTableWithPaging — รายการเต็มความกว้าง                            │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+**ไฟล์อ้างอิงจริง**: `src/views/ticket/manage/components/ticket-dashboard.vue` (header + kpi-grid + charts 2 คอลัมน์), ประกอบรวมกับ `SearchBarGeneric`/`DataTableWithPaging` ที่ `src/views/ticket/manage/index-view.vue` — `DashboardHeaderGeneric`/`StatCardGeneric` ถูกสกัด (genericize) มาจากไฟล์นี้เป็น generic component กลาง (ดู Decision Log 2026-07-21)
 
 ---
 
@@ -322,3 +348,5 @@ Section cards inside modals should use the legend header style (`headerStyle="le
 | 2026-09-09 | announcement (audience field) | เพิ่ม field `audience` (all/dev) ควบคุมการมองเห็นบนหน้าแรก + tag กลาง "เห็นเฉพาะ Dev" วางถัดจาก pinned tag ในการ์ด/detail modal/list — blueprint: `docs/claude-design/blueprints/announcement-card.md` |
 | 2026-09-08 | invoice-detail payment zone | redesign โซนชำระเงิน+สรุปยอด: (1) แก้ overflow ทั้งหน้า — `.form-content-payment-container` เป็น `grid: 1fr 4fr` แต่ grid item ไม่ได้ตั้ง `min-width: 0` (computed `auto` หดต่ำกว่า min-content ไม่ได้) ทำตารางประวัติชำระเงินดันทั้งหน้าล้น (`scrollWidth` 1854 vs viewport 1521) → เพิ่ม `> * { min-width: 0 }` + breakpoint 1024px เป็น 1 คอลัมน์ — **กฎทั่วไป: grid item ที่มีตารางกว้างต้องตั้ง `min-width: 0` เสมอ มิฉะนั้น container จะบีบไม่ลงและดันหน้าให้ล้น**; (2) `invoice-items-table.vue` ตัด `ColumnGroup type="footer"` แถว `colspan=16` ทั้งหมด (ส่วนลดพิเศษ→ยอดที่ต้องชำระ, 9 แถว) ที่ทำให้เห็นเป็น "แถวว่าง" เวลาไม่เลื่อนสุดขวา (เนื้อหาอยู่ที่ x≈2136px บนตารางกว้าง 2287px) — เหลือเฉพาะแถวยอดรวมคอลัมน์จริง (Net Weight/Total); (3) เขียนใหม่ `payment-section.vue`: `SectionCardGeneric headerStyle="legend"` + แถบสถานะ (badge/progress bar ตาม `getPaymentStatus()`/`getOutstandingAmount()` จาก `services/utils/payment-status.js` — คืน `null` เมื่อไม่รู้ยอดรวม ห้ามเดาว่าค้างชำระ) + กล่องยอดเงิน `--color-green-bg` (320px) + ปุ่ม "บันทึกรับเงิน" ย้ายจาก card-header มาอยู่ในแถบสถานะ (emit ใหม่ `record-payment`) + ประวัติชำระเปลี่ยนจากตาราง 13 คอลัมน์ (`BaseDataTable`) เป็น card list (thumbnail สลิป + ฟิลด์รองแสดงเฉพาะที่มีค่า) — คง emit `delete-payment` เดิม; (4) component ใหม่ `money-summary-card.vue` — สรุปยอดแบบใบเสร็จ พับได้ (ปิดไว้ default, `ButtonGeneric variant="plain"` + chevron toggle), เลิกซ้ำเลข "ยอดที่ต้องชำระ" ที่เคยโผล่ 3 ที่ (footer ตารางสินค้า/กล่องสรุป/ท้ายตารางชำระเงิน) เหลือที่เดียวต่อ context — blueprint: `docs/claude-design/blueprints/invoice-detail-payment-zone.md` |
 | 2026-09-10 | sale/invoice-detail (⋯ menu) + ActionMenuGeneric | เมนู danger: group header + separator + icon chip tint แดง + hover/focus ผูก token; รายการยกเลิกแยกเป็น 2 ทาง (ยกเลิกใบเดียว / ยกเลิก + ปลดยืนยันสินค้าใน SO) |
+| 2026-09-11 | gold-loss-dashboard (ใหม่) + TabViewGeneric/SourceStripGeneric | รวม 6 report เดิม (by-stage/by-worker/tang-slip/setter-slip/reconcile/monthly) เป็น dashboard แท็บเดียว แยกตามต้นทางข้อมูล (PLAN/SLIP/BOTH) — สร้าง generic ใหม่ 2 ตัว: (1) `TabViewGeneric` ครอบ PrimeVue TabView/TabPanel — ซ่อน nav header เดิม (`display:none`) แล้ว render nav bar เอง พร้อม group divider (label กำกับกลุ่ม `จากแผนผลิต (PLAN)`/`จากใบ (SLIP)`/`รวม`); lazy ทำเองด้วย `visited` Set (ไม่พึ่ง PrimeVue `:lazy` เพราะ unmount ทุกครั้งที่สลับแท็บออก ทำ filter ภายในแท็บหาย + fetch ซ้ำ); (2) `SourceStripGeneric` แถบคาดบังคับทุกแท็บประกาศต้นทาง (ตาราง/หน้าที่คีย์/นับอะไร) + ปุ่ม ⓘ ขยายคำอธิบายยาว ผูก enum `source: plan\|slip-tang\|slip-setter\|both` เข้า i18n โดยตรง (ไม่มี slot ข้อความ กันลืมใส่คำอธิบาย); shared filter (ช่วงวันที่/แผนก/ช่าง) อยู่นอกแท็บ ค่าคงอยู่เมื่อสลับแท็บ — field ที่บางแท็บไม่ใช้ (เช่น แผนกในแท็บใบ) ทำ label จาง (`opacity:.45`) + `:title` tooltip แทนการซ่อน field (ต่างจาก pattern `v-if` ซ่อนทั้ง field ที่ production/dashboard ใช้เดิม เพราะต้องให้ผู้ใช้เตรียมค่าไว้ก่อนสลับแท็บได้); mapping tab→endpoint เดิมยังคงคอลัมน์/logic เดิมทั้งหมด ยกเว้นมุม "ชนิดทอง" ในแท็บ Stage ที่ตัดช่องเงิน/ปุ่มบันทึกค่าตั้งต้นทิ้ง (เหลือ endpoint `GoldLossMonthlyReport` ไว้ยิงเฉพาะคอลัมน์น้ำหนัก); route เดิม 6 เส้น (`/report-gold-loss-*`) เปลี่ยนจาก `component` เป็น `redirect` string พร้อม query (เช่น `?tab=stage&group=gold`) + `minorShow:false` (เมนูอ่านจาก field นี้อยู่แล้ว ไม่ต้องลบ route entry) — blueprint: `docs/claude-design/blueprints/gold-loss-dashboard.html` |
+| 2026-09-11 | gold-loss-dashboard (แท็บภาพรวม, ปรับปรุง) + chart-colors/SourceStripGeneric | user feedback หลังดูหน้าจริง: (1) ถอด `roseGoldLight`/`roseGoldDark` ออกจาก `CHART_TOKENS` — rose-gold สงวนไว้ให้ `--nav-active-gradient` เท่านั้น ไม่ใช่สีกราฟ, เพิ่ม Core Principle #13 บังคับกราฟทุกตัวใช้ `CHART_PALETTE` (5 สี) เท่านั้น; (2) กราฟ "Loss รายเดือนแยกช่าง" (stacked column 7 สีต่อเดือน) → **ranking bar สีเดียว** (`CHART_TOKENS.primary`) เรียง loss รวมทั้งช่วงมาก→น้อย ทุกช่างในแผนก (ตัด 12 คนแรก ที่เหลือรวม "อื่นๆ") — เหตุผล: palette มี 5 สีไม่พอกับจำนวนช่าง และเพิ่มสีนอก palette ผิดหลัก sync กับ `variable.scss`; เปลี่ยนหัวข้อกล่องเป็น "อันดับ Loss ต่อช่าง"/"Loss Ranking by Worker" ทั้ง th/en (คีย์เดิม `chartSlipByWorkerTitle`); (3) default ช่วงวันที่ของ shared filter (`index-view.vue`) เปลี่ยนจาก `null` (ไม่กรอง) เป็น **6 เดือนล่าสุด** (เดือนปัจจุบัน+ย้อนหลัง 5 เดือน, ขอบเดือนตามเวลาไทย `Asia/Bangkok`) ทั้งตอนเข้าหน้าครั้งแรกและตอนกด "ล้างตัวกรอง" — ทำให้ zero-fill เดือนที่ไม่มีใบ (logic เดิมมีอยู่แล้วแต่ไม่เคยทำงานเพราะ filter ว่างตลอด) เห็นผลจริงโดยไม่ต้องแก้ logic กราฟ/ตารางเพิ่ม; (4) จัดหน้าให้ตรงต้นแบบ `/ticket-manage`: kpi-source-header เขียนเอง (Core Principle #2 ห้าม) → `SectionCardGeneric headerStyle="legend"` ครอบ kpi-grid ทั้ง 2 กลุ่ม (PLAN accent=main / SLIP accent=green, ไอคอน+accent แทนป้าย PLAN/SLIP เดิม), กราฟเทียบ 2 แผนก + กราฟอันดับใหม่จัดเป็น 2 คอลัมน์ (`.charts-row-b`, ≤1024px ยุบ 1), ป้าย PLAN/SLIP มุมขวาบนการ์ด KPI คงไว้ตามที่ user สั่งแต่ย่อเล็กลง (10px→9px ตัวหนา) และเปลี่ยนจากป้ายพื้นทึบ+ตัวอักษรขาวเป็น outline chip โปร่งแสง; (5) `SourceStripGeneric` เปลี่ยนจากแถบพื้นสีเต็มความกว้าง (highlight/green/progress bg) เป็นบรรทัดคำอธิบายเล็กใต้หัวข้อ (เส้นใต้บาง + badge outline สีตาม accent) เบาลงทุกแท็บที่ใช้ component นี้ร่วมกัน — เพิ่มหัวข้อ [Reference Layout — Dashboard](#reference-layout--dashboard-canonical--หน้า-ticket-manage) canonical จาก `ticket-dashboard.vue`/`ticket/manage/index-view.vue` |

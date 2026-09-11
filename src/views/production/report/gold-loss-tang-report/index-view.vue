@@ -62,11 +62,13 @@
 
     <SummaryPanel
       v-model:lossPercent="lossPercent"
-      v-model:pricePerGram="pricePerGram"
+      :pricePerGram="pricePerGram"
       v-model:remark="remark"
       :calc="calc"
       :canSave="canSave"
+      :lastPriceInfo="matchedLastPrice"
       class="mt-4"
+      @update:pricePerGram="onPricePerGramInput"
       @save="onSave"
     />
   </div>
@@ -132,7 +134,10 @@ export default {
 
       lossPercent: '',
       pricePerGram: '',
-      remark: ''
+      pricePerGramTouched: false,
+      remark: '',
+
+      lastPrices: []
     }
   },
 
@@ -179,15 +184,39 @@ export default {
         !!this.lossPercent &&
         !!this.pricePerGram
       )
+    },
+
+    selectedGoldSizes() {
+      const sizes = this.selectedJobs.map((j) => j.goldSize).filter(Boolean)
+      return [...new Set(sizes)]
+    },
+
+    matchedLastPrice() {
+      if (this.selectedGoldSizes.length !== 1) return null
+      return this.lastPrices.find((p) => p.goldSize === this.selectedGoldSizes[0]) || null
+    }
+  },
+
+  watch: {
+    matchedLastPrice(val) {
+      if (val && !this.editingId && !this.pricePerGramTouched && !this.pricePerGram) {
+        this.pricePerGram = String(val.pricePerGram)
+      }
     }
   },
 
   methods: {
+    onPricePerGramInput(val) {
+      this.pricePerGramTouched = true
+      this.pricePerGram = val
+    },
+
     async loadLineOptions() {
       const store = useGoldLossTangStore()
       const res = await store.getLineOptions()
       this.issuedNameOptions = mergeOptions(ISSUED_SEED, res?.issued)
       this.returnedNameOptions = mergeOptions(RETURNED_SEED, res?.returned)
+      this.lastPrices = res?.lastPrices || []
     },
 
     openSearchModal() {
@@ -295,12 +324,27 @@ export default {
         return
       }
 
+      if (this.calc.rawLoss < 0) {
+        confirmThenSubmit(
+          this.$t('view.production.goldLossTang.negativeLossConfirmMessage', {
+            issued: this.calc.issuedTotal.toFixed(2),
+            returned: this.calc.returnedTotal.toFixed(2),
+            diff: Math.abs(this.calc.rawLoss).toFixed(2)
+          }),
+          this.$t('view.production.goldLossTang.negativeLossConfirmTitle'),
+          async () => {
+            await this.doSave(true)
+          }
+        )
+        return
+      }
+
       const workerDisplay = `${this.workerCode} - ${this.workerName}`
       confirmThenSubmit(
         workerDisplay,
         this.$t('view.production.goldLossTang.confirmSave'),
         async () => {
-          await this.doSave()
+          await this.doSave(false)
         }
       )
     },
@@ -368,7 +412,7 @@ export default {
       this.selectedJobs = [...matchedNormal, ...this.manualJobs]
     },
 
-    async doSave() {
+    async doSave(confirmNegativeLoss) {
       const store = useGoldLossTangStore()
 
       const jobItems = this.selectedJobs
@@ -412,7 +456,8 @@ export default {
         remark: this.remark,
         items: [...jobItems, ...manualItems],
         issuedLines: issuedLinePayload,
-        returnedLines: returnedLinePayload
+        returnedLines: returnedLinePayload,
+        ...(confirmNegativeLoss ? { confirmNegativeLoss: true } : {})
       }
 
       if (this.editingId) {

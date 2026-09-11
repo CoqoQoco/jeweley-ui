@@ -5,6 +5,11 @@
     accent="main"
     headerStyle="legend"
   >
+    <div v-if="hasNegativeLoss" class="negative-loss-banner mb-3">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ negativeLossMessage }}</span>
+    </div>
+
     <div class="form-row two-col mb-2">
       <FormFieldGeneric :label="$t('view.production.goldLossTang.lossPercent')" :required="true">
         <InputTextGeneric
@@ -26,6 +31,10 @@
           :placeholder="$t('view.production.goldLossTang.pricePerGram')"
           @update:modelValue="$emit('update:pricePerGram', $event)"
         />
+        <small v-if="priceHintText" class="price-hint d-block">{{ priceHintText }}</small>
+        <small v-if="priceDiffWarningText" class="price-diff-warning d-block">
+          <i class="bi bi-exclamation-triangle-fill"></i> {{ priceDiffWarningText }}
+        </small>
       </FormFieldGeneric>
     </div>
 
@@ -85,6 +94,8 @@
 </template>
 
 <script>
+import { formatDate } from '@/services/utils/dayjs.js'
+
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
@@ -130,6 +141,10 @@ export default {
     canSave: {
       type: Boolean,
       default: false
+    },
+    lastPriceInfo: {
+      type: Object,
+      default: null
     }
   },
 
@@ -141,6 +156,36 @@ export default {
       if (!v || v === 0) return 'zero'
       if (v < 0) return 'negative'
       return 'positive'
+    },
+
+    hasNegativeLoss() {
+      return Number(this.calc.rawLoss) < 0
+    },
+
+    negativeLossMessage() {
+      return this.$t('view.production.goldLossTang.negativeLossWarning', {
+        issued: this.fmt2(this.calc.issuedTotal),
+        returned: this.fmt2(this.calc.returnedTotal)
+      })
+    },
+
+    priceHintText() {
+      if (!this.lastPriceInfo) return ''
+      return this.$t('view.production.goldLossTang.priceHint', {
+        price: this.fmt2(this.lastPriceInfo.pricePerGram),
+        doc: this.lastPriceInfo.fromDocumentNo || '-',
+        date: this.lastPriceInfo.fromDate ? formatDate(this.lastPriceInfo.fromDate) : '-'
+      })
+    },
+
+    priceDiffWarningText() {
+      if (!this.lastPriceInfo || !this.pricePerGram) return ''
+      const lastPrice = Number(this.lastPriceInfo.pricePerGram)
+      const entered = Number(this.pricePerGram)
+      if (!lastPrice || isNaN(entered)) return ''
+      const diffPercent = Math.abs(entered - lastPrice) / lastPrice * 100
+      if (diffPercent <= 20) return ''
+      return this.$t('view.production.goldLossTang.priceDiffWarning', { diff: diffPercent.toFixed(0) })
     }
   },
 
@@ -281,5 +326,36 @@ export default {
 .money-hint {
   font-size: var(--fs-sm);
   font-weight: 400;
+}
+
+.negative-loss-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-sm);
+  background: var(--color-highlight-bg);
+  border: 1px solid var(--base-warning);
+  border-radius: var(--radius-md);
+  padding: var(--sp-md) var(--sp-lg);
+  color: var(--base-font-color);
+  font-size: var(--fs-base);
+
+  i {
+    color: var(--base-warning);
+    margin-top: 2px;
+  }
+}
+
+.price-hint {
+  color: var(--base-font-color);
+  opacity: 0.65;
+  font-size: var(--fs-sm);
+  margin-top: var(--sp-xs);
+}
+
+.price-diff-warning {
+  color: var(--base-warning);
+  font-size: var(--fs-sm);
+  margin-top: var(--sp-xs);
+  font-weight: 600;
 }
 </style>

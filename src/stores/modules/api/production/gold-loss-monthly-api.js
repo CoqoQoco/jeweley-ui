@@ -6,7 +6,12 @@ const emptyReport = () => ({
   month: null,
   status: null,
   hasSavedData: false,
+  defaultFromYear: null,
+  defaultFromMonth: null,
   totalMoneyDiff: 0,
+  rowsReturned: 0,
+  rowsPendingReturn: 0,
+  pendingWeight: 0,
   rows: []
 })
 

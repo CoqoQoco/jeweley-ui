@@ -707,7 +707,12 @@ export default {
     manualFieldQty: 'Quantity',
     manualFieldProductNumber: 'Product Number',
     validationManualJobIncomplete: 'Please fill in all required manual job fields (job no., date, gold, gold size, weight send, weight check)',
-    validationManualJobIncompleteRow: 'Manual job row {n}: data incomplete (job no., date, gold, gold size, weight send, weight check)'
+    validationManualJobIncompleteRow: 'Manual job row {n}: data incomplete (job no., date, gold, gold size, weight send, weight check)',
+    negativeLossWarning: 'Total returned weight {returned} g is more than total issued weight {issued} g',
+    negativeLossConfirmTitle: 'Confirm Save (Returned > Issued)',
+    negativeLossConfirmMessage: 'Total returned weight {returned} g is more than total issued weight {issued} g (diff {diff} g). Do you want to save this slip anyway?',
+    priceHint: 'Latest price {price} THB/g from slip {doc} dated {date}',
+    priceDiffWarning: 'Entered price differs from the latest price by more than 20% ({diff}%)'
   },
 
   goldCostReport: {
@@ -746,7 +751,14 @@ export default {
     month: 'Month',
     stage: 'Department',
     btnFetch: 'Fetch Data',
-    savedBadge: 'Saved',
+    savedBanner: 'Saved for this month',
+    usingDefaultBanner: 'Using default values from {month}/{year} — click Save to confirm this month’s values',
+    neverConfiguredBanner: 'Loss % and gold price have never been configured — the money diff column will be 0 until you enter and save',
+    coverageText: 'Calculated from {returned} returned items · {pending} pending ({weight} {unit})',
+    unitGram: 'g',
+    exportNoDataTitle: 'No Data',
+    exportNoDataMsg: 'No data to export',
+    exportFileNamePrefix: 'gold-loss-monthly-report',
     colGoldType: 'Gold',
     colSumGoldWeightSend: 'Total Send Weight',
     colSumGoldWeightCheck: 'Total Receive Weight',
@@ -779,9 +791,10 @@ export default {
 
   goldLossByStage: {
     searchTitle: 'Gold Loss by Stage Report',
-    searchDesc: 'Select year and month to fetch gold loss data grouped by production stage',
+    searchDesc: 'Select year, month and department to fetch gold loss data grouped by production stage',
     year: 'Year',
     month: 'Month',
+    stage: 'Department',
     btnFetch: 'Fetch Data',
     colGoldStage: 'Stage',
     colSend: 'Total Send Weight',
@@ -789,8 +802,14 @@ export default {
     colRawLoss: 'Raw Loss',
     colRawLossPercent: 'Raw Loss %',
     colJobCount: 'Job Count',
+    colPendingReturn: 'Pending Return',
     chartRawLoss: 'Raw Loss by Stage',
     totalLabel: 'Total',
+    coverageText: 'Calculated from {returned} returned items · {pending} pending ({weight} {unit})',
+    unitGram: 'g',
+    exportNoDataTitle: 'No Data',
+    exportNoDataMsg: 'No data to export',
+    exportFileNamePrefix: 'gold-loss-by-stage-report',
     months: {
       jan: 'Jan',
       feb: 'Feb',
@@ -984,7 +1003,43 @@ export default {
     colTotalMoneyDiff: 'Money Diff',
     totalWorkers: 'Total {total} workers',
     printMonthly: 'Print Monthly Summary',
-    noDataPrint: 'No data available to print'
+    noDataPrint: 'No data available to print',
+    statTotalSlips: 'Total Slips',
+    statTotalIssued: 'Total Issued Weight',
+    statTotalReturned: 'Total Returned Weight',
+    statTotalDiffLoss: 'Total Diff Loss (g)',
+    statTotalMoney: 'Total Money Diff',
+    byGoldTypeTitle: 'By Gold Type',
+    colGoldSize: 'Gold Type',
+    colPricePerGram: 'Price/gram',
+    mixedPriceTooltip: 'This group has slips using different gold prices — the value shown is a weighted average'
+  },
+
+  goldLossSlipByWorker: {
+    searchTitle: 'Search Gold Loss by Setter Report',
+    searchDesc: 'Search Gold Loss summary by setter, date range and other conditions',
+    dateRange: 'Date Range',
+    workerCode: 'Worker Code/Search',
+    placeholder: {
+      workerCode: 'Select worker'
+    },
+    groupByMonth: 'Group by Month',
+    colWorkerCode: 'Worker Code',
+    colWorkerName: 'Worker Name',
+    colMonth: 'Month',
+    colSlipCount: 'Slip Count',
+    colTotalWeightSend: 'Total Weight Send',
+    colTotalWeightCheck: 'Total Weight Check',
+    colTotalWeightLossAllowed: 'Total Allowed Loss',
+    colTotalWeightLossActual: 'Total Actual Loss',
+    colTotalMoneyDiff: 'Total Money Diff',
+    colTotalGoldReturnAmount: 'Total Gold Return Amount',
+    totalWorkers: 'Total {total} workers',
+    statTotalSlips: 'Total Slips',
+    statTotalWeightSend: 'Total Weight Send',
+    statTotalWeightCheck: 'Total Weight Check',
+    statTotalWeightLossActual: 'Total Actual Loss',
+    statTotalMoneyDiff: 'Total Money Diff'
   },
 
   preplanFunnel: {
@@ -1176,6 +1231,9 @@ export default {
     },
     minJobCount: 'Minimum Job Count',
     minJobCountHint: 'Workers with fewer jobs than this threshold are excluded from ranking',
+    hideTestWorkers: 'Hide test workers',
+    tangDeptNote: 'Tang workers all sit around 17–24% — this is normal for this department, because scrap trimmed from stems is returned via slips, not lost. To see the figures actually used for billing, go to the "Tang Slip" tab.',
+    tangDeptNoteBtn: 'Go to Tang Slip',
     noteBanner: 'Note: figures on this page show the gold "send vs. return" difference, not missing gold — at the finishing department, a portion of metal is legitimately filed off during the process and collected separately as scrap. Do not compare across departments since work characteristics differ greatly; only compare workers within the same department.',
     statWorkers: 'Workers',
     statJobs: 'Jobs',
@@ -1202,5 +1260,174 @@ export default {
     excelFileName: 'gold-loss-by-worker-all-stages-report',
     noDataExportTitle: 'No Data',
     noDataExportMsg: 'No data to export'
+  },
+
+  goldLossReconcile: {
+    searchTitle: 'Gold Loss Reconciliation Report (Plan vs Slip)',
+    searchDesc: 'Compare Gold Loss figures from the production plan side vs the slip side (GLT / setter slip) to see whether the gap comes from extra scrap/stem/wire returns or incomplete slip linkage',
+    dateRange: 'Date Range',
+    department: 'Department',
+    workerCode: 'Worker',
+    placeholder: {
+      workerCode: 'Select worker (all)'
+    },
+    statPlanRawLoss: 'Plan-side Diff',
+    statSlipRawLoss: 'Slip-side Diff',
+    statGapExplained: 'Gap Explained (Scrap Return)',
+    statGapUnexplained: 'Gap Unexplained',
+    statLinkCoverage: '% Slip Linkage',
+    chartTitle: 'Monthly %Diff Trend: Plan vs Slip',
+    chartSeriesPlanSuffix: 'Plan',
+    chartSeriesSlipSuffix: 'Slip',
+    noteBannerTitle: 'Why the two sides differ',
+    noteBanner: 'The plan side counts only the returned piece weight, while the slip side (GLT / setter slip) also counts scrap/stem/wire returned by the worker — so the two %loss figures can differ significantly. A high "Gap Unexplained" means slips are not fully linked to plan jobs and should be investigated. A negative value in some months means the slip period covers more than what the plan recorded that month — this is not a data error, since slips are period documents that can span 2 calendar months. Focus on the period total above rather than any single month in the table.',
+    periodSummaryLabel: 'Period total (use this figure as the primary reference, not the individual monthly rows below)',
+    gapUnexplainedTooltip: 'A negative value means the slip covers more than what the plan recorded that month — not a data error, since slips are period documents that can span 2 calendar months',
+    mainTableTitle: 'Monthly Reconciliation Table',
+    colYearMonth: 'Month',
+    colDept: 'Department',
+    colPlanSumSend: 'Plan: Sent',
+    colPlanSumCheck: 'Plan: Returned',
+    colPlanRawLoss: 'Plan: Diff',
+    colPlanLossPercent: 'Plan: %Diff',
+    colPlanRowsReturned: 'Plan: Jobs Returned',
+    colPlanRowsPending: 'Plan: Jobs Pending',
+    colSlipCount: 'Slip: Slip Count',
+    colSlipIssued: 'Slip: Issued',
+    colSlipReturned: 'Slip: Returned',
+    colSlipRawLoss: 'Slip: Diff',
+    colSlipAllowedLoss: 'Slip: Allowed Loss',
+    colSlipDiffLoss: 'Slip: Excess Loss',
+    colSlipMoneyDiff: 'Slip: Money Diff',
+    colSlipLossPercent: 'Slip: %Diff',
+    colExtraIssuedWeight: 'Extra: Issued',
+    colExtraReturnedWeight: 'Extra: Returned',
+    colExtraReturnedNotCounted: 'Extra: Returned Not Counted',
+    colGapWeight: 'Gap: Total',
+    colGapExplainedByExtras: 'Gap: Explained',
+    colGapUnexplained: 'Gap: Unexplained',
+    colLinkedDetailRows: 'Linkage: Linked',
+    colUnlinkedDetailRows: 'Linkage: Unlinked',
+    colLinkCoveragePercent: 'Linkage: %Coverage',
+    footerTotalLabel: 'Period Total',
+    footerPlanRawLoss: 'Plan Diff',
+    footerSlipRawLoss: 'Slip Diff',
+    footerGapExplained: 'Explained',
+    footerGapUnexplained: 'Unexplained',
+    footerLinkCoverage: '%Linked',
+    unitGram: 'g',
+    excelFileName: 'gold-loss-reconcile-report',
+    noDataExportTitle: 'No Data',
+    noDataExportMsg: 'No data to export'
+  },
+
+  goldLossDashboard: {
+    title: 'Gold Loss Dashboard',
+    subtitle: 'Data comes from 2 sources keyed at different places, with different definitions — do not compare numbers across tabs directly',
+
+    filterTitle: 'Filters',
+    filterDesc: 'This filter is shared across all tabs — values persist when you switch tabs',
+    filterDateRange: 'Date Range',
+    filterDepartment: 'Department',
+    filterWorker: 'Worker',
+    filterWorkerPlaceholder: 'Select worker (all)',
+    filterDeptDisabledTooltip: 'This tab does not use the department filter — figures are not split by department',
+    filterWorkerDisabledTooltip: 'This tab does not use the worker filter — this is an aggregate figure',
+
+    tabOverview: 'Overview',
+    tabStage: 'By Stage',
+    tabWorker: 'By Worker',
+    tabSlipTang: 'Tang Slip',
+    tabSlipSetter: 'Setter Slip',
+    tabReconcile: 'Reconcile',
+    groupPlan: 'From Production Plan (PLAN)',
+    groupSlip: 'From Slips (SLIP)',
+    groupBoth: 'Combined',
+
+    overview: {
+      sourcePlanTitle: 'From Production Plan',
+      sourceSlipTitle: 'From Slips',
+
+      kpiPlanLossPercent: 'Total %Loss',
+      kpiPlanRawLoss: 'Gold Lost',
+      kpiPlanRawLossSub: '{count} jobs',
+      kpiPlanPending: 'Pending Return',
+      kpiPlanPendingSub: '{count} jobs',
+      kpiPlanFarthestWorker: 'Worker Farthest From Dept. Avg',
+      kpiPlanFarthestWorkerEmpty: 'No one exceeds the threshold',
+
+      kpiSlipTotalCount: 'Total Slips',
+      kpiSlipTotalIssued: 'Total Issued',
+      kpiSlipTotalReturned: 'Total Returned',
+      kpiSlipTotalLoss: 'Total Loss',
+
+      slipDeptLabel: 'Department:',
+      slipDeptTang: 'Tang',
+      slipDeptSetter: 'Setter',
+
+      chartSlipCompareTitle: 'Monthly Loss Comparison: Tang vs Setter',
+      chartSlipComparePctSeries: '%loss {dept}',
+      chartSlipByWorkerTitle: 'Loss Ranking by Worker',
+      otherWorkersLabel: 'Others',
+
+      tableSlipMonthlyTitle: 'Monthly Report by Worker',
+      tableSlipByWorkerTitle: 'By Worker',
+      tableSlipTotalLabel: 'Total for Period',
+      colMonth: 'Month',
+      colSlipCount: 'Slips',
+      colIssued: 'Issued (g)',
+      colReturned: 'Returned (g)',
+      colLoss: 'Loss (g)',
+      colLossPercent: '%Loss',
+      colWorkerCode: 'Worker Code',
+      colWorkerName: 'Worker Name',
+
+      pointUnit: ' pts',
+
+      reconcileNote: 'These two rows use different definitions — do not subtract one from the other. Unexplained gap: {gap}',
+      goReconcile: 'Go to Reconcile',
+
+      chartTitle: 'Monthly %Loss Trend: Plan vs Slip',
+
+      actionTitle: 'Action Items',
+      actionEmpty: 'Nothing urgent right now — all figures are within normal range',
+      actionPlanHighDiff: '{code} {name} ({dept}) {percent}% is {diff} points above department average · {jobCount} jobs',
+      actionPlanTestWorker: 'Found test worker {name} mixed into real data: {jobCount} jobs, {weight}',
+      actionSlipNegative: 'Worker {code} {name} returned more gold than issued, total {weight} ({slipCount} slips)',
+      actionLowCoverage: 'Slip-to-job linkage is {percent}, below the 80% threshold',
+      actionMoreItems: 'and {count} more'
+    },
+
+    groupByLabel: 'Group by:',
+    groupByStage: 'Stage',
+    groupByGold: 'Gold Type',
+    goldTypeDeptLabel: 'Department',
+    goldTypeDeptPlaceholder: 'Select department',
+    goldTypePendingReturn: 'Pending Return',
+
+    sourceStrip: {
+      showInfo: 'More info',
+      hideInfo: 'Hide info',
+
+      plan: {
+        summary: 'Source: plan_status_detail table · keyed from the "Update Production Plan" page · counts only the returned piece weight, excludes scrap/stem',
+        detail: 'Production staff key the issued/returned gold weight every day on the Update Production Plan page. The system only counts the piece weight that workers have already returned. Jobs not yet returned are excluded from %loss but shown separately under "Pending Return". This figure is meant for measuring production efficiency and comparing workers within the same department — not for billing.'
+      },
+
+      slipTang: {
+        summary: 'Source: tang_slip table · keyed from the "Issue Tang Gold Loss Slip" page · includes scrap/stem/wire returns',
+        detail: 'Accounting/supervisors key this at period closing via the GLT slip. The figure includes the piece, scrap, stem, and wire returned by the worker, so %loss is always lower than the plan side. Use this figure to bill tang workers — do not compare it directly against the plan side.'
+      },
+
+      slipSetter: {
+        summary: 'Source: worker_slip table · keyed from the "Issue Setter Gold Loss Slip" page · allowed % comes from the Update Production Plan page',
+        detail: 'Issued at period closing. The allowed % threshold comes from the value keyed on the Update Production Plan page when the job was pulled to issue the slip. Use this figure to bill setter workers — do not compare it directly against the plan side.'
+      },
+
+      both: {
+        summary: 'Source: plan_status_detail + tang_slip + worker_slip · compares both sides by month x department',
+        detail: 'This is the only tab allowed to place the plan-side and slip-side numbers next to each other. The gap explained by scrap/stem/wire returned via slips is "explained"; the remainder is a real gap, usually meaning some jobs were never issued a slip.'
+      }
+    }
   }
 }
