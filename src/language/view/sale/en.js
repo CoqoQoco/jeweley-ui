@@ -12,7 +12,19 @@ export const invoice = {
   deliveryDate: 'Delivery Date',
   remark: 'Remark',
   status: 'Status',
-  customerCode: 'Customer Code'
+  customerCode: 'Customer Code',
+  grandTotalCol: 'Grand Total',
+  paidAmountCol: 'Paid',
+  outstandingAmountCol: 'Outstanding',
+  overdueDaysLabel: 'Overdue (Days)',
+  ownerUsernameLabel: 'Owner',
+  saleChannelLabel: 'Sale Channel',
+  filterAll: 'All',
+  paymentStatusLabel: 'Payment Status',
+  paymentStatusPaid: 'Paid',
+  paymentStatusPartial: 'Partial',
+  paymentStatusUnpaid: 'Unpaid',
+  overdueOnlyLabel: 'Overdue Only'
 }
 
 export const invoiceDetail = {
@@ -185,6 +197,9 @@ export const invoiceDetail = {
   paidAmount: 'Amount Paid',
   recordBy: 'Recorded By',
   recordDate: 'Record Date',
+  deleteReasonTitle: 'Reason for Cancelling Invoice',
+  deleteReasonLabel: 'Reason',
+  deleteReasonPlaceholder: 'Enter the reason for cancelling this invoice',
   validation: {
     invoiceNumberRequired: 'Please enter Invoice Number',
     invoiceDateRequired: 'Please select Invoice Date',
@@ -195,7 +210,8 @@ export const invoiceDetail = {
     branchRequired: 'Please enter bank branch',
     compressError: 'Unable to compress image',
     currencyRequired: 'Please enter currency',
-    exchangeRateRequired: 'Please enter a valid exchange rate'
+    exchangeRateRequired: 'Please enter a valid exchange rate',
+    deleteReasonRequired: 'Please enter the reason for cancelling this invoice'
   },
   error: {
     noInvoiceNumber: 'Invoice number not found in system',
@@ -433,6 +449,9 @@ export const saleOrder = {
   depositPrice: 'Deposit Amount',
   maxDeposit: 'Max',
   paymentMethod: 'Payment Method',
+  paymentCollectWarning: 'Selecting "Cash", "Transfer", or "Credit Card" records the payment as fully collected immediately. If the customer has not paid yet, please select "{creditLabel}" or "{chequeLabel}" instead',
+  saleChannelLabel: 'Sale Channel',
+  saleChannelPlaceholder: '-- Select Sale Channel --',
   paymentTerm: 'Payment Term (Days)',
   payCash: 'Pay Immediately',
   dueDate: 'Due',
@@ -620,12 +639,18 @@ export const saleOrderList = {
   placeholder: {
     selectPaymentMethod: 'Select payment method'
   },
+  // Label used when "selecting" a payment method on the Invoice creation screen — free to reword,
+  // does not affect paymant_name stored in DB (see src/constants/payment-methods.js for the real apiName;
+  // never make apiName equal this label). cheque/creditTerm use clearer "not paid yet" wording —
+  // do NOT copy this change to invoiceDetail.paymentMethods (shared with the record-payment screen,
+  // where the old wording is still correct).
   paymentMethod: {
     cash: 'Cash',
     transfer: 'Transfer',
-    cheque: 'Cheque',
+    cheque: 'Cheque (not yet cleared)',
     creditCard: 'Credit Card',
-    creditTerm: 'Credit Term'
+    creditTerm: 'Not paid yet (Credit / on account)',
+    unpaid: 'Unpaid (method not specified)'
   },
   dkInvoiceNumber: 'Invoice no. (DK)',
   validation: {

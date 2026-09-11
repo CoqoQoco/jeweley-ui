@@ -33,13 +33,13 @@ vi.mock('@/stores/modules/api/master/master-bank-store.js', () => ({
 
 import { warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 
-function createWrapper(propsOverride = {}) {
+function createWrapper(propsOverride = {}, tMock) {
   const pinia = createPinia()
   return shallowMount(PaymentRecordSheet, {
     global: {
       plugins: [pinia],
       mocks: {
-        $t: (key, params) => (params ? `${key}:${JSON.stringify(params)}` : key)
+        $t: tMock || ((key, params) => (params ? `${key}:${JSON.stringify(params)}` : key))
       },
       stubs: {
         FormFieldGeneric: true,
@@ -137,7 +137,8 @@ describe('PaymentRecordSheet', () => {
     expect(payload.invoiceNumber).toBe('INV-0001')
     expect(payload.amount).toBe(5000)
     expect(payload.payment).toBe(1)
-    expect(payload.paymentName).toBe('view.mobile.sale.invoicePaymentMethodCash')
+    // paymentName ต้องเป็น apiName (getPaymentApiName) ไม่ใช่ i18n key — เดิม assert ผิดเป็นหลักฐานของบั๊กภาษารั่วลง DB
+    expect(payload.paymentName).toBe('เงินสด (Cash)')
     expect(payload.bankCode).toBe(null)
     expect(payload.bankBranch).toBe(null)
     expect(payload.referenceNumber).toBe(null)
@@ -158,7 +159,8 @@ describe('PaymentRecordSheet', () => {
     expect(wrapper.emitted('save-payment')).toBeTruthy()
     const payload = wrapper.emitted('save-payment')[0][0]
     expect(payload.bankCode).toBe('KBANK')
-    expect(payload.paymentName).toBe('view.mobile.sale.invoicePaymentMethodTransfer')
+    // paymentName ต้องเป็น apiName (getPaymentApiName) ไม่ใช่ i18n key — เดิม assert ผิดเป็นหลักฐานของบั๊กภาษารั่วลง DB
+    expect(payload.paymentName).toBe('โอนเงิน (Transfer)')
   })
 
   it('g1) เลือกโอน+ธนาคารแล้วเปลี่ยนเป็นเงินสด → bankCode ต้องถูกล้างเป็น null', async () => {
@@ -247,5 +249,34 @@ describe('PaymentRecordSheet', () => {
     wrapper.vm.onClose()
 
     expect(wrapper.emitted('close')).toBeTruthy()
+  })
+
+  it('l) รหัส 5 (เครดิต) ต้องไม่อยู่ใน paymentMethodOptions และรหัส 3 (เช็ค) ต้องอยู่ (recordableAsReceipt filter)', async () => {
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    const codes = wrapper.vm.paymentMethodOptions.map((m) => m.code)
+    expect(codes).not.toContain(5)
+    expect(codes).toContain(3)
+  })
+
+  describe('m) paymentName integrity — ต้องเท่ากับ apiName เสมอ ไม่ว่าภาษา UI จะเป็นอะไร', () => {
+    const runWith = (tMock) => {
+      const wrapper = createWrapper({}, tMock)
+      wrapper.vm.$.proxy.paymentData.amount = '5000'
+      wrapper.vm.onPaymentMethodChange(1)
+      wrapper.vm.onSave()
+      return wrapper.emitted('save-payment')[0][0].paymentName
+    }
+
+    it('paymentName เท่ากันทั้ง TH mock และ EN mock และเท่ากับ apiName', () => {
+      const thResult = runWith((key) => `TH:${key}`)
+      const enResult = runWith((key) => `EN:${key}`)
+
+      expect(thResult).toBe('เงินสด (Cash)')
+      expect(enResult).toBe('เงินสด (Cash)')
+      expect(thResult).toBe(enResult)
+      expect(thResult.startsWith('view.')).toBe(false)
+    })
   })
 })

@@ -271,8 +271,8 @@ export default {
       this.showCheckoutSheet = true
     },
 
-    async onConfirmPayment(payments) {
-      const context = this.buildCheckoutContext(payments)
+    async onConfirmPayment(payments, creditDay) {
+      const context = this.buildCheckoutContext(payments, creditDay)
       if (!context) return
       await this.submitCheckout(context)
     },
@@ -290,10 +290,11 @@ export default {
 
     // ประกอบ payload ตาม contract ของ POST /Pos/Checkout — activeCart.customer.code default เป็น WALKIN เสมอ
     // (ถ้า WALKIN ยังไม่ถูก seed ใน DB จริง backend จะ error กลับมา ให้ axios-helper แสดง message ตามปกติ)
-    buildCheckoutContext(payments) {
+    // creditDay มาจาก pos-checkout-sheet.vue โดยตรง (arg ที่ 2 ของ emit 'confirm') ไม่ใช่การสแกนหาใน payments[]
+    // อีกต่อไป เพราะรหัส 5 (เครดิต) ไม่มี entry อยู่ใน payments[] เลย (recordableAsReceipt=false)
+    buildCheckoutContext(payments, creditDay) {
       const cart = this.activeCart
       if (!cart) return null
-      const creditPayment = payments.find((p) => p.payment === 5 && p.paymentDay)
       // discountBill เก็บเป็นฐานบาทเสมอ (ดู pos-cart-store.cartTotal) แต่ InvoiceService.Create ของ backend
       // หาร CurrencyRate ให้ subtotal ก่อนหักส่วนลดท้ายบิล — SpecialDiscount ที่ backend รับจึงต้องเป็น
       // "สกุลเงินที่ขาย" ไม่ใช่บาท ห้ามเอาการหารนี้ออก ไม่งั้นขายต่างประเทศจะลดยอดเกินจริง
@@ -333,7 +334,7 @@ export default {
         })),
         DkInvoiceNumber: null,
         Remark: cart.note || null,
-        PaymentDay: creditPayment ? creditPayment.paymentDay : null,
+        PaymentDay: creditDay || null,
         Deposit: null
       }
 

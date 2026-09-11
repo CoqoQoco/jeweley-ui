@@ -94,9 +94,9 @@ export const pos = {
   amountToCollect: 'ยอดที่ต้องรับ',
   paymentMethodCash: 'เงินสด',
   paymentMethodTransfer: 'โอนเงิน',
-  paymentMethodCheque: 'เช็ค',
+  paymentMethodCheque: 'เช็ค (ยังไม่ขึ้นเงิน)',
   paymentMethodCreditCard: 'บัตรเครดิต',
-  paymentMethodCredit: 'เครดิต (กำหนดวัน)',
+  paymentMethodCredit: 'ยังไม่ได้รับเงิน (เครดิต)',
   cashQuickExact: 'พอดี',
   cashAmountLabel: 'จำนวนเงินที่รับ (เงินสด)',
   changeAmountLabel: 'เงินทอน',
@@ -334,8 +334,18 @@ export const quotation = {
 
 export const notifications = {
   pageTitle: 'การแจ้งเตือน',
-  emptyTitle: 'ไม่มีการแจ้งเตือน',
-  emptySubtitle: 'Feature นี้จะพัฒนาในอนาคต'
+  emptyTitle: 'ไม่มีงานค้าง',
+  emptySubtitle: 'คุณจัดการงานครบทุกรายการแล้ว',
+  allModulesTab: 'ทั้งหมด',
+  overdueDays: 'เลยกำหนด {days} วัน',
+  loadMoreBtn: 'โหลดเพิ่มเติม',
+  openBtn: 'เปิดเอกสาร',
+  snoozeBtn: 'เลื่อนไว้ก่อน',
+  doneBtn: 'ปิดงาน',
+  openUnsupportedHint: 'ยังไม่รองรับบนมือถือ',
+  severityCrit: 'ด่วนมาก',
+  severityWarn: 'ควรดำเนินการ',
+  severityInfo: 'แจ้งเพื่อทราบ'
 }
 
 export const saleIndex = {
@@ -642,9 +652,10 @@ export const sale = {
   invoicePaymentSheetRemoveImageBtn: 'ลบรูป',
   invoicePaymentMethodCash: 'เงินสด',
   invoicePaymentMethodTransfer: 'โอนเงิน',
-  invoicePaymentMethodCheque: 'เช็ค',
+  invoicePaymentMethodCheque: 'เช็ค (ยังไม่ขึ้นเงิน)',
   invoicePaymentMethodCreditCard: 'บัตรเครดิต',
-  invoicePaymentMethodCredit: 'เครดิต (กำหนดวัน)',
+  invoicePaymentMethodCredit: 'ยังไม่ได้รับเงิน (เครดิต)',
+  invoicePaymentMethodUnpaid: 'ค้างชำระ (ไม่ระบุวิธีชำระ)',
   invoicePaymentSheetWarnDateRequired: 'กรุณาเลือกวันที่รับเงินครับ',
   invoicePaymentSheetWarnAmountRequired: 'กรุณากรอกจำนวนเงินให้ถูกต้องครับ',
   invoicePaymentSheetWarnMethodRequired: 'กรุณาเลือกวิธีชำระครับ',
@@ -759,6 +770,14 @@ export const receipt = {
   paidBy: 'ชำระโดย',
   paid: 'รับเงิน',
   remaining: 'คงเหลือ',
+  // ป้ายวิธีชำระเงินบนใบเสร็จ PDF (receipt-80mm-builder.js) — แปลจากรหัส payment ก่อนเสมอ
+  // labelKey ตรงกับ src/constants/payment-methods.js (ใช้ชื่อ key เดียวกับ view.mobile.pos/view.report.saleByChannel)
+  paymentMethodCash: 'เงินสด',
+  paymentMethodTransfer: 'โอนเงิน',
+  paymentMethodCheque: 'เช็ค (ยังไม่ขึ้นเงิน)',
+  paymentMethodCreditCard: 'บัตรเครดิต',
+  paymentMethodCredit: 'ยังไม่ได้รับเงิน (เครดิต)',
+  paymentMethodUnpaid: 'ค้างชำระ (ไม่ระบุวิธีชำระ)',
   signatureTitle: 'ลายเซ็น',
   signatureSeller: 'ผู้ขาย',
   signatureCustomer: 'ลูกค้า',

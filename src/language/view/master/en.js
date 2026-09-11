@@ -153,5 +153,51 @@ export default {
       create: 'Confirm Add Product Type',
       update: 'Confirm Edit Product Type'
     }
+  },
+  saleChannel: {
+    searchTitle: 'Sale Channel Data',
+    createTitle: 'Add Sale Channel',
+    updateTitle: 'Edit Sale Channel',
+    createBtn: 'Add Sale Channel',
+    field: {
+      nameOrCode: 'Name or Code',
+      venue: 'Venue',
+      dateRange: 'Date Range',
+      isDefault: 'Default',
+      isActiveLabel: 'Active',
+      sortOrder: 'Sort Order'
+    },
+    type: {
+      shop: 'Shop',
+      fair: 'Fair',
+      online: 'Online',
+      export: 'Export',
+      other: 'Other'
+    },
+    status: {
+      active: 'Active',
+      inactive: 'Inactive'
+    },
+    label: {
+      yes: 'Yes',
+      no: 'No'
+    },
+    placeholder: {
+      search: 'EX: Sukhumvit Shop, Jewelry Fair......',
+      code: 'EX: SHOP-01',
+      nameTh: 'EX: Sukhumvit Shop (TH)',
+      nameEn: 'EX: Sukhumvit Shop',
+      venue: 'EX: BITEC Bangna'
+    },
+    warnCode: 'Please enter the sale channel code',
+    warnName: 'Please enter the sale channel name',
+    warnType: 'Please select the sale channel type',
+    saveSuccess: 'Sale channel saved successfully',
+    deleteSuccess: 'Sale channel deleted successfully',
+    deleteConfirm: 'Delete sale channel {name} ({code})?',
+    confirm: {
+      create: 'Confirm Add Sale Channel',
+      update: 'Confirm Edit Sale Channel'
+    }
   }
 }

@@ -33,13 +33,13 @@ vi.mock('@/stores/modules/api/master/master-bank-store.js', () => ({
 
 import { warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 
-function createWrapper(propsOverride = {}) {
+function createWrapper(propsOverride = {}, tMock) {
   const pinia = createPinia()
   return shallowMount(PosCheckoutSheet, {
     global: {
       plugins: [pinia],
       mocks: {
-        $t: (key, params) => (params ? `${key}:${JSON.stringify(params)}` : key)
+        $t: tMock || ((key, params) => (params ? `${key}:${JSON.stringify(params)}` : key))
       },
       stubs: {
         InputTextGeneric: true,
@@ -187,5 +187,79 @@ describe('PosCheckoutSheet', () => {
 
     expect(warning).toHaveBeenCalledWith('view.mobile.pos.warnPaymentAmountRequired')
     expect(wrapper.emitted('confirm')).toBeFalsy()
+  })
+
+  it('j) เลือกเครดิต + กรอกวัน + ยืนยัน → ไม่มี entry ที่ payment===5 ใน payments[] และ creditDay ถูกส่งเป็น arg ที่ 2', async () => {
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    wrapper.vm.selectMethod('credit')
+    wrapper.vm.entry.paymentDay = '30'
+    wrapper.vm.onConfirm()
+
+    expect(confirmSubmit).toHaveBeenCalledTimes(1)
+    expect(confirmSubmit.mock.calls[0][1]).toBe('view.mobile.pos.confirmNoPaymentTitle')
+    expect(wrapper.emitted('confirm')).toBeTruthy()
+
+    const [payments, creditDay] = wrapper.emitted('confirm')[0]
+    expect(payments).toEqual([])
+    expect(payments.some((p) => p.payment === 5)).toBe(false)
+    expect(payments.some((p) => p.payment === 5 && p.amount > 0)).toBe(false)
+    expect(creditDay).toBe(30)
+  })
+
+  it('k) เครดิตไม่กรอกวัน + ยืนยัน → creditDay เป็น null ไม่ error', async () => {
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    wrapper.vm.selectMethod('credit')
+    wrapper.vm.onConfirm()
+
+    expect(wrapper.emitted('confirm')).toBeTruthy()
+    const [payments, creditDay] = wrapper.emitted('confirm')[0]
+    expect(payments).toEqual([])
+    expect(creditDay).toBe(null)
+  })
+
+  it('l) เครดิตบางส่วน + เงินสดบางส่วน → payments มีแค่เงินสด ไม่มีรหัส 5 เลย', async () => {
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    wrapper.vm.selectMethod('cash')
+    wrapper.vm.entry.tenderedCash = '5000'
+    wrapper.vm.addPayment()
+
+    expect(wrapper.vm.payments.length).toBe(1)
+    expect(wrapper.vm.remaining).toBe(4800)
+
+    wrapper.vm.selectMethod('credit')
+    wrapper.vm.entry.paymentDay = '15'
+    wrapper.vm.onConfirm()
+
+    expect(wrapper.emitted('confirm')).toBeTruthy()
+    const [payments, creditDay] = wrapper.emitted('confirm')[0]
+    expect(payments.length).toBe(1)
+    expect(payments.every((p) => p.payment !== 5)).toBe(true)
+    expect(creditDay).toBe(15)
+  })
+
+  describe('m) paymentName integrity — ต้องเท่ากับ apiName เสมอ ไม่ว่าภาษา UI จะเป็นอะไร', () => {
+    const runWith = (tMock) => {
+      const wrapper = createWrapper({}, tMock)
+      wrapper.vm.selectMethod('cash')
+      wrapper.vm.entry.tenderedCash = '9800'
+      wrapper.vm.onConfirm()
+      return wrapper.emitted('confirm')[0][0][0].paymentName
+    }
+
+    it('paymentName เท่ากันทั้ง TH mock และ EN mock และเท่ากับ apiName', () => {
+      const thResult = runWith((key) => `TH:${key}`)
+      const enResult = runWith((key) => `EN:${key}`)
+
+      expect(thResult).toBe('เงินสด (Cash)')
+      expect(enResult).toBe('เงินสด (Cash)')
+      expect(thResult).toBe(enResult)
+      expect(thResult.startsWith('view.')).toBe(false)
+    })
   })
 })

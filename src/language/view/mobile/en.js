@@ -94,9 +94,9 @@ export const pos = {
   amountToCollect: 'Amount Due',
   paymentMethodCash: 'Cash',
   paymentMethodTransfer: 'Bank Transfer',
-  paymentMethodCheque: 'Cheque',
+  paymentMethodCheque: 'Cheque (not yet cleared)',
   paymentMethodCreditCard: 'Credit Card',
-  paymentMethodCredit: 'Credit (Term)',
+  paymentMethodCredit: 'Not paid yet (Credit)',
   cashQuickExact: 'Exact',
   cashAmountLabel: 'Cash Received',
   changeAmountLabel: 'Change',
@@ -334,8 +334,18 @@ export const quotation = {
 
 export const notifications = {
   pageTitle: 'Notifications',
-  emptyTitle: 'No notifications',
-  emptySubtitle: 'This feature will be developed in the future'
+  emptyTitle: 'No pending items',
+  emptySubtitle: 'You have cleared all notifications',
+  allModulesTab: 'All',
+  overdueDays: 'Overdue {days} days',
+  loadMoreBtn: 'Load More',
+  openBtn: 'Open',
+  snoozeBtn: 'Snooze',
+  doneBtn: 'Done',
+  openUnsupportedHint: 'Not supported on mobile yet',
+  severityCrit: 'Critical',
+  severityWarn: 'Action needed',
+  severityInfo: 'For your information'
 }
 
 export const saleIndex = {
@@ -642,9 +652,10 @@ export const sale = {
   invoicePaymentSheetRemoveImageBtn: 'Remove Image',
   invoicePaymentMethodCash: 'Cash',
   invoicePaymentMethodTransfer: 'Transfer',
-  invoicePaymentMethodCheque: 'Cheque',
+  invoicePaymentMethodCheque: 'Cheque (not yet cleared)',
   invoicePaymentMethodCreditCard: 'Credit Card',
-  invoicePaymentMethodCredit: 'Credit (Due Date)',
+  invoicePaymentMethodCredit: 'Not paid yet (Credit)',
+  invoicePaymentMethodUnpaid: 'Unpaid (method not specified)',
   invoicePaymentSheetWarnDateRequired: 'Please select a payment date',
   invoicePaymentSheetWarnAmountRequired: 'Please enter a valid amount',
   invoicePaymentSheetWarnMethodRequired: 'Please select a payment method',
@@ -759,6 +770,15 @@ export const receipt = {
   paidBy: 'Paid By',
   paid: 'Paid',
   remaining: 'Remaining',
+  // Payment method label on the PDF receipt (receipt-80mm-builder.js) — always translated from the
+  // payment code first. labelKey matches src/constants/payment-methods.js (same key names as
+  // view.mobile.pos / view.report.saleByChannel)
+  paymentMethodCash: 'Cash',
+  paymentMethodTransfer: 'Transfer',
+  paymentMethodCheque: 'Cheque (not yet cleared)',
+  paymentMethodCreditCard: 'Credit Card',
+  paymentMethodCredit: 'Not paid yet (Credit)',
+  paymentMethodUnpaid: 'Unpaid (method not specified)',
   signatureTitle: 'Signatures',
   signatureSeller: 'Seller',
   signatureCustomer: 'Customer',

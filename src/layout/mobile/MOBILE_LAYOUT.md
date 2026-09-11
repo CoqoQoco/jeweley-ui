@@ -83,7 +83,7 @@ src/layout/mobile/
 |------|------|---------|----------|
 | `title` | String | `''` | ถ้าไม่ส่ง จะใช้ `$route.meta.Displayname.th` |
 | `backButton` | Boolean | `true` | แสดง back button |
-| `notification` | Boolean | `false` | แสดง notification icon |
+| `notification` | Boolean | `true` | แสดง notification icon |
 | `menu` | Boolean | `false` | แสดง menu icon (emit `menu-opened`) |
 
 **Back Button Logic**:

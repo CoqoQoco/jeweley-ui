@@ -48,6 +48,18 @@
             <span class="show-desktop-only">{{ $t('breadcrumb.ticketManage') }}</span>
             <span v-if="ticketOpenCount > 0" class="nav-badge">{{ ticketOpenCount }}</span>
           </router-link>
+          <button
+            class="nav-item nav-item--badge"
+            type="button"
+            :class="{ active: isActive('notification') }"
+            :title="$t('breadcrumb.notifications')"
+            @click="toggleNotificationPanel"
+          >
+            <i class="bi bi-bell"></i>
+            <span class="show-desktop-only">{{ $t('breadcrumb.notifications') }}</span>
+            <span v-if="notificationCount > 0" class="nav-badge">{{ notificationCount }}</span>
+          </button>
+          <NotificationPanel ref="notificationPanel" />
           <router-link
             class="nav-item"
             :to="{ name: 'user-account' }"
@@ -124,23 +136,27 @@
 <script>
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { useTicketStore } from '@/stores/modules/api/ticket-store.js'
+import { useNotificationStore } from '@/stores/modules/api/notification-store.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { setLocale } from '@/plugins/i18n/config.js'
 import { storage } from '@/services/storage.js'
 
 import SidebarView from '@/components/layout/side-bar.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import NotificationPanel from '@/components/layout/notification-panel.vue'
 
 export default {
   components: {
     SidebarView,
-    ButtonGeneric
+    ButtonGeneric,
+    NotificationPanel
   },
 
   setup() {
     const authStore = useAuthStore()
     const ticketStore = useTicketStore()
-    return { authStore, ticketStore }
+    const notificationStore = useNotificationStore()
+    return { authStore, ticketStore, notificationStore }
   },
 
   computed: {
@@ -150,7 +166,8 @@ export default {
         'user-account': 'profile',
         'ticket-create': 'report',
         'ticket-manage': 'ticket',
-        'ticket-manage-detail': 'ticket'
+        'ticket-manage-detail': 'ticket',
+        'notification-list': 'notification'
       }
       return routeMap[this.$route.name] || 'menu'
     },
@@ -169,6 +186,10 @@ export default {
 
     reportUnreadCount() {
       return this.ticketStore.myUnreadCount
+    },
+
+    notificationCount() {
+      return this.notificationStore.count
     },
 
     userName() {
@@ -236,7 +257,8 @@ export default {
       scrolled: false,
       currentLang: storage.getItem('lang', 'th'),
       ticketPollId: null,
-      reportPollId: null
+      reportPollId: null,
+      notificationPollId: null
     }
   },
 
@@ -262,6 +284,10 @@ export default {
     closeSidebar() {
       this.isSideBarVisible = false
       document.body.style.overflow = '' // คืนค่าการเลื่อนหน้าเว็บเมื่อปิด sidebar
+    },
+
+    toggleNotificationPanel(event) {
+      this.$refs.notificationPanel.toggle(event)
     },
 
     async handleLogout() {
@@ -293,6 +319,10 @@ export default {
       clearInterval(this.reportPollId)
     }
 
+    if (this.notificationPollId) {
+      clearInterval(this.notificationPollId)
+    }
+
     // ลบ event listener สำหรับการกด ESC เพื่อปิด sidebar
     document.removeEventListener('keydown', this.handleKeyDown)
     window.removeEventListener('scroll', this.handleScroll)
@@ -307,6 +337,9 @@ export default {
 
     this.ticketStore.fetchMyUnreadCount()
     this.reportPollId = setInterval(() => this.ticketStore.fetchMyUnreadCount(), 60000)
+
+    this.notificationStore.fetchCount()
+    this.notificationPollId = setInterval(() => this.notificationStore.fetchCount(), 60000)
 
     // เพิ่ม event listener สำหรับการกด ESC เพื่อปิด sidebar
     document.addEventListener('keydown', this.handleKeyDown)

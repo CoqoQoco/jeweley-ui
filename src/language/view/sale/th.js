@@ -12,7 +12,19 @@ export const invoice = {
   deliveryDate: 'วันที่จัดส่ง',
   remark: 'หมายเหตุ',
   status: 'สถานะ',
-  customerCode: 'รหัสลูกค้า'
+  customerCode: 'รหัสลูกค้า',
+  grandTotalCol: 'ยอดรวม',
+  paidAmountCol: 'ชำระแล้ว',
+  outstandingAmountCol: 'คงเหลือ',
+  overdueDaysLabel: 'เลยกำหนด',
+  ownerUsernameLabel: 'ผู้รับผิดชอบ',
+  saleChannelLabel: 'จุดขาย',
+  filterAll: 'ทั้งหมด',
+  paymentStatusLabel: 'สถานะชำระ',
+  paymentStatusPaid: 'ชำระครบ',
+  paymentStatusPartial: 'ชำระบางส่วน',
+  paymentStatusUnpaid: 'ค้างชำระ',
+  overdueOnlyLabel: 'เฉพาะที่เลยกำหนด'
 }
 
 export const invoiceDetail = {
@@ -185,6 +197,9 @@ export const invoiceDetail = {
   paidAmount: 'ยอดชำระแล้ว',
   recordBy: 'ผู้บันทึก',
   recordDate: 'วันที่บันทึก',
+  deleteReasonTitle: 'เหตุผลการยกเลิก Invoice',
+  deleteReasonLabel: 'เหตุผล',
+  deleteReasonPlaceholder: 'ระบุเหตุผลที่ต้องการยกเลิก Invoice นี้',
   validation: {
     invoiceNumberRequired: 'กรุณากรอก Invoice Number',
     invoiceDateRequired: 'กรุณาเลือก Invoice Date',
@@ -195,7 +210,8 @@ export const invoiceDetail = {
     branchRequired: 'กรุณากรอกสาขาธนาคาร',
     compressError: 'ไม่สามารถบีบอัดรูปภาพได้',
     currencyRequired: 'กรุณากรอกสกุลเงิน',
-    exchangeRateRequired: 'กรุณากรอกอัตราแลกเปลี่ยนที่ถูกต้อง'
+    exchangeRateRequired: 'กรุณากรอกอัตราแลกเปลี่ยนที่ถูกต้อง',
+    deleteReasonRequired: 'กรุณาระบุเหตุผลการยกเลิก Invoice'
   },
   error: {
     noInvoiceNumber: 'ไม่พบเลขที่ Invoice ในระบบ',
@@ -433,6 +449,9 @@ export const saleOrder = {
   depositPrice: 'ราคามัดจำ',
   maxDeposit: 'สูงสุด',
   paymentMethod: 'วิธีการชำระเงิน',
+  paymentCollectWarning: 'เลือก "เงินสด" "โอนเงิน" หรือ "บัตรเครดิต" ระบบจะบันทึกว่าลูกค้าชำระเงินเต็มจำนวนทันที หากลูกค้ายังไม่ชำระ กรุณาเลือก "{creditLabel}" หรือ "{chequeLabel}" แทน',
+  saleChannelLabel: 'จุดขาย',
+  saleChannelPlaceholder: '-- เลือกจุดขาย --',
   paymentTerm: 'ระยะเวลาการชำระเงิน (วัน)',
   payCash: 'ชำระทันที',
   dueDate: 'ครบกำหนด',
@@ -620,12 +639,17 @@ export const saleOrderList = {
   placeholder: {
     selectPaymentMethod: 'เลือกวิธีการชำระเงิน'
   },
+  // ป้ายที่ใช้ตอน "เลือก" วิธีชำระในจอสร้าง Invoice — ปรับคำได้อิสระ ไม่กระทบ paymant_name ที่เก็บใน DB
+  // (ดู src/constants/payment-methods.js สำหรับ apiName ที่เก็บจริง ห้ามทำให้ apiName เท่ากับคำที่นี่)
+  // cheque/creditTerm ใช้คำใหม่ที่สื่อว่า "ยังไม่ได้เงิน" ชัดเจนขึ้น — ชุด invoiceDetail.paymentMethods (บรรทัดอื่นในไฟล์นี้)
+  // ห้ามเปลี่ยนตาม เพราะถูกใช้ร่วมกับหน้าบันทึกรับเงินที่คำเดิมยังเหมาะสมกว่า
   paymentMethod: {
     cash: 'เงินสด (Cash)',
     transfer: 'โอนเงิน (Transfer)',
-    cheque: 'เช็ค (Cheque)',
+    cheque: 'เช็ค (ยังไม่ขึ้นเงิน)',
     creditCard: 'บัตรเครดิต (Credit Card)',
-    creditTerm: 'เครดิต (Credit Term)'
+    creditTerm: 'ยังไม่ได้รับเงิน (ขายเชื่อ/เครดิต)',
+    unpaid: 'ค้างชำระ (ไม่ระบุวิธีชำระ)'
   },
   dkInvoiceNumber: 'Invoice no. (DK)',
   validation: {

@@ -4,6 +4,7 @@ import QRCode from 'qrcode'
 import { initPdfMake } from '@/services/utils/pdf-make.js'
 import { i18n } from '@/plugins/i18n/config.js'
 import { COMPANY_INFO, COMPANY_SOCIAL, socialUrl } from '@/config/company-info.js'
+import { PAYMENT_METHOD_BY_CODE } from '@/constants/payment-methods.js'
 
 // 80mm thermal paper in pt (1mm = 2.83465pt)
 const PAGE_WIDTH = 226.77
@@ -47,6 +48,13 @@ function lineHeight(fontSize) {
 
 function t(key, params) {
   return i18n.global.t(`view.mobile.receipt.${key}`, params)
+}
+
+// แปลจากรหัส payment ก่อนเสมอ (view.mobile.receipt.paymentMethod*) ห้ามพิมพ์ p.paymentName ดิบๆ
+// (เป็น snapshot ที่ปนภาษา/ปนคำเก่าจริงบน prod) fallback ไป paymentName เฉพาะรหัสที่ไม่รู้จักเท่านั้น
+function paymentLabel(p) {
+  const method = PAYMENT_METHOD_BY_CODE[p?.payment]
+  return method?.labelKey ? t(method.labelKey) : p?.paymentName || '-'
 }
 
 function toNumber(value) {
@@ -282,7 +290,7 @@ export class Receipt80mmBuilder {
     if (this.payments.length) {
       rows.push({ text: `${t('paidBy')}:`, fontSize: 9, bold: true, margin: [0, 2, 0, 1] })
       this.payments.forEach((p) => {
-        rows.push(kvRow(p?.paymentName || '-', formatMoney(p?.amount), { fontSize: 8 }))
+        rows.push(kvRow(paymentLabel(p), formatMoney(p?.amount), { fontSize: 8 }))
       })
     }
 

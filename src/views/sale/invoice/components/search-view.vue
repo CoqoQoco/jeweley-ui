@@ -47,6 +47,34 @@
             :trim="true"
           />
         </div>
+
+        <!-- sale channel -->
+        <div>
+          <span class="title-text">{{ $t('view.sale.invoice.saleChannelLabel') }}</span>
+          <DropdownGeneric
+            v-model="form.saleChannelCode"
+            :options="saleChannelOptions"
+            optionLabel="name"
+            optionValue="code"
+            :placeholder="$t('view.sale.invoice.filterAll')"
+            :showClear="true"
+            class="w-100"
+          />
+        </div>
+
+        <!-- payment status -->
+        <div>
+          <span class="title-text">{{ $t('view.sale.invoice.paymentStatusLabel') }}</span>
+          <DropdownGeneric
+            v-model="form.paymentStatus"
+            :options="paymentStatusOptions"
+            optionLabel="name"
+            optionValue="value"
+            :placeholder="$t('view.sale.invoice.filterAll')"
+            :showClear="true"
+            class="w-100"
+          />
+        </div>
       </div>
 
       <dialogView
@@ -64,6 +92,24 @@
                 v-model="form.customerName"
                 :placeholder="$t('view.sale.invoice.customerName')"
                 :trim="true"
+              />
+            </div>
+
+            <!-- owner username -->
+            <div>
+              <span class="title-text">{{ $t('view.sale.invoice.ownerUsernameLabel') }}</span>
+              <InputTextGeneric
+                v-model="form.ownerUsername"
+                :placeholder="$t('view.sale.invoice.ownerUsernameLabel')"
+                :trim="true"
+              />
+            </div>
+
+            <!-- overdue only -->
+            <div class="d-flex align-items-end">
+              <CheckboxGeneric
+                v-model="form.overdueOnly"
+                :label="$t('view.sale.invoice.overdueOnlyLabel')"
               />
             </div>
           </div>
@@ -125,6 +171,9 @@ import { defineAsyncComponent } from 'vue'
 import pageTitle from '@/components/custom/page-title.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
+import { useSaleChannelApiStore } from '@/stores/modules/api/sale/sale-channel-store.js'
 
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
@@ -139,6 +188,8 @@ export default {
     pageTitle,
     InputTextGeneric,
     CalendarGeneric,
+    DropdownGeneric,
+    CheckboxGeneric,
     dialogView
   },
 
@@ -163,8 +214,31 @@ export default {
   data() {
     return {
       form: { ...this.modelForm },
-      isShow: { ...interfaceIsShow }
+      isShow: { ...interfaceIsShow },
+      saleChannelStore: useSaleChannelApiStore(),
+      saleChannelList: []
     }
+  },
+
+  computed: {
+    saleChannelOptions() {
+      return this.saleChannelList.map((channel) => ({
+        code: channel.code,
+        name: channel.nameTh || channel.nameEn || channel.code
+      }))
+    },
+
+    paymentStatusOptions() {
+      return [
+        { value: 'paid', name: this.$t('view.sale.invoice.paymentStatusPaid') },
+        { value: 'partial', name: this.$t('view.sale.invoice.paymentStatusPartial') },
+        { value: 'unpaid', name: this.$t('view.sale.invoice.paymentStatusUnpaid') }
+      ]
+    }
+  },
+
+  async mounted() {
+    this.saleChannelList = await this.saleChannelStore.fetchActiveList({ skipLoading: true })
   },
 
   methods: {

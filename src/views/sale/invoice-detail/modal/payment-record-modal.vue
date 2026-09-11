@@ -197,7 +197,11 @@ import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { useMasterBankStore } from '@/stores/modules/api/master/master-bank-store.js'
 import { compressImage } from '@/services/utils/image-compress.js'
+import { PAYMENT_METHODS, getPaymentApiName } from '@/constants/payment-methods.js'
 import dayjs from 'dayjs'
+
+// value string ที่ v-model ของฟอร์มนี้ใช้ ('credit_card' มี underscore ต่างจาก key ของ constants)
+const VALUE_BY_KEY = { cash: 'cash', transfer: 'transfer', cheque: 'cheque', creditCard: 'credit_card' }
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -246,13 +250,13 @@ export default {
         remark: '',
         receiptImage: null
       },
-      paymentMethodsData: [
-        { value: 'cash', id: 1, key: 'cash' },
-        { value: 'transfer', id: 2, key: 'transfer' },
-        { value: 'cheque', id: 3, key: 'cheque' },
-        { value: 'credit_card', id: 4, key: 'creditCard' },
-        { value: 'credit_term', id: 5, key: 'creditTerm' }
-      ],
+      // รหัส 5 (เครดิต) recordableAsReceipt=false — ตัดออกจากหน้าบันทึกรับเงิน (ไม่ใช่การรับเงินจริง)
+      // เช็ค (รหัส 3) recordableAsReceipt=true ต้องคงไว้ เพราะรับเช็คถือเป็นการรับชำระจริงที่ต้องบันทึก
+      paymentMethodsData: PAYMENT_METHODS.filter((m) => m.recordableAsReceipt).map((m) => ({
+        value: VALUE_BY_KEY[m.key] || m.key,
+        id: m.code,
+        key: m.key
+      })),
       resetUpload: false,
       compressedImage: null
     }
@@ -387,16 +391,14 @@ export default {
       const normalizedDate = new Date(this.paymentData.paymentDate)
       normalizedDate.setHours(0, 0, 0, 0)
 
-      const selectedPayment = this.paymentMethods.find(
-        (m) => m.value === this.paymentData.paymentMethod
-      )
-
       const paymentDataToEmit = {
         invoiceNumber: this.invoiceData.invoiceNumber,
         paymentDate: normalizedDate,
         amount: this.paymentData.amount,
         payment: this.paymentData.paymentId,
-        paymentName: selectedPayment ? selectedPayment.name : '',
+        // paymentName ต้องมาจาก getPaymentApiName(code) เสมอ ห้ามใช้ label ที่แปลด้วย $t
+        // กันข้อความ UI หลุดลงคอลัมน์ paymant_name ใน DB
+        paymentName: getPaymentApiName(this.paymentData.paymentId),
         bankCode: this.paymentData.bankCode || null,
         bankBranch: this.paymentData.bankBranch || null,
         referenceNumber: this.paymentData.referenceNumber || null,

@@ -39,14 +39,56 @@
           {{ formatDate(data.deliveryDate) }}
         </div>
       </template>
+
+      <template #grandTotalRoundedTemplate="{ data }">
+        <div class="text-right">{{ formatMoney(data.grandTotalRounded) }}</div>
+      </template>
+
+      <template #paidAmountTemplate="{ data }">
+        <div class="text-right">{{ formatMoney(data.paidAmount) }}</div>
+      </template>
+
+      <template #outstandingAmountTemplate="{ data }">
+        <div class="text-right">{{ formatMoney(data.outstandingAmount) }}</div>
+      </template>
+
+      <template #paymentStatusTemplate="{ data }">
+        <div class="status-container">
+          <span
+            v-if="getPaymentStatusValue(data)"
+            :class="getPaymentStatusBadgeClass(data)"
+          >
+            {{ getPaymentStatusLabel(data) }}
+          </span>
+          <span v-else>-</span>
+        </div>
+      </template>
+
+      <template #overdueDaysTemplate="{ data }">
+        <div class="status-container">
+          <span v-if="getOverdueDays(data) === null">-</span>
+          <span v-else :class="getOverdueBadgeClass(data)">{{ getOverdueDays(data) }}</span>
+        </div>
+      </template>
+
+      <template #ownerUsernameTemplate="{ data }">
+        <div>{{ data.ownerUsername || '-' }}</div>
+      </template>
+
+      <template #saleChannelNameTemplate="{ data }">
+        <div>{{ data.saleChannelName || '-' }}</div>
+      </template>
     </BaseDataTable>
   </div>
 </template>
 
 <script>
 // External dependencies
+import dayjs from 'dayjs'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+import { formatNumber } from '@/services/utils/decimal.js'
+import { getPaymentStatus } from '@/services/utils/payment-status.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
@@ -145,6 +187,58 @@ export default {
           header: this.$t('view.sale.invoice.remark'),
           sortable: true,
           minWidth: '150px'
+        },
+        {
+          field: 'grandTotalRounded',
+          header: this.$t('view.sale.invoice.grandTotalCol'),
+          sortable: false,
+          align: 'right',
+          minWidth: '130px',
+          template: 'grandTotalRoundedTemplate'
+        },
+        {
+          field: 'paidAmount',
+          header: this.$t('view.sale.invoice.paidAmountCol'),
+          sortable: false,
+          align: 'right',
+          minWidth: '130px',
+          template: 'paidAmountTemplate'
+        },
+        {
+          field: 'outstandingAmount',
+          header: this.$t('view.sale.invoice.outstandingAmountCol'),
+          sortable: false,
+          align: 'right',
+          minWidth: '130px',
+          template: 'outstandingAmountTemplate'
+        },
+        {
+          field: 'paymentStatus',
+          header: this.$t('view.sale.invoice.paymentStatusLabel'),
+          sortable: false,
+          minWidth: '120px',
+          template: 'paymentStatusTemplate'
+        },
+        {
+          field: 'overdueDays',
+          header: this.$t('view.sale.invoice.overdueDaysLabel'),
+          sortable: false,
+          minWidth: '110px',
+          template: 'overdueDaysTemplate'
+        },
+        {
+          field: 'ownerUsername',
+          header: this.$t('view.sale.invoice.ownerUsernameLabel'),
+          sortable: false,
+          minWidth: '130px',
+          template: 'ownerUsernameTemplate'
+        },
+        {
+          field: 'saleChannelName',
+          header: this.$t('view.sale.invoice.saleChannelLabel'),
+          sortable: false,
+          minWidth: '130px',
+          template: 'saleChannelNameTemplate'
         }
       ]
     }
@@ -191,6 +285,53 @@ export default {
 
     formatDate(date) {
       return date ? formatDate(date) : ''
+    },
+
+    formatMoney(value) {
+      return formatNumber(value, 2)
+    },
+
+    // สถานะชำระ: คำนวณจากยอดเงินเท่านั้น (getPaymentStatus) ห้ามใช้ paymentName ตัดสิน
+    getPaymentStatusValue(data) {
+      return getPaymentStatus(data.grandTotalRounded, data.deposit, data.paidAmount)
+    },
+
+    getPaymentStatusLabel(data) {
+      const status = this.getPaymentStatusValue(data)
+      const labelMap = {
+        paid: this.$t('view.sale.invoice.paymentStatusPaid'),
+        partial: this.$t('view.sale.invoice.paymentStatusPartial'),
+        unpaid: this.$t('view.sale.invoice.paymentStatusUnpaid')
+      }
+      return labelMap[status] || '-'
+    },
+
+    getPaymentStatusBadgeClass(data) {
+      const status = this.getPaymentStatusValue(data)
+      const classMap = {
+        paid: 'badge badge-payment-paid',
+        partial: 'badge badge-payment-partial',
+        unpaid: 'badge badge-payment-unpaid'
+      }
+      return classMap[status] || 'badge badge-status-default'
+    },
+
+    // จำนวนวันที่เลยกำหนด: คำนวณที่หน้าจอจาก dueDate (fallback เป็น createDate สำหรับใบเก่า)
+    // คืน null เมื่อยังไม่ถึงกำหนด — ห้ามเดาว่าเลยกำหนดถ้าไม่มีข้อมูลอ้างอิงวันที่เลย
+    getOverdueDays(data) {
+      const referenceDate = data.dueDate || data.createDate
+      if (!referenceDate) return null
+
+      const diffDays = dayjs().startOf('day').diff(dayjs(referenceDate).startOf('day'), 'day')
+      return diffDays > 0 ? diffDays : null
+    },
+
+    getOverdueBadgeClass(data) {
+      const days = this.getOverdueDays(data)
+      if (days === null) return ''
+      if (days <= 7) return 'badge badge-overdue-low'
+      if (days <= 30) return 'badge badge-overdue-mid'
+      return 'badge badge-overdue-high'
     }
   }
 }
@@ -238,6 +379,37 @@ export default {
 
 .badge-status-default {
   background-color: #6c757d;
+  color: white;
+}
+
+.badge-payment-paid {
+  background-color: var(--base-green);
+  color: white;
+}
+
+.badge-payment-partial {
+  background-color: var(--base-warning);
+  color: #212529;
+}
+
+.badge-payment-unpaid {
+  background-color: var(--base-red);
+  color: white;
+}
+
+.badge-overdue-low {
+  background-color: var(--base-warning);
+  color: #212529;
+}
+
+.badge-overdue-mid {
+  background-color: transparent;
+  border: 1px solid var(--base-red);
+  color: var(--base-red);
+}
+
+.badge-overdue-high {
+  background-color: var(--base-red);
   color: white;
 }
 </style>

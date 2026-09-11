@@ -105,13 +105,11 @@
             </template>
 
             <template v-else-if="selectedMethod === 'credit'">
+              <!-- รหัส 5 (เครดิต) recordableAsReceipt=false — ตัดช่องจำนวนเงินออก เก็บแค่จำนวนวัน
+                   ยอดทั้งหมดปล่อยให้ไหลไปทาง confirmNoPayment/confirmUnderpaidMsg ตามยอดคงเหลือจริง -->
               <div class="entry-field">
                 <label>{{ $t('view.mobile.pos.paymentDayLabel') }}</label>
                 <InputTextGeneric v-model="entry.paymentDay" type="number" :min="0" step="1" inputmode="numeric" />
-              </div>
-              <div class="entry-field">
-                <label>{{ $t('view.mobile.pos.paymentAmountLabel') }}</label>
-                <InputTextGeneric v-model="entry.amount" type="number" :min="0" step="0.01" inputmode="decimal" />
               </div>
             </template>
 
@@ -130,7 +128,7 @@
             <div class="payment-list-title">{{ $t('view.mobile.pos.paymentListTitle') }}</div>
             <div v-for="p in payments" :key="p.key" class="payment-line">
               <div class="payment-line-info">
-                <span class="payment-line-name">{{ p.paymentName }}</span>
+                <span class="payment-line-name">{{ p.paymentLabel }}</span>
                 <span v-if="p.bankName" class="payment-line-detail">
                   {{ p.bankName }}<template v-if="p.bankBranch"> · {{ p.bankBranch }}</template>
                 </span>
@@ -182,7 +180,7 @@
 import { useMasterBankStore } from '@/stores/modules/api/master/master-bank-store.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
-import { PAYMENT_METHODS } from '@/constants/payment-methods.js'
+import { PAYMENT_METHODS, getPaymentApiName } from '@/constants/payment-methods.js'
 
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
@@ -235,6 +233,8 @@ export default {
       bankList: [],
       selectedMethod: null,
       payments: [],
+      // รหัส 5 (เครดิต) ไม่ push เข้า payments[] (recordableAsReceipt=false) — เก็บจำนวนวันแยกไว้ที่นี่แทน
+      creditDay: null,
       entry: emptyEntry()
     }
   },
@@ -265,10 +265,14 @@ export default {
     draftAmount() {
       if (!this.selectedMethod) return 0
       if (this.selectedMethod === 'cash') return this.appliedCashAmount
+      // เครดิตไม่มีช่องจำนวนเงิน — ไม่มีส่วนที่ "จ่ายแล้ว" เกิดขึ้นจากการเลือกวิธีนี้เลย
+      if (this.selectedMethod === 'credit') return 0
       return Number(this.entry.amount) || 0
     },
 
     hasDraftEntry() {
+      // เครดิตไม่ต้องกรอกยอดเงิน แค่เลือกวิธีก็ถือว่าพร้อมยืนยันได้ทันที (ต่างจากวิธีอื่นที่ต้องมี draftAmount > 0)
+      if (this.selectedMethod === 'credit') return true
       return !!this.selectedMethod && this.draftAmount > 0
     },
 
@@ -294,6 +298,7 @@ export default {
       if (newVal) {
         this.selectedMethod = null
         this.payments = []
+        this.creditDay = null
         this.entry = emptyEntry()
       }
     }
@@ -314,7 +319,8 @@ export default {
 
       this.selectedMethod = key
       this.entry = emptyEntry()
-      if (key !== 'cash' && this.remaining > 0) {
+      // เครดิตไม่มีช่องจำนวนเงินให้ prefill (ดู buildPaymentFromEntry)
+      if (key !== 'cash' && key !== 'credit' && this.remaining > 0) {
         this.entry.amount = String(this.remaining.toFixed(2))
       }
     },
@@ -326,6 +332,12 @@ export default {
     buildPaymentFromEntry() {
       const method = PAYMENT_METHODS.find((m) => m.key === this.selectedMethod)
       if (!method) return { error: 'view.mobile.pos.warnPaymentAmountRequired' }
+
+      // รหัส 5 (เครดิต) recordableAsReceipt=false — ห้ามกลายเป็น payment row ที่มี amount เด็ดขาด
+      // (ไม่งั้นบิลจะดูเหมือนจ่ายครบและหลุดจากศูนย์แจ้งเตือนทันที) เก็บแค่จำนวนวันแยกไว้ต่างหาก
+      if (method.key === 'credit') {
+        return { creditDay: this.entry.paymentDay ? Number(this.entry.paymentDay) : null }
+      }
 
       let amount = 0
       let bankCode = null
@@ -363,15 +375,14 @@ export default {
         bankBranch = this.entry.bankBranch
       }
 
-      if (method.key === 'credit') {
-        paymentDay = this.entry.paymentDay ? Number(this.entry.paymentDay) : null
-      }
-
       return {
         payment: {
           key: `${method.code}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
           payment: method.code,
-          paymentName: this.$t(`view.mobile.pos.${method.labelKey}`),
+          // paymentName = apiName ส่งขึ้น backend เท่านั้น ห้ามใช้ label ที่แปลด้วย $t (กันข้อความ UI หลุดลง DB)
+          paymentName: getPaymentApiName(method.code),
+          // paymentLabel = ป้ายที่โชว์บนจอ (payment-list) เท่านั้น ห้ามส่งขึ้น backend
+          paymentLabel: this.$t(`view.mobile.pos.${method.labelKey}`),
           amount,
           bankCode,
           bankName,
@@ -385,8 +396,21 @@ export default {
 
     addPayment() {
       const result = this.buildPaymentFromEntry()
-      if (result.error || !result.payment) {
-        warning(this.$t(result.error || 'view.mobile.pos.warnPaymentAmountRequired'))
+      if (result.error) {
+        warning(this.$t(result.error))
+        return
+      }
+
+      // เครดิต: ไม่ push เข้า payments[] แค่จำวันแล้วเคลียร์ฟอร์มกลับไปหน้าหลัก
+      if (result.creditDay !== undefined) {
+        this.creditDay = result.creditDay
+        this.selectedMethod = null
+        this.entry = emptyEntry()
+        return
+      }
+
+      if (!result.payment) {
+        warning(this.$t('view.mobile.pos.warnPaymentAmountRequired'))
         return
       }
 
@@ -400,7 +424,13 @@ export default {
     },
 
     onConfirm() {
-      if (this.selectedMethod) {
+      if (this.selectedMethod === 'credit') {
+        // รหัส 5 recordableAsReceipt=false — ไม่ push เข้า payments[] ปล่อยยอดทั้งหมดไหลไปทาง
+        // confirmNoPayment/confirmUnderpaidMsg ด้านล่างเหมือนไม่ได้เลือกวิธีชำระเลย
+        this.creditDay = this.entry.paymentDay ? Number(this.entry.paymentDay) : null
+        this.selectedMethod = null
+        this.entry = emptyEntry()
+      } else if (this.selectedMethod) {
         if (!this.hasDraftEntry) {
           warning(this.$t('view.mobile.pos.warnPaymentAmountRequired'))
           return
@@ -451,7 +481,8 @@ export default {
     },
 
     emitConfirm() {
-      this.$emit('confirm', this.payments.map((p) => ({ ...p })))
+      // creditDay ส่งเป็น arg ที่ 2 แยกจาก payments[] เพราะรหัส 5 ไม่มี entry อยู่ใน payments[] เลย
+      this.$emit('confirm', this.payments.map((p) => ({ ...p })), this.creditDay)
     },
 
     onClose() {

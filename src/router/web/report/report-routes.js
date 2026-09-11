@@ -39,6 +39,7 @@ const MaterialValuationReport = () => import('@/views/receipt-stock/material-val
 // ---- sale reports ----
 const PaymentDashboard = () => import('@/views/sale/payment-tracking/dashboard/index-view.vue')
 const SalePipelineDashboard = () => import('@/views/sale/pipeline-dashboard/index-view.vue')
+const ReportSaleByChannel = () => import('@/views/report-sale-by-channel/index-view.vue')
 
 // ---- worker reports ----
 const ReportProductionWages = () => import('@/views/report-production-wages/index-view.vue')
@@ -434,6 +435,19 @@ const routes = [
           Displayname: {
             en: 'Sales Pipeline',
             th: 'ภาพรวมงานขาย'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.SALE_VIEW]
+        }
+      },
+      {
+        path: '/sale/report-sale-by-channel',
+        name: 'report-sale-by-channel',
+        component: ReportSaleByChannel,
+        meta: {
+          Displayname: {
+            en: 'Sales Report by Channel',
+            th: 'รายงานยอดขายแยกตามจุดขาย'
           },
           minorShow: true,
           permissions: [PERMISSIONS.SALE_VIEW]

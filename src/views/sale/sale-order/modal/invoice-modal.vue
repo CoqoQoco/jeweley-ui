@@ -660,6 +660,9 @@
                           :placeholder="$t('view.sale.saleOrderList.placeholder.selectPaymentMethod')"
                           class="w-100"
                         />
+                        <small class="text-muted d-block mt-1">
+                          <i class="bi bi-info-circle mr-1"></i>{{ paymentCollectWarningText }}
+                        </small>
                       </div>
                     </div>
 
@@ -690,6 +693,21 @@
                         <div class="form-control bg-light font-weight-bold text-primary">
                           {{ formatPriceWithCurrency(grandTotal - (depositAmount || 0)) }}
                         </div>
+                      </div>
+                    </div>
+
+                    <!-- จุดขาย -->
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label class="title-text">{{ $t('view.sale.saleOrder.saleChannelLabel') }}</label>
+                        <DropdownGeneric
+                          v-model="saleChannelCode"
+                          :options="saleChannelOptions"
+                          optionLabel="name"
+                          optionValue="code"
+                          :placeholder="$t('view.sale.saleOrder.saleChannelPlaceholder')"
+                          class="w-100"
+                        />
                       </div>
                     </div>
                   </div>
@@ -750,7 +768,9 @@ import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
+import { useSaleChannelApiStore } from '@/stores/modules/api/sale/sale-channel-store.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
+import { getPaymentApiName } from '@/constants/payment-methods.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -789,6 +809,7 @@ export default {
     return {
       selectedItems: [],
       invoiceStore: useInvoiceApiStore(),
+      saleChannelStore: useSaleChannelApiStore(),
       // Additional invoice fields
       specialDiscount: 0, // ส่วนลดพิเศษ
       specialAddition: 0, // ส่วนเพิ่มพิเศษ
@@ -798,10 +819,19 @@ export default {
       paymentMethod: 'cash', // วิธีการชำระเงิน
       paymentDays: 0, // ระยะเวลาการชำระเงิน (วัน)
       dkInvoiceNumber: null,
+      saleChannelCode: null,
+      saleChannelList: []
     }
   },
 
   computed: {
+    saleChannelOptions() {
+      return this.saleChannelList.map((channel) => ({
+        code: channel.code,
+        name: channel.nameTh || channel.nameEn || channel.code
+      }))
+    },
+
     paymentMethodOptions() {
       return [
         { name: this.$t('view.sale.saleOrderList.paymentMethod.cash'), value: 'cash', id: 1 },
@@ -833,6 +863,15 @@ export default {
 
     totalSelectedAmount() {
       return Number(this.getSumTotalConvertedPrice() || 0)
+    },
+
+    // ข้อความเตือนใต้ dropdown วิธีชำระเงิน — ต้องยิงชื่อวิธี "เครดิต/เช็ค" ปัจจุบันเข้าไปเสมอ
+    // ห้ามฝัง apiName คงที่ในประโยค เพราะ label บนจอปรับคำได้ ('creditTerm'/'cheque' อยู่ที่ saleOrderList.paymentMethod)
+    paymentCollectWarningText() {
+      return this.$t('view.sale.saleOrder.paymentCollectWarning', {
+        creditLabel: this.$t('view.sale.saleOrderList.paymentMethod.creditTerm'),
+        chequeLabel: this.$t('view.sale.saleOrderList.paymentMethod.cheque')
+      })
     },
 
     // ยอดรวมหลังหักส่วนลดพิเศษและเพิ่มส่วนพิเศษ
@@ -872,7 +911,7 @@ export default {
   },
 
   methods: {
-    loadInitialData() {
+    async loadInitialData() {
       // Reset selections when modal opens
       this.selectedItems = []
       // Pre-fill special fields from SO data
@@ -880,6 +919,10 @@ export default {
       this.specialAddition = Number(this.saleOrderData.specialAddition) || 0
       this.freightAndInsurance = Number(this.saleOrderData.freight) || 0
       this.vatPercent = Number(this.saleOrderData.vatPercent) || 0
+
+      this.saleChannelList = await this.saleChannelStore.fetchActiveList({ skipLoading: true })
+      const currentChannel = await this.saleChannelStore.fetchCurrent({ skipLoading: true })
+      this.saleChannelCode = currentChannel ? currentChannel.code : null
     },
 
     toggleSelectAll(value) {
@@ -1161,6 +1204,7 @@ export default {
 
           deliveryDate: this.saleOrderData.expectedDeliveryDate || this.saleOrderData.deliveryDate,
           deposit: this.depositAmount || 0,
+          saleChannelCode: this.saleChannelCode || null,
 
           specialDiscount: this.specialDiscount || 0, // ส่วนลดพิเศษ
           specialAddition: this.specialAddition || 0, // ส่วนเพิ่มพิเศษ
@@ -1171,8 +1215,11 @@ export default {
           markup: this.saleOrderData.markup || 0,
 
           payment: this.paymentMethodOptions.find((pm) => pm.value === this.paymentMethod)?.id, // รหัสวิธีการชำระเงิน
-          paymentName: this.paymentMethodOptions.find((pm) => pm.value === this.paymentMethod)
-            ?.name, // ชื่อวิธีการชำระเงิน
+          // paymentName ต้องมาจาก getPaymentApiName(code) เสมอ ห้ามใช้ label ที่แปลด้วย $t
+          // กันข้อความ UI (เช่น 'Cash' ภาษาอังกฤษ) หลุดลงคอลัมน์ paymant_name ใน DB
+          paymentName: getPaymentApiName(
+            this.paymentMethodOptions.find((pm) => pm.value === this.paymentMethod)?.id
+          ),
           paymentDay: this.paymentDays || 0, // ระยะเวลาการชำระเงิน
 
           priority: this.saleOrderData.priority || 'normal',
@@ -1225,6 +1272,7 @@ export default {
       this.paymentMethod = 'cash'
       this.paymentDays = 0
       this.dkInvoiceNumber = null
+      this.saleChannelCode = null
 
       this.$emit('close-modal')
     }

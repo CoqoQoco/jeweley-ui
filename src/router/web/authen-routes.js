@@ -9,6 +9,7 @@ import catalog from '../web/catalog/catalog-routes.js'
 import report from '../web/report/report-routes.js'
 import ticketRoutes from '../web/ticket/ticket-routes.js'
 import announcementRoutes from '../web/announcement/announcement-routes.js'
+import notificationRoutes from '../web/notification/notification-routes.js'
 import graphRoutes from '../web/graph/graph-routes.js'
 import downloadsRoutes from '../web/downloads/downloads-routes.js'
 import printRoutes from '../web/print/print-routes.js'
@@ -32,6 +33,7 @@ const ProductTypeView = () => import('@/views/master/productType/index-view.vue'
 const ZillView = () => import('@/views/master/zill/index-view.vue')
 const DiamondGrade = () => import('@/views/master/diamond-grade/index-view.vue')
 const CastingMaterial = () => import('@/views/master/casting-material/index-view.vue')
+const SaleChannel = () => import('@/views/master/sale-channel/index-view.vue')
 
 import { PERMISSIONS } from '@/services/permission/config.js'
 const routes = [
@@ -280,6 +282,19 @@ const routes = [
           minorShow: true,
           permissions: [PERMISSIONS.MASTER_VIEW]
         }
+      },
+      {
+        path: '/master-sale-channel',
+        name: 'master-sale-channel',
+        component: SaleChannel,
+        meta: {
+          Displayname: {
+            en: 'Sale Channel',
+            th: 'จุดขาย'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.MASTER_VIEW]
+        }
       }
     ]
   },
@@ -292,6 +307,9 @@ const routes = [
 
   // ----- Announcement -----
   ...announcementRoutes,
+
+  // ----- Notification -----
+  ...notificationRoutes,
 
   // ----- Graph (dev) -----
   ...graphRoutes,

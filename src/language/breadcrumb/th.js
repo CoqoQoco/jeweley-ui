@@ -64,5 +64,8 @@ export default {
   userAccount: 'ข้อมูลบุคคล',
   ticketManage: 'จัดการ Ticket',
 
+  //notification
+  notifications: 'การแจ้งเตือน',
+
   menu: 'เมนู',
 }

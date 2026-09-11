@@ -9,9 +9,9 @@
         </div>
         <div class="header-actions">
           <!-- Notification bell -->
-          <button class="icon-btn">
+          <button v-if="showNotification" class="icon-btn" @click="openNotifications">
             <i class="bi bi-bell"></i>
-            <span class="badge">3</span>
+            <span v-if="notificationCount > 0" class="badge">{{ notificationCount }}</span>
           </button>
         </div>
       </div>
@@ -156,6 +156,8 @@
 <script>
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { useUserApiStore } from '@/stores/modules/api/user/user-store.js'
+import { useNotificationStore } from '@/stores/modules/api/notification-store.js'
+import { PermissionService } from '@/services/permission/permission.js'
 import { JOB_TYPE } from '@/constants/job-type.js'
 import { confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import JobCard from '@/views/mobile/components/job-card.vue'
@@ -174,13 +176,15 @@ export default {
   setup() {
     const authStore = useAuthStore()
     const userApiStore = useUserApiStore()
-    return { authStore, userApiStore }
+    const notificationStore = useNotificationStore()
+    return { authStore, userApiStore, notificationStore }
   },
 
   data() {
     return {
       myJobs: [],
       isRefreshing: false,
+      notificationPollTimer: null,
       // Placeholder data
       recentActivities: [
         {
@@ -213,6 +217,11 @@ export default {
 
   mounted() {
     this.loadMyJobs()
+    this.startNotificationPolling()
+  },
+
+  beforeUnmount() {
+    this.stopNotificationPolling()
   },
 
   computed: {
@@ -223,12 +232,61 @@ export default {
 
     currentDate() {
       return dayjs().format('วันddddที่ D MMMM YYYY')
+    },
+
+    /**
+     * แสดงกระดิ่งแจ้งเตือนเฉพาะ user ที่มีสิทธิ์ mobile:notifications
+     * (หน้านี้ไม่มี MobileTopBar จึงต้องเช็คสิทธิ์เองแบบเดียวกับ mobile-bottom-nav.vue)
+     */
+    showNotification() {
+      const user = this.authStore.user
+      if (!user) return false
+      const permissionService = new PermissionService(user, this.authStore.permissions)
+      return permissionService.hasPermission('mobile:notifications')
+    },
+
+    /**
+     * จำนวน notifications ที่ยังไม่ปิดงาน (ดึงจาก notification store)
+     */
+    notificationCount() {
+      return this.notificationStore.count || 0
     }
   },
 
   methods: {
     navigateTo(path) {
       this.$router.push(path)
+    },
+
+    openNotifications() {
+      this.$router.push('/mobile/notifications')
+    },
+
+    /**
+     * เริ่ม poll จำนวนแจ้งเตือนทุก 60 วินาที (เฉพาะ user ที่มีสิทธิ์)
+     * กัน interval ซ้อน: เคลียร์ตัวเก่าก่อนเสมอ ก่อนตั้งตัวใหม่
+     * หมายเหตุ: หน้านี้ไม่มี MobileTopBar (LayoutMobile ซ่อนไว้ที่ route mobile-dashboard)
+     * จึงไม่ชนกับ polling ของ mobile-top-bar.vue ตอนนี้ — แต่ถ้าวันหลังมีคนเปิด TopBar
+     * ที่หน้านี้ด้วย จะเกิด interval ซ้อนกันทันที ต้องระวัง
+     */
+    startNotificationPolling() {
+      if (!this.showNotification) return
+
+      this.stopNotificationPolling()
+      this.notificationStore.fetchCount()
+      this.notificationPollTimer = setInterval(() => {
+        this.notificationStore.fetchCount()
+      }, 60000)
+    },
+
+    /**
+     * เคลียร์ polling interval
+     */
+    stopNotificationPolling() {
+      if (this.notificationPollTimer) {
+        clearInterval(this.notificationPollTimer)
+        this.notificationPollTimer = null
+      }
     },
 
     async loadMyJobs() {

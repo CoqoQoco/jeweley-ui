@@ -12,5 +12,8 @@ export default {
   userAccount: 'My Profile',
   ticketManage: 'Manage Tickets',
 
+  //notification
+  notifications: 'Notifications',
+
   menu: 'Menu'
 }

@@ -134,7 +134,7 @@ import { useMasterBankStore } from '@/stores/modules/api/master/master-bank-stor
 import { warning } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { compressImage } from '@/services/utils/image-compress.js'
-import { PAYMENT_METHODS } from '@/constants/payment-methods.js'
+import { PAYMENT_METHODS, MOBILE_SALE_PAYMENT_LABEL_KEYS, getPaymentApiName } from '@/constants/payment-methods.js'
 
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
@@ -142,15 +142,6 @@ import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
-
-// key ป้ายวิธีชำระภายใต้ namespace view.mobile.sale — แยกจาก view.mobile.pos ที่ pos-checkout-sheet ใช้
-const METHOD_LABEL_KEYS = {
-  cash: 'invoicePaymentMethodCash',
-  transfer: 'invoicePaymentMethodTransfer',
-  cheque: 'invoicePaymentMethodCheque',
-  creditCard: 'invoicePaymentMethodCreditCard',
-  credit: 'invoicePaymentMethodCredit'
-}
 
 function emptyPaymentData(defaultAmount) {
   const amount = Number(defaultAmount) || 0
@@ -213,11 +204,13 @@ export default {
   },
 
   computed: {
+    // รหัส 5 (เครดิต) recordableAsReceipt=false — ตัดออกจากหน้าบันทึกรับเงิน (ไม่ใช่การรับเงินจริง)
+    // เช็ค (รหัส 3) recordableAsReceipt=true ต้องคงไว้ เพราะรับเช็คถือเป็นการรับชำระจริงที่ต้องบันทึก
     paymentMethodOptions() {
-      return PAYMENT_METHODS.map((m) => ({
+      return PAYMENT_METHODS.filter((m) => m.recordableAsReceipt).map((m) => ({
         code: m.code,
         key: m.key,
-        name: this.$t(`view.mobile.sale.${METHOD_LABEL_KEYS[m.key]}`)
+        name: this.$t(`view.mobile.sale.${MOBILE_SALE_PAYMENT_LABEL_KEYS[m.key]}`)
       }))
     },
 
@@ -338,14 +331,14 @@ export default {
     },
 
     emitSave(amount) {
-      const method = this.paymentMethodOptions.find((m) => m.code === this.paymentData.payment)
-
       this.$emit('save-payment', {
         invoiceNumber: this.invoiceNumber,
         paymentDate: new Date(this.paymentData.paymentDate),
         amount,
         payment: this.paymentData.payment,
-        paymentName: method ? method.name : '',
+        // paymentName ต้องมาจาก getPaymentApiName(code) เสมอ ห้ามใช้ label ที่แปลด้วย $t
+        // กันข้อความ UI หลุดลงคอลัมน์ paymant_name ใน DB
+        paymentName: getPaymentApiName(this.paymentData.payment),
         bankCode: this.paymentData.bankCode || null,
         bankBranch: this.paymentData.bankBranch || null,
         referenceNumber: this.paymentData.referenceNumber || null,

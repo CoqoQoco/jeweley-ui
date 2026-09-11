@@ -249,7 +249,17 @@ import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { success, error, warning } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { PAYMENT_METHODS, MOBILE_SALE_PAYMENT_LABEL_KEYS, getPaymentApiName } from '@/constants/payment-methods.js'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+
+// value string ที่ v-model ของฟอร์มนี้ใช้ ('credit_card'/'credit_term' มี underscore ต่างจาก key ของ constants)
+const VALUE_BY_KEY = {
+  cash: 'cash',
+  transfer: 'transfer',
+  cheque: 'cheque',
+  creditCard: 'credit_card',
+  credit: 'credit_term'
+}
 
 export default {
   name: 'InvoiceCreationForm',
@@ -287,18 +297,21 @@ export default {
       depositAmount: 0,
       paymentMethod: 'cash',
       paymentDays: 0,
-      dkInvoiceNumber: null,
-      paymentMethodOptions: [
-        { name: 'เงินสด (Cash)', value: 'cash', id: 1 },
-        { name: 'โอนเงิน (Transfer)', value: 'transfer', id: 2 },
-        { name: 'เช็ค (Cheque)', value: 'cheque', id: 3 },
-        { name: 'บัตรเครดิต (Credit Card)', value: 'credit_card', id: 4 },
-        { name: 'เครดิต (Credit Term)', value: 'credit_term', id: 5 }
-      ]
+      dkInvoiceNumber: null
     }
   },
 
   computed: {
+    // สร้างจาก PAYMENT_METHODS ผ่าน $t เสมอ (ห้าม hardcode ภาษาไทยตรงๆ) — value ยังคงรูปแบบเดิม (มี underscore)
+    // เพื่อไม่กระทบ v-model/paymentDays disabled ที่ผูกกับ 'cash' อยู่แล้ว
+    paymentMethodOptions() {
+      return PAYMENT_METHODS.map((m) => ({
+        name: this.$t(`view.mobile.sale.${MOBILE_SALE_PAYMENT_LABEL_KEYS[m.key]}`),
+        value: VALUE_BY_KEY[m.key],
+        id: m.code
+      }))
+    },
+
     currencyRate() {
       return Number(this.soData?.currencyRate) || 1
     },
@@ -476,7 +489,9 @@ export default {
           goldRate: Number(this.soData?.goldRate) || 0,
           markup: Number(this.soData?.markup) || 0,
           payment: paymentOption?.id || 1,
-          paymentName: paymentOption?.name || 'เงินสด (Cash)',
+          // paymentName ต้องมาจาก getPaymentApiName(code) เสมอ ห้ามใช้ label ที่แปลด้วย $t
+          // และห้าม fallback เป็นข้อความไทย hardcode — กันข้อความ UI หลุดลงคอลัมน์ paymant_name ใน DB
+          paymentName: getPaymentApiName(paymentOption?.id || 1),
           paymentDay: this.paymentDays || 0,
           priority: this.soData.priority || 'mobile',
           refQuotation: this.soData?.refQuotation || '',

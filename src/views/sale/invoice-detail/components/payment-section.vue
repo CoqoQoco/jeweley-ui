@@ -34,7 +34,7 @@
           </div>
 
           <div class="payment-method-line">
-            {{ invoiceData.paymentName || '-' }} · {{ invoiceData.paymentDay || 0 }} {{ $t('view.sale.invoiceDetail.dayUnit') }}
+            {{ paymentMethodLabel }}<template v-if="invoiceData.paymentDay > 0"> · {{ invoiceData.paymentDay }} {{ $t('view.sale.invoiceDetail.dayUnit') }}</template>
           </div>
         </div>
 
@@ -119,6 +119,18 @@ import imagePreview from '@/components/prime-vue/ImagePreviewEmit.vue'
 import dayjs from 'dayjs'
 import { formatDocCurrency } from '@/services/utils/decimal.js'
 import { getPaymentStatus, getOutstandingAmount } from '@/services/utils/payment-status.js'
+import { PAYMENT_METHOD_BY_CODE } from '@/constants/payment-methods.js'
+
+// key ของ PAYMENT_METHOD_BY_CODE ('credit') ไม่ตรงกับชื่อ sub-key ที่มีอยู่แล้วใน saleOrderList.paymentMethod
+// ('creditTerm') แม็ปที่นี่แทนการเปลี่ยนชื่อ sub-key เดิม
+const PAYMENT_METHOD_I18N_KEY = {
+  cash: 'cash',
+  transfer: 'transfer',
+  cheque: 'cheque',
+  creditCard: 'creditCard',
+  credit: 'creditTerm',
+  unpaid: 'unpaid'
+}
 
 export default {
   name: 'PaymentSection',
@@ -184,6 +196,16 @@ export default {
 
     remainingClass() {
       return this.outstandingAmount <= 0 ? 'is-clear' : 'is-due'
+    },
+
+    // แปลจากรหัส payment เสมอ ห้ามพิมพ์ invoiceData.paymentName ดิบๆ (เป็น snapshot ที่ปนภาษา/ปนคำเก่าจริงบน prod)
+    // ใบเก่าที่เก็บคำว่า 'Cash' จะกลับมาแสดงเป็นไทยถูกต้องทันทีโดยไม่ต้องแตะข้อมูล
+    paymentMethodLabel() {
+      const method = PAYMENT_METHOD_BY_CODE[this.invoiceData?.payment]
+      const i18nKey = method ? PAYMENT_METHOD_I18N_KEY[method.key] : null
+      return i18nKey
+        ? this.$t(`view.sale.saleOrderList.paymentMethod.${i18nKey}`)
+        : this.invoiceData?.paymentName || '-'
     }
   },
 

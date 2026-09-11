@@ -153,5 +153,51 @@ export default {
       create: 'ยืนยันเพิ่มประเภทสินค้า',
       update: 'ยืนยันแก้ไขประเภทสินค้า'
     }
+  },
+  saleChannel: {
+    searchTitle: 'ข้อมูลจุดขาย',
+    createTitle: 'เพิ่มจุดขาย',
+    updateTitle: 'แก้ไขจุดขาย',
+    createBtn: 'เพิ่มจุดขาย',
+    field: {
+      nameOrCode: 'ชื่อหรือรหัส',
+      venue: 'สถานที่',
+      dateRange: 'ช่วงวันที่',
+      isDefault: 'ค่าเริ่มต้น',
+      isActiveLabel: 'เปิดใช้งาน',
+      sortOrder: 'ลำดับการแสดง'
+    },
+    type: {
+      shop: 'หน้าร้าน',
+      fair: 'งานแฟร์',
+      online: 'ออนไลน์',
+      export: 'ส่งออก',
+      other: 'อื่นๆ'
+    },
+    status: {
+      active: 'ใช้งาน',
+      inactive: 'ไม่ใช้งาน'
+    },
+    label: {
+      yes: 'ใช่',
+      no: 'ไม่ใช่'
+    },
+    placeholder: {
+      search: 'EX: หน้าร้านสุขุมวิท, งาน Jewelry Fair......',
+      code: 'EX: SHOP-01',
+      nameTh: 'EX: หน้าร้านสุขุมวิท',
+      nameEn: 'EX: Sukhumvit Shop',
+      venue: 'EX: ไบเทค บางนา'
+    },
+    warnCode: 'กรุณากรอกรหัสจุดขาย',
+    warnName: 'กรุณากรอกชื่อจุดขาย',
+    warnType: 'กรุณาเลือกชนิดจุดขาย',
+    saveSuccess: 'บันทึกข้อมูลจุดขายสำเร็จ',
+    deleteSuccess: 'ลบจุดขายสำเร็จ',
+    deleteConfirm: 'ต้องการลบจุดขาย {name} ({code}) หรือไม่?',
+    confirm: {
+      create: 'ยืนยันเพิ่มจุดขาย',
+      update: 'ยืนยันแก้ไขจุดขาย'
+    }
   }
 }

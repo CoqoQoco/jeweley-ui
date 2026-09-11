@@ -240,6 +240,13 @@
         @close-modal="showPaymentModal = false"
         @save-payment="handleSavePayment"
       />
+
+      <!-- Delete Invoice Reason Modal -->
+      <DeleteInvoiceReasonModal
+        :isShowModal="showDeleteReasonModal"
+        @close-modal="showDeleteReasonModal = false"
+        @confirm="onConfirmDeleteReason"
+      />
     </div>
   </div>
 </template>
@@ -254,6 +261,7 @@ import GuaranteeCardPrintModal from './modal/guarantee-card-print-modal.vue'
 import CertificatePrintModal from './modal/certificate-print-modal.vue'
 import ExcelExportConfirmModal from '@/components/modal/excel-export-confirm-modal.vue'
 import PaymentRecordModal from './modal/payment-record-modal.vue'
+import DeleteInvoiceReasonModal from './modal/delete-invoice-reason-modal.vue'
 import InvoiceInfoCard from './components/invoice-info-card.vue'
 import InvoiceItemsTable from './components/invoice-items-table.vue'
 import PaymentSection from './components/payment-section.vue'
@@ -292,6 +300,7 @@ export default {
     CertificatePrintModal,
     ExcelExportConfirmModal,
     PaymentRecordModal,
+    DeleteInvoiceReasonModal,
     InvoiceInfoCard,
     InvoiceItemsTable,
     PaymentSection,
@@ -323,6 +332,7 @@ export default {
       certificateHistoryVersion: 0,
       showConfirmExcelModal: false,
       showPaymentModal: false,
+      showDeleteReasonModal: false,
       isShowPreviewModal: false,
       previewUrl: '',
       previewSource: 'invoice',
@@ -1187,21 +1197,25 @@ export default {
       confirmThenSubmit(
         this.$t('view.sale.invoiceDetail.confirm.cancelInvoice'),
         this.$t('view.sale.invoiceDetail.confirm.cancelInvoiceTitle'),
-        async () => {
-          await this.reverseInvoice()
+        () => {
+          this.showDeleteReasonModal = true
         },
         { confirmText: this.$t('common.btn.confirm'), cancelText: this.$t('common.btn.cancel') },
         'warning'
       )
     },
-    async reverseInvoice() {
+    onConfirmDeleteReason(reason) {
+      this.showDeleteReasonModal = false
+      this.reverseInvoice(reason)
+    },
+    async reverseInvoice(deleteReason) {
       if (!this.invoiceData || !this.invoiceData.invoiceNumber) {
         error(this.$t('view.sale.invoiceDetail.error.noInvoiceData'), this.$t('view.sale.invoiceDetail.error.cannotCancel'))
         return
       }
 
       await this.invoiceStore.fetchDelete({
-        formValue: { invoiceNumber: this.invoiceData.invoiceNumber }
+        formValue: { invoiceNumber: this.invoiceData.invoiceNumber, deleteReason }
       })
 
       success(this.$t('view.sale.invoiceDetail.success.cancelInvoice'), this.$t('view.sale.invoiceDetail.success.cancelInvoiceTitle'))

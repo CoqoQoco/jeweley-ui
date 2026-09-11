@@ -34,6 +34,8 @@
 </template>
 
 <script>
+import { useNotificationStore } from '@/stores/modules/api/notification-store.js'
+
 export default {
   name: 'MobileTopBar',
 
@@ -51,15 +53,27 @@ export default {
     },
 
     // แสดง notification icon หรือไม่
+    // default true — LayoutMobile mount โดยไม่ส่ง prop นี้มา จึงเป็นจุดเดียวที่คุมการแสดงกระดิ่งทั้งแอป
     notification: {
       type: Boolean,
-      default: false
+      default: true
     },
 
     // แสดง menu icon หรือไม่
     menu: {
       type: Boolean,
       default: false
+    }
+  },
+
+  setup() {
+    const notificationStore = useNotificationStore()
+    return { notificationStore }
+  },
+
+  data() {
+    return {
+      notificationPollTimer: null
     }
   },
 
@@ -107,13 +121,19 @@ export default {
     },
 
     /**
-     * จำนวน notifications (placeholder)
-     * TODO: ดึงจาก store หรือ API
+     * จำนวน notifications ที่ยังไม่ปิดงาน (ดึงจาก notification store)
      */
     notificationCount() {
-      // return this.notificationStore?.unreadCount || 0
-      return 0
+      return this.notificationStore.count || 0
     }
+  },
+
+  mounted() {
+    this.startNotificationPolling()
+  },
+
+  beforeUnmount() {
+    this.stopNotificationPolling()
   },
 
   methods: {
@@ -136,12 +156,34 @@ export default {
     },
 
     /**
-     * เปิด notifications
-     * TODO: Implement notifications panel
+     * เปิดหน้ารายการแจ้งเตือน
      */
     openNotifications() {
-      // this.$router.push('/mobile/notifications')
-      console.log('Open notifications')
+      this.$router.push('/mobile/notifications')
+    },
+
+    /**
+     * เริ่ม poll จำนวนแจ้งเตือนทุก 60 วินาที (เฉพาะตอนกระดิ่งแสดงอยู่)
+     * กัน interval ซ้อน: เคลียร์ตัวเก่าก่อนเสมอ ก่อนตั้งตัวใหม่
+     */
+    startNotificationPolling() {
+      if (!this.showNotification) return
+
+      this.stopNotificationPolling()
+      this.notificationStore.fetchCount()
+      this.notificationPollTimer = setInterval(() => {
+        this.notificationStore.fetchCount()
+      }, 60000)
+    },
+
+    /**
+     * เคลียร์ polling interval
+     */
+    stopNotificationPolling() {
+      if (this.notificationPollTimer) {
+        clearInterval(this.notificationPollTimer)
+        this.notificationPollTimer = null
+      }
     },
 
     /**

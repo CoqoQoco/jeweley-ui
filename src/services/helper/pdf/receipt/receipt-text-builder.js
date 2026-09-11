@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 
 import { COMPANY_INFO, COMPANY_SOCIAL, socialUrl } from '@/config/company-info.js'
+import { PAYMENT_METHOD_BY_CODE } from '@/constants/payment-methods.js'
 
 // ไฟล์นี้สร้างใบเสร็จเป็น "ข้อความล้วนอังกฤษ" (ASCII-only, ไม่ผ่าน pdfmake/ภาพ) แล้วส่งเข้าคิวงานพิมพ์ —
 // เครื่องกลางที่หน้า /print-station (views/print-station/index-view.vue) ดึงงานจากคิวแล้วส่งต่อให้
@@ -37,10 +38,10 @@ const MATERIAL_GAP = 2
 // จำนวนขีดของเส้นเซ็น — เยื้อง 2 + ขีด 45 ตัว = 47 พอดี
 const SIGNATURE_LINE_LEN = 45
 
-// ป้ายวิธีชำระเงินบนใบเสร็จ — แม็ปจากโค้ดตัวเลขของ PAYMENT_METHODS ใน pos-checkout-sheet.vue
+// ป้ายวิธีชำระเงินบนใบเสร็จ — ดึง receiptLabel จาก PAYMENT_METHOD_BY_CODE (src/constants/payment-methods.js)
 // ห้ามใช้ paymentName จาก i18n เพราะเป็นภาษาไทย แล้วโดน toAsciiOnly() กรองทิ้งจนเหลือสตริงว่าง
 // (เจอจริงตอน E2E 2026-09-03) และใบเสร็จต้องเป็นอังกฤษเสมอ ไม่ผูกกับภาษาที่ผู้ใช้เลือกบนจอ
-const PAYMENT_LABELS = { 1: 'Cash', 2: 'Transfer', 3: 'Cheque', 4: 'Credit Card', 5: 'Credit' }
+// ครอบรหัส 0 (ค้างชำระ) และ 5 (เครดิต) ด้วย — ต้องไม่ตกไปที่คำว่า 'Payment' ทั่วไป
 
 function toNumber(value) {
   const num = Number(value)
@@ -208,7 +209,10 @@ export function stripQrMarkers(text) {
 // ป้ายวิธีชำระเงินต่อแถว: ใช้โค้ดตัวเลข (p.payment) แม็ปเป็นอังกฤษก่อนเสมอ
 // fallback ไป paymentName เฉพาะเมื่อเป็น ASCII ล้วน แล้วสุดท้าย fallback 'Payment' — ห้ามปล่อยว่างเด็ดขาด
 function paymentLabel(p) {
-  const label = PAYMENT_LABELS[p?.payment] || (isAsciiOnly(p?.paymentName) ? p.paymentName : '') || 'Payment'
+  const label =
+    PAYMENT_METHOD_BY_CODE[p?.payment]?.receiptLabel ||
+    (isAsciiOnly(p?.paymentName) ? p.paymentName : '') ||
+    'Payment'
   return p?.bankCode ? `${label} (${p.bankCode})` : label
 }
 

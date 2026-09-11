@@ -133,9 +133,9 @@
           </span>
         </div>
         <div class="card-body">
-          <div v-if="invoiceData.payment !== 0" class="info-row">
+          <div class="info-row">
             <span class="info-label">{{ $t('view.mobile.sale.invoicePaymentMethodLabel') }}</span>
-            <span class="info-value">{{ invoiceData.paymentName }}</span>
+            <span class="info-value">{{ paymentMethodLabel }}</span>
           </div>
           <div v-if="invoiceData.paymentDay" class="info-row">
             <span class="info-label">{{ $t('view.mobile.sale.invoicePaymentDayLabel') }}</span>
@@ -300,6 +300,7 @@ import { loadInvoiceContext, toInvoicePdfData } from '@/services/helper/invoice/
 import { success, error } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { getPaymentStatus } from '@/services/utils/payment-status.js'
+import { PAYMENT_METHOD_BY_CODE, MOBILE_SALE_PAYMENT_LABEL_KEYS } from '@/constants/payment-methods.js'
 import dayjs from 'dayjs'
 import SoItemCard from './components/so-item-card.vue'
 import PaymentRecordSheet from './components/payment-record-sheet.vue'
@@ -427,6 +428,14 @@ export default {
 
     paymentStatus() {
       return getPaymentStatus(this.effectiveGrandTotal, this.invoiceData?.deposit, this.paymentTotalAmount)
+    },
+
+    // แปลจากรหัส payment เสมอ ห้ามพิมพ์ invoiceData.paymentName ดิบๆ (เป็น snapshot ที่ปนภาษา/ปนคำเก่าจริงบน prod)
+    // ครอบรหัส 0 (ค้างชำระ) ด้วย — เดิม v-if ซ่อนแถวทั้งแถวเมื่อ payment===0 เปลี่ยนมาแสดงป้ายแทน
+    paymentMethodLabel() {
+      const method = PAYMENT_METHOD_BY_CODE[this.invoiceData?.payment]
+      const labelKey = method ? MOBILE_SALE_PAYMENT_LABEL_KEYS[method.key] : null
+      return labelKey ? this.$t(`view.mobile.sale.${labelKey}`) : this.invoiceData?.paymentName || '-'
     },
 
     paymentStatusLabel() {

@@ -184,6 +184,30 @@ describe('buildReceiptText — ความกว้างบรรทัด', (
   })
 })
 
+describe('buildReceiptText — ป้ายวิธีชำระเงินจากรหัส (กันตกไปที่ Payment/สตริงว่าง)', () => {
+  it('payment: 5 (เครดิต) → ต้องได้ "Credit Term" ไม่ใช่ "Payment" หรือค่าว่าง', () => {
+    const data = baseData({
+      grandTotal: 11250,
+      payments: [{ payment: 5, amount: 0 }]
+    })
+    const text = buildReceiptText(data)
+
+    expect(text).toContain('Credit Term')
+    expect(text).not.toMatch(/^Payment\s/m)
+  })
+
+  it('payment: 0 (ค้างชำระ) → ต้องได้ "Unpaid" ไม่ใช่ "Payment" หรือค่าว่าง', () => {
+    const data = baseData({
+      grandTotal: 11250,
+      payments: [{ payment: 0, amount: 0 }]
+    })
+    const text = buildReceiptText(data)
+
+    expect(text).toContain('Unpaid')
+    expect(text).not.toMatch(/^Payment\s/m)
+  })
+})
+
 describe('buildReceiptText — บรรทัดวัตถุดิบชิดซ้าย (ไม่ชนคอลัมน์เงิน)', () => {
   it('บรรทัดวัตถุดิบขึ้นต้นด้วย 4 ช่องแล้วตามด้วยชื่อวัสดุทันที', () => {
     const text = buildReceiptText(baseData())

@@ -20,7 +20,11 @@ const interfaceForm = {
   moldNumber: null,
   customerName: null,
   createDateStart: null,
-  createDateEnd: null
+  createDateEnd: null,
+  saleChannelCode: null,
+  paymentStatus: null,
+  overdueOnly: false,
+  ownerUsername: null
 }
 
 export default {
