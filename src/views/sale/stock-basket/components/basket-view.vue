@@ -367,7 +367,7 @@ export default {
 
     onRemoveItem(item) {
       confirmSubmit(
-        this.$t('view.sale.stockBasket.confirm.deleteItem', { stockNumber: item.stockNumber }),
+        this.$t('view.sale.stockBasket.confirm.deleteItem', { stockNumber: item.stockNumberOrigin || item.stockNumber }),
         this.$t('view.sale.stockBasket.confirm.deleteTitle'),
         async () => {
           const response = await this.store.fetchRemoveItem({

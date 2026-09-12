@@ -63,7 +63,7 @@ export class ExportInvoicePdfBuilder {
 
     const bodyRows = items.map((it) => [
       { text: String(it.itemNo ?? ''), fontSize: 7, alignment: 'center' },
-      { text: it.stockNumber || '', fontSize: 7 },
+      { text: it.stockNumberOrigin || it.stockNumber || '', fontSize: 7 },
       { text: it.description || '', fontSize: 7 },
       { text: fmtWeight(it.netWeight, 3), fontSize: 7, alignment: 'right' },
       { text: fmtWeight(it.goldWeight, 2), fontSize: 7, alignment: 'right' },

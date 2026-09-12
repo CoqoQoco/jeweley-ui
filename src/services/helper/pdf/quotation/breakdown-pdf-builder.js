@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 import { isAlloyDescription } from '@/services/helper/breakdown-alloy-detect.js'
+import { formatItemStyleCode } from '@/services/utils/item-code.js'
 
 export class BreakdownPdfBuilder {
   constructor({
@@ -445,7 +446,7 @@ export class BreakdownPdfBuilder {
             : {},
           currentRow === 0
             ? {
-                text: item.productNumber || item.stockNumberOrigin || item.stockNumber || '',
+                text: formatItemStyleCode(item),
                 alignment: 'center',
                 rowSpan: totalRows
               }

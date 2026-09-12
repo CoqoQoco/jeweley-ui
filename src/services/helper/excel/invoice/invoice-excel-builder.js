@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import ExcelJS from 'exceljs'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount, roundHalfUp } from '@/services/utils/money.js'
+import { formatItemStyleCode } from '@/services/utils/item-code.js'
 
 export class InvoiceExcelBuilder {
   constructor(
@@ -482,11 +483,7 @@ export class InvoiceExcelBuilder {
       sumQty += qty
       sumAmount += amount
 
-      // Style/Product — use stockNumberOrigin like PDF builder
-      const styleProduct =
-        item.stockNumberOrigin && item.productNumber
-          ? `${item.stockNumberOrigin}/${item.productNumber}`
-          : item.stockNumberOrigin || item.stockNumber || item.productNumber || ''
+      const styleProduct = formatItemStyleCode(item)
 
       // Row cell data
       const cells = [

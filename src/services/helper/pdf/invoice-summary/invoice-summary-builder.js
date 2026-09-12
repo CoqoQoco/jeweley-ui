@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
+import { formatItemStyleCode } from '@/services/utils/item-code.js'
 import { COMPANY_INFO, COMPANY_TAX_ID, COMPANY_BANK, loadCompanyInfo } from '@/config/company-info.js'
 import { PDF_COLORS, PDF_STYLES, PDF_FONT } from '../shared/pdf-theme.js'
 import { formatPrice } from '../shared/pdf-format.js'
@@ -145,11 +146,7 @@ export class InvoiceSummaryPdfBuilder {
         (item.imageBase64 || item.imageBlobPath)
           ? setImageCell(item.imageBase64, item.imageBlobPath)
           : setTableCell(''),
-        setTableCell(
-          item.stockNumber && item.productNumber
-            ? `${item.stockNumber}/${item.productNumber}`
-            : item.stockNumber || item.productNumber || ''
-        ),
+        setTableCell(formatItemStyleCode(item)),
         setTableCell(item.description || item.productNumber || ''),
         buildMaterialTable(item.materials, 'Gold'),
         buildMaterialTable(item.materials, 'Diamond'),

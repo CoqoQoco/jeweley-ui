@@ -92,7 +92,7 @@
             </template>
 
             <template #stockNumberTemplate="{ data }">
-              <span class="stock-link">{{ data.stockNumber }}</span>
+              <span class="stock-link">{{ data.stockNumberOrigin || data.stockNumber }}</span>
             </template>
 
             <template #createDateTemplate="{ data }">

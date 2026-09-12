@@ -4,7 +4,7 @@
       <template v-slot:content>
         <div class="title-text-lg-bg">
           <span><i class="bi bi-brush mr-2"></i></span>
-          <span>{{ $t('view.sale.costStock.editTitle', { stockNumber: stock.stockNumber || stock.stockNumberOrigin || 'New' }) }}</span>
+          <span>{{ $t('view.sale.costStock.editTitle', { stockNumber: stock.stockNumberOrigin || stock.stockNumber || 'New' }) }}</span>
         </div>
 
         <form @submit.prevent="onSubmit" class="mt-2">

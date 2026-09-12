@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
+import { formatItemStyleCode } from '@/services/utils/item-code.js'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 
 export class DeliveryPdfBuilder {
@@ -490,11 +491,7 @@ export class DeliveryPdfBuilder {
         item.imageBase64 || item.imageBlobPath
           ? this.setTabImageCell(item.imageBase64, item.imageBlobPath)
           : this.setTableCell(''),
-        this.setTableCell(
-          item.stockNumber && item.productNumber
-            ? `${item.stockNumber}/${item.productNumber}`
-            : item.stockNumber || item.productNumber || ''
-        ),
+        this.setTableCell(formatItemStyleCode(item)),
         this.setTableCell(this.getDescription(item)),
         this.buildMaterialTable(item.materials, 'Gold'),
         this.buildMaterialTable(item.materials, 'Diamond'),

@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
+import { formatItemStyleCode } from '@/services/utils/item-code.js'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 import {
   PAGE_WIDTH,
@@ -150,10 +151,7 @@ export class InvoiceBillPdfBuilder {
       const unitPrice = convertedUnitPrice(item, this.currencyRate, this.currencyUnit)
       const amount = lineAmount(item, this.currencyRate, this.currencyUnit)
 
-      const stockNo =
-        item.stockNumber && item.productNumber
-          ? `${item.stockNumber}/${item.productNumber}`
-          : item.stockNumber || item.productNumber || ''
+      const stockNo = formatItemStyleCode(item)
       const description = item.description || item.productNumber || ''
 
       const goldWeight = this.sumMaterialWeight(item.materials, 'Gold')

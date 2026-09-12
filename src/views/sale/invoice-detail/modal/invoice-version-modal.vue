@@ -66,7 +66,7 @@
                     style="min-width: 150px"
                   >
                     <template #body="slotProps">
-                      <span class="font-weight-bold">{{ slotProps.data.stockNumber }}</span>
+                      <span class="font-weight-bold">{{ slotProps.data.stockNumberOrigin || slotProps.data.stockNumber }}</span>
                     </template>
                   </Column>
 

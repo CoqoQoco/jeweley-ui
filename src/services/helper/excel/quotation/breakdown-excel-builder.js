@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import ExcelJS from 'exceljs'
 import { isAlloyDescription } from '@/services/helper/breakdown-alloy-detect.js'
+import { formatItemStyleCode } from '@/services/utils/item-code.js'
 
 function stdBorder() {
   return {
@@ -416,7 +417,7 @@ export class BreakdownExcelBuilder {
           'D',
           itemStartRow,
           itemEndRow,
-          item.productNumber || item.stockNumberOrigin || item.stockNumber || '',
+          formatItemStyleCode(item),
           'center'
         )
 

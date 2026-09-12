@@ -74,7 +74,7 @@
                 <td>
                   <span class="badge badge-qn">{{ item._fromQuotation }}</span>
                 </td>
-                <td>{{ item.stockNumber || item.stockNumberOrigin || '-' }}</td>
+                <td>{{ item.stockNumberOrigin || item.stockNumber || '-' }}</td>
                 <td>{{ item.productName || item.description || item.name || '-' }}</td>
                 <td class="text-right">{{ item.qty || 1 }}</td>
                 <td class="text-right">{{ formatPrice(item.appraisalPrice || 0) }}</td>

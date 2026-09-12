@@ -72,7 +72,7 @@ export class ExportInvoiceExcelBuilder {
     this.items.forEach((it) => {
       const cells = [
         { col: 'A', value: it.itemNo ?? '', align: 'center' },
-        { col: 'B', value: it.stockNumber || '', align: 'left' },
+        { col: 'B', value: it.stockNumberOrigin || it.stockNumber || '', align: 'left' },
         { col: 'C', value: it.description || '', align: 'left' },
         { col: 'D', value: fmtWeight(it.netWeight, 3), align: 'right' },
         { col: 'E', value: fmtWeight(it.goldWeight, 2), align: 'right' },
