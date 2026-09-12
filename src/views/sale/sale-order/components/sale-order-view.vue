@@ -612,6 +612,17 @@ import OrderSummarySection from './order-summary-section.vue'
 
 const SALE_ROLE_ID = 6 // tbm_user_role: 6 = Sale
 
+// ฟิลด์หนักที่มากับ StockProduct/Get แต่หน้าใบสั่งขาย/ใบแจ้งหนี้ไม่ได้อ่าน ตัดออกก่อนบันทึกเพื่อลดขนาด payload
+const HEAVY_ITEM_FIELDS = ['imageBase64', 'priceTransactions', 'planPriceItems']
+
+function stripHeavyItemFields(item) {
+  const cleaned = { ...item, imageBlobPath: null }
+  HEAVY_ITEM_FIELDS.forEach((field) => {
+    delete cleaned[field]
+  })
+  return cleaned
+}
+
 export default {
   name: 'SaleOrderView',
 
@@ -1422,8 +1433,6 @@ export default {
         return
       }
 
-      await this.fetchSaveSaleOrder('Draft')
-
       this.isShow.confirmStockModal = true
     },
 
@@ -1432,6 +1441,8 @@ export default {
     },
 
     async onStockItemsConfirmed() {
+      await this.fetchSaveSaleOrder()
+
       if (this.formSaleOrder.number) {
         const response = await this.getSaleOrderData(this.formSaleOrder.number)
 
@@ -1471,8 +1482,6 @@ export default {
         return
       }
 
-      await this.fetchSaveSaleOrder('Draft')
-
       this.isShow.confirmAndInvoiceModal = true
     },
 
@@ -1484,6 +1493,8 @@ export default {
       this.isShow.invoiceModal = false
 
       success(this.$t('view.sale.saleOrder.success.invoiceCreated', { invoiceNumber: invoiceData.invoiceNumber }), this.$t('view.sale.saleOrder.success.confirmTitle'))
+
+      await this.fetchSaveSaleOrder()
 
       if (this.formSaleOrder.number) {
         const response = await this.getSaleOrderData(this.formSaleOrder.number)
@@ -1519,21 +1530,9 @@ export default {
     async fetchSaveSaleOrder() {
       this.isOnDraft = true
 
-      const stockItemsData = this.stockItems.map((item) => {
-        return {
-          ...item,
-          imageBlobPath: null // ไม่เก็บ blob path ลง database
-        }
-      })
+      const stockItemsData = this.stockItems.map(stripHeavyItemFields)
 
-      const copyItemsData = this.copyItems.map((item) => {
-        return {
-          ...item,
-          imageBlobPath: null // ไม่เก็บ blob path ลง database
-        }
-      })
-
-      const allItems = [...stockItemsData, ...copyItemsData]
+      const copyItemsData = this.copyItems.map(stripHeavyItemFields)
 
       const formValue = {
         soNumber: this.formSaleOrder.number || '',
@@ -1564,7 +1563,6 @@ export default {
         data: JSON.stringify({
           stockItems: stockItemsData,
           copyItems: copyItemsData,
-          allItems: allItems,
           freight: this.formSaleOrder.freight || 0,
           copyFreight: this.formSaleOrder.copyFreight || 0
         })

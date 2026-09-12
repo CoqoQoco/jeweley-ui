@@ -68,6 +68,9 @@ export class InvoiceExcelBuilder {
 
     // Assets (loaded async in prepare())
     this.logoBase64 = null
+
+    // cache รูป base64 แยกจาก item เพื่อไม่ให้ base64 ติดกลับไปบันทึกซ้ำกับ item ของหน้าจอ (key = blobPath/imagePath)
+    this.imageCache = new Map()
   }
 
   formatCurrency(amount) {
@@ -103,11 +106,10 @@ export class InvoiceExcelBuilder {
     const { getAzureBlobAsBase64 } = await import('@/config/azure-storage-config.js')
     await Promise.all(
       this.data.map(async (item) => {
-        if (item.imageBase64) return
         const blobPath = item.imageBlobPath || item.imagePath
-        if (!blobPath) return
+        if (!blobPath || this.imageCache.has(blobPath)) return
         const base64 = await getAzureBlobAsBase64(blobPath, 'stock')
-        if (base64 && base64.length > 0) item.imageBase64 = base64
+        if (base64 && base64.length > 0) this.imageCache.set(blobPath, base64)
       })
     )
   }
@@ -529,14 +531,15 @@ export class InvoiceExcelBuilder {
             1
           )
         : 1
-      const rowHeight = item.imageBase64
+      const itemImageBase64 = this.imageCache.get(item.imageBlobPath || item.imagePath)
+      const rowHeight = itemImageBase64
         ? Math.max(65, maxLines * 18)
         : Math.max(20, maxLines * 18)
       worksheet.getRow(row).height = rowHeight
 
       // Collect image info — generateExcel() will embed the image
-      if (item.imageBase64) {
-        itemImageData.push({ imageBase64: item.imageBase64, rowIndex: row })
+      if (itemImageBase64) {
+        itemImageData.push({ imageBase64: itemImageBase64, rowIndex: row })
       }
 
       row++

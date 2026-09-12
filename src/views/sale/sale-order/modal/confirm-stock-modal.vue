@@ -144,9 +144,12 @@
                   </template>
                 </Column>
 
-                <Column field="stockNumber" :header="$t('view.sale.saleOrder.stockCode')" style="width: 120px">
+                <Column field="stockNumber" :header="$t('view.sale.saleOrder.stockNumberOld')" style="width: 120px">
                   <template #body="slotProps">
-                    <span class="text-main">{{ slotProps.data.stockNumber }}</span>
+                    <div class="d-flex flex-column">
+                      <span class="text-main">{{ slotProps.data.stockNumberOrigin || slotProps.data.stockNumber }}</span>
+                      <small class="text-muted">{{ slotProps.data.stockNumber }}</small>
+                    </div>
                   </template>
                 </Column>
                 <Column field="productNumber" :header="$t('view.sale.saleOrder.productCode')" style="width: 120px">

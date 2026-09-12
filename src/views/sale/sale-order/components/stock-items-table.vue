@@ -57,8 +57,8 @@
             <Column header="" :frozen="!!frozenCols['index']" :alignFrozen="frozenCols['index'] || undefined" />
             <Column header="" :frozen="!!frozenCols['action']" :alignFrozen="frozenCols['action'] || undefined" />
             <Column header="" :frozen="!!frozenCols['image']" :alignFrozen="frozenCols['image'] || undefined" />
-            <Column :header="$t('view.sale.saleOrder.stockNumberNew')" :frozen="!!frozenCols['stockNumber']" :alignFrozen="frozenCols['stockNumber'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.stockNumberOld')" :frozen="!!frozenCols['stockNumberOld']" :alignFrozen="frozenCols['stockNumberOld'] || undefined" />
+            <Column :header="$t('view.sale.saleOrder.stockNumberNew')" :frozen="!!frozenCols['stockNumber']" :alignFrozen="frozenCols['stockNumber'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.productCode')" :frozen="!!frozenCols['productNumber']" :alignFrozen="frozenCols['productNumber'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.saleStatus')" :frozen="!!frozenCols['isConfirm']" :alignFrozen="frozenCols['isConfirm'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.description')" :frozen="!!frozenCols['description']" :alignFrozen="frozenCols['description'] || undefined" />
@@ -173,20 +173,6 @@
         </Column>
 
         <Column field="stockNumber" :header="$t('view.sale.saleOrder.productionNumber')" style="min-width: 150px"
-          :frozen="!!frozenCols['stockNumber']"
-          :alignFrozen="frozenCols['stockNumber'] || undefined"
-        >
-          <template #body="slotProps">
-            <div class="d-flex flex-column">
-              <span>{{ `${slotProps.data.stockNumber}` }}</span>
-              <small v-if="slotProps.data.message" class="text-main">{{
-                `${slotProps.data.message}`
-              }}</small>
-            </div>
-          </template>
-        </Column>
-
-        <Column field="stockNumber" :header="$t('view.sale.saleOrder.productionNumber')" style="min-width: 150px"
           :frozen="!!frozenCols['stockNumberOld']"
           :alignFrozen="frozenCols['stockNumberOld'] || undefined"
         >
@@ -198,6 +184,20 @@
                   : slotProps.data.stockNumber || ''
               }`
             }}</span>
+          </template>
+        </Column>
+
+        <Column field="stockNumber" :header="$t('view.sale.saleOrder.productionNumber')" style="min-width: 150px"
+          :frozen="!!frozenCols['stockNumber']"
+          :alignFrozen="frozenCols['stockNumber'] || undefined"
+        >
+          <template #body="slotProps">
+            <div class="d-flex flex-column">
+              <span>{{ `${slotProps.data.stockNumber}` }}</span>
+              <small v-if="slotProps.data.message" class="text-main">{{
+                `${slotProps.data.message}`
+              }}</small>
+            </div>
           </template>
         </Column>
 
@@ -927,8 +927,8 @@ export default {
         { field: 'index', label: '#' },
         { field: 'action', label: 'Action' },
         { field: 'image', label: 'รูป' },
-        { field: 'stockNumber', label: this.$t('view.sale.saleOrder.stockNumberNew') },
         { field: 'stockNumberOld', label: this.$t('view.sale.saleOrder.stockNumberOld') },
+        { field: 'stockNumber', label: this.$t('view.sale.saleOrder.stockNumberNew') },
         { field: 'productNumber', label: this.$t('view.sale.saleOrder.productCode') },
         { field: 'isConfirm', label: this.$t('view.sale.saleOrder.saleStatus') },
         { field: 'description', label: this.$t('view.sale.saleOrder.description') },

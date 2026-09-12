@@ -108,8 +108,8 @@
                   <Row>
                     <Column header="" />
                     <Column header="" />
-                    <Column :header="$t('view.sale.saleOrder.stockNumberNew')" />
                     <Column :header="$t('view.sale.saleOrder.stockNumberOld')" />
+                    <Column :header="$t('view.sale.saleOrder.stockNumberNew')" />
                     <Column :header="$t('view.sale.costStock.productCode')" />
                     <!-- <Column header="สถานะการขาย" /> -->
                     <Column :header="$t('view.sale.saleOrder.description')" />
@@ -158,6 +158,17 @@
                   </template>
                 </Column>
 
+                <!-- Stock Number Origin Column -->
+                <Column field="stockNumberOrigin" :header="$t('view.sale.saleOrder.stockNumberOld')" style="min-width: 150px">
+                  <template #body="slotProps">
+                    <span>{{
+                      slotProps.data.stockNumberOrigin
+                        ? slotProps.data.stockNumberOrigin || ''
+                        : slotProps.data.stockNumber || ''
+                    }}</span>
+                  </template>
+                </Column>
+
                 <!-- Stock Number Column -->
                 <Column field="stockNumber" :header="$t('view.sale.saleOrder.stockNumberNew')" style="min-width: 150px">
                   <template #body="slotProps">
@@ -167,17 +178,6 @@
                         slotProps.data.message
                       }}</small>
                     </div>
-                  </template>
-                </Column>
-
-                <!-- Stock Number Origin Column -->
-                <Column field="stockNumberOrigin" :header="$t('view.sale.saleOrder.stockNumberOld')" style="min-width: 150px">
-                  <template #body="slotProps">
-                    <span>{{
-                      slotProps.data.stockNumberOrigin
-                        ? slotProps.data.stockNumberOrigin || ''
-                        : slotProps.data.stockNumber || ''
-                    }}</span>
                   </template>
                 </Column>
 
