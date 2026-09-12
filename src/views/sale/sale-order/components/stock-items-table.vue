@@ -129,6 +129,26 @@
               >
                 <span class="bi bi-arrow-counterclockwise"></span>
               </button>
+              <button
+                v-if="slotProps.data.isConfirm && !slotProps.data.invoice && !isViewMode"
+                class="btn btn-sm btn-outline-main ml-2"
+                type="button"
+                :title="$t('view.sale.saleOrder.moveUpTitle')"
+                :disabled="isFirstConfirmedPending(slotProps.data)"
+                @click="$emit('move-item', { item: slotProps.data, direction: 'up' })"
+              >
+                <span class="bi bi-arrow-up"></span>
+              </button>
+              <button
+                v-if="slotProps.data.isConfirm && !slotProps.data.invoice && !isViewMode"
+                class="btn btn-sm btn-outline-main ml-2"
+                type="button"
+                :title="$t('view.sale.saleOrder.moveDownTitle')"
+                :disabled="isLastConfirmedPending(slotProps.data)"
+                @click="$emit('move-item', { item: slotProps.data, direction: 'down' })"
+              >
+                <span class="bi bi-arrow-down"></span>
+              </button>
             </div>
           </template>
         </Column>
@@ -873,10 +893,14 @@ export default {
     roundingAdjustment: {
       type: Number,
       default: 0
+    },
+    isViewMode: {
+      type: Boolean,
+      default: false
     }
   },
 
-  emits: ['delete-item', 'edit-item', 'cancel-confirmation', 'blur-price', 'blur-qty', 'blur-description', 'update:special-discount', 'update:special-addition', 'update:freight', 'update:vat-percent'],
+  emits: ['delete-item', 'edit-item', 'cancel-confirmation', 'move-item', 'blur-price', 'blur-qty', 'blur-description', 'update:special-discount', 'update:special-addition', 'update:freight', 'update:vat-percent'],
 
   data() {
     return {
@@ -892,6 +916,10 @@ export default {
 
     isTotalFrozenRight() {
       return this.frozenCols['total'] === 'right'
+    },
+
+    confirmedPendingItems() {
+      return this.stockItems.filter((item) => item.isConfirm && !item.invoice)
     },
 
     columnFreezeList() {
@@ -977,6 +1005,16 @@ export default {
         warning(this.$t('view.sale.saleOrder.qtyExceedAvailable', { available: max }))
       }
       this.$emit('blur-qty', { item, stockNumber: item.stockNumber, field: 'qty', event })
+    },
+
+    isFirstConfirmedPending(item) {
+      const list = this.confirmedPendingItems
+      return list.length > 0 && list[0].stockNumber === item.stockNumber
+    },
+
+    isLastConfirmedPending(item) {
+      const list = this.confirmedPendingItems
+      return list.length > 0 && list[list.length - 1].stockNumber === item.stockNumber
     },
 
     isFrozenLeft(field) {

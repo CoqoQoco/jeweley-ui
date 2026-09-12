@@ -332,9 +332,11 @@
       :grandTotalRaw="grandTotalRaw"
       :grandTotalRounded="grandTotalRounded"
       :roundingAdjustment="roundingAdjustment"
+      :isViewMode="isViewMode"
       @delete-item="deleteStockItem($event)"
       @edit-item="onEditStock($event)"
       @cancel-confirmation="reverseStockConfirm($event)"
+      @move-item="moveStockItem($event)"
       @blur-price="onBlurPrice($event.item, $event.stockNumber, $event.field)"
       @blur-qty="onBlurQty($event.item, $event.stockNumber, $event.field)"
       @blur-description="onBlurDescription($event.item, $event.stockNumber, $event.field)"
@@ -1581,6 +1583,41 @@ export default {
       } finally {
         this.isOnDraft = false
       }
+    },
+
+    // ย้ายลำดับสินค้าที่ยืนยันแล้วแต่ยังไม่ออก Invoice เท่านั้น (ลำดับสัมพัทธ์ของรายการที่ออก Invoice แล้วต้องไม่ขยับ)
+    moveStockItem({ item, direction }) {
+      if (!item || !item.isConfirm || item.invoice) return
+
+      const currentIndex = this.stockItems.findIndex((i) => i.stockNumber === item.stockNumber)
+      if (currentIndex === -1) return
+
+      const isMovable = (i) => i && i.isConfirm && !i.invoice
+      let targetIndex = -1
+
+      if (direction === 'up') {
+        for (let i = currentIndex - 1; i >= 0; i--) {
+          if (isMovable(this.stockItems[i])) {
+            targetIndex = i
+            break
+          }
+        }
+      } else if (direction === 'down') {
+        for (let i = currentIndex + 1; i < this.stockItems.length; i++) {
+          if (isMovable(this.stockItems[i])) {
+            targetIndex = i
+            break
+          }
+        }
+      }
+
+      if (targetIndex === -1) return
+
+      const updated = [...this.stockItems]
+      const temp = updated[currentIndex]
+      updated[currentIndex] = updated[targetIndex]
+      updated[targetIndex] = temp
+      this.stockItems = updated
     },
 
     async exportPDF() {

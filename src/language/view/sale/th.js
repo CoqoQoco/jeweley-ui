@@ -520,6 +520,8 @@ export const saleOrder = {
   searchAddProduct: 'ค้นหาเพิ่มสินค้า',
   saleStatus: 'สถานะการขาย',
   cancelConfirmTitle: 'ยกเลิกยืนยันการขาย',
+  moveUpTitle: 'ย้ายขึ้น',
+  moveDownTitle: 'ย้ายลง',
   invoiceLabel: 'เลขที่ Invoice',
   pendingInvoice: 'รอออก Invoice',
   pendingConfirm: 'รอยืนยันสินค้า',

@@ -520,6 +520,8 @@ export const saleOrder = {
   searchAddProduct: 'Search & Add Product',
   saleStatus: 'Sale Status',
   cancelConfirmTitle: 'Cancel Sale Confirmation',
+  moveUpTitle: 'Move up',
+  moveDownTitle: 'Move down',
   invoiceLabel: 'Invoice No.',
   pendingInvoice: 'Pending Invoice',
   pendingConfirm: 'Pending Confirmation',
