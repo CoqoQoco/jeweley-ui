@@ -585,7 +585,6 @@ export const saleOrder = {
     deleteSO: 'ลบใบสั่งขายสำเร็จ'
   },
   warn: {
-    duplicateItem: 'สินค้าหมายเลข {stockNumber} มีอยู่ในรายการแล้ว',
     incompleteCustomer: 'ข้อมูลลูกค้าไม่ครบ',
     selectCustomerFirst: 'กรุณาเลือกลูกค้าก่อนดำเนินการ',
     noItemsToConfirm: 'ไม่พบสินค้าสำหรับยืนยันการขาย',
@@ -599,7 +598,13 @@ export const saleOrder = {
     cannotDeleteTitle: 'ไม่สามารถลบได้',
     discountRange: 'เปอร์เซ็นต์ส่วนลดต้องอยู่ระหว่าง 0 ถึง 100',
     noItemsForExcel: 'ไม่มีสินค้าสำหรับสร้าง Excel',
-    saveCustomerFirst: 'กรุณาเลือกลูกค้าก่อนบันทึก'
+    saveCustomerFirst: 'กรุณาเลือกลูกค้าก่อนบันทึก',
+    stockNotFound: 'ไม่พบสินค้าเลขนี้ในคลังครับ',
+    stockSold: 'สินค้า {stockNumber} ถูกขายไปแล้วครับ',
+    stockReservedOther: 'สินค้า {stockNumber} ถูกจองไว้ที่ {soNumbers} แล้วครับ',
+    stockReserved: 'สินค้า {stockNumber} ถูกจองไว้แล้วครับ',
+    duplicateItemNewLine: 'สินค้า {stockNumber} มีในรายการแล้ว เพิ่มเป็นบรรทัดใหม่ให้ครับ',
+    qtyExceedAvailableTotal: 'สินค้า {stockNumber} รวมทุกบรรทัด {total} ชิ้น เกินจำนวนพร้อมขาย {available} ชิ้นครับ'
   },
   confirm: {
     cancelCreate: 'คุณต้องการยกเลิกการสร้างใบสั่งขายนี้หรือไม่?',

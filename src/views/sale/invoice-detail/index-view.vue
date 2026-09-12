@@ -287,6 +287,7 @@ import { buildProductTypeLabelMap } from '@/services/helper/sale-summary/sale-su
 import dayjs from 'dayjs'
 import { formatDocCurrency } from '@/services/utils/decimal.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
+import { ensureLineKey } from '@/services/utils/line-key.js'
 
 export default {
   name: 'InvoiceDetailView',
@@ -592,18 +593,34 @@ export default {
             )
           }
 
+          this.invoiceItems.forEach(ensureLineKey)
+
           this.invoiceItems = this.invoiceItems.filter((item) => {
             return invoiceResponse.confirmedItems.some(
-              (invItem) => invItem.stockNumber === item.stockNumber
+              (invItem) =>
+                (invItem.lineKey && invItem.lineKey === item.lineKey) ||
+                invItem.stockNumber === item.stockNumber
             )
           })
 
-          this.invoiceItems.forEach((item) => {
-            const confirmedItem = saleOrderData.stockConfirm.find(
-              (ci) => ci.stockNumber === item.stockNumber
-            )
+          // จับคู่กับ stockConfirm ด้วย lineKey ก่อน (ถ้ามี) แล้ว fallback เป็น stockNumber แบบ "ใช้แล้วตัดออก"
+          // กันสองบรรทัดที่เลขสินค้าเดียวกันแย่งจับคู่กับแถวเดียวกัน
+          const stockConfirmPool = [...(saleOrderData.stockConfirm || [])]
+          const invConfirmedPool = [...(invoiceResponse.confirmedItems || [])]
 
-            if (confirmedItem) {
+          this.invoiceItems.forEach((item) => {
+            let matchIndex = stockConfirmPool.findIndex(
+              (ci) => ci.lineKey && item.lineKey && ci.lineKey === item.lineKey
+            )
+            if (matchIndex === -1) {
+              matchIndex = stockConfirmPool.findIndex(
+                (ci) => !ci.lineKey && ci.stockNumber === item.stockNumber
+              )
+            }
+
+            if (matchIndex !== -1) {
+              const [confirmedItem] = stockConfirmPool.splice(matchIndex, 1)
+
               item.id = confirmedItem.id
               item.stockNumber = confirmedItem.stockNumber
               item.appraisalPrice = confirmedItem.priceOrigin
@@ -613,15 +630,23 @@ export default {
               item.isInvoice = true
               item.invoice = invoiceResponse.invoiceNumber
               item.invoiceItem = confirmedItem.invoiceItem
-                 item.dkInvoiceNumber = confirmedItem.dkInvoiceNumber
+              item.dkInvoiceNumber = confirmedItem.dkInvoiceNumber
             }
 
             // earringStemSize มีเฉพาะใน Invoice/Get response (ไม่มีใน stockConfirm)
-            const invConfirmed = invoiceResponse.confirmedItems.find(
-              (ci) => ci.stockNumber === item.stockNumber
+            let invMatchIndex = invConfirmedPool.findIndex(
+              (ci) => ci.lineKey && item.lineKey && ci.lineKey === item.lineKey
             )
-            if (invConfirmed && invConfirmed.earringStemSize != null) {
-              item.earringStemSize = invConfirmed.earringStemSize
+            if (invMatchIndex === -1) {
+              invMatchIndex = invConfirmedPool.findIndex(
+                (ci) => !ci.lineKey && ci.stockNumber === item.stockNumber
+              )
+            }
+            if (invMatchIndex !== -1) {
+              const [invConfirmed] = invConfirmedPool.splice(invMatchIndex, 1)
+              if (invConfirmed.earringStemSize != null) {
+                item.earringStemSize = invConfirmed.earringStemSize
+              }
             }
           })
         }

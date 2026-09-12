@@ -597,6 +597,7 @@ import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/service
 import { success, error, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
 import { storage } from '@/services/storage.js'
+import { createLineKey, ensureLineKey } from '@/services/utils/line-key.js'
 import { CURRENCY_UNITS } from '@/constants/currency-units.js'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 
@@ -612,7 +613,7 @@ import OrderSummarySection from './order-summary-section.vue'
 const SALE_ROLE_ID = 6 // tbm_user_role: 6 = Sale
 
 // ฟิลด์หนักที่มากับ StockProduct/Get แต่หน้าใบสั่งขาย/ใบแจ้งหนี้ไม่ได้อ่าน ตัดออกก่อนบันทึกเพื่อลดขนาด payload
-const HEAVY_ITEM_FIELDS = ['imageBase64', 'priceTransactions', 'planPriceItems']
+const HEAVY_ITEM_FIELDS = ['imageBase64', 'priceTransactions', 'planPriceItems', 'reservations']
 
 function stripHeavyItemFields(item) {
   const cleaned = { ...item, imageBlobPath: null }
@@ -708,7 +709,7 @@ export default {
         confirmAndInvoiceModal: false
       },
       modelEditStock: {},
-      editStockNumber: null,
+      editStockLineKey: null,
       overallDiscountPercent: 0,
 
       formSaleOrder: {
@@ -1102,11 +1103,13 @@ export default {
         if (!item.appraisalPrice) {
           item.appraisalPrice = item.price || 0
         }
+        ensureLineKey(item)
       })
       newCopyItems.forEach((item) => {
         if (!item.appraisalPrice) {
           item.appraisalPrice = item.price || 0
         }
+        ensureLineKey(item)
       })
 
       this.stockItems = newStockItems
@@ -1164,6 +1167,14 @@ export default {
         }
       }
 
+      // เติม lineKey ย้อนหลังให้ใบเก่าที่ยังไม่มี (ใบสั่งขายที่บันทึกไว้ก่อนมี lineKey)
+      this.stockItems.forEach(ensureLineKey)
+      this.copyItems.forEach(ensureLineKey)
+
+      // จับคู่กับ confirmedItems ด้วย lineKey ก่อน (ถ้ามี) แล้ว fallback เป็น stockNumber แบบ "ใช้แล้วตัดออก"
+      // กันสองบรรทัดที่เลขสินค้าเดียวกันแย่งจับคู่กับ confirmedItem ตัวเดียวกัน
+      const confirmedItemsPool = [...(saleOrderData.confirmedItems || [])]
+
       this.stockItems.forEach((item) => {
         item.isConfirm = false
         item.isInvoice = false
@@ -1171,30 +1182,36 @@ export default {
         item.invoiceItem = null
         item.dkInvoiceNumber = null
 
-        const confirmedItem = saleOrderData.confirmedItems.find(
-          (ci) => ci.stockNumber === item.stockNumber
+        let matchIndex = confirmedItemsPool.findIndex(
+          (ci) => ci.lineKey && item.lineKey && ci.lineKey === item.lineKey
         )
-
-        if (confirmedItem) {
-          item.id = confirmedItem.id
-          item.stockNumber = confirmedItem.stockNumber
-
-          item.isConfirm = confirmedItem.isConfirm
-          item.invoiceItem = confirmedItem.invoiceItem
-          item.dkInvoiceNumber = confirmedItem.dkInvoiceNumber
-          item.isInvoice = confirmedItem.isInvoice
-          item.invoice = confirmedItem.invoice
-
-          if (confirmedItem.isConfirm) {
-            item.appraisalPrice = confirmedItem.priceOrigin
-            item.discountPercent = confirmedItem.discount
-            item.qty = confirmedItem.qty
-          }
-          //item.discountPercent = confirmedItem.discount || 0
-
-          item.isRemainProduct = confirmedItem.isRemainProduct
-          item.message = confirmedItem.message
+        if (matchIndex === -1) {
+          matchIndex = confirmedItemsPool.findIndex(
+            (ci) => !ci.lineKey && ci.stockNumber === item.stockNumber
+          )
         }
+        if (matchIndex === -1) return
+
+        const [confirmedItem] = confirmedItemsPool.splice(matchIndex, 1)
+
+        item.id = confirmedItem.id
+        item.stockNumber = confirmedItem.stockNumber
+
+        item.isConfirm = confirmedItem.isConfirm
+        item.invoiceItem = confirmedItem.invoiceItem
+        item.dkInvoiceNumber = confirmedItem.dkInvoiceNumber
+        item.isInvoice = confirmedItem.isInvoice
+        item.invoice = confirmedItem.invoice
+
+        if (confirmedItem.isConfirm) {
+          item.appraisalPrice = confirmedItem.priceOrigin
+          item.discountPercent = confirmedItem.discount
+          item.qty = confirmedItem.qty
+        }
+        //item.discountPercent = confirmedItem.discount || 0
+
+        item.isRemainProduct = confirmedItem.isRemainProduct
+        item.message = confirmedItem.message
       })
 
       this.$nextTick(() => {
@@ -1334,37 +1351,108 @@ export default {
     // ============================================
 
     async onSearchProduct() {
-      var data = await this.productStore.fetchDataGet({
-        formValue: this.productSearch
+      const rawData = await this.productStore.fetchDataGet({
+        formValue: this.productSearch,
+        skipError: true
       })
 
-      if (data) {
-        data = {
-          ...data,
-          price: data.productPrice ? Number(data.productPrice).toFixed(2) : 0,
-          appraisalPrice: data.productPrice ? Number(data.productPrice).toFixed(2) : 0,
-          description: data.productNameEn,
-          group: 'product',
-          planQty: data.planQty || 1,
-          stockNumberOrigin: data.stockNumberOrigin || data.stockNumber,
-          isRemainProduct: true,
-          isConfirm: false,
-          isInvoice: false
+      if (!rawData || !rawData.stockNumber) {
+        warning(this.$t('view.sale.saleOrder.warn.stockNotFound'))
+        this.productSearch = {
+          stockNumber: '',
+          stockNumberOrigin: '',
+          productNumber: ''
         }
+        return
       }
 
-      if (data.stockNumber) {
-        //check duplicate before push
-        const existingIndex = this.stockItems.findIndex(
-          (item) => item.stockNumber === data.stockNumber
+      const stockNumberOrigin = rawData.stockNumberOrigin || rawData.stockNumber
+
+      if (String(rawData.status).toUpperCase() === 'SOLD' || Number(rawData.qty) <= 0) {
+        warning(
+          this.$t('view.sale.saleOrder.warn.stockSold', { stockNumber: stockNumberOrigin })
         )
-        if (existingIndex !== -1) {
-          warning(this.$t('view.sale.saleOrder.warn.duplicateItem', { stockNumber: data.stockNumber }))
-        } else {
-          this.stockItems.push(data)
-          this.recalculateAll()
+        this.productSearch = {
+          stockNumber: '',
+          stockNumberOrigin: '',
+          productNumber: ''
         }
+        return
       }
+
+      // ของซ้ำ (เลขสินค้าเดียวกัน) ไม่บล็อกอีกต่อไป — เพิ่มเป็นบรรทัดใหม่ต่อท้ายตามลำดับที่ scan
+      // ราคา/ส่วนลดของบรรทัดใหม่ ให้คัดลอกจากบรรทัดแรกที่เลขสินค้าเดียวกัน (ถ้ามี) แทนราคาจากคลัง
+      const existingSameStock = this.stockItems.find(
+        (item) => item.stockNumber === rawData.stockNumber
+      )
+
+      const data = {
+        ...rawData,
+        price: existingSameStock
+          ? existingSameStock.price
+          : rawData.productPrice
+            ? Number(rawData.productPrice).toFixed(2)
+            : 0,
+        appraisalPrice: existingSameStock
+          ? existingSameStock.appraisalPrice
+          : rawData.productPrice
+            ? Number(rawData.productPrice).toFixed(2)
+            : 0,
+        ...(existingSameStock ? { discountPercent: existingSameStock.discountPercent } : {}),
+        description: rawData.productNameEn,
+        group: 'product',
+        planQty: rawData.planQty || 1,
+        qty: 1,
+        lineKey: createLineKey(),
+        stockNumberOrigin,
+        isRemainProduct: true,
+        isConfirm: false,
+        isInvoice: false
+      }
+
+      if (existingSameStock) {
+        warning(
+          this.$t('view.sale.saleOrder.warn.duplicateItemNewLine', {
+            stockNumber: stockNumberOrigin
+          })
+        )
+      }
+
+      const others = (rawData.reservations || []).filter(
+        (r) => r.soNumber && r.soNumber !== this.formSaleOrder.number
+      )
+      if (others.length) {
+        const soNumbers = [...new Set(others.map((r) => r.soNumber))].join(', ')
+        warning(
+          this.$t('view.sale.saleOrder.warn.stockReservedOther', {
+            stockNumber: stockNumberOrigin,
+            soNumbers
+          })
+        )
+      } else if (!rawData.reservations && Number(rawData.qtyAvailable) <= 0) {
+        warning(
+          this.$t('view.sale.saleOrder.warn.stockReserved', { stockNumber: stockNumberOrigin })
+        )
+      }
+
+      this.stockItems.push(data)
+
+      const available = Number(data.qtyAvailable)
+      const totalQty = this.stockItems
+        .filter((item) => item.stockNumber === data.stockNumber)
+        .reduce((sum, item) => sum + (Number(item.qty) || 0), 0)
+
+      if (totalQty > available) {
+        warning(
+          this.$t('view.sale.saleOrder.warn.qtyExceedAvailableTotal', {
+            stockNumber: stockNumberOrigin,
+            total: totalQty,
+            available
+          })
+        )
+      }
+
+      this.recalculateAll()
 
       this.productSearch = {
         stockNumber: '',
@@ -1373,10 +1461,8 @@ export default {
       }
     },
 
-    deleteStockItem(stockNumber) {
-      this.stockItems = this.stockItems.filter(
-        (item) => item.stockNumber !== stockNumber.stockNumber
-      )
+    deleteStockItem(item) {
+      this.stockItems = this.stockItems.filter((i) => i.lineKey !== item.lineKey)
       this.recalculateAll()
     },
 
@@ -1387,20 +1473,20 @@ export default {
 
     onEditStock(item) {
       this.modelEditStock = JSON.parse(JSON.stringify(item))
-      this.editStockNumber = item.stockNumber
+      this.editStockLineKey = item.lineKey
       this.isShow.isEditStock = true
     },
 
     onEditCopyItem(item) {
       this.modelEditStock = JSON.parse(JSON.stringify(item))
-      this.editStockNumber = item.stockNumber
+      this.editStockLineKey = item.lineKey
       this.isShow.isEditStock = true
     },
 
     onCloseEditStockModal(payload) {
       this.isShow.isEditStock = false
       if (payload && payload.action === 'save' && payload.data) {
-        const realIndex = this.stockItems.findIndex((i) => i.stockNumber === this.editStockNumber)
+        const realIndex = this.stockItems.findIndex((i) => i.lineKey === this.editStockLineKey)
         if (realIndex !== -1) {
           this.stockItems[realIndex] = JSON.parse(JSON.stringify(payload.data))
 
@@ -1410,7 +1496,7 @@ export default {
         }
       }
       this.modelEditStock = {}
-      this.editStockNumber = null
+      this.editStockLineKey = null
     },
 
     // ============================================
@@ -1583,7 +1669,7 @@ export default {
     moveStockItem({ item, direction }) {
       if (!item || !item.isConfirm || item.invoice) return
 
-      const currentIndex = this.stockItems.findIndex((i) => i.stockNumber === item.stockNumber)
+      const currentIndex = this.stockItems.findIndex((i) => i.lineKey === item.lineKey)
       if (currentIndex === -1) return
 
       const isMovable = (i) => i && i.isConfirm && !i.invoice
@@ -1999,7 +2085,7 @@ export default {
     },
 
     onBlurPrice(item, stockNumber, fieldName) {
-      const realIndex = this.stockItems.findIndex((i) => i.stockNumber === item.stockNumber)
+      const realIndex = this.stockItems.findIndex((i) => i.lineKey === item.lineKey)
       if (realIndex === -1) return
 
       let newCal = {
@@ -2016,7 +2102,7 @@ export default {
     },
 
     onBlurQty(item, stockNumber, fieldName) {
-      const realIndex = this.stockItems.findIndex((i) => i.stockNumber === item.stockNumber)
+      const realIndex = this.stockItems.findIndex((i) => i.lineKey === item.lineKey)
       if (realIndex === -1) return
 
       let newCal = {
@@ -2027,7 +2113,7 @@ export default {
     },
 
     onBlurDescription(item, stockNumber, fieldName) {
-      const realIndex = this.stockItems.findIndex((i) => i.stockNumber === item.stockNumber)
+      const realIndex = this.stockItems.findIndex((i) => i.lineKey === item.lineKey)
       if (realIndex === -1) return
 
       let newCal = {
@@ -2038,7 +2124,7 @@ export default {
     },
 
     onBlurCopyPrice(item, stockNumber, fieldName) {
-      const realIndex = this.copyItems.findIndex((i) => i.stockNumber === item.stockNumber)
+      const realIndex = this.copyItems.findIndex((i) => i.lineKey === item.lineKey)
       if (realIndex === -1) return
 
       let newCal = {
@@ -2051,7 +2137,7 @@ export default {
     },
 
     onBlurCopyQty(item, stockNumber, fieldName) {
-      const realIndex = this.copyItems.findIndex((i) => i.stockNumber === item.stockNumber)
+      const realIndex = this.copyItems.findIndex((i) => i.lineKey === item.lineKey)
       if (realIndex === -1) return
 
       let newCal = {

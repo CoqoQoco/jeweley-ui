@@ -123,7 +123,7 @@
               <!-- scrollHeight="400px" -->
               <DataTable
                 :value="filteredStockItems"
-                dataKey="stockNumber"
+                dataKey="lineKey"
                 :paginator="filteredStockItems.length > 10"
                 :rows="10"
                 :rowsPerPageOptions="[10, 25, 50]"
@@ -135,7 +135,7 @@
                   <template #body="slotProps">
                     <div class="text-center">
                       <CheckboxGeneric
-                        :modelValue="selectedItemsSet.has(slotProps.data.stockNumber)"
+                        :modelValue="selectedItemsSet.has(slotProps.data.lineKey)"
                         @update:modelValue="(value) => toggleItemSelection(slotProps.data, value)"
                         :disabled="slotProps.data.isConfirm"
                         :binary="true"
@@ -433,7 +433,7 @@ export default {
 
     totalSelectedAmount() {
       const selectedStockItems = this.stockItems.filter((item) =>
-        this.selectedItems.includes(item.stockNumber)
+        this.selectedItems.includes(item.lineKey)
       )
 
       return selectedStockItems.reduce((total, item) => {
@@ -467,7 +467,7 @@ export default {
     toggleSelectAll(value) {
       if (value) {
         // Select all items that are not already confirmed
-        this.selectedItems = this.selectableItems.map((item) => item.stockNumber)
+        this.selectedItems = this.selectableItems.map((item) => item.lineKey)
       } else {
         this.selectedItems = []
       }
@@ -480,11 +480,11 @@ export default {
       }
 
       if (value) {
-        if (!this.selectedItems.includes(item.stockNumber)) {
-          this.selectedItems.push(item.stockNumber)
+        if (!this.selectedItems.includes(item.lineKey)) {
+          this.selectedItems.push(item.lineKey)
         }
       } else {
-        const index = this.selectedItems.indexOf(item.stockNumber)
+        const index = this.selectedItems.indexOf(item.lineKey)
         if (index > -1) {
           this.selectedItems.splice(index, 1)
         }
@@ -567,7 +567,7 @@ export default {
 
       // Get selected items data
       const selectedStockItems = this.stockItems.filter((item) =>
-        this.selectedItems.includes(item.stockNumber)
+        this.selectedItems.includes(item.lineKey)
       )
 
       // Prepare data for API
@@ -575,6 +575,7 @@ export default {
         soNumber: this.saleOrderData.number,
         stockItems: selectedStockItems.map((item) => ({
           id: item.id,
+          lineKey: item.lineKey,
           stockNumber: item.stockNumber,
           productNumber: item.productNumber,
           qty: item.qty,

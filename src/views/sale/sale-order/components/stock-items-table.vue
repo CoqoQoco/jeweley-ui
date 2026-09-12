@@ -38,7 +38,7 @@
       <!-- eslint-disable-next-line no-restricted-imports -->
       <DataTable
         :value="stockItemsWithGrouping"
-        dataKey="stockNumber"
+        dataKey="lineKey"
         :scrollable="true"
         scrollHeight="10000000px"
         class="p-datatable-sm"
@@ -985,12 +985,12 @@ export default {
 
     isFirstConfirmedPending(item) {
       const list = this.confirmedPendingItems
-      return list.length > 0 && list[0].stockNumber === item.stockNumber
+      return list.length > 0 && list[0].lineKey === item.lineKey
     },
 
     isLastConfirmedPending(item) {
       const list = this.confirmedPendingItems
-      return list.length > 0 && list[list.length - 1].stockNumber === item.stockNumber
+      return list.length > 0 && list[list.length - 1].lineKey === item.lineKey
     },
 
     isFrozenLeft(field) {

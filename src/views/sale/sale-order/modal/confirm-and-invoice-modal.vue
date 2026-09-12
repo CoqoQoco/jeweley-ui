@@ -98,7 +98,7 @@
               <!-- Stock Items Table -->
               <DataTable
                 :value="availableItems"
-                dataKey="id"
+                dataKey="lineKey"
                 :scrollable="true"
                 scrollHeight="10000000px"
                 class="p-datatable-sm"
@@ -131,7 +131,7 @@
                   <template #body="slotProps">
                     <div class="text-center">
                       <CheckboxGeneric
-                        :modelValue="selectedItems.includes(slotProps.data.id)"
+                        :modelValue="selectedItems.includes(slotProps.data.lineKey)"
                         @update:modelValue="(value) => toggleItemSelection(slotProps.data, value)"
                         :binary="true"
                       />
@@ -687,6 +687,7 @@ import { useSaleChannelApiStore } from '@/stores/modules/api/sale/sale-channel-s
 import { warning, error, success } from '@/services/alert/sweetAlerts.js'
 import { getPaymentApiName } from '@/constants/payment-methods.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
+import { ensureLineKey } from '@/services/utils/line-key.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -761,9 +762,9 @@ export default {
     },
 
     availableItems() {
-      return this.stockItems.filter(
-        (item) => !item.invoice && item.isRemainProduct === true
-      )
+      return this.stockItems
+        .filter((item) => !item.invoice && item.isRemainProduct === true)
+        .map(ensureLineKey)
     },
 
     isAllSelected() {
@@ -786,7 +787,7 @@ export default {
     },
 
     selectedStockItemsForTotals() {
-      return this.stockItems.filter((item) => this.selectedItems.includes(item.id))
+      return this.stockItems.filter((item) => this.selectedItems.includes(item.lineKey))
     },
 
     // ยอดรวม F.O.B. ของรายการที่เลือก — ต้องคิดจากตัวกลาง computeDocumentTotals เพื่อให้เกณฑ์การปัดตรงกับใบ PDF (half-up)
@@ -852,6 +853,9 @@ export default {
 
   methods: {
     async loadInitialData() {
+      // เติม lineKey ย้อนหลังให้แถวที่ยังไม่มี (ข้อมูลเก่าที่เข้ามาทางอื่น) กันชนกันตอนเลือกรายการ
+      this.stockItems.forEach(ensureLineKey)
+
       this.selectedItems = []
       this.specialDiscount = Number(this.saleOrderData.specialDiscount) || 0
       this.specialAddition = Number(this.saleOrderData.specialAddition) || 0
@@ -865,7 +869,7 @@ export default {
 
     toggleSelectAll(value) {
       if (value) {
-        this.selectedItems = this.availableItems.map((item) => item.id)
+        this.selectedItems = this.availableItems.map((item) => item.lineKey)
       } else {
         this.selectedItems = []
       }
@@ -873,11 +877,11 @@ export default {
 
     toggleItemSelection(item, value) {
       if (value) {
-        if (!this.selectedItems.includes(item.id)) {
-          this.selectedItems.push(item.id)
+        if (!this.selectedItems.includes(item.lineKey)) {
+          this.selectedItems.push(item.lineKey)
         }
       } else {
-        const index = this.selectedItems.indexOf(item.id)
+        const index = this.selectedItems.indexOf(item.lineKey)
         if (index > -1) {
           this.selectedItems.splice(index, 1)
         }
@@ -949,7 +953,7 @@ export default {
 
     getNetWeight() {
       const selectedStockItems = this.stockItems.filter((item) =>
-        this.selectedItems.includes(item.id)
+        this.selectedItems.includes(item.lineKey)
       )
       return selectedStockItems
         .reduce((sum, item) => {
@@ -966,7 +970,7 @@ export default {
 
     getSumAppraisalPrice() {
       const selectedStockItems = this.stockItems.filter((item) =>
-        this.selectedItems.includes(item.id)
+        this.selectedItems.includes(item.lineKey)
       )
       if (!selectedStockItems || selectedStockItems.length === 0) return '0.00'
 
@@ -980,7 +984,7 @@ export default {
 
     getSumDiscountPrice() {
       const selectedStockItems = this.stockItems.filter((item) =>
-        this.selectedItems.includes(item.id)
+        this.selectedItems.includes(item.lineKey)
       )
       if (!selectedStockItems || selectedStockItems.length === 0) return '0.00'
 
@@ -994,7 +998,7 @@ export default {
 
     getSumConvertedPrice() {
       const selectedStockItems = this.stockItems.filter((item) =>
-        this.selectedItems.includes(item.id)
+        this.selectedItems.includes(item.lineKey)
       )
       if (!selectedStockItems || selectedStockItems.length === 0) {
         return '0.00'
@@ -1010,7 +1014,7 @@ export default {
 
     getSumQty() {
       const selectedStockItems = this.stockItems.filter((item) =>
-        this.selectedItems.includes(item.id)
+        this.selectedItems.includes(item.lineKey)
       )
       if (!selectedStockItems || selectedStockItems.length === 0) return 0
 
@@ -1021,7 +1025,7 @@ export default {
 
     getSumTotalConvertedPrice() {
       const selectedStockItems = this.stockItems.filter((item) =>
-        this.selectedItems.includes(item.id)
+        this.selectedItems.includes(item.lineKey)
       )
       if (!selectedStockItems || selectedStockItems.length === 0) {
         return '0.00'
@@ -1052,7 +1056,7 @@ export default {
       }
 
       const selectedStockItems = this.stockItems.filter((item) =>
-        this.selectedItems.includes(item.id)
+        this.selectedItems.includes(item.lineKey)
       )
       const unconfirmedItems = selectedStockItems.filter((item) => !item.isConfirm)
 
@@ -1062,6 +1066,7 @@ export default {
           soNumber: this.saleOrderData.number || this.saleOrderData.soNumber,
           stockItems: unconfirmedItems.map((item) => ({
             id: item.id,
+            lineKey: item.lineKey,
             stockNumber: item.stockNumber,
             productNumber: item.productNumber,
             qty: item.qty,
@@ -1119,6 +1124,7 @@ export default {
         refQuotation: this.saleOrderData.quotationNumber || '',
         remark: this.saleOrderData.remark || '',
         items: selectedStockItems.map((item) => ({
+          lineKey: item.lineKey,
           stockNumber: item.stockNumber,
           stockNumberOrigin: item.stockNumberOrigin || item.stockNumber,
           id: item.id,

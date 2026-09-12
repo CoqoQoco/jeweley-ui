@@ -1251,6 +1251,7 @@ export default {
           refQuotation: this.saleOrderData.quotationNumber || '',
           remark: this.saleOrderData.remark || '',
           items: selectedStockItems.map((item) => ({
+            lineKey: item.lineKey,
             stockNumber: item.stockNumber,
             stockNumberOrigin: item.stockNumberOrigin || item.stockNumber,
             id: item.id,

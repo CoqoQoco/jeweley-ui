@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 import SaleOrderView from './sale-order-view.vue'
+import { createLineKey } from '@/services/utils/line-key.js'
 
 vi.mock('@/services/alert/sweetAlerts.js', () => {
   const warning = vi.fn()
@@ -30,6 +31,7 @@ vi.mock('@/stores/modules/api/user/user-store.js', () => ({
 function makeItem(stockNumber, { isConfirm = false, invoice = null } = {}) {
   return {
     stockNumber,
+    lineKey: createLineKey(),
     isConfirm,
     invoice,
     qty: 1,
@@ -41,6 +43,7 @@ function makeItem(stockNumber, { isConfirm = false, invoice = null } = {}) {
 function makeHeavyItem(stockNumber) {
   return {
     stockNumber,
+    lineKey: createLineKey(),
     isConfirm: false,
     invoice: null,
     qty: 1,
@@ -177,6 +180,72 @@ describe('SaleOrderView — fetchSaveSaleOrder payload (ลดขนาด paylo
     expect(vm.stockItems[0].priceTransactions).toEqual(heavyItem.priceTransactions)
     expect(vm.stockItems[0].planPriceItems).toEqual(heavyItem.planPriceItems)
     expect(vm.stockItems[0].materials).toEqual(heavyItem.materials)
+  })
+})
+
+describe('SaleOrderView — onSearchProduct รองรับสแกนเลขสินค้าซ้ำ (คนละบรรทัด)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockFetchSave.mockResolvedValue('SO-0001')
+    mockFetchDataList.mockResolvedValue({ data: [] })
+  })
+
+  function makeProductData(overrides = {}) {
+    return {
+      stockNumber: 'STK-001',
+      stockNumberOrigin: 'OLD-001',
+      status: 'IN_STOCK',
+      qty: 5,
+      qtyAvailable: 5,
+      productPrice: 1000,
+      productNameEn: 'Ring',
+      planQty: 1,
+      reservations: [],
+      ...overrides
+    }
+  }
+
+  it('สแกนเลขเดิมซ้ำ ได้ 2 บรรทัดที่ lineKey ต่างกันและราคาเท่ากัน', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    vm.productStore.fetchDataGet = vi.fn().mockResolvedValue(makeProductData())
+
+    vm.productSearch.stockNumber = 'STK-001'
+    await vm.onSearchProduct()
+    vm.productSearch.stockNumber = 'STK-001'
+    await vm.onSearchProduct()
+
+    expect(vm.stockItems).toHaveLength(2)
+    const [first, second] = vm.stockItems
+
+    expect(first.lineKey).toBeTruthy()
+    expect(second.lineKey).toBeTruthy()
+    expect(first.lineKey).not.toBe(second.lineKey)
+    expect(second.appraisalPrice).toBe(first.appraisalPrice)
+    expect(second.price).toBe(first.price)
+  })
+
+  it('แก้จำนวนบรรทัดที่สองแล้วบรรทัดแรกไม่เปลี่ยนตาม', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    vm.productStore.fetchDataGet = vi.fn().mockResolvedValue(makeProductData())
+
+    vm.productSearch.stockNumber = 'STK-001'
+    await vm.onSearchProduct()
+    vm.productSearch.stockNumber = 'STK-001'
+    await vm.onSearchProduct()
+
+    expect(vm.stockItems).toHaveLength(2)
+    const [first, second] = vm.stockItems
+    const firstQtyBefore = first.qty
+
+    second.qty = 3
+    vm.onBlurQty(second, second.stockNumber, 'qty')
+
+    expect(vm.stockItems[1].qty).toBe(3)
+    expect(vm.stockItems[0].qty).toBe(firstQtyBefore)
   })
 })
 

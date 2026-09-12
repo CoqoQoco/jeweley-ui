@@ -585,7 +585,6 @@ export const saleOrder = {
     deleteSO: 'Sale order deleted successfully'
   },
   warn: {
-    duplicateItem: 'Item {stockNumber} already exists in the list',
     incompleteCustomer: 'Incomplete customer info',
     selectCustomerFirst: 'Please select a customer before proceeding',
     noItemsToConfirm: 'No items found for sale confirmation',
@@ -599,7 +598,13 @@ export const saleOrder = {
     cannotDeleteTitle: 'Cannot Delete',
     discountRange: 'Discount percentage must be between 0 and 100',
     noItemsForExcel: 'No items available to generate Excel',
-    saveCustomerFirst: 'Please select a customer before saving'
+    saveCustomerFirst: 'Please select a customer before saving',
+    stockNotFound: 'Item not found in stock',
+    stockSold: 'Item {stockNumber} has already been sold',
+    stockReservedOther: 'Item {stockNumber} is already reserved on {soNumbers}',
+    stockReserved: 'Item {stockNumber} is already reserved',
+    duplicateItemNewLine: 'Item {stockNumber} is already in the list, added as a new line',
+    qtyExceedAvailableTotal: 'Item {stockNumber} totals {total} across all lines, exceeding {available} available'
   },
   confirm: {
     cancelCreate: 'Do you want to cancel creating this sale order?',
