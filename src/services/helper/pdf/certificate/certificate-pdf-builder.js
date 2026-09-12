@@ -24,6 +24,13 @@ const QR_SIZE = 66
 const FOOTER_ZONE_HEIGHT = 100
 const FOOTER_ZONE_Y = PAGE_HEIGHT - MARGIN_BOTTOM - FOOTER_ZONE_HEIGHT
 
+// กล่องลายเซ็นแยก anchor ออกจาก terms เพื่อดันลงไปชิดขอบล่าง — ที่ว่างเหนือเส้นคือพื้นที่เซ็นจริง
+// ห้ามตั้ง SIGNATURE_BLOCK_HEIGHT ต่ำกว่าความสูงจริงของกล่อง (วัดจาก render ได้ 51 pt) เพราะ pdfmake
+// คำนวณ availableHeight ของ node ที่ absolutePosition จาก y ถึง (PAGE_HEIGHT - MARGIN_BOTTOM)
+// ถ้าเนื้อหาสูงเกินพื้นที่นั้นจะ paginate ไปพิมพ์ทับหัวกระดาษหน้าถัดไปทันที
+const SIGNATURE_BLOCK_HEIGHT = 60
+const SIGNATURE_ZONE_Y = PAGE_HEIGHT - MARGIN_BOTTOM - SIGNATURE_BLOCK_HEIGHT
+
 const CERTIFICATE_TERMS = [
   'This certificate describes the item stated herein as manufactured and inspected by Duangkaew Jewelry Manufacturer Co., Ltd.',
   'Gemstone and metal information is based on the production and material records of this item. It is not a laboratory gemological analysis.',
@@ -277,7 +284,7 @@ export class CertificatePdfBuilder {
       ],
       absolutePosition: {
         x: PAGE_WIDTH - MARGIN_X - PANEL_WIDTH,
-        y: FOOTER_ZONE_Y
+        y: SIGNATURE_ZONE_Y
       }
     }
   }
