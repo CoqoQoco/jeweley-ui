@@ -889,7 +889,8 @@ export class InvoicePdfBuilder {
                     text: '______________________________',
                     style: 'parcelText',
                     alignment: 'center',
-                    width: '30%'
+                    width: '30%',
+                    margin: [0, 18, 0, 0]
                   }
                 ]
               },

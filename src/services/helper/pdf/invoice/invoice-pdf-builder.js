@@ -883,13 +883,13 @@ export class InvoicePdfBuilder {
                 columns: [
                   { text: 'ORIGIN THAILAND', style: 'parcelText', alignment: 'left', width: '70%' },
                   {
-                    // เว้นที่ให้เซ็นชื่อเหนือเส้น — เดิม margin=20 ชดเชยตอน Seller แทนที่แถวว่าง (แถวเดียว)
-                    // ตอนนี้มีแถว Support คั่นเพิ่มมาอีกบรรทัดแล้ว จึงลดเหลือ 8 กันเส้นเซ็นชื่อขยับลงไปไกลเกิน
+                    // เว้นที่ให้เซ็นชื่อเหนือเส้น ≈ 40 pt เท่ากันทั้งสองกรณี
+                    // เมื่อไม่มี Support แถวนั้นว่างแต่ยังกินความสูง ~11 pt จึงใช้ 29 ชดเชยให้รวมได้ ~40 pt เท่ากับกรณีมี Support (margin 40)
                     text: '______________________________',
                     style: 'parcelText',
                     alignment: 'center',
                     width: '30%',
-                    margin: [0, 8, 0, 0]
+                    margin: [0, supportText ? 40 : 29, 0, 0]
                   }
                 ]
               },
