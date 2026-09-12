@@ -4,10 +4,10 @@ import {
   moneyDecimals,
   roundHalfUp,
   roundMoney,
-  roundToInteger,
   convertedUnitPrice,
   lineAmount,
-  computeDocumentTotals
+  computeDocumentTotals,
+  formatDocumentMoney
 } from './money.js'
 
 describe('isForeignCurrency', () => {
@@ -35,12 +35,12 @@ describe('isForeignCurrency', () => {
 })
 
 describe('moneyDecimals', () => {
-  it('THB → 2 ตำแหน่ง', () => {
+  it('THB → 2 ตำแหน่ง เสมอ', () => {
     expect(moneyDecimals('THB')).toBe(2)
   })
 
-  it('US$ (ต่างประเทศ) → 0 ตำแหน่ง', () => {
-    expect(moneyDecimals('US$')).toBe(0)
+  it('US$ (ต่างประเทศ) → 2 ตำแหน่งเหมือนกัน (มาตรฐานใหม่ — สกุลเงินไม่มีผลต่อความละเอียดอีกต่อไป)', () => {
+    expect(moneyDecimals('US$')).toBe(2)
   })
 })
 
@@ -69,10 +69,6 @@ describe('roundHalfUp', () => {
     expect(roundHalfUp(-2.5, 0)).toBe(-3)
   })
 
-  it('916.892307692 ที่ 0 ตำแหน่ง → 917 (เคสราคาจริงจาก prod)', () => {
-    expect(roundHalfUp(916.892307692, 0)).toBe(917)
-  })
-
   it('ค่าที่ไม่ใช่ตัวเลข → 0', () => {
     expect(roundHalfUp('abc')).toBe(0)
     expect(roundHalfUp(NaN)).toBe(0)
@@ -94,33 +90,20 @@ describe('roundMoney', () => {
     expect(roundMoney(100.555, 'THB')).toBe(100.56)
   })
 
-  it('สกุลต่างประเทศ ปัดเป็นจำนวนเต็ม (half-up)', () => {
-    expect(roundMoney(100.5, 'US$')).toBe(101)
-    expect(roundMoney(100.4, 'US$')).toBe(100)
-  })
-})
-
-describe('roundToInteger', () => {
-  it('1234.5 → 1235', () => {
-    expect(roundToInteger(1234.5)).toBe(1235)
-  })
-
-  it('1234.4999 → 1234', () => {
-    expect(roundToInteger(1234.4999)).toBe(1234)
-  })
-
-  it('-1234.5 → -1235 (away-from-zero, ไม่ใช่ ceil)', () => {
-    expect(roundToInteger(-1234.5)).toBe(-1235)
+  it('สกุลต่างประเทศก็ปัด 2 ตำแหน่งเหมือนกัน (มาตรฐานใหม่ — เลิกปัดเป็นจำนวนเต็ม)', () => {
+    expect(roundMoney(100.555, 'US$')).toBe(100.56)
+    expect(roundMoney(100.554, 'US$')).toBe(100.55)
   })
 })
 
 describe('convertedUnitPrice', () => {
-  it('เคสจริงจาก prod: ราคา 90300 ส่วนลด 67% เรต 32.5 (US$) → 917 (ไม่ใช่ 916)', () => {
+  it('เคสจริงจาก prod: ราคา 90300 ส่วนลด 67% เรต 32.5 (US$) → 916.8923 ไม่ปัดเศษ (ต้องไม่ใช่ 917)', () => {
     const price = convertedUnitPrice({ appraisalPrice: 90300, discountPercent: 67 }, 32.5, 'US$')
-    expect(price).toBe(917)
+    expect(price).toBeCloseTo(916.8923, 4)
+    expect(price).not.toBe(917)
   })
 
-  it('THB ปัด 2 ตำแหน่ง: ราคา 1000 ส่วนลด 10% เรต 1 → 900', () => {
+  it('THB ไม่ปัดเศษเช่นกัน: ราคา 1000 ส่วนลด 10% เรต 1 → 900 (ลงตัวพอดี)', () => {
     const price = convertedUnitPrice({ appraisalPrice: 1000, discountPercent: 10 }, 1, 'THB')
     expect(price).toBe(900)
   })
@@ -136,9 +119,9 @@ describe('convertedUnitPrice', () => {
 })
 
 describe('lineAmount', () => {
-  it('ราคาต่อชิ้นที่ปัดแล้ว × qty (ปัดก่อนคูณเสมอ)', () => {
+  it('ราคาต่อชิ้นดิบ (ไม่ปัด) × qty เรต 32.5 (US$) qty=3 → ≈ 2750.6769', () => {
     const amount = lineAmount({ appraisalPrice: 90300, discountPercent: 67, qty: 3 }, 32.5, 'US$')
-    expect(amount).toBe(917 * 3)
+    expect(amount).toBeCloseTo(2750.6769, 4)
   })
 
   it('qty ไม่ส่งมา → 0', () => {
@@ -155,21 +138,54 @@ describe('computeDocumentTotals', () => {
     expect(totals.roundingAdjustment).toBe(0)
   })
 
-  it('subTotal = ผลบวกของ lineAmount ทุกแถว (ปัดต่อแถวก่อนบวก)', () => {
+  it('subTotal = ผลบวกดิบของทุกแถว (ไม่ปัดเศษระหว่างทาง) ไม่ใช่ผลบวกของเลขที่ปัดแล้วแบบเดิม', () => {
     const items = [
-      { appraisalPrice: 90300, discountPercent: 67, qty: 1 }, // 917
+      { appraisalPrice: 90300, discountPercent: 67, qty: 1 },
       { appraisalPrice: 12345.67, discountPercent: 15, qty: 3 },
       { appraisalPrice: 555.55, discountPercent: 0, qty: 5 }
     ]
     const totals = computeDocumentTotals({ items, currencyRate: 32.5, currencyUnit: 'US$' })
-    const expectedSum = items.reduce(
-      (sum, item) => sum + lineAmount(item, 32.5, 'US$'),
-      0
-    )
-    expect(totals.subTotal).toBe(expectedSum)
+
+    const rawSum = items.reduce((sum, item) => sum + lineAmount(item, 32.5, 'US$'), 0)
+    expect(totals.subTotal).toBeCloseTo(rawSum, 6)
+
+    // เทียบกับพฤติกรรมเดิม (ปัดราคาต่อชิ้นเป็นจำนวนเต็มก่อนคูณ แล้วค่อยบวก) ต้องได้คนละค่า
+    const oldWayRoundedFirstSum = items.reduce((sum, item) => {
+      const rawPrice = (item.appraisalPrice * (1 - item.discountPercent / 100)) / 32.5
+      const roundedPrice = Math.round(rawPrice)
+      return sum + roundedPrice * item.qty
+    }, 0)
+    expect(totals.subTotal).not.toBeCloseTo(oldWayRoundedFirstSum, 2)
   })
 
-  it('F.O.B − ส่วนลด + ส่วนเพิ่ม + ค่าขนส่ง + VAT + ROUNDING = C.I.F เป๊ะ', () => {
+  it('specialDiscount/specialAddition/freight ไม่ถูกปัด — ส่งผ่านเป็นตัวเลขดิบ', () => {
+    const totals = computeDocumentTotals({
+      items: [{ appraisalPrice: 100, discountPercent: 0, qty: 1 }],
+      currencyRate: 1,
+      currencyUnit: 'THB',
+      specialDiscount: 12.345,
+      specialAddition: 6.789,
+      freight: 3.333
+    })
+    expect(totals.specialDiscount).toBe(12.345)
+    expect(totals.specialAddition).toBe(6.789)
+    expect(totals.freight).toBe(3.333)
+  })
+
+  it('VAT 7%: vatAmount คำนวณดิบ ไม่ปัดเป็น 2 ตำแหน่งก่อน', () => {
+    const totals = computeDocumentTotals({
+      items: [{ appraisalPrice: 1000, discountPercent: 0, qty: 1 }],
+      currencyRate: 1,
+      currencyUnit: 'THB',
+      freight: 33.333,
+      vatPercent: 7
+    })
+    // afterSpecial = 1033.333, vatAmount = 1033.333 * 0.07 = 72.33331 (มีเศษเกิน 2 ตำแหน่ง)
+    expect(totals.vatAmount).toBeCloseTo(72.33331, 8)
+    expect(totals.vatAmount).not.toBe(Number(totals.vatAmount.toFixed(2)))
+  })
+
+  it('grandTotalRounded = grandTotalRaw ปัดครึ่งขึ้น (half-up) เป็นทศนิยม 2 ตำแหน่ง และ roundingAdjustment = 0 เสมอ (เลิกใช้ ROUNDING แล้ว)', () => {
     const items = [
       { appraisalPrice: 90300, discountPercent: 67, qty: 1 },
       { appraisalPrice: 12345.67, discountPercent: 15, qty: 3 },
@@ -186,27 +202,29 @@ describe('computeDocumentTotals', () => {
       vatPercent: 7
     })
 
-    const printedSum =
+    expect(totals.grandTotalRounded).toBe(roundHalfUp(totals.grandTotalRaw, 2))
+    expect(totals.roundingAdjustment).toBe(0)
+
+    // ผลบวกของค่าดิบทุกองค์ประกอบ (ไม่ปัดสักจุด) ต้องเท่ากับ grandTotalRaw เป๊ะ
+    const printedRawSum =
       totals.subTotal -
       totals.specialDiscount +
       totals.specialAddition +
       totals.freight +
-      totals.vatAmount +
-      totals.roundingAdjustment
+      totals.vatAmount
 
-    expect(printedSum).toBe(totals.grandTotalRounded)
+    expect(printedRawSum).toBeCloseTo(totals.grandTotalRaw, 8)
+  })
+})
+
+describe('formatDocumentMoney', () => {
+  it('ปัดแสดงผล 2 ตำแหน่งเสมอ พร้อม thousand separator', () => {
+    expect(formatDocumentMoney(1234.5)).toBe('1,234.50')
   })
 
-  it('ยอดสุดท้ายปัดด้วย half-up ไม่ใช่ ceil — เศษ 0.33 ต้องปัดลง (ceil เดิมจะปัดขึ้นผิดเป็น 104)', () => {
-    const totals = computeDocumentTotals({
-      items: [{ appraisalPrice: 100, discountPercent: 0, qty: 1 }],
-      currencyRate: 1,
-      currencyUnit: 'THB',
-      vatPercent: 3.33
-    })
-    // subTotal=100, vatAmount=roundMoney(3.33)=3.33, grandTotalRaw=103.33 → half-up ปัดลงเป็น 103 (ceil เดิมจะได้ 104)
-    expect(totals.grandTotalRaw).toBeCloseTo(103.33, 5)
-    expect(totals.grandTotalRounded).toBe(103)
-    expect(totals.roundingAdjustment).toBeCloseTo(-0.33, 5)
+  it('ค่าที่ไม่ใช่ตัวเลข → 0.00', () => {
+    expect(formatDocumentMoney('abc')).toBe('0.00')
+    expect(formatDocumentMoney(undefined)).toBe('0.00')
+    expect(formatDocumentMoney(null)).toBe('0.00')
   })
 })

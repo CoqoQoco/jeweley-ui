@@ -786,26 +786,6 @@
               </template>
             </Column>
           </Row>
-          <!-- ปัดเศษ -->
-          <Row v-if="roundingAdjustment > 0">
-            <Column :colspan="18">
-              <template #footer>
-                <div class="text-right type-container">
-                  <span>{{ $t('view.sale.quotation.rounding') }}</span>
-                </div>
-              </template>
-            </Column>
-            <Column
-              :frozen="isTotalFrozenRight"
-              :alignFrozen="isTotalFrozenRight ? 'right' : undefined"
-            >
-              <template #footer>
-                <div class="text-right type-container">
-                  <span>+{{ formatPrice(roundingAdjustment) }}</span>
-                </div>
-              </template>
-            </Column>
-          </Row>
           <!-- ยอดที่ต้องชำระ -->
           <Row>
             <Column :colspan="18">
@@ -842,8 +822,8 @@ import ColumnGroup from 'primevue/columngroup'
 // eslint-disable-next-line no-restricted-imports
 import Row from 'primevue/row'
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
-import { formatDecimal, isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
-import { convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
+import { formatDecimal, formatMoney } from '@/services/utils/decimal.js'
+import { convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
 import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
@@ -887,10 +867,6 @@ export default {
       default: 0
     },
     grandTotalRounded: {
-      type: Number,
-      default: 0
-    },
-    roundingAdjustment: {
       type: Number,
       default: 0
     },
@@ -1193,15 +1169,13 @@ export default {
 
     formatPrice(price) {
       return formatMoney(price, {
-        showDecimals: !isForeignCurrency(this.formSaleOrder.currencyUnit),
+        showDecimals: true,
         locale: 'th-TH'
       })
     },
 
     formatDocMoney(value) {
-      return isForeignCurrency(this.formSaleOrder.currencyUnit)
-        ? String(Number(value) || 0)
-        : (Number(value) || 0).toFixed(2)
+      return formatDocumentMoney(value)
     }
   }
 }

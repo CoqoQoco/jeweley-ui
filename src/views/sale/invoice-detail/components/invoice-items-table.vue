@@ -472,8 +472,8 @@ import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import dayjs from 'dayjs'
-import { isForeignCurrency, formatDocCurrency } from '@/services/utils/decimal.js'
-import { convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
+import { formatDocCurrency } from '@/services/utils/decimal.js'
+import { convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
 export default {
@@ -589,9 +589,7 @@ export default {
     convertedUnitPrice,
     lineAmount,
     formatDocMoney(value) {
-      return isForeignCurrency(this.formSaleOrder.currencyUnit)
-        ? String(Number(value) || 0)
-        : (Number(value) || 0).toFixed(2)
+      return formatDocumentMoney(value)
     },
     formatPriceWithCurrency(value) {
       return `${this.formatNumber(value)} ${this.invoiceData.currencyUnit || 'THB'}`
@@ -705,9 +703,7 @@ export default {
         const price = this.getConvertedPrice(item)
         return sum + (Number(price) || 0)
       }, 0)
-      return isForeignCurrency(this.invoiceData.currencyUnit || this.formSaleOrder.currencyUnit)
-        ? String(total)
-        : Number(total).toFixed(2)
+      return Number(total).toFixed(2)
     },
     getSumQty(items) {
       if (!items || !Array.isArray(items) || items.length === 0) return 0
@@ -721,9 +717,7 @@ export default {
         const price = this.getTotalConvertedPrice(item)
         return sum + (Number(price) || 0)
       }, 0)
-      return isForeignCurrency(this.invoiceData.currencyUnit || this.formSaleOrder.currencyUnit)
-        ? String(total)
-        : Number(total).toFixed(2)
+      return Number(total).toFixed(2)
     }
   }
 }

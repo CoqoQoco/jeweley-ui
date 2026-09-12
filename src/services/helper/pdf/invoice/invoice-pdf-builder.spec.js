@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { InvoicePdfBuilder } from './invoice-pdf-builder.js'
+import { roundHalfUp } from '@/services/utils/money.js'
 
 // ตัดการพึ่งพา company-info-store → axios-helper/router/pinia ที่ต้องมี app context จริง
 // เพราะเทสต์นี้ไม่เรียก preparePDF() (ไม่ต้องโหลดโลโก้/ข้อมูลบริษัทจริง)
@@ -34,9 +35,9 @@ function makeBuilder(items, saleOrderData, itemsPerPage = 2) {
   )
 }
 
-describe('InvoicePdfBuilder — money rounding reconciliation', () => {
+describe('InvoicePdfBuilder — money rounding reconciliation (มาตรฐานใหม่: ไม่ปัดจนถึงยอดสุดท้าย)', () => {
   const items = [
-    { appraisalPrice: 90300, discountPercent: 67, qty: 1 }, // ราคาต่อชิ้นต้องได้ 917 (เคสจริงจาก prod)
+    { appraisalPrice: 90300, discountPercent: 67, qty: 1 }, // ราคาต่อชิ้นต้องได้ 916.89 (เคสจริงจาก prod — ไม่ใช่ 917)
     { appraisalPrice: 12345.67, discountPercent: 15, qty: 3 },
     { appraisalPrice: 555.55, discountPercent: 0, qty: 5 },
     { appraisalPrice: 999.99, discountPercent: 33.33, qty: 2 }
@@ -49,14 +50,14 @@ describe('InvoicePdfBuilder — money rounding reconciliation', () => {
     vatPercent: 7
   }
 
-  it('ราคาต่อชิ้นหลังหักส่วนลด 67% ที่เรต 32.5 ต้องได้ 917 ไม่ใช่ 916', () => {
+  it('ราคาต่อชิ้นหลังหักส่วนลด 67% ที่เรต 32.5 ต้องพิมพ์ 916.89 (ไม่ปัดเป็น 917 อีกต่อไป)', () => {
     const builder = makeBuilder([items[0]], {}, 10)
     const body = builder.buildRegularTableBody(builder.data, 0)
     // แถวที่ 1 (index 1, หลัง header) คอลัมน์ Price อยู่ index 8
-    expect(body[1][8].text).toBe('917')
+    expect(body[1][8].text).toBe('916.89')
   })
 
-  it('1) ผลบวกยอดทุกแถว = F.O.B', () => {
+  it('1) ผลบวกยอดทุกแถว (อ่านจาก cell) = F.O.B ที่พิมพ์ ภายใน tolerance 0.01', () => {
     const builder = makeBuilder(items, saleOrderData, 10)
     const body = builder.buildFinalTableBody(items, 0, 1)
 
@@ -68,11 +69,11 @@ describe('InvoicePdfBuilder — money rounding reconciliation', () => {
     const fobRow = findRow(body, (t) => t === 'F.O.B Bangkok')
     const fobAmount = cellAmount(fobRow)
 
-    expect(sumOfRows).toBeCloseTo(fobAmount, 5)
-    expect(fobAmount).toBe(builder.subtotal)
+    expect(Math.abs(sumOfRows - fobAmount)).toBeLessThanOrEqual(0.01)
+    expect(fobAmount).toBeCloseTo(builder.subtotal, 2)
   })
 
-  it('2) ผลบวกยอดท้ายหน้าทุกหน้า = F.O.B (itemsPerPage=2 → 2 หน้า)', () => {
+  it('2) ผลบวกยอดท้ายหน้าทุกหน้า = F.O.B ภายใน tolerance 0.01 (itemsPerPage=2 → 2 หน้า)', () => {
     const itemsPerPage = 2
     const builder = makeBuilder(items, saleOrderData, itemsPerPage)
     const totalPages = Math.ceil(items.length / itemsPerPage)
@@ -96,42 +97,26 @@ describe('InvoicePdfBuilder — money rounding reconciliation', () => {
     const fobRow = findRow(finalBody, (t) => t === 'F.O.B Bangkok')
     const fobAmount = cellAmount(fobRow)
 
-    expect(sumOfPageTotals).toBeCloseTo(fobAmount, 5)
+    expect(Math.abs(sumOfPageTotals - fobAmount)).toBeLessThanOrEqual(0.01)
   })
 
-  it('3) F.O.B − ส่วนลด + ส่วนเพิ่ม + ค่าขนส่ง + VAT + ROUNDING = C.I.F เป๊ะ', () => {
+  it('3) F.O.B − ส่วนลด + ส่วนเพิ่ม + ค่าขนส่ง + VAT = C.I.F เป๊ะ (ไม่มี ROUNDING แล้ว)', () => {
+    const builder = makeBuilder(items, saleOrderData, 10)
+
+    const printedSum =
+      builder.subtotal -
+      builder.specialDiscount +
+      builder.specialAddition +
+      builder.freightAndInsurance +
+      builder.vatAmount
+
+    expect(printedSum).toBeCloseTo(builder.grandTotalRaw, 8)
+    expect(builder.grandTotalRounded).toBe(roundHalfUp(builder.grandTotalRaw, 2))
+  })
+
+  it('ไม่มีบรรทัด ROUNDING บนเอกสารอีกต่อไป แม้ grandTotalRaw จะมีเศษ', () => {
     const builder = makeBuilder(items, saleOrderData, 10)
     const body = builder.buildFinalTableBody(items, 0, 1)
-
-    const fob = cellAmount(findRow(body, (t) => t === 'F.O.B Bangkok'))
-    const specialDiscountRow = findRow(body, (t) => t === 'SPECIAL DISCOUNT')
-    const specialAdditionRow = findRow(body, (t) => t === 'SPECIAL ADDITION')
-    const freightRow = findRow(body, (t) => t === 'FREIGHT & INSURANCE')
-    const vatRow = findRow(body, (t) => t.startsWith('VAT'))
-    const roundingRow = findRow(body, (t) => t === 'ROUNDING')
-    const cifRow = findRow(body, (t) => t === 'C.I.F')
-
-    const specialDiscount = specialDiscountRow ? cellAmount(specialDiscountRow) : 0
-    const specialAddition = specialAdditionRow ? cellAmount(specialAdditionRow) : 0
-    const freight = freightRow ? cellAmount(freightRow) : 0
-    const vat = vatRow ? cellAmount(vatRow) : 0
-    const rounding = roundingRow ? cellAmount(roundingRow) : 0
-    const cif = cellAmount(cifRow)
-
-    // specialDiscount ถูกพิมพ์เป็นค่าติดลบอยู่แล้ว (เช่น "-250") จึงบวกตรงๆ ได้เลย
-    const printedSum = fob + specialDiscount + specialAddition + freight + vat + rounding
-
-    expect(printedSum).toBeCloseTo(cif, 5)
-    expect(cif).toBe(builder.grandTotalRounded)
-  })
-
-  it('ไม่มีบรรทัด ROUNDING เมื่อ roundingAdjustment = 0', () => {
-    const builder = makeBuilder(
-      [{ appraisalPrice: 1000, discountPercent: 0, qty: 1 }],
-      {},
-      10
-    )
-    const body = builder.buildFinalTableBody(builder.data, 0, 1)
     expect(findRow(body, (t) => t === 'ROUNDING')).toBeUndefined()
   })
 

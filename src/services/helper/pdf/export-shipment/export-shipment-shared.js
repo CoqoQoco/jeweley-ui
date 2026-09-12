@@ -2,7 +2,7 @@
 // Shared header/company block + weight totals reused by all 4 ExportShipment PDF builders
 // (Invoice / Summary / Packing List / Photo Sheet) so the 4 documents look consistent.
 
-import { formatMoney, isForeignCurrency } from '@/services/utils/decimal.js'
+import { formatMoney } from '@/services/utils/decimal.js'
 import { formatDate } from '@/services/utils/dayjs.js'
 
 export const EXPORT_SHIPMENT_COMPANY = {
@@ -90,11 +90,13 @@ export function fmtWeight(value, decimals = 2) {
 }
 
 /**
- * Foreign currencies (anything other than THB) are shown without decimals,
- * matching the existing convention in invoice-pdf-builder.js / decimal.js.
+ * Always shows 2 decimal places now — matches the calculator-accurate standard
+ * (no rounding to whole numbers for foreign currencies anymore).
+ * @param {string} currency - unused now, kept for backward compat
  */
+// eslint-disable-next-line no-unused-vars
 export function fmtDocMoney(value, currency) {
-  return formatMoney(value, { showDecimals: !isForeignCurrency(currency) })
+  return formatMoney(value, { showDecimals: true })
 }
 
 export const TABLE_LAYOUT_THIN = {

@@ -4,7 +4,7 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
-import { formatMoney, isForeignCurrency } from '@/services/utils/decimal.js'
+import { formatMoney } from '@/services/utils/decimal.js'
 import { COMPANY_INFO, loadCompanyInfo } from '@/config/company-info.js'
 import { PDF_COLORS, PDF_STYLES, PDF_FONT } from '../shared/pdf-theme.js'
 import { loadCompanyLogo } from '../shared/pdf-images.js'
@@ -45,7 +45,7 @@ export class SaleSummaryPdfBuilder {
   }
 
   _money(value) {
-    return formatMoney(value, { showDecimals: !isForeignCurrency(this.currencyUnit) })
+    return formatMoney(value, { showDecimals: true })
   }
 
   getSummary() {

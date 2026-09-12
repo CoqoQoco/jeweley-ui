@@ -43,8 +43,7 @@ export class InvoiceExcelIntegration {
         {
           documentTitle: 'INVOICE',
           consignedLabel: 'Invoice To',
-          showConditions: false,
-          hideRounding: options.hideRounding || false
+          showConditions: false
         }
       )
 

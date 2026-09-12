@@ -138,7 +138,7 @@
 </template>
 
 <script>
-import { isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
+import { formatMoney } from '@/services/utils/decimal.js'
 
 export default {
   name: 'OrderSummarySection',
@@ -208,7 +208,7 @@ export default {
     formatCurrency(amount, currency = null) {
       const displayCurrency = currency || this.formSaleOrder.currencyUnit || 'THB'
       const formattedAmount = formatMoney(amount, {
-        showDecimals: !isForeignCurrency(displayCurrency),
+        showDecimals: true,
         locale: 'th-TH'
       })
       return formattedAmount + ' ' + displayCurrency
@@ -216,7 +216,7 @@ export default {
 
     formatPrice(price) {
       return formatMoney(price, {
-        showDecimals: !isForeignCurrency(this.formSaleOrder.currencyUnit),
+        showDecimals: true,
         locale: 'th-TH'
       })
     }

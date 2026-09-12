@@ -3,7 +3,7 @@
  * Helper functions for decimal number operations
  */
 
-import { roundHalfUp, isForeignCurrency } from './money.js'
+import { roundHalfUp } from './money.js'
 
 export { isForeignCurrency } from './money.js'
 
@@ -194,16 +194,16 @@ const toNullableNumber = (value) => {
 
 /**
  * Format a money value denominated in a document currency.
- * Foreign currency values are rounded half-up (away-from-zero) to whole numbers.
- * THB values keep the existing 2-decimal behavior.
+ * Always shows 2 decimal places now — foreign currency documents no longer round
+ * to whole numbers (matches the calculator standard: no rounding until the final total).
  * @param {number|string} value - Value to format
- * @param {string} unit - Currency unit code
+ * @param {string} unit - Currency unit code (unused now — kept for backward compat)
  * @param {string} locale - Locale for toLocaleString (default: 'th-TH')
  * @returns {string} Formatted value
  */
+// eslint-disable-next-line no-unused-vars
 const formatDocCurrency = (value, unit, locale = 'th-TH') => {
   const num = Number(value) || 0
-  if (isForeignCurrency(unit)) return roundHalfUp(num, 0).toLocaleString(locale, { maximumFractionDigits: 0 })
   return num.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 

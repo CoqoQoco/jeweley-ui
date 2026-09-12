@@ -1,6 +1,5 @@
 import dayjs from 'dayjs'
 import ExcelJS from 'exceljs'
-import { isForeignCurrency } from '@/services/utils/decimal.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount, roundHalfUp } from '@/services/utils/money.js'
 
 export class SaleOrderExcelBuilder {
@@ -18,7 +17,7 @@ export class SaleOrderExcelBuilder {
     this.currencyUnit = options.currencyUnit || 'THB'
     this.currencyRate = Number(options.currencyRate) || 1
     this.showCifLabel = options.showCifLabel !== undefined ? options.showCifLabel : true
-    this.showDecimals = options.showDecimals != null ? options.showDecimals : !isForeignCurrency(this.currencyUnit)
+    this.showDecimals = options.showDecimals != null ? options.showDecimals : true
 
     // Financial adjustments — freight field (SO uses "freight", not freightAndInsurance)
     this.specialDiscount = Number(soData.specialDiscount) || 0
@@ -570,18 +569,6 @@ export class SaleOrderExcelBuilder {
 
     if (this.vatPercent > 0) {
       this.addSummaryRow(worksheet, row, `VAT (${this.vatPercent}%)`, this.formatCurrency(this.vatAmount))
-      row++
-    }
-
-    // ROUNDING row — ส่วนต่างระหว่าง C.I.F ที่พิมพ์กับผลบวกของบรรทัดเหนือมันทั้งหมด (แสดงเมื่อไม่เท่ากับ 0 เท่านั้น)
-    if (this.roundingAdjustment !== 0) {
-      const roundingSign = this.roundingAdjustment > 0 ? '+' : '-'
-      this.addSummaryRow(
-        worksheet,
-        row,
-        'ROUNDING',
-        roundingSign + this.formatCurrency(Math.abs(this.roundingAdjustment))
-      )
       row++
     }
 

@@ -60,7 +60,6 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import { storage } from '@/services/storage.js'
-import { isForeignCurrency } from '@/services/utils/decimal.js'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
@@ -109,7 +108,7 @@ export default {
   methods: {
     initShowDecimals() {
       const saved = storage.getItem(SHOW_DECIMALS_STORAGE_KEY)
-      this.showDecimals = saved !== null ? saved === 'true' : !isForeignCurrency(this.currencyUnit)
+      this.showDecimals = saved !== null ? saved === 'true' : true
     },
     onShowDecimalsChange(val) {
       storage.setItem(SHOW_DECIMALS_STORAGE_KEY, String(val))

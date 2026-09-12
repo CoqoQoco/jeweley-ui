@@ -1,6 +1,5 @@
 import dayjs from 'dayjs'
 import ExcelJS from 'exceljs'
-import { isForeignCurrency } from '@/services/utils/decimal.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount, roundHalfUp } from '@/services/utils/money.js'
 
 export class InvoiceExcelBuilder {
@@ -29,7 +28,7 @@ export class InvoiceExcelBuilder {
     this.invoiceNo = invoiceNo || this.generateInvoiceNumber()
     this.currencyUnit = currencyUnit || 'THB'
     this.currencyRate = Number(currencyRate) || 1
-    this.showDecimals = options.showDecimals != null ? options.showDecimals : !isForeignCurrency(this.currencyUnit)
+    this.showDecimals = options.showDecimals != null ? options.showDecimals : true
 
     // Financial adjustments
     this.specialDiscount = Number(saleOrderData.specialDiscount) || 0
@@ -64,7 +63,6 @@ export class InvoiceExcelBuilder {
     this.consignedLabel = options.consignedLabel || 'Consigned To'
     this.showCifLabel = options.showCifLabel !== undefined ? options.showCifLabel : true
     this.showConditions = options.showConditions !== undefined ? options.showConditions : true
-    this.hideRounding = options.hideRounding || false
 
     // Assets (loaded async in prepare())
     this.logoBase64 = null
@@ -628,18 +626,6 @@ export class InvoiceExcelBuilder {
         row,
         `VAT (${this.vatPercent}%)`,
         this.formatCurrency(this.vatAmount)
-      )
-      row++
-    }
-
-    // ROUNDING row — ส่วนต่างระหว่าง C.I.F ที่พิมพ์กับผลบวกของบรรทัดเหนือมันทั้งหมด (แสดงเมื่อไม่เท่ากับ 0 เท่านั้น)
-    if (this.roundingAdjustment !== 0 && !this.hideRounding) {
-      const roundingSign = this.roundingAdjustment > 0 ? '+' : '-'
-      this.addSummaryRow(
-        worksheet,
-        row,
-        'ROUNDING',
-        roundingSign + this.formatCurrency(Math.abs(this.roundingAdjustment))
       )
       row++
     }

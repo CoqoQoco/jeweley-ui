@@ -269,7 +269,6 @@
         :totalBeforeVat="Number(totalBeforeVat)"
         :vatAmount="Number(vatAmount)"
         :grandTotalRaw="Number(grandTotalRaw)"
-        :roundingAdjustment="Number(roundingAdjustment)"
         :grandTotalRounded="Number(grandTotalRounded)"
         @del-item="delItem"
         @edit-stock="onEditStock($event.data, $event.index)"
@@ -450,7 +449,7 @@ import { buildProductTypeLabelMap } from '@/services/helper/sale-summary/sale-su
 import { getBreakdownSetting } from '@/services/helper/breakdown-setting-store.js'
 
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
-import { isForeignCurrency, formatDocCurrency } from '@/services/utils/decimal.js'
+import { formatDocCurrency } from '@/services/utils/decimal.js'
 import { computeDocumentTotals, convertedUnitPrice } from '@/services/utils/money.js'
 import { warning, success, error } from '@/services/alert/sweetAlerts.js'
 import { storage } from '@/services/storage.js'
@@ -620,7 +619,7 @@ export default {
       this.customer.quotationItems.forEach((item) => {
         sum += convertedUnitPrice(item, this.customer.currencyMultiplier, this.customer.currencyUnit)
       })
-      return isForeignCurrency(this.customer.currencyUnit) ? String(sum) : sum.toFixed(2)
+      return sum.toFixed(2)
     },
     // ยอดรวม F.O.B. — ต้องคิดจากตัวกลาง computeDocumentTotals เพื่อให้เกณฑ์การปัดตรงกับใบ PDF (half-up)
     documentTotals() {
@@ -636,7 +635,7 @@ export default {
     },
     sumTotalConvertedPrice() {
       const value = this.documentTotals.subTotal
-      return isForeignCurrency(this.customer.currencyUnit) ? String(value) : Number(value).toFixed(2)
+      return Number(value).toFixed(2)
     },
     sumNetWeight() {
       let gold = 0
@@ -669,9 +668,6 @@ export default {
     },
     grandTotalRounded() {
       return this.documentTotals.grandTotalRounded
-    },
-    roundingAdjustment() {
-      return this.documentTotals.roundingAdjustment
     },
     editCustomerData() {
       return {
@@ -1301,7 +1297,7 @@ export default {
       const savedShowDecimals = storage.getItem('quotation-print-show-decimals')
       const showDecimals = savedShowDecimals !== null
         ? savedShowDecimals === 'true'
-        : !isForeignCurrency(this.customer.currencyUnit)
+        : true
 
       const builder = new InvoiceExcelBuilder(
         this.customer.quotationItems,

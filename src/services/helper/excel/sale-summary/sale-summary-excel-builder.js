@@ -3,7 +3,7 @@
 
 import dayjs from 'dayjs'
 import ExcelJS from 'exceljs'
-import { formatMoney, isForeignCurrency } from '@/services/utils/decimal.js'
+import { formatMoney } from '@/services/utils/decimal.js'
 import { COMPANY_INFO } from '@/config/company-info.js'
 import { buildSaleSummaryGroups } from '@/services/helper/sale-summary/sale-summary-data.js'
 
@@ -67,7 +67,7 @@ export class SaleSummaryExcelBuilder {
   }
 
   _money(value) {
-    return formatMoney(value, { showDecimals: !isForeignCurrency(this.currencyUnit) })
+    return formatMoney(value, { showDecimals: true })
   }
 
   fillBand(worksheet, row, columns) {

@@ -2,7 +2,10 @@
  * money.js
  * ตัวกลางเดียวของระบบสำหรับปัดเศษเงินในเอกสารขาย (ใบเสนอราคา / ใบสั่งขาย / ใบแจ้งหนี้ ฯลฯ)
  *
- * เกณฑ์กลาง: ปัดครึ่งขึ้นแบบ away-from-zero (round half-up) ทุกจุด — เลิกใช้ ceil/floor
+ * เกณฑ์กลาง (ให้ตรงกับเครื่องคิดเลข): ไม่ปัดเศษระหว่างทางเลยสักจุด — ราคาต่อชิ้น ยอดต่อแถว
+ * F.O.B ส่วนลดพิเศษ ส่วนเพิ่ม ค่าขนส่ง VAT คิดเต็มความละเอียดหมด แล้วปัดครั้งเดียวที่ยอดสุดท้าย
+ * (grand total / C.I.F) เป็นทศนิยม 2 ตำแหน่งแบบ half-up away-from-zero — ใช้เกณฑ์เดียวกันทั้ง
+ * สกุลต่างประเทศและ THB ไม่มีการปัดเป็นจำนวนเต็มอีกต่อไป และไม่มีบรรทัด ROUNDING บนเอกสาร
  *
  * ห้าม import อะไรจาก decimal.js ในไฟล์นี้เด็ดขาด (กัน circular import) —
  * decimal.js เป็นฝ่าย import/re-export จากไฟล์นี้แทน
@@ -18,12 +21,14 @@ export function isForeignCurrency(unit) {
 }
 
 /**
- * จำนวนตำแหน่งทศนิยมของเอกสารตามสกุลเงิน: ต่างประเทศ = 0 ตำแหน่ง, THB = 2 ตำแหน่ง
- * @param {string} currencyUnit
+ * จำนวนตำแหน่งทศนิยมของเอกสาร — เดี๋ยวนี้คงที่ 2 ตำแหน่งเสมอ ไม่ว่าสกุลเงินใด (สกุลเงินไม่มีผล
+ * ต่อความละเอียดอีกต่อไป) เก็บ signature (currencyUnit) ไว้เพื่อ backward compat กับผู้เรียกเดิม
+ * @param {string} currencyUnit - ไม่ใช้แล้ว เก็บไว้เพื่อ compat
  * @returns {number}
  */
+// eslint-disable-next-line no-unused-vars
 export function moneyDecimals(currencyUnit) {
-  return isForeignCurrency(currencyUnit) ? 0 : 2
+  return 2
 }
 
 /**
@@ -57,42 +62,35 @@ export function roundHalfUp(value, decimals = 0) {
 }
 
 /**
- * ปัดเงินตามความละเอียดของสกุลเอกสาร (ต่างประเทศ = จำนวนเต็ม, THB = 2 ตำแหน่ง)
+ * ปัดเงินเป็นทศนิยม 2 ตำแหน่งเสมอ (currencyUnit ไม่มีผลต่อความละเอียดอีกต่อไป เก็บ signature
+ * ไว้เพื่อ backward compat กับผู้เรียกเดิม)
  * @param {number|string} value
- * @param {string} currencyUnit
+ * @param {string} currencyUnit - ไม่ใช้แล้ว เก็บไว้เพื่อ compat
  * @returns {number}
  */
+// eslint-disable-next-line no-unused-vars
 export function roundMoney(value, currencyUnit) {
-  return roundHalfUp(value, moneyDecimals(currencyUnit))
+  return roundHalfUp(value, 2)
 }
 
 /**
- * ปัดเป็นจำนวนเต็มด้วย half-up — ตัวแทนของ ceilToInteger เดิม (ceil ทุกค่าทำให้ยอดสุดท้ายเพี้ยน)
- * @param {number|string} value
- * @returns {number}
- */
-export function roundToInteger(value) {
-  return roundHalfUp(value, 0)
-}
-
-/**
- * ราคาต่อชิ้นหลังหักส่วนลด แปลงสกุล และปัดแล้ว — จุดปัดเศษหลักของทั้งระบบ
- * ทุกยอดที่คิดจากราคาต่อชิ้น (ยอดต่อแถว, ยอดรวมทั้งใบ) ต้องต่อยอดจากค่าที่ปัดแล้วนี้เท่านั้น
+ * ราคาต่อชิ้นหลังหักส่วนลด แปลงสกุล — คืนค่าดิบ "ไม่ปัด" เพื่อให้คำนวณต่อได้ตรงกับเครื่องคิดเลข
+ * เป๊ะทุกขั้น จุดปัดเศษเดียวของทั้งระบบอยู่ที่ grandTotalRounded ใน computeDocumentTotals เท่านั้น
  * @param {Object} item - { appraisalPrice, discountPercent }
  * @param {number} currencyRate
- * @param {string} currencyUnit
+ * @param {string} currencyUnit - ไม่ใช้แล้ว เก็บไว้เพื่อ compat
  * @returns {number}
  */
+// eslint-disable-next-line no-unused-vars
 export function convertedUnitPrice(item, currencyRate, currencyUnit) {
-  const raw =
+  return (
     ((Number(item?.appraisalPrice) || 0) * (1 - (Number(item?.discountPercent) || 0) / 100)) /
     (Number(currencyRate) || 1)
-  return roundMoney(raw, currencyUnit)
+  )
 }
 
 /**
- * ยอดต่อแถว = convertedUnitPrice (ปัดแล้ว) × qty — ห้ามปัดหลังคูณ
- * เพราะลูกค้าต้องเอาราคาต่อชิ้นที่เห็นคูณจำนวนที่เห็นแล้วได้ยอดที่เห็นเป๊ะ
+ * ยอดต่อแถว = convertedUnitPrice (ดิบ ไม่ปัด) × qty — ไม่ปัดเศษระหว่างทาง
  * @param {Object} item - { appraisalPrice, discountPercent, qty }
  * @param {number} currencyRate
  * @param {string} currencyUnit
@@ -105,17 +103,13 @@ export function lineAmount(item, currencyRate, currencyUnit) {
 /**
  * คิดยอดรวมทั้งใบเอกสารขาย
  *
- * หัวใจสำคัญ: ต้องปัดเศษตั้งแต่ระดับ "ราคาต่อชิ้น" (convertedUnitPrice) ก่อนเสมอ แล้วคูณ qty
- * ได้ยอดต่อแถว (lineAmount) จากนั้นบวกยอดต่อแถวที่ปัดแล้วเข้าด้วยกันเป็น subTotal —
- * ห้ามบวกราคาดิบ (raw, ยังมีทศนิยม) แล้วค่อยปัดทีเดียวตอนจบ เพราะจะทำให้ยอดรวมที่ระบบคำนวณ
- * ไม่เท่ากับผลบวกของตัวเลขที่ลูกค้าเห็นจริงบนแต่ละแถว (ตัวอย่างจริงที่เจอ: ใบแจ้งหนี้ 184 แถว
- * ผลรวมช่อง Amount = 77,223 แต่ F.O.B ที่พิมพ์ = 77,312 เพราะปัดคนละจุดกัน)
+ * หัวใจสำคัญ (มาตรฐานใหม่ — ตรงกับเครื่องคิดเลข): ไม่ปัดเศษระหว่างทางเลยสักจุด ราคาต่อชิ้น
+ * ยอดต่อแถว (lineAmount), subTotal, ส่วนลดพิเศษ, ส่วนเพิ่มพิเศษ, ค่าขนส่ง และ VAT ทุกตัวคิดด้วย
+ * ค่าดิบเต็มความละเอียด แล้วบวกกันเป็น grandTotalRaw — จุดปัดเศษจุดเดียวของทั้งระบบคือ
+ * grandTotalRounded (ปัดครึ่งขึ้น away-from-zero เป็นทศนิยม 2 ตำแหน่ง) เท่านั้น
  *
- * ส่วนลด/ส่วนเพิ่ม/ค่าขนส่ง/VAT ก็ปัดตามความละเอียดของสกุลเอกสารก่อนบวกเข้า afterSpecial เช่นกัน
- * เพื่อให้ "ผลบวกของบรรทัดที่พิมพ์บนเอกสารทุกบรรทัด" เท่ากับ grandTotalRaw เป๊ะ — ไม่มีเศษหลุด
- *
- * ยอดสุดท้าย (grandTotal) ปัดเป็นจำนวนเต็มด้วย half-up เสมอ (เลิกใช้ ceil) ส่วนต่างระหว่างยอด
- * ที่ปัดแล้วกับยอดดิบ (grandTotalRaw) คือ roundingAdjustment ที่พิมพ์เป็นบรรทัด ROUNDING บนเอกสาร
+ * roundingAdjustment คงค่า 0 เสมอ (เลิกใช้บรรทัด ROUNDING บนเอกสารแล้ว) เก็บ key ไว้เพื่อ
+ * backward compat กับโค้ดที่ยัง destructure ค่านี้อยู่
  *
  * @param {Object} options
  * @param {Array} options.items
@@ -153,25 +147,39 @@ export function computeDocumentTotals({
     0
   )
 
-  const roundedSpecialDiscount = roundMoney(specialDiscount, currencyUnit)
-  const roundedSpecialAddition = roundMoney(specialAddition, currencyUnit)
-  const roundedFreight = roundMoney(freight, currencyUnit)
+  const rawSpecialDiscount = Number(specialDiscount) || 0
+  const rawSpecialAddition = Number(specialAddition) || 0
+  const rawFreight = Number(freight) || 0
 
-  const afterSpecial = subTotal - roundedSpecialDiscount + roundedSpecialAddition + roundedFreight
-  const vatAmount = roundMoney((afterSpecial * (Number(vatPercent) || 0)) / 100, currencyUnit)
+  const afterSpecial = subTotal - rawSpecialDiscount + rawSpecialAddition + rawFreight
+  const vatAmount = (afterSpecial * (Number(vatPercent) || 0)) / 100
   const grandTotalRaw = afterSpecial + vatAmount
-  const grandTotalRounded = roundToInteger(grandTotalRaw)
-  const roundingAdjustment = grandTotalRounded - grandTotalRaw
+  const grandTotalRounded = roundHalfUp(grandTotalRaw, 2)
+  const roundingAdjustment = 0
 
   return {
     subTotal,
-    specialDiscount: roundedSpecialDiscount,
-    specialAddition: roundedSpecialAddition,
-    freight: roundedFreight,
+    specialDiscount: rawSpecialDiscount,
+    specialAddition: rawSpecialAddition,
+    freight: rawFreight,
     afterSpecial,
     vatAmount,
     grandTotalRaw,
     grandTotalRounded,
     roundingAdjustment
   }
+}
+
+/**
+ * แปลงยอดเงินเอกสารเป็น string ทศนิยม 2 ตำแหน่งพร้อม thousand separator เสมอ
+ * (ใช้แสดงผลบนตารางเอกสารขาย — สกุลต่างประเทศแสดง 2 ตำแหน่งเหมือน THB ตามมาตรฐานใหม่)
+ * ค่าที่ไม่ใช่ตัวเลขให้เป็น '0.00'
+ * @param {number|string} value
+ * @param {string} [locale='th-TH']
+ * @returns {string}
+ */
+export function formatDocumentMoney(value, locale = 'th-TH') {
+  const num = Number(value)
+  if (!Number.isFinite(num)) return (0).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return num.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }

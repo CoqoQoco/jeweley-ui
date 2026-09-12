@@ -135,13 +135,6 @@
               />
             </div>
 
-            <div v-if="paperSize === 'a4'" class="form-group mb-3">
-              <CheckboxGeneric
-                v-model="printData.hideRounding"
-                :label="$t('view.sale.invoiceDetail.hideRounding')"
-              />
-            </div>
-
             <div class="form-group mb-3">
               <CheckboxGeneric
                 v-model="printData.showDecimals"
@@ -522,7 +515,6 @@
 <script>
 import { warning } from '@/services/alert/sweetAlerts.js'
 import { storage } from '@/services/storage.js'
-import { isForeignCurrency } from '@/services/utils/decimal.js'
 import dayjs from 'dayjs'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
@@ -591,7 +583,6 @@ export default {
         showCifLabel: true,
         showSeller: true,
         hideCompanyHeader: false,
-        hideRounding: false,
         showDecimals: true,
         itemsPerPage: 10
       },
@@ -888,7 +879,7 @@ export default {
       const savedShowDecimals = storage.getItem('invoice-print-show-decimals')
       const showDecimals = savedShowDecimals !== null
         ? savedShowDecimals === 'true'
-        : !isForeignCurrency(this.invoiceData.currencyUnit)
+        : true
 
       this.printData = {
         invoiceNumber: this.invoiceData.invoiceNumber || '',
@@ -897,7 +888,6 @@ export default {
         showCifLabel: true,
         showSeller: true,
         hideCompanyHeader: false,
-        hideRounding: false,
         showDecimals,
         itemsPerPage: 10
       }
@@ -943,7 +933,6 @@ export default {
         showCifLabel: this.paperSize === 'a4' ? this.printData.showCifLabel : false,
         showSeller: this.paperSize === 'a4' ? this.printData.showSeller : false,
         hideCompanyHeader: this.paperSize === 'a4' ? this.printData.hideCompanyHeader : false,
-        hideRounding: this.paperSize === 'a4' ? this.printData.hideRounding : false,
         showDecimals: this.printData.showDecimals,
         itemsPerPage: Number(this.printData.itemsPerPage) || 10,
         invoiceTemplate: this.invoiceTemplate,

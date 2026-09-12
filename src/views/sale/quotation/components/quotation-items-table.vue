@@ -544,23 +544,6 @@
             </template>
           </column>
         </Row>
-        <!-- ปัดเศษ -->
-        <Row v-if="roundingAdjustment > 0">
-          <column :colspan="16">
-            <template #footer>
-              <div class="text-right type-container">
-                <span>{{ $t('view.sale.quotation.rounding') }}</span>
-              </div>
-            </template>
-          </column>
-          <column>
-            <template #footer>
-              <div class="text-right type-container">
-                <span>+{{ formatPrice(roundingAdjustment) }}</span>
-              </div>
-            </template>
-          </column>
-        </Row>
         <!-- ยอดที่ต้องชำระ -->
         <Row>
           <column :colspan="16">
@@ -593,8 +576,8 @@ import ColumnGroup from 'primevue/columngroup'
 // eslint-disable-next-line no-restricted-imports
 import Row from 'primevue/row'
 
-import { isForeignCurrency, formatDocCurrency } from '@/services/utils/decimal.js'
-import { convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
+import { formatDocCurrency } from '@/services/utils/decimal.js'
+import { convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
@@ -630,7 +613,6 @@ export default {
     totalBeforeVat: { type: Number, default: 0 },
     vatAmount: { type: Number, default: 0 },
     grandTotalRaw: { type: Number, default: 0 },
-    roundingAdjustment: { type: Number, default: 0 },
     grandTotalRounded: { type: Number, default: 0 }
   },
 
@@ -669,9 +651,7 @@ export default {
     },
 
     formatDocMoney(value) {
-      return isForeignCurrency(this.customer.currencyUnit)
-        ? String(Number(value) || 0)
-        : (Number(value) || 0).toFixed(2)
+      return formatDocumentMoney(value)
     }
   }
 }

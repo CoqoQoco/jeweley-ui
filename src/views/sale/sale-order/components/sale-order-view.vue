@@ -331,7 +331,6 @@
       :soVatAmount="soVatAmount"
       :grandTotalRaw="grandTotalRaw"
       :grandTotalRounded="grandTotalRounded"
-      :roundingAdjustment="roundingAdjustment"
       :isViewMode="isViewMode"
       @delete-item="deleteStockItem($event)"
       @edit-item="onEditStock($event)"
@@ -593,7 +592,7 @@ import CustomerEditModal from '../modal/customer-edit-modal.vue'
 import SaleOrderInvoiceModal from '../modal/invoice-modal.vue'
 import ConfirmStockModal from '../modal/confirm-stock-modal.vue'
 import ConfirmAndInvoiceModal from '../modal/confirm-and-invoice-modal.vue'
-import { formatDecimal, isForeignCurrency } from '@/services/utils/decimal.js'
+import { formatDecimal } from '@/services/utils/decimal.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import { success, error, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
@@ -968,9 +967,6 @@ export default {
     grandTotalRounded() {
       return this.documentTotals.grandTotalRounded
     },
-    roundingAdjustment() {
-      return this.documentTotals.roundingAdjustment
-    },
 
     editCustomerData() {
       return {
@@ -1022,7 +1018,7 @@ export default {
 
   mounted() {
     const saved = storage.getItem('sale-order-print-show-decimals')
-    this.pdfShowDecimals = saved !== null ? saved === 'true' : !isForeignCurrency(this.formSaleOrder.currencyUnit)
+    this.pdfShowDecimals = saved !== null ? saved === 'true' : true
     this.loadSaleUserOptions()
   },
 
@@ -2165,7 +2161,7 @@ export default {
 
     getSumConvertedPrice(items) {
       if (!items || !Array.isArray(items) || items.length === 0) {
-        return isForeignCurrency(this.formSaleOrder.currencyUnit) ? '0' : '0.00'
+        return '0.00'
       }
 
       const total = items.reduce((sum, item) => {
@@ -2173,7 +2169,7 @@ export default {
         return sum + (Number(price) || 0)
       }, 0)
 
-      return isForeignCurrency(this.formSaleOrder.currencyUnit) ? String(total) : Number(total).toFixed(2)
+      return Number(total).toFixed(2)
     },
 
     getSumQty(items) {
@@ -2186,7 +2182,7 @@ export default {
 
     getSumTotalConvertedPrice(items) {
       if (!items || !Array.isArray(items) || items.length === 0) {
-        return isForeignCurrency(this.formSaleOrder.currencyUnit) ? '0' : '0.00'
+        return '0.00'
       }
 
       const total = items.reduce((sum, item) => {
@@ -2194,7 +2190,7 @@ export default {
         return sum + (Number(price) || 0)
       }, 0)
 
-      return isForeignCurrency(this.formSaleOrder.currencyUnit) ? String(total) : Number(total).toFixed(2)
+      return Number(total).toFixed(2)
     },
 
     updateItemTotal(item) {

@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
-import { isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
+import { formatMoney } from '@/services/utils/decimal.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
@@ -44,7 +44,7 @@ export class InvoicePdfBuilder {
     this.showCifLabel = customer?.showCifLabel !== undefined ? customer.showCifLabel : true
     this.showDecimals = customer?.showDecimals !== undefined && customer?.showDecimals !== null
       ? customer.showDecimals
-      : !isForeignCurrency(this.currencyUnit)
+      : true
 
     // เพิ่มการคำนวณยอดรวมทั้งใบ — ปัดเศษที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
     const totals = computeDocumentTotals({
@@ -792,21 +792,6 @@ export class InvoicePdfBuilder {
         {},
         {
           text: this.roundNoDecimal(vatAmount),
-          style: 'totalSummaryLabelColored',
-          alignment: 'right'
-        }
-      ])
-    }
-
-    // ROUNDING row — ส่วนต่างระหว่าง C.I.F ที่พิมพ์กับผลบวกของบรรทัดเหนือมันทั้งหมด (แสดงเมื่อไม่เท่ากับ 0 เท่านั้น)
-    if (this.roundingAdjustment !== 0) {
-      const roundingSign = this.roundingAdjustment > 0 ? '+' : '-'
-      body.push([
-        ...emptyLeftCells,
-        { text: 'ROUNDING', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
-        {},
-        {
-          text: roundingSign + this.roundNoDecimal(Math.abs(this.roundingAdjustment)),
           style: 'totalSummaryLabelColored',
           alignment: 'right'
         }

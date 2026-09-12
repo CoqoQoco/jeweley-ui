@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
-import { isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
+import { formatMoney } from '@/services/utils/decimal.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 import { COMPANY_INFO, loadCompanyInfo } from '@/config/company-info.js'
@@ -29,7 +29,7 @@ export class InvoicePdfBuilder {
     this.currencyRate = Number(currencyRate) || 1
     this.showDecimals = saleOrderData?.showDecimals !== undefined && saleOrderData?.showDecimals !== null
       ? saleOrderData.showDecimals
-      : !isForeignCurrency(this.currencyUnit)
+      : true
 
     // Financial adjustments from invoice data
     this.specialDiscount = Number(saleOrderData.specialDiscount) || 0
@@ -44,7 +44,6 @@ export class InvoicePdfBuilder {
     this.showCifLabel = saleOrderData?.showCifLabel !== undefined ? saleOrderData.showCifLabel : true
     this.showSeller = saleOrderData?.showSeller !== undefined ? saleOrderData.showSeller : true
     this.hideCompanyHeader = saleOrderData?.hideCompanyHeader || false
-    this.hideRounding = saleOrderData?.hideRounding || false
     this.sellerName = saleOrderData?.sellerName || ''
     this.supportName = saleOrderData?.supportName || ''
 
@@ -786,28 +785,6 @@ export class InvoicePdfBuilder {
         {},
         {
           text: this.roundNoDecimal(this.vatAmount),
-          style: 'totalSummaryLabelColored',
-          alignment: 'right'
-        }
-      ])
-    }
-
-    // ROUNDING row — ส่วนต่างระหว่าง C.I.F ที่พิมพ์กับผลบวกของบรรทัดเหนือมันทั้งหมด (แสดงเมื่อไม่เท่ากับ 0 เท่านั้น)
-    if (this.roundingAdjustment !== 0 && !this.hideRounding) {
-      const roundingSign = this.roundingAdjustment > 0 ? '+' : '-'
-      body.push([
-        {
-          text: '',
-          style: 'summaryLabel',
-          alignment: 'right',
-          colSpan: 7,
-          border: [true, false, false, false]
-        },
-        {}, {}, {}, {}, {}, {},
-        { text: 'ROUNDING', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
-        {},
-        {
-          text: roundingSign + this.roundNoDecimal(Math.abs(this.roundingAdjustment)),
           style: 'totalSummaryLabelColored',
           alignment: 'right'
         }

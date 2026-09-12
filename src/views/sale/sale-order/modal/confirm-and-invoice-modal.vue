@@ -686,7 +686,7 @@ import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store
 import { useSaleChannelApiStore } from '@/stores/modules/api/sale/sale-channel-store.js'
 import { warning, error, success } from '@/services/alert/sweetAlerts.js'
 import { getPaymentApiName } from '@/constants/payment-methods.js'
-import { computeDocumentTotals, convertedUnitPrice, lineAmount, isForeignCurrency } from '@/services/utils/money.js'
+import { computeDocumentTotals, convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -895,9 +895,7 @@ export default {
     lineAmount,
 
     formatDocMoney(value) {
-      return isForeignCurrency(this.saleOrderData.currencyUnit)
-        ? String(Number(value) || 0)
-        : (Number(value) || 0).toFixed(2)
+      return formatDocumentMoney(value)
     },
 
     getAppraisalPrice(item) {
@@ -999,7 +997,7 @@ export default {
         this.selectedItems.includes(item.id)
       )
       if (!selectedStockItems || selectedStockItems.length === 0) {
-        return isForeignCurrency(this.saleOrderData.currencyUnit) ? '0' : '0.00'
+        return '0.00'
       }
 
       const total = selectedStockItems.reduce((sum, item) => {
@@ -1007,7 +1005,7 @@ export default {
         return sum + (Number(price) || 0)
       }, 0)
 
-      return isForeignCurrency(this.saleOrderData.currencyUnit) ? String(total) : Number(total).toFixed(2)
+      return Number(total).toFixed(2)
     },
 
     getSumQty() {
@@ -1026,7 +1024,7 @@ export default {
         this.selectedItems.includes(item.id)
       )
       if (!selectedStockItems || selectedStockItems.length === 0) {
-        return isForeignCurrency(this.saleOrderData.currencyUnit) ? '0' : '0.00'
+        return '0.00'
       }
 
       const total = selectedStockItems.reduce((sum, item) => {
@@ -1034,7 +1032,7 @@ export default {
         return sum + (Number(price) || 0)
       }, 0)
 
-      return isForeignCurrency(this.saleOrderData.currencyUnit) ? String(total) : Number(total).toFixed(2)
+      return Number(total).toFixed(2)
     },
 
     async confirmAndCreateInvoice() {

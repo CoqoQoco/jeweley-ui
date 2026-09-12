@@ -119,7 +119,7 @@ import PosCartLine from './components/pos-cart-line.vue'
 import PosCustomerChip from './components/pos-customer-chip.vue'
 import PosCheckoutSheet from './components/pos-checkout-sheet.vue'
 import PosDoneView from './components/pos-done-view.vue'
-import { roundToInteger } from '@/services/utils/money.js'
+import { roundMoney } from '@/services/utils/money.js'
 
 export default {
   name: 'MobilePosIndexView',
@@ -215,7 +215,7 @@ export default {
 
     // ยอดที่ใช้ "เก็บเงิน" จริง ต้องตรงกับ backend GrandTotalRounded เป๊ะ (ปัดครึ่งขึ้น half-up)
     displayTotal() {
-      return roundToInteger(this.grandTotalRaw)
+      return roundMoney(this.grandTotalRaw, 'THB')
     },
 
     checkoutLabel() {

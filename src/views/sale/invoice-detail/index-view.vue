@@ -285,7 +285,7 @@ import { SaleSummaryPdfBuilder } from '@/services/helper/pdf/sale-summary/sale-s
 import { SaleSummaryExcelBuilder } from '@/services/helper/excel/sale-summary/sale-summary-excel-builder.js'
 import { buildProductTypeLabelMap } from '@/services/helper/sale-summary/sale-summary-data.js'
 import dayjs from 'dayjs'
-import { formatDocCurrency, isForeignCurrency } from '@/services/utils/decimal.js'
+import { formatDocCurrency } from '@/services/utils/decimal.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 
 export default {
@@ -391,9 +391,6 @@ export default {
     },
     grandTotalRounded() {
       return this.documentTotals.grandTotalRounded
-    },
-    roundingAdjustment() {
-      return this.documentTotals.roundingAdjustment
     },
 
     remainingBalance() {
@@ -897,7 +894,7 @@ export default {
 
     getSumConvertedPrice(items) {
       if (!items || !Array.isArray(items) || items.length === 0) {
-        return isForeignCurrency(this.invoiceData?.currencyUnit) ? '0' : '0.00'
+        return '0.00'
       }
 
       const total = items.reduce((sum, item) => {
@@ -905,7 +902,7 @@ export default {
         return sum + (Number(price) || 0)
       }, 0)
 
-      return isForeignCurrency(this.invoiceData?.currencyUnit) ? String(total) : Number(total).toFixed(2)
+      return Number(total).toFixed(2)
     },
 
     getSumQty(items) {
@@ -918,7 +915,7 @@ export default {
 
     getSumTotalConvertedPrice(items) {
       if (!items || !Array.isArray(items) || items.length === 0) {
-        return isForeignCurrency(this.invoiceData?.currencyUnit) ? '0' : '0.00'
+        return '0.00'
       }
 
       const total = items.reduce((sum, item) => {
@@ -926,7 +923,7 @@ export default {
         return sum + (Number(price) || 0)
       }, 0)
 
-      return isForeignCurrency(this.invoiceData?.currencyUnit) ? String(total) : Number(total).toFixed(2)
+      return Number(total).toFixed(2)
     },
 
     calculateGrandTotal() {
@@ -1364,7 +1361,6 @@ export default {
           open: false,
           showCifLabel: printData.showCifLabel !== undefined ? printData.showCifLabel : true,
           hideCompanyHeader: printData.hideCompanyHeader || false,
-          hideRounding: printData.hideRounding || false,
           showDecimals: printData.showDecimals,
           itemsPerPage: Number(printData.itemsPerPage) || 10
         }
@@ -1484,7 +1480,6 @@ export default {
         preview: true,
         showCifLabel: printData.showCifLabel !== undefined ? printData.showCifLabel : true,
         hideCompanyHeader: printData.hideCompanyHeader || false,
-        hideRounding: printData.hideRounding || false,
         showDecimals: printData.showDecimals,
         itemsPerPage: Number(printData.itemsPerPage) || 10
       }

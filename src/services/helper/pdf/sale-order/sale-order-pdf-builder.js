@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
-import { isForeignCurrency, formatMoney } from '@/services/utils/decimal.js'
+import { formatMoney } from '@/services/utils/decimal.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
@@ -21,7 +21,7 @@ export class SaleOrderPdfBuilder {
     this.currencyRate = Number(options.currencyRate) || 1
     this.itemsPerPage = Number(options.itemsPerPage) || 10
     this.showCifLabel = options.showCifLabel !== undefined ? options.showCifLabel : true
-    this.showDecimals = options.showDecimals != null ? options.showDecimals : !isForeignCurrency(this.currencyUnit)
+    this.showDecimals = options.showDecimals != null ? options.showDecimals : true
 
     // Financial adjustments
     this.specialDiscount = Number(soData.specialDiscount) || 0
@@ -747,28 +747,6 @@ export class SaleOrderPdfBuilder {
         {},
         {
           text: this.roundNoDecimal(this.vatAmount),
-          style: 'totalSummaryLabelColored',
-          alignment: 'right'
-        }
-      ])
-    }
-
-    // ROUNDING row — ส่วนต่างระหว่าง C.I.F ที่พิมพ์กับผลบวกของบรรทัดเหนือมันทั้งหมด (แสดงเมื่อไม่เท่ากับ 0 เท่านั้น)
-    if (this.roundingAdjustment !== 0) {
-      const roundingSign = this.roundingAdjustment > 0 ? '+' : '-'
-      body.push([
-        {
-          text: '',
-          style: 'summaryLabel',
-          alignment: 'right',
-          colSpan: 7,
-          border: [true, false, false, false]
-        },
-        {}, {}, {}, {}, {}, {},
-        { text: 'ROUNDING', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
-        {},
-        {
-          text: roundingSign + this.roundNoDecimal(Math.abs(this.roundingAdjustment)),
           style: 'totalSummaryLabelColored',
           alignment: 'right'
         }

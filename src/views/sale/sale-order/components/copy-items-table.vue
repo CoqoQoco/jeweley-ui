@@ -412,8 +412,8 @@ import ColumnGroup from 'primevue/columngroup'
 // eslint-disable-next-line no-restricted-imports
 import Row from 'primevue/row'
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
-import { formatDecimal, isForeignCurrency } from '@/services/utils/decimal.js'
-import { convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
+import { formatDecimal } from '@/services/utils/decimal.js'
+import { convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
 export default {
@@ -457,9 +457,7 @@ export default {
     lineAmount,
 
     formatDocMoney(value) {
-      return isForeignCurrency(this.formSaleOrder.currencyUnit)
-        ? String(Number(value) || 0)
-        : (Number(value) || 0).toFixed(2)
+      return formatDocumentMoney(value)
     },
 
     getAppraisalPrice(item) {
