@@ -617,9 +617,9 @@ export class InvoicePdfBuilder {
       { text: '', style: 'summaryLabelColored', alignment: 'right' },
       { text: '', style: 'summaryLabelColored', alignment: 'right' },
       { text: '', style: 'summaryLabelColored', alignment: 'right' },
-      { text: this.formatPrice(sumGold), style: 'summaryLabelColored', alignment: 'right' },
-      { text: this.formatPrice(sumDiamond), style: 'summaryLabelColored', alignment: 'right' },
-      { text: this.formatPrice(sumGem), style: 'summaryLabelColored', alignment: 'right' },
+      { text: this.formatWeight(sumGold), style: 'summaryLabelColored', alignment: 'right' },
+      { text: this.formatWeight(sumDiamond), style: 'summaryLabelColored', alignment: 'right' },
+      { text: this.formatWeight(sumGem), style: 'summaryLabelColored', alignment: 'right' },
       { text: sumQty, style: 'summaryLabelColored', alignment: 'right' },
       { text: '', style: 'summaryLabelColored', alignment: 'right' },
       { text: this.roundNoDecimal(sumAmount), style: 'summaryLabelColored', alignment: 'right' }
@@ -653,14 +653,14 @@ export class InvoicePdfBuilder {
       }
 
       body.push([
-        { text: 'Grand Total', style: 'summaryLabel', alignment: 'right', colSpan: 4 },
+        { text: 'Grand Total', style: 'grandTotalLabel', alignment: 'right', colSpan: 4 },
         {},
         {},
         {},
-        { text: this.formatPrice(sumGoldAll), style: 'summaryLabel', alignment: 'right' },
-        { text: this.formatPrice(sumDiamondAll), style: 'summaryLabel', alignment: 'right' },
-        { text: this.formatPrice(sumGemAll), style: 'summaryLabel', alignment: 'right' },
-        { text: sumQtyAll, style: 'summaryLabel', alignment: 'right' },
+        { text: this.formatWeight(sumGoldAll), style: 'grandTotalLabel', alignment: 'right' },
+        { text: this.formatWeight(sumDiamondAll), style: 'grandTotalLabel', alignment: 'right' },
+        { text: this.formatWeight(sumGemAll), style: 'grandTotalLabel', alignment: 'right' },
+        { text: sumQtyAll, style: 'grandTotalLabel', alignment: 'right' },
         {},
         {}
       ])
@@ -1149,6 +1149,13 @@ export class InvoicePdfBuilder {
     return formatMoney(num, { showDecimals: this.showDecimals, locale: 'th-TH' })
   }
 
+  // น้ำหนักรวม — บังคับ 2 ตำแหน่งเสมอ ไม่ขึ้นกับ showDecimals (ให้ตรงกับแถวสินค้าที่ใช้ toFixed(2))
+  formatWeight(num) {
+    const value = Number(num)
+    if (isNaN(value)) return '0.00'
+    return formatMoney(value, { showDecimals: true, locale: 'th-TH' })
+  }
+
   getDocDefinition() {
     return {
       pageSize: 'A4',
@@ -1190,6 +1197,10 @@ export class InvoicePdfBuilder {
         },
         summaryLabel: {
           fontSize: 12,
+          bold: true
+        },
+        grandTotalLabel: {
+          fontSize: 7.5,
           bold: true
         },
         summaryLabelColored: {
