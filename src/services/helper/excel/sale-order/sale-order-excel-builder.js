@@ -442,11 +442,11 @@ export class SaleOrderExcelBuilder {
       sumQty += qty
       sumAmount += amount
 
-      // Style/Product — use stockNumber like PDF builder
+      // Style/Product — use stockNumberOrigin like PDF builder
       const styleProduct =
-        item.stockNumber && item.productNumber
-          ? `${item.stockNumber}/${item.productNumber}`
-          : item.stockNumber || item.stockNumberOrigin || item.productNumber || ''
+        item.stockNumberOrigin && item.productNumber
+          ? `${item.stockNumberOrigin}/${item.productNumber}`
+          : item.stockNumberOrigin || item.stockNumber || item.productNumber || ''
 
       const cells = [
         { col: 'A', value: index + 1, align: 'right', wrap: false },
