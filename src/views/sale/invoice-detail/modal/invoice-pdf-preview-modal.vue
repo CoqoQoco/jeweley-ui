@@ -1,7 +1,7 @@
 <template>
   <PrintPreviewPanel
     :isShow="isShowModal"
-    :title="$t('view.sale.invoiceDetail.previewTitle')"
+    :title="previewTitle"
     @close="closeModal"
   >
     <iframe
@@ -41,10 +41,23 @@ export default {
     previewUrl: {
       type: String,
       default: ''
+    },
+    previewSource: {
+      type: String,
+      default: 'invoice'
     }
   },
 
   emits: ['close-modal', 'download'],
+
+  computed: {
+    // certificate มีชื่อ preview ของตัวเอง — paper type อื่นคงข้อความเดิมไว้ทั้งหมด
+    previewTitle() {
+      return this.previewSource === 'certificate'
+        ? this.$t('view.sale.certificate.previewTitle')
+        : this.$t('view.sale.invoiceDetail.previewTitle')
+    }
+  },
 
   methods: {
     closeModal() {

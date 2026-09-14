@@ -123,6 +123,7 @@ export const getAzureBlobAsBase64 = async (blobPath, imageType = 'mold') => {
       else if (blobPath.startsWith('PrePlan/')) resolvedType = 'preplan'
       else if (blobPath.startsWith('MoldPlanDesign/')) resolvedType = 'molddesign'
       else if (blobPath.startsWith('User/')) resolvedType = 'user'
+      else if (blobPath.startsWith('Certificate/')) resolvedType = 'certificate'
 
       // เรียก API backend เพื่อดึงรูป (backend จะดึงจาก Azure Blob)
       let base64String = ''
@@ -182,6 +183,16 @@ export const getAzureBlobAsBase64 = async (blobPath, imageType = 'mold') => {
         const res = await api.jewelry.get(
           'FileExtension/GetImage',
           { imageName: fileName, path: 'User/Profile' }, // ระบุ path สำหรับ user profile
+          { skipLoading: true }
+        )
+        if (res) {
+          base64String = `data:image/png;base64,${res}`
+        }
+      } else if (resolvedType === 'certificate') {
+        // ดึงรูปโลโก้ลูกค้า/รูปใหม่ที่แนบกับใบรับรองสินค้า (Certificate of Authenticity)
+        const res = await api.jewelry.get(
+          'FileExtension/GetImage',
+          { imageName: fileName, path: 'Certificate' },
           { skipLoading: true }
         )
         if (res) {

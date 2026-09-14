@@ -1371,14 +1371,42 @@ export const certificate = {
   selectAll: 'เลือกทั้งหมด',
   selectNone: 'ไม่เลือกเลย',
   selectedCount: 'เลือกแล้ว {selected}/{total}',
+  brand: {
+    title: 'ตราสินค้าบนใบรับรอง',
+    modeDk: 'ดวงแก้ว (ค่าเริ่มต้น)',
+    modeCustomer: 'ตราสินค้าลูกค้า',
+    companyName: 'ชื่อบริษัทบนใบรับรอง',
+    logo: 'โลโก้',
+    showManufacturer: 'แสดงข้อความ "ผลิตโดย ดวงแก้ว" ด้านล่าง',
+    showQr: 'แสดง QR Code',
+    saveAsDefault: 'บันทึกเป็นค่าเริ่มต้นของลูกค้ารายนี้',
+    validation: {
+      nameRequired: 'กรุณากรอกชื่อบริษัทลูกค้าก่อนดูตัวอย่าง/ดาวน์โหลดครับ'
+    }
+  },
+  photo: {
+    sectionTitle: 'รูปภาพบนใบรับรอง',
+    stockImage: 'รูปสินค้า (จากคลัง)',
+    newPhoto: 'รูปใหม่',
+    backToStock: 'กลับไปใช้รูปสินค้า'
+  },
+  issueNo: 'ครั้งที่ออกใบ',
+  legacyRecord: 'ข้อมูลเก่า (legacy)',
+  viewPdf: 'ดู PDF',
+  reprintBtn: 'พิมพ์ซ้ำ',
+  loadForEditing: 'โหลดมาแก้ไข',
+  loadEditSuccess: 'โหลดข้อมูลใบรับรองมาแก้ไขแล้วครับ กรุณาตรวจสอบก่อนพิมพ์',
+  loadEditNoMatch: 'ไม่พบสินค้าที่ตรงกันในรายการปัจจุบันครับ',
+  confirmSaveFailedTitle: 'บันทึกประวัติไม่สำเร็จ',
+  confirmSaveFailedMessage: 'บันทึกประวัติการออกใบรับรองไม่สำเร็จ ต้องการดาวน์โหลด PDF ต่อโดยไม่บันทึกประวัติหรือไม่ครับ',
+  confirmSaveFailedYes: 'ดาวน์โหลดต่อ',
+  confirmSaveFailedNo: 'หยุด',
+  previewTitle: 'ตัวอย่างใบรับรองสินค้า',
   validation: {
     noItemSelected: 'กรุณาเลือกสินค้าอย่างน้อย 1 รายการสำหรับพิมพ์ใบรับรองครับ'
   },
   success: {
     generated: 'สร้างใบรับรองสินค้า PDF สำเร็จครับ'
-  },
-  warn: {
-    logFailed: 'สร้าง PDF แล้ว แต่บันทึกประวัติการออกใบรับรองไม่สำเร็จครับ'
   }
 }
 

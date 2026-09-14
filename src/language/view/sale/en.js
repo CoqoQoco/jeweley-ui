@@ -1378,14 +1378,42 @@ export const certificate = {
   selectAll: 'Select all',
   selectNone: 'Select none',
   selectedCount: 'Selected {selected}/{total}',
+  brand: {
+    title: 'Certificate Brand',
+    modeDk: 'Duangkaew (default)',
+    modeCustomer: 'Customer brand',
+    companyName: 'Company name on sheet',
+    logo: 'Logo',
+    showManufacturer: 'Show "Manufactured by Duangkaew" at bottom',
+    showQr: 'Show QR Code',
+    saveAsDefault: 'Save as default for this customer',
+    validation: {
+      nameRequired: 'Please enter the customer company name before preview/download'
+    }
+  },
+  photo: {
+    sectionTitle: 'Photo on certificate',
+    stockImage: 'Stock image',
+    newPhoto: 'New photo',
+    backToStock: 'Back to stock image'
+  },
+  issueNo: 'Issue No.',
+  legacyRecord: 'Legacy record',
+  viewPdf: 'View PDF',
+  reprintBtn: 'Reprint',
+  loadForEditing: 'Load for editing',
+  loadEditSuccess: 'Loaded the certificate data for editing. Please review before printing',
+  loadEditNoMatch: 'No matching item found in the current list',
+  confirmSaveFailedTitle: 'Could not save history',
+  confirmSaveFailedMessage: 'Could not save the certificate issue history. Download the PDF anyway without saving history?',
+  confirmSaveFailedYes: 'Download anyway',
+  confirmSaveFailedNo: 'Stop',
+  previewTitle: 'Certificate Preview',
   validation: {
     noItemSelected: 'Please select at least 1 item to print a certificate'
   },
   success: {
     generated: 'Certificate PDF generated successfully'
-  },
-  warn: {
-    logFailed: 'PDF created, but saving the issue history failed'
   }
 }
 

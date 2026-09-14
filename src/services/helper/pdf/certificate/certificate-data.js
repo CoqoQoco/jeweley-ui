@@ -39,8 +39,14 @@ const GEM_ORIGIN_MAP = {
   VN: 'Vietnam'
 }
 
-function formatIssueDate(date) {
+export function formatIssueDate(date) {
   return dayjs(date).locale('en').format('D MMMM YYYY')
+}
+
+// รหัส WALKIN ใน prod ใช้ร่วมกันโดยลูกค้าหน้าร้าน 17 ชื่อ (20 ใบแจ้งหนี้) — ห้ามผูกตราสินค้าเข้ากับ
+// customerCode นี้เด็ดขาด ไม่งั้นลูกค้าหน้าร้านคนอื่นจะโดน auto-fill ตราสินค้าของคนก่อนไปด้วย
+export function isWalkInCustomer(customerCode) {
+  return String(customerCode || '').trim().toUpperCase() === 'WALKIN'
 }
 
 function sumWeight(materials, type) {
@@ -206,6 +212,8 @@ export function buildCertificatesFromItems(items, options = {}) {
       productNumber: item.productNumber || '',
       imagePath: item.imagePath || '',
       imageBlobPath: item.imageBlobPath || '',
+      photoSource: 'stock',
+      customImagePath: null,
       selected: true
     }
 
@@ -213,50 +221,65 @@ export function buildCertificatesFromItems(items, options = {}) {
   })
 }
 
-// แปลง print log ดิบจาก Invoice/PrintLog/List → เฉพาะรายการใบรับรอง เรียงเก่า→ใหม่พร้อมเลขรอบ
-export function parseCertificateLogs(logs) {
-  if (!logs || !Array.isArray(logs)) return []
-
-  const certificateLogs = logs.filter((log) => log && log.paperType === 'certificate')
-
-  // API คืนใหม่สุดก่อน → กลับเป็นเก่าสุดก่อนเพื่อนับ round ตามลำดับเวลาออกจริง
-  const sorted = [...certificateLogs].sort((a, b) => new Date(a.printedAt) - new Date(b.printedAt))
-
-  return sorted.map((log, index) => {
-    let parsed = {}
-    try {
-      parsed = log.data ? JSON.parse(log.data) : {}
-    } catch {
-      parsed = {}
-    }
-    if (!parsed || typeof parsed !== 'object') parsed = {}
-
-    const stockNumbers = Array.isArray(parsed.stockNumbers) ? parsed.stockNumbers : []
-
-    return {
-      running: log.running,
-      printedAt: log.printedAt,
-      printedBy: log.printedBy,
-      round: index + 1,
-      stockNumbers,
-      count: parsed.count ?? stockNumbers.length,
-      signerTitle: parsed.signerTitle || ''
-    }
-  })
+// จับคู่ snapshot(data) ของแต่ละแถวจาก Certificate/List — คืน {} เสมอถ้า parse ไม่ได้ ไม่ปล่อยพัง UI
+function parseCertificateSnapshotJson(dataJson) {
+  let parsed = {}
+  try {
+    parsed = dataJson ? JSON.parse(dataJson) : {}
+  } catch {
+    parsed = {}
+  }
+  return parsed && typeof parsed === 'object' ? parsed : {}
 }
 
-// สถิติการออกใบรับรองต่อ stockNumber จากประวัติที่ parse แล้ว (entries เรียงเก่า→ใหม่)
-export function buildCertificateIssueStats(certificates, entries) {
+// จัดกลุ่มแถวจาก Certificate/List (flat, ใหม่สุดก่อน) ตาม batch → 1 batch = 1 รอบพิมพ์
+// นับเลขรอบเก่า→ใหม่ (round 1 = รอบแรกสุด) แต่ผลลัพธ์ที่คืนเรียงใหม่สุดก่อนเพื่อแสดงผล
+export function groupCertificateHistory(rows) {
+  if (!Array.isArray(rows) || !rows.length) return []
+
+  const parsedRows = rows.map((row) => {
+    const snapshot = parseCertificateSnapshotJson(row.data)
+    return { ...row, snapshot, isLegacy: snapshot.legacy === true }
+  })
+
+  const batchMap = new Map()
+  parsedRows.forEach((row) => {
+    if (!batchMap.has(row.batch)) batchMap.set(row.batch, [])
+    batchMap.get(row.batch).push(row)
+  })
+
+  const groups = [...batchMap.entries()].map(([batch, groupRows]) => {
+    const sortedRows = [...groupRows].sort((a, b) => (a.issueNo || 0) - (b.issueNo || 0))
+    const first = sortedRows[0] || {}
+    return {
+      batch,
+      printedAt: first.createDate,
+      printedBy: first.createBy || '',
+      brandName: first.brandName || '',
+      count: sortedRows.length,
+      rows: sortedRows
+    }
+  })
+
+  const oldestFirst = [...groups].sort((a, b) => new Date(a.printedAt) - new Date(b.printedAt))
+  const withRound = oldestFirst.map((group, index) => ({ ...group, round: index + 1 }))
+
+  return withRound.reverse()
+}
+
+// สถิติการออกใบรับรองต่อ stockNumber จากแถวดิบของ Certificate/List (ไม่ต้อง group ก่อน)
+export function buildCertificateIssueStatsFromHistory(certificates, rows) {
   const stats = {}
   const list = Array.isArray(certificates) ? certificates : []
-  const logEntries = Array.isArray(entries) ? entries : []
-  const sortedEntries = [...logEntries].sort((a, b) => new Date(a.printedAt) - new Date(b.printedAt))
+  const historyRows = Array.isArray(rows) ? rows : []
 
   list.forEach((certificate) => {
     const stockNumber = certificate.stockNumber
     if (!stockNumber) return
 
-    const matches = sortedEntries.filter((entry) => (entry.stockNumbers || []).includes(stockNumber))
+    const matches = historyRows
+      .filter((row) => row.stockNumber === stockNumber)
+      .sort((a, b) => new Date(a.createDate) - new Date(b.createDate))
 
     if (!matches.length) {
       stats[stockNumber] = { count: 0, lastAt: null, lastBy: '' }
@@ -266,10 +289,68 @@ export function buildCertificateIssueStats(certificates, entries) {
     const last = matches[matches.length - 1]
     stats[stockNumber] = {
       count: matches.length,
-      lastAt: last.printedAt,
-      lastBy: last.printedBy || ''
+      lastAt: last.createDate,
+      lastBy: last.createBy || ''
     }
   })
 
   return stats
+}
+
+// snapshot ที่บันทึกลง Certificate/Create data (JSON string) — ห้ามมี base64 ใดๆ ปนอยู่เด็ดขาด
+// resolvedImagePath = path รูปที่ใช้พิมพ์จริงรอบนี้ (อัปโหลดใหม่/มาจากประวัติ) ไม่ใช่รูปสต็อกเดิม
+export function buildCertificateSnapshot(certificate, brand, signerTitle, resolvedImagePath) {
+  return {
+    certificateNo: certificate.certificateNo,
+    itemNo: certificate.itemNo,
+    issueDate: certificate.issueDate,
+    description: certificate.description,
+    model: certificate.model,
+    metal: certificate.metal,
+    metalWeight: certificate.metalWeight,
+    itemSize: certificate.itemSize,
+    diamondPcs: certificate.diamondPcs,
+    diamondWeight: certificate.diamondWeight,
+    diamondQuality: certificate.diamondQuality,
+    hasDiamond: certificate.hasDiamond,
+    hasGem: certificate.hasGem,
+    gemVariety: certificate.gemVariety,
+    gemSpecies: certificate.gemSpecies,
+    gemOrigin: certificate.gemOrigin,
+    gemWeight: certificate.gemWeight,
+    gemMeasurement: certificate.gemMeasurement,
+    gemShape: certificate.gemShape,
+    gemCut: certificate.gemCut,
+    gemColor: certificate.gemColor,
+    treatment: certificate.treatment,
+    comment: certificate.comment,
+    stockNumber: certificate.stockNumber,
+    productNumber: certificate.productNumber,
+    imagePath: certificate.imagePath || '',
+    imageBlobPath: certificate.imageBlobPath || '',
+    photoSource: certificate.photoSource || 'stock',
+    customImagePath: resolvedImagePath || null,
+    brand: {
+      mode: brand?.mode || 'dk',
+      name: brand?.name || '',
+      logoPath: brand?.logoPath || null,
+      showManufacturer: brand?.showManufacturer !== false,
+      showQr: brand?.showQr === true
+    },
+    signerTitle
+  }
+}
+
+// คืนค่า certificate fields จาก snapshot ที่ parse แล้ว (ไม่รวม brand/signerTitle — ผู้เรียกอ่านจาก snapshot เอง)
+// resetIssueDate: true = ใช้กับ "โหลดมาแก้ไข" (วันที่ออกใบใหม่เป็นวันนี้), false = ใช้กับ "พิมพ์ซ้ำ/ดู PDF" (คงวันที่เดิม)
+export function restoreCertificateFromSnapshot(snapshot, options = {}) {
+  const certificateFields = { ...(snapshot || {}) }
+  delete certificateFields.brand
+  delete certificateFields.signerTitle
+
+  return {
+    ...certificateFields,
+    issueDate: options.resetIssueDate ? formatIssueDate(new Date()) : certificateFields.issueDate,
+    selected: true
+  }
 }

@@ -177,6 +177,7 @@
       <InvoicePdfPreviewModal
         :isShowModal="isShowPreviewModal"
         :previewUrl="previewUrl"
+        :previewSource="previewSource"
         @close-modal="closePreviewModal"
         @download="handlePreviewDownload"
       />
@@ -281,6 +282,8 @@ import { invoiceExcelService } from '@/services/helper/excel/invoice/invoice-exc
 import { deliveryPdfService } from '@/services/helper/pdf/delivery/delivery-pdf-integration.js'
 import { guaranteeCardPdfService } from '@/services/helper/pdf/guarantee-card/guarantee-card-pdf-integration.js'
 import { certificatePdfService } from '@/services/helper/pdf/certificate/certificate-pdf-integration.js'
+import { useCertificateApiStore } from '@/stores/modules/api/sale/certificate-store.js'
+import { buildCertificateSnapshot, isWalkInCustomer } from '@/services/helper/pdf/certificate/certificate-data.js'
 import { SaleSummaryPdfBuilder } from '@/services/helper/pdf/sale-summary/sale-summary-pdf-builder.js'
 import { SaleSummaryExcelBuilder } from '@/services/helper/excel/sale-summary/sale-summary-excel-builder.js'
 import { buildProductTypeLabelMap } from '@/services/helper/sale-summary/sale-summary-data.js'
@@ -318,6 +321,7 @@ export default {
       invoiceItems: [],
       loadError: null,
       invoiceStore: useInvoiceApiStore(),
+      certificateStore: useCertificateApiStore(),
       saleOrderStore: usrSaleOrderApiStore(),
       authStore: useAuthStore(),
       masterStore: useMasterApiStore(),
@@ -1036,14 +1040,15 @@ export default {
       }
       this.showCertificateModal = true
     },
-    async handlePreviewCertificate({ certificates, signerTitle }) {
+    async handlePreviewCertificate({ certificates, signerTitle, brand }) {
       try {
         const res = await certificatePdfService.generateCertificatePDF(certificates, {
           preview: true,
           signerTitle,
-          invoiceNumber: this.invoiceData.invoiceNumber
+          invoiceNumber: this.invoiceData.invoiceNumber,
+          brand
         })
-        this.lastCertificateData = { certificates, signerTitle }
+        this.lastCertificateData = { certificates, signerTitle, brand }
         this.previewSource = 'certificate'
         this.previewUrl = res.previewUrl
         this.isShowPreviewModal = true
@@ -1051,36 +1056,109 @@ export default {
         error(err.message, this.$t('view.sale.invoiceDetail.error.cannotCreatePDF'))
       }
     },
-    async handleConfirmCertificatePrint({ certificates, signerTitle }) {
+
+    async handleConfirmCertificatePrint({ certificates, signerTitle, brand, saveBrandAsCustomerDefault }) {
+      const savedOk = await this.saveCertificateHistory(certificates, signerTitle, brand, saveBrandAsCustomerDefault)
+
+      if (!savedOk) {
+        confirmThenSubmit(
+          this.$t('view.sale.certificate.confirmSaveFailedMessage'),
+          this.$t('view.sale.certificate.confirmSaveFailedTitle'),
+          async () => {
+            await this.finishCertificatePrint(certificates, signerTitle, brand)
+          },
+          {
+            confirmText: this.$t('view.sale.certificate.confirmSaveFailedYes'),
+            cancelText: this.$t('view.sale.certificate.confirmSaveFailedNo')
+          },
+          'warning'
+        )
+        return
+      }
+
+      await this.finishCertificatePrint(certificates, signerTitle, brand)
+    },
+
+    async finishCertificatePrint(certificates, signerTitle, brand) {
       try {
         await certificatePdfService.generateCertificatePDF(certificates, {
           download: true,
           signerTitle,
-          invoiceNumber: this.invoiceData.invoiceNumber
+          invoiceNumber: this.invoiceData.invoiceNumber,
+          brand
         })
 
-        try {
-          await this.invoiceStore.createPrintLog({
-            invoiceNumber: this.invoiceData.invoiceNumber,
-            paperType: 'certificate',
-            data: JSON.stringify({
-              signerTitle,
-              count: certificates.length,
-              stockNumbers: certificates.map((c) => c.stockNumber),
-              certificates: certificates.map((c) => ({
-                stockNumber: c.stockNumber,
-                certificateNo: c.certificateNo
-              }))
-            })
-          })
-        } catch {
-          warning(this.$t('view.sale.certificate.warn.logFailed'), this.$t('view.sale.certificate.title'))
-        }
         this.certificateHistoryVersion++
-
         success(this.$t('view.sale.certificate.success.generated'), this.$t('view.sale.certificate.title'))
       } catch (err) {
         error(err.message, this.$t('view.sale.invoiceDetail.error.cannotCreatePDF'))
+      }
+    },
+
+    // อัปโหลดโลโก้/รูปใหม่ (ถ้ามี) แล้วบันทึกประวัติผ่าน Certificate/Create — ห้ามมี base64 หลุดเข้า snapshot
+    // ล้มเหลวข้อไหนก็ตาม (upload หรือ create) ให้ผู้เรียกถามผู้ใช้ว่าจะดาวน์โหลด PDF ต่อโดยไม่มีประวัติหรือไม่
+    async saveCertificateHistory(certificates, signerTitle, brand, saveBrandAsCustomerDefault) {
+      try {
+        // โหมด dk ไม่มีตราสินค้าลูกค้า — ไม่อัปโหลดโลโก้ (แม้ผู้ใช้เคยเลือกไฟล์ไว้ตอนอยู่โหมด customer แล้วสลับกลับ)
+        // และไม่บันทึก name/logoPath ทั้งใน payload และ snapshot กัน record เก็บข้อมูลลูกค้าที่ไม่ได้ใช้จริง
+        const isCustomerBrand = brand.mode === 'customer'
+        let logoPath = isCustomerBrand ? brand.logoPath || null : null
+
+        if (isCustomerBrand && brand.logoFile) {
+          const logoRes = await this.certificateStore.uploadImage({ file: brand.logoFile, kind: 'logo' })
+          if (!logoRes?.path) return false
+          logoPath = logoRes.path
+        }
+
+        const brandForSave = {
+          mode: brand.mode,
+          name: isCustomerBrand ? brand.name : null,
+          logoPath: isCustomerBrand ? logoPath : null,
+          showManufacturer: brand.showManufacturer,
+          showQr: brand.showQr
+        }
+
+        const certificatePayloads = []
+        for (const certificate of certificates) {
+          let imagePath = null
+
+          if (certificate.photoSource === 'new') {
+            imagePath = certificate.customImagePath || null
+
+            if (!imagePath && certificate.newPhotoFile) {
+              const photoRes = await this.certificateStore.uploadImage({ file: certificate.newPhotoFile, kind: 'photo' })
+              if (!photoRes?.path) return false
+              imagePath = photoRes.path
+            }
+          }
+
+          const snapshot = buildCertificateSnapshot(certificate, brandForSave, signerTitle, imagePath)
+
+          certificatePayloads.push({
+            certificateNo: certificate.certificateNo,
+            stockNumber: certificate.stockNumber,
+            itemNo: certificate.itemNo,
+            imagePath,
+            data: JSON.stringify(snapshot)
+          })
+        }
+
+        // WALKIN เป็นรหัสที่ลูกค้าหน้าร้านหลายคนใช้ร่วมกัน (17 ชื่อ/20 invoice บน prod) — กันไว้อีกชั้นที่นี่
+        // ไม่ให้บันทึกเป็นค่าเริ่มต้นของลูกค้ารายนี้เด็ดขาด แม้ payload จากหน้าจอจะส่ง true มาก็ตาม
+        const saveDefault = isWalkInCustomer(this.invoiceData.customerCode) ? false : saveBrandAsCustomerDefault
+
+        const createRes = await this.certificateStore.createCertificates({
+          invoiceNumber: this.invoiceData.invoiceNumber,
+          customerCode: this.invoiceData.customerCode,
+          signerTitle,
+          brand: brandForSave,
+          saveBrandAsCustomerDefault: saveDefault,
+          certificates: certificatePayloads
+        })
+
+        return !!createRes
+      } catch {
+        return false
       }
     },
     async exportInvoiceExcel() {

@@ -1,8 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import {
   buildCertificatesFromItems,
-  parseCertificateLogs,
-  buildCertificateIssueStats
+  groupCertificateHistory,
+  buildCertificateIssueStatsFromHistory,
+  buildCertificateSnapshot,
+  restoreCertificateFromSnapshot,
+  isWalkInCustomer
 } from './certificate-data.js'
 
 function baseItem(overrides = {}) {
@@ -217,47 +220,204 @@ describe('buildCertificatesFromItems — qty > 1', () => {
   })
 })
 
-describe('parseCertificateLogs / buildCertificateIssueStats', () => {
-  const logs = [
+describe('groupCertificateHistory', () => {
+  function snapshotJson(overrides = {}) {
+    return JSON.stringify({
+      certificateNo: 'DKC-AH1',
+      stockNumber: 'DK-1',
+      brand: { mode: 'dk', name: '', logoPath: null, showManufacturer: true, showQr: true },
+      signerTitle: 'GM',
+      ...overrides
+    })
+  }
+
+  const rows = [
+    // batch B (รอบใหม่กว่า) — API คืนใหม่สุดก่อน
+    {
+      running: 3,
+      batch: 'B',
+      certificateNo: 'DKC-AH2',
+      issueNo: 1,
+      stockNumber: 'DK-2',
+      createBy: 'user2',
+      createDate: '2026-09-06T10:00:00Z',
+      brandName: 'HARISH',
+      data: snapshotJson({ certificateNo: 'DKC-AH2', stockNumber: 'DK-2' })
+    },
+    // batch A (รอบเก่ากว่า) — 2 แถว
     {
       running: 2,
-      paperType: 'certificate',
-      printedAt: '2026-09-05T10:00:00Z',
-      printedBy: 'user2',
-      data: JSON.stringify({ signerTitle: 'GM', count: 1, stockNumbers: ['DK-1'] })
+      batch: 'A',
+      certificateNo: 'DKC-AH1',
+      issueNo: 2,
+      stockNumber: 'DK-1',
+      createBy: 'user1',
+      createDate: '2026-09-01T10:00:00Z',
+      data: snapshotJson()
     },
     {
       running: 1,
-      paperType: 'certificate',
-      printedAt: '2026-09-01T10:00:00Z',
-      printedBy: 'user1',
-      data: JSON.stringify({ signerTitle: 'GM', count: 2, stockNumbers: ['DK-1', 'DK-2'] })
-    },
-    {
-      running: 3,
-      paperType: 'guarantee-card',
-      printedAt: '2026-09-06T10:00:00Z',
-      printedBy: 'user3',
-      data: JSON.stringify({ stockNumbers: ['DK-1'] })
+      batch: 'A',
+      certificateNo: 'DKC-AH1',
+      issueNo: 1,
+      stockNumber: 'DK-1',
+      createBy: 'user1',
+      createDate: '2026-09-01T10:00:00Z',
+      data: snapshotJson()
     }
   ]
 
-  it('กรองเฉพาะ paperType certificate และเรียงเก่า→ใหม่พร้อมเลขรอบ', () => {
-    const parsed = parseCertificateLogs(logs)
+  it('จัดกลุ่มตาม batch และนับ round เก่า→ใหม่ แต่คืนผลใหม่สุดก่อน', () => {
+    const groups = groupCertificateHistory(rows)
 
-    expect(parsed.length).toBe(2)
-    expect(parsed[0].round).toBe(1)
-    expect(parsed[0].printedBy).toBe('user1')
-    expect(parsed[1].round).toBe(2)
-    expect(parsed[1].printedBy).toBe('user2')
+    expect(groups.length).toBe(2)
+    expect(groups[0].batch).toBe('B')
+    expect(groups[0].round).toBe(2)
+    expect(groups[0].count).toBe(1)
+    expect(groups[0].brandName).toBe('HARISH')
+
+    expect(groups[1].batch).toBe('A')
+    expect(groups[1].round).toBe(1)
+    expect(groups[1].count).toBe(2)
+    expect(groups[1].rows[0].issueNo).toBe(1)
+    expect(groups[1].rows[1].issueNo).toBe(2)
   })
 
-  it('สถิติการออกใบรับรองต่อ stockNumber', () => {
-    const parsed = parseCertificateLogs(logs)
-    const stats = buildCertificateIssueStats([{ stockNumber: 'DK-1' }, { stockNumber: 'DK-2' }], parsed)
+  it('parse snapshot(data) ให้แต่ละแถว และตั้ง isLegacy จาก snapshot.legacy', () => {
+    const legacyRows = [
+      {
+        running: 1,
+        batch: 'C',
+        stockNumber: 'DK-9',
+        createDate: '2026-09-01T10:00:00Z',
+        data: JSON.stringify({ legacy: true })
+      }
+    ]
+
+    const groups = groupCertificateHistory(legacyRows)
+    expect(groups[0].rows[0].isLegacy).toBe(true)
+  })
+
+  it('data พังหรือว่าง → snapshot เป็น {} ไม่ throw', () => {
+    const brokenRows = [{ running: 1, batch: 'D', stockNumber: 'DK-9', createDate: '2026-09-01T10:00:00Z', data: 'not-json' }]
+    const groups = groupCertificateHistory(brokenRows)
+    expect(groups[0].rows[0].snapshot).toEqual({})
+    expect(groups[0].rows[0].isLegacy).toBe(false)
+  })
+
+  it('ไม่มีแถวเลย → คืน array ว่าง', () => {
+    expect(groupCertificateHistory([])).toEqual([])
+  })
+})
+
+describe('buildCertificateIssueStatsFromHistory', () => {
+  const rows = [
+    { stockNumber: 'DK-1', createBy: 'user2', createDate: '2026-09-05T10:00:00Z' },
+    { stockNumber: 'DK-1', createBy: 'user1', createDate: '2026-09-01T10:00:00Z' },
+    { stockNumber: 'DK-2', createBy: 'user1', createDate: '2026-09-01T10:00:00Z' }
+  ]
+
+  it('นับจำนวนครั้งต่อ stockNumber และเก็บครั้งล่าสุด', () => {
+    const stats = buildCertificateIssueStatsFromHistory([{ stockNumber: 'DK-1' }, { stockNumber: 'DK-2' }], rows)
 
     expect(stats['DK-1'].count).toBe(2)
     expect(stats['DK-1'].lastBy).toBe('user2')
     expect(stats['DK-2'].count).toBe(1)
+  })
+
+  it('ไม่มีประวัติ → count 0', () => {
+    const stats = buildCertificateIssueStatsFromHistory([{ stockNumber: 'DK-9' }], rows)
+    expect(stats['DK-9']).toEqual({ count: 0, lastAt: null, lastBy: '' })
+  })
+})
+
+describe('buildCertificateSnapshot / restoreCertificateFromSnapshot', () => {
+  const certificate = {
+    certificateNo: 'DKC-AH1',
+    itemNo: 'AH1',
+    issueDate: '1 January 2026',
+    description: 'Ring',
+    model: 'M-1',
+    metal: '18K Yellow Gold',
+    metalWeight: '3.00 g',
+    itemSize: '#56',
+    diamondPcs: 5,
+    diamondWeight: '0.15 ct',
+    diamondQuality: 'G,VS1',
+    hasDiamond: true,
+    hasGem: false,
+    gemVariety: '',
+    gemSpecies: '',
+    gemOrigin: '',
+    gemWeight: '',
+    gemMeasurement: '',
+    gemShape: '',
+    gemCut: '',
+    gemColor: '',
+    treatment: '',
+    comment: '',
+    stockNumber: 'DK-1',
+    productNumber: 'PN-1',
+    imagePath: 'AH1.jpg',
+    imageBlobPath: 'Stock/Product/AH1.jpg',
+    photoSource: 'new',
+    customImagePath: null,
+    imageBase64: 'data:image/png;base64,abc',
+    newPhotoDataUrl: 'data:image/png;base64,new',
+    selected: true
+  }
+
+  const brand = { mode: 'customer', name: 'HARISH', logoPath: 'Certificate/logo-1.jpg', logoFile: null, logoDataUrl: 'data:image/png;base64,logo', showManufacturer: true, showQr: false }
+
+  it('snapshot ไม่มี base64 ปนอยู่เลย', () => {
+    const snapshot = buildCertificateSnapshot(certificate, brand, 'GM', 'Certificate/photo-9.jpg')
+
+    expect(JSON.stringify(snapshot)).not.toContain('base64')
+    expect(snapshot.customImagePath).toBe('Certificate/photo-9.jpg')
+    expect(snapshot.brand).toEqual({
+      mode: 'customer',
+      name: 'HARISH',
+      logoPath: 'Certificate/logo-1.jpg',
+      showManufacturer: true,
+      showQr: false
+    })
+    expect(snapshot.signerTitle).toBe('GM')
+    expect(snapshot.stockNumber).toBe('DK-1')
+  })
+
+  it('restore แบบ reprint (resetIssueDate false) — คงวันที่เดิม', () => {
+    const snapshot = buildCertificateSnapshot(certificate, brand, 'GM', null)
+    const restored = restoreCertificateFromSnapshot(snapshot, { resetIssueDate: false })
+
+    expect(restored.issueDate).toBe('1 January 2026')
+    expect(restored.selected).toBe(true)
+    expect(restored.brand).toBeUndefined()
+    expect(restored.signerTitle).toBeUndefined()
+  })
+
+  it('restore แบบโหลดมาแก้ไข (resetIssueDate true) — วันที่ออกใบเป็นวันนี้', () => {
+    const snapshot = buildCertificateSnapshot(certificate, brand, 'GM', null)
+    const restored = restoreCertificateFromSnapshot(snapshot, { resetIssueDate: true })
+
+    expect(restored.issueDate).not.toBe('1 January 2026')
+    expect(restored.stockNumber).toBe('DK-1')
+  })
+})
+
+describe('isWalkInCustomer', () => {
+  it('รหัส WALKIN (case-insensitive, มี/ไม่มี whitespace) → true', () => {
+    expect(isWalkInCustomer('WALKIN')).toBe(true)
+    expect(isWalkInCustomer('walkin')).toBe(true)
+    expect(isWalkInCustomer(' WalkIn ')).toBe(true)
+  })
+
+  it('รหัสลูกค้าปกติ → false', () => {
+    expect(isWalkInCustomer('CUST001')).toBe(false)
+  })
+
+  it('ค่าว่าง/null/undefined → false', () => {
+    expect(isWalkInCustomer('')).toBe(false)
+    expect(isWalkInCustomer(null)).toBe(false)
+    expect(isWalkInCustomer(undefined)).toBe(false)
   })
 })

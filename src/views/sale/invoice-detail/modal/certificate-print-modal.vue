@@ -1,7 +1,7 @@
 <template>
   <DrawerGeneric
     :show="isShowModal"
-    width="860px"
+    width="920px"
     :isShowActionPart="true"
     headerVariant="main"
     @close="closeModal"
@@ -39,29 +39,127 @@
           </div>
         </div>
 
+        <!-- Brand Container -->
+        <SectionCardGeneric
+          headerStyle="legend"
+          accent="main"
+          icon="bi-building"
+          :title="$t('view.sale.certificate.brand.title')"
+          class="mb-3"
+        >
+          <RadioGroupGeneric
+            :modelValue="brand.mode"
+            :options="brandModeOptions"
+            optionValue="value"
+            optionLabel="label"
+            :inline="true"
+            class="mb-3"
+            @update:modelValue="onBrandModeChange"
+          />
+
+          <template v-if="brand.mode === 'customer'">
+            <FormFieldGeneric :label="$t('view.sale.certificate.brand.companyName')" inputId="certificate-brand-name">
+              <InputTextGeneric id="certificate-brand-name" v-model.trim="brand.name" type="text" :maxlength="80" />
+            </FormFieldGeneric>
+
+            <FormFieldGeneric :label="$t('view.sale.certificate.brand.logo')" class="brand-logo-field">
+              <UploadImage
+                :modelValue="brand.logoFile"
+                :previewUrl="brand.logoDataUrl"
+                accept="image/png,image/jpeg"
+                :maxSizeMB="5"
+                :previewSize="70"
+                :compact="true"
+                :showClear="true"
+                @update:modelValue="onBrandLogoSelected"
+                @clear="onBrandLogoClear"
+              />
+            </FormFieldGeneric>
+          </template>
+
+          <div class="brand-options" :class="{ 'brand-options--spaced': brand.mode === 'customer' }">
+            <CheckboxGeneric
+              v-if="brand.mode === 'customer'"
+              v-model="brand.showManufacturer"
+              :label="$t('view.sale.certificate.brand.showManufacturer')"
+            />
+
+            <CheckboxGeneric
+              v-model="brand.showQr"
+              :label="$t('view.sale.certificate.brand.showQr')"
+            />
+
+            <CheckboxGeneric
+              v-if="brand.mode === 'customer' && !isWalkIn && invoiceData?.customerCode"
+              v-model="saveBrandAsCustomerDefault"
+              :label="$t('view.sale.certificate.brand.saveAsDefault')"
+            />
+          </div>
+        </SectionCardGeneric>
+
         <!-- History Container -->
         <SectionCardGeneric
           headerStyle="legend"
           accent="main"
           icon="bi-clock-history"
-          :title="`${$t('view.sale.certificate.historyTitle')} (${history.length})`"
+          :title="`${$t('view.sale.certificate.historyTitle')} (${historyGroups.length})`"
           class="mb-3"
         >
-          <div v-if="historyLoading" class="history-loading">{{ $t('common.label.loading') }}</div>
-          <div v-else-if="history.length === 0" class="history-empty">
+          <div v-if="historyGroups.length === 0" class="history-empty">
             {{ $t('view.sale.certificate.historyEmpty') }}
           </div>
           <div v-else class="history-list">
-            <div v-for="entry in historyNewestFirst" :key="entry.running" class="print-history-item">
-              <div class="print-history-item__copy">
-                {{ $t('view.sale.certificate.historyRound', { round: entry.round }) }}
+            <div v-for="round in historyGroups" :key="round.batch" class="history-round">
+              <button type="button" class="history-round__header" @click="toggleRound(round.batch)">
+                <i class="bi" :class="isRoundExpanded(round.batch) ? 'bi-caret-down-fill' : 'bi-caret-right-fill'"></i>
+                <span class="history-round__label">
+                  {{ $t('view.sale.certificate.historyRound', { round: round.round }) }}
+                </span>
+                <span class="history-round__meta">
+                  {{ formatHistoryDate(round.printedAt) }} · {{ round.printedBy }} ·
+                  {{ $t('view.sale.certificate.historyItems', { count: round.count }) }}
+                  <template v-if="round.brandName"> · {{ round.brandName }}</template>
+                </span>
+              </button>
+
+              <div v-if="isRoundExpanded(round.batch)" class="history-round__rows">
+                <div v-for="row in round.rows" :key="row.running" class="history-row">
+                  <div class="history-row__info">
+                    <span class="history-row__cert">{{ row.certificateNo }}</span>
+                    <span class="history-row__issue">
+                      · {{ $t('view.sale.certificate.issueNo') }} {{ row.issueNo }}
+                    </span>
+                    <span v-if="row.isLegacy" class="history-row__legacy-badge">
+                      {{ $t('view.sale.certificate.legacyRecord') }}
+                    </span>
+                  </div>
+                  <div class="history-row__actions">
+                    <ButtonGeneric
+                      variant="outline"
+                      icon="bi-eye"
+                      :disabled="row.isLegacy"
+                      :title="$t('view.sale.certificate.viewPdf')"
+                      @click="viewPdfFromHistory(row)"
+                    />
+                    <ButtonGeneric
+                      variant="green"
+                      icon="bi-printer"
+                      class="ml-2"
+                      :disabled="row.isLegacy"
+                      :title="$t('view.sale.certificate.reprintBtn')"
+                      @click="reprintFromHistory(row)"
+                    />
+                    <ButtonGeneric
+                      variant="dark"
+                      icon="bi-pencil-square"
+                      class="ml-2"
+                      :disabled="row.isLegacy"
+                      :title="$t('view.sale.certificate.loadForEditing')"
+                      @click="loadForEditing(row, round.rows)"
+                    />
+                  </div>
+                </div>
               </div>
-              <div class="print-history-item__date">{{ formatHistoryDate(entry.printedAt) }}</div>
-              <div class="print-history-item__by">{{ entry.printedBy }}</div>
-              <div class="print-history-item__mode">
-                {{ $t('view.sale.certificate.historyItems', { count: entry.count }) }}
-              </div>
-              <div class="print-history-item__stocks">{{ entry.stockNumbers.join(', ') }}</div>
             </div>
           </div>
         </SectionCardGeneric>
@@ -81,12 +179,8 @@
             {{ $t('view.sale.certificate.selectedCount', { selected: selectedCount, total: certificates.length }) }}
           </span>
           <div class="selection-actions">
-            <button type="button" class="btn btn-sm btn-outline-main" @click="selectAllCertificates">
-              {{ $t('view.sale.certificate.selectAll') }}
-            </button>
-            <button type="button" class="btn btn-sm btn-dark" @click="selectNoneCertificates">
-              {{ $t('view.sale.certificate.selectNone') }}
-            </button>
+            <ButtonGeneric variant="outline" :label="$t('view.sale.certificate.selectAll')" @click="selectAllCertificates" />
+            <ButtonGeneric variant="dark" :label="$t('view.sale.certificate.selectNone')" @click="selectNoneCertificates" />
           </div>
         </div>
 
@@ -121,6 +215,43 @@
               }}
             </template>
             <template v-else>{{ $t('view.sale.certificate.neverIssued') }}</template>
+          </div>
+
+          <div class="field-group-title">{{ $t('view.sale.certificate.photo.sectionTitle') }}</div>
+          <div class="photo-row mb-3">
+            <div class="photo-thumb">
+              <img v-if="currentPhotoPreview(certificate)" :src="currentPhotoPreview(certificate)" alt="" />
+              <i v-else class="bi bi-image photo-thumb-placeholder"></i>
+            </div>
+            <div class="photo-controls">
+              <RadioGroupGeneric
+                v-model="certificate.photoSource"
+                :options="photoSourceOptions"
+                optionValue="value"
+                optionLabel="label"
+                :inline="true"
+                :disabled="!certificate.selected"
+              />
+              <div class="photo-actions mt-2">
+                <UploadImage
+                  :modelValue="certificate.newPhotoFile"
+                  :previewUrl="null"
+                  accept="image/*"
+                  :maxSizeMB="5"
+                  :compact="true"
+                  :showClear="false"
+                  @update:modelValue="onNewPhotoSelected(certificate, $event)"
+                />
+                <ButtonGeneric
+                  v-if="certificate.photoSource === 'new' || certificate.customImagePath"
+                  variant="dark"
+                  icon="bi-arrow-counterclockwise"
+                  :label="$t('view.sale.certificate.photo.backToStock')"
+                  class="ml-2"
+                  @click="resetToStockImage(certificate)"
+                />
+              </div>
+            </div>
           </div>
 
           <div class="field-group-title">{{ $t('view.sale.certificate.groupItemInfo') }}</div>
@@ -210,39 +341,57 @@
     </template>
 
     <template #action>
-      <button class="btn btn-main mr-2" type="button" :disabled="selectedCount === 0" @click="onPreview">
-        <i class="bi bi-eye mr-1"></i>
-        {{ $t('view.sale.certificate.previewBtn') }}
-      </button>
+      <ButtonGeneric
+        variant="main"
+        icon="bi-eye"
+        :label="$t('view.sale.certificate.previewBtn')"
+        class="mr-2"
+        :disabled="selectedCount === 0"
+        @click="onPreview"
+      />
 
-      <button class="btn btn-green mr-2" type="button" :disabled="selectedCount === 0" @click="onDownload">
-        <i class="bi bi-download mr-1"></i>
-        {{ $t('view.sale.certificate.downloadBtnCount', { selected: selectedCount, total: certificates.length }) }}
-      </button>
+      <ButtonGeneric
+        variant="green"
+        icon="bi-download"
+        :label="$t('view.sale.certificate.downloadBtnCount', { selected: selectedCount, total: certificates.length })"
+        class="mr-2"
+        :disabled="selectedCount === 0"
+        @click="onDownload"
+      />
 
-      <button class="btn btn-outline-main" type="button" @click="closeModal">
-        <i class="bi bi-x-circle mr-1"></i>
-        {{ $t('view.sale.certificate.cancelBtn') }}
-      </button>
+      <ButtonGeneric
+        variant="outline"
+        icon="bi-x-circle"
+        :label="$t('view.sale.certificate.cancelBtn')"
+        @click="closeModal"
+      />
     </template>
   </DrawerGeneric>
 </template>
 
 <script>
 import dayjs from 'dayjs'
-import { warning } from '@/services/alert/sweetAlerts.js'
-import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
+import { warning, success } from '@/services/alert/sweetAlerts.js'
+import { useCertificateApiStore } from '@/stores/modules/api/sale/certificate-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
+import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
+import { compressImage } from '@/services/utils/image-compress.js'
+import { prepareItemImages } from '@/services/helper/pdf/shared/pdf-images.js'
+import {
+  buildCertificatesFromItems,
+  groupCertificateHistory,
+  buildCertificateIssueStatsFromHistory,
+  restoreCertificateFromSnapshot,
+  isWalkInCustomer
+} from '@/services/helper/pdf/certificate/certificate-data.js'
 import DrawerGeneric from '@/components/generic/DrawerGeneric.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
-import {
-  buildCertificatesFromItems,
-  parseCertificateLogs,
-  buildCertificateIssueStats
-} from '@/services/helper/pdf/certificate/certificate-data.js'
+import RadioGroupGeneric from '@/components/prime-vue/RadioGroupGeneric.vue'
+import UploadImage from '@/components/prime-vue/UploadImage.vue'
 
 export default {
   name: 'CertificatePrintModal',
@@ -252,7 +401,10 @@ export default {
     SectionCardGeneric,
     FormFieldGeneric,
     InputTextGeneric,
-    CheckboxGeneric
+    ButtonGeneric,
+    CheckboxGeneric,
+    RadioGroupGeneric,
+    UploadImage
   },
 
   props: {
@@ -282,12 +434,23 @@ export default {
 
   data() {
     return {
-      invoiceStore: useInvoiceApiStore(),
       productStore: usrStockProductApiStore(),
+      certificateStore: useCertificateApiStore(),
       certificates: [],
       signerTitle: this.defaultSignerTitle,
-      history: [],
-      historyLoading: false
+      historyRows: [],
+      expandedBatches: {},
+      customImagePreviews: {},
+      brand: {
+        mode: 'dk',
+        name: '',
+        logoPath: null,
+        logoFile: null,
+        logoDataUrl: null,
+        showManufacturer: true,
+        showQr: true
+      },
+      saveBrandAsCustomerDefault: false
     }
   },
 
@@ -296,12 +459,31 @@ export default {
       return this.certificates.filter((c) => c.selected === true).length
     },
 
-    historyNewestFirst() {
-      return [...this.history].reverse()
+    // WALKIN เป็นรหัสที่ลูกค้าหน้าร้านหลายคนใช้ร่วมกัน — ห้ามผูก/โหลดตราสินค้าเข้ากับรหัสนี้เด็ดขาด
+    isWalkIn() {
+      return isWalkInCustomer(this.invoiceData?.customerCode)
+    },
+
+    historyGroups() {
+      return groupCertificateHistory(this.historyRows)
     },
 
     issueStats() {
-      return buildCertificateIssueStats(this.certificates, this.history)
+      return buildCertificateIssueStatsFromHistory(this.certificates, this.historyRows)
+    },
+
+    brandModeOptions() {
+      return [
+        { value: 'dk', label: this.$t('view.sale.certificate.brand.modeDk') },
+        { value: 'customer', label: this.$t('view.sale.certificate.brand.modeCustomer') }
+      ]
+    },
+
+    photoSourceOptions() {
+      return [
+        { value: 'stock', label: this.$t('view.sale.certificate.photo.stockImage') },
+        { value: 'new', label: this.$t('view.sale.certificate.photo.newPhoto') }
+      ]
     }
   },
 
@@ -310,7 +492,11 @@ export default {
       async handler(newVal) {
         if (newVal) {
           this.signerTitle = this.defaultSignerTitle
+          this.resetBrand()
+          this.saveBrandAsCustomerDefault = false
+          this.expandedBatches = {}
           await this.buildCertificates()
+          await this.buildBrandDefaults()
           this.loadHistory()
         }
       },
@@ -329,9 +515,26 @@ export default {
       this.$emit('close-modal')
     },
 
+    resetBrand() {
+      this.brand = {
+        mode: 'dk',
+        name: '',
+        logoPath: null,
+        logoFile: null,
+        logoDataUrl: null,
+        showManufacturer: true,
+        showQr: true
+      }
+    },
+
     async buildCertificates() {
       const enrichedItems = await this.enrichItemsTypeOrigin(this.invoiceItems)
-      this.certificates = buildCertificatesFromItems(enrichedItems)
+      this.certificates = buildCertificatesFromItems(enrichedItems).map((c) => ({
+        ...c,
+        newPhotoFile: null,
+        newPhotoDataUrl: null
+      }))
+      await prepareItemImages(this.certificates)
     },
 
     // typeOrigin ไม่มีใน snapshot ของ invoiceItem — enrich จาก StockProduct/Get ต่อชิ้น
@@ -367,23 +570,34 @@ export default {
       }
     },
 
+    // ลูกค้ามีตราสินค้าที่บันทึกไว้ก่อน → default เป็นโหมด customer ล่วงหน้า ไม่มี → คงโหมด dk
+    // WALKIN ห้ามโหลด/ผูกตราสินค้าเด็ดขาด (รหัสนี้ใช้ร่วมกันโดยลูกค้าหน้าร้านหลายคน) — ข้ามการเรียก API นี้ไปเลย
+    async buildBrandDefaults() {
+      const customerCode = this.invoiceData?.customerCode
+      if (!customerCode || this.isWalkIn) return
+
+      const res = await this.certificateStore.fetchCustomerBrand({ customerCode })
+      if (res?.brandName) {
+        this.brand.mode = 'customer'
+        this.brand.name = res.brandName
+        this.brand.logoPath = res.logoPath || null
+        this.brand.showManufacturer = true
+        this.brand.showQr = false
+
+        if (this.brand.logoPath) {
+          this.brand.logoDataUrl = await getAzureBlobAsBase64(this.brand.logoPath, 'certificate')
+        }
+      }
+    },
+
     async loadHistory() {
-      if (!this.invoiceData || !this.invoiceData.invoiceNumber) {
-        this.history = []
+      if (!this.invoiceData?.invoiceNumber) {
+        this.historyRows = []
         return
       }
 
-      this.historyLoading = true
-      try {
-        const res = await this.invoiceStore.fetchPrintLogList({
-          invoiceNumber: this.invoiceData.invoiceNumber
-        })
-        this.history = parseCertificateLogs(res?.data || [])
-      } catch {
-        this.history = []
-      } finally {
-        this.historyLoading = false
-      }
+      const res = await this.certificateStore.fetchList({ invoiceNumber: this.invoiceData.invoiceNumber })
+      this.historyRows = res?.data || []
     },
 
     formatHistoryDate(date) {
@@ -416,12 +630,171 @@ export default {
       })
     },
 
-    buildPayload() {
-      const selectedCertificates = this.certificates.filter((c) => c.selected === true)
-      return {
-        certificates: JSON.parse(JSON.stringify(selectedCertificates)),
-        signerTitle: this.signerTitle.trim() || 'General Manager'
+    fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result)
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+      })
+    },
+
+    onBrandModeChange(mode) {
+      this.brand.mode = mode
+      this.brand.showQr = mode !== 'customer'
+    },
+
+    async onBrandLogoSelected(file) {
+      this.brand.logoFile = file
+      this.brand.logoPath = null
+      this.brand.logoDataUrl = file ? await this.fileToDataUrl(file) : null
+    },
+
+    onBrandLogoClear() {
+      this.brand.logoFile = null
+      this.brand.logoDataUrl = null
+      this.brand.logoPath = null
+    },
+
+    async onNewPhotoSelected(certificate, file) {
+      if (!file) return
+      const compressed = await compressImage(file)
+      certificate.newPhotoFile = compressed
+      certificate.newPhotoDataUrl = await this.fileToDataUrl(compressed)
+      certificate.photoSource = 'new'
+      certificate.customImagePath = null
+    },
+
+    resetToStockImage(certificate) {
+      certificate.photoSource = 'stock'
+      certificate.newPhotoFile = null
+      certificate.newPhotoDataUrl = null
+      certificate.customImagePath = null
+    },
+
+    currentPhotoPreview(certificate) {
+      if (certificate.photoSource === 'new') {
+        if (certificate.newPhotoDataUrl) return certificate.newPhotoDataUrl
+        if (certificate.customImagePath) return this.customImagePreviews[certificate.customImagePath] || null
       }
+      return certificate.imageBase64 || null
+    },
+
+    loadCustomImagePreview(path) {
+      if (!path || this.customImagePreviews[path]) return
+      getAzureBlobAsBase64(path, 'certificate').then((base64) => {
+        if (base64) this.customImagePreviews = { ...this.customImagePreviews, [path]: base64 }
+      })
+    },
+
+    toggleRound(batch) {
+      this.expandedBatches = { ...this.expandedBatches, [batch]: !this.expandedBatches[batch] }
+    },
+
+    isRoundExpanded(batch) {
+      return !!this.expandedBatches[batch]
+    },
+
+    // ใช้ snapshot ของแถวประวัติสร้าง payload สำหรับ "ดู PDF" / "พิมพ์ซ้ำ" — ไม่แตะ state การ์ดปัจจุบันเลย
+    buildHistoryPayload(row) {
+      const restored = restoreCertificateFromSnapshot(row.snapshot, { resetIssueDate: false })
+      const certificate = { ...restored, newPhotoFile: null, newPhotoDataUrl: null }
+
+      const snapshotBrand = row.snapshot?.brand || {}
+      const brand = {
+        mode: snapshotBrand.mode || 'dk',
+        name: snapshotBrand.name || '',
+        logoPath: snapshotBrand.logoPath || null,
+        logoFile: null,
+        logoDataUrl: null,
+        showManufacturer: snapshotBrand.showManufacturer !== false,
+        showQr: snapshotBrand.showQr === true
+      }
+
+      return {
+        certificates: [certificate],
+        signerTitle: row.snapshot?.signerTitle || this.signerTitle,
+        brand,
+        saveBrandAsCustomerDefault: false
+      }
+    },
+
+    viewPdfFromHistory(row) {
+      this.$emit('preview-print', this.buildHistoryPayload(row))
+    },
+
+    reprintFromHistory(row) {
+      this.$emit('confirm-print', this.buildHistoryPayload(row))
+    },
+
+    // โหลด snapshot ของแถวประวัติกลับเข้าการ์ดปัจจุบัน — สินค้าล็อตเงิน (stockNumber ซ้ำ) จับคู่ตามลำดับที่ปรากฏ
+    // ในรอบพิมพ์เดิม (roundRows) กับลำดับการ์ดปัจจุบันที่ stockNumber เดียวกัน ไม่ใช่จับคู่ตาม index รวม
+    loadForEditing(row, roundRows) {
+      const sameStockRows = roundRows.filter((r) => r.stockNumber === row.stockNumber)
+      const occurrenceIndex = sameStockRows.indexOf(row)
+
+      const sameStockCards = this.certificates.filter((c) => c.stockNumber === row.stockNumber)
+      const targetCard = sameStockCards[occurrenceIndex] ?? sameStockCards[0]
+
+      if (!targetCard) {
+        warning(this.$t('view.sale.certificate.loadEditNoMatch'), this.$t('view.sale.certificate.title'))
+        return
+      }
+
+      const restored = restoreCertificateFromSnapshot(row.snapshot, { resetIssueDate: true })
+      Object.assign(targetCard, restored, { newPhotoFile: null, newPhotoDataUrl: null })
+
+      if (targetCard.customImagePath) {
+        this.loadCustomImagePreview(targetCard.customImagePath)
+      }
+
+      const snapshotBrand = row.snapshot?.brand
+      if (snapshotBrand) {
+        this.brand.mode = snapshotBrand.mode || 'dk'
+        this.brand.name = snapshotBrand.name || ''
+        this.brand.logoPath = snapshotBrand.logoPath || null
+        this.brand.logoFile = null
+        this.brand.logoDataUrl = null
+        this.brand.showManufacturer = snapshotBrand.showManufacturer !== false
+        this.brand.showQr = snapshotBrand.showQr === true
+
+        if (this.brand.logoPath) {
+          getAzureBlobAsBase64(this.brand.logoPath, 'certificate').then((base64) => {
+            if (base64) this.brand.logoDataUrl = base64
+          })
+        }
+      }
+
+      if (row.snapshot?.signerTitle) this.signerTitle = row.snapshot.signerTitle
+
+      success(this.$t('view.sale.certificate.loadEditSuccess'), this.$t('view.sale.certificate.title'))
+    },
+
+    buildPayload() {
+      const selectedCertificates = this.certificates.filter((c) => c.selected === true).map((c) => ({ ...c }))
+
+      return {
+        certificates: selectedCertificates,
+        signerTitle: this.signerTitle.trim() || 'General Manager',
+        brand: {
+          mode: this.brand.mode,
+          name: this.brand.name.trim(),
+          logoPath: this.brand.logoPath,
+          logoFile: this.brand.logoFile,
+          logoDataUrl: this.brand.logoDataUrl,
+          showManufacturer: this.brand.showManufacturer,
+          showQr: this.brand.showQr
+        },
+        saveBrandAsCustomerDefault: this.isWalkIn ? false : this.saveBrandAsCustomerDefault
+      }
+    },
+
+    validateBrand() {
+      if (this.brand.mode === 'customer' && !this.brand.name.trim()) {
+        warning(this.$t('view.sale.certificate.brand.validation.nameRequired'), this.$t('common.label.incompleteData'))
+        return false
+      }
+      return true
     },
 
     validateSelection() {
@@ -437,11 +810,13 @@ export default {
     },
 
     onPreview() {
+      if (!this.validateBrand()) return
       if (!this.validateSelection()) return
       this.$emit('preview-print', this.buildPayload())
     },
 
     onDownload() {
+      if (!this.validateBrand()) return
       if (!this.validateSelection()) return
       this.$emit('confirm-print', this.buildPayload())
       this.closeModal()
@@ -512,8 +887,7 @@ export default {
   }
 }
 
-// History section — reuse the visual style of .print-history-item from invoice-confirm-print-modal.vue
-.history-loading,
+// History section
 .history-empty {
   padding: var(--sp-lg) var(--sp-md);
   text-align: center;
@@ -522,50 +896,85 @@ export default {
 }
 
 .history-list {
-  max-height: 240px;
+  max-height: 320px;
   overflow-y: auto;
 }
 
-.print-history-item {
-  padding: var(--sp-sm) var(--sp-md);
+.history-round {
   border-bottom: 1px solid var(--color-border);
-  font-size: var(--fs-sm);
 
   &:last-child {
     border-bottom: none;
   }
+}
 
-  &__copy {
-    font-weight: 700;
+.history-round__header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-sm);
+  width: 100%;
+  padding: var(--sp-sm) var(--sp-md);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: var(--fs-sm);
+
+  i {
     color: var(--base-font-color);
-    display: inline;
+    flex-shrink: 0;
   }
+}
 
-  &__date {
-    display: inline;
-    margin-left: var(--sp-xs);
-    font-size: 11px;
-    color: #6c757d;
-  }
+.history-round__label {
+  font-weight: 700;
+  color: var(--base-font-color);
+  flex-shrink: 0;
+}
 
-  &__by {
-    font-size: 11px;
-    color: var(--base-green);
-    margin-top: 1px;
-  }
+.history-round__meta {
+  font-size: 11px;
+  color: #6c757d;
+}
 
-  &__mode {
-    font-size: 11px;
-    color: #6c757d;
-    margin-top: 2px;
-  }
+.history-round__rows {
+  padding: 0 var(--sp-md) var(--sp-sm) var(--sp-lg);
+}
 
-  &__stocks {
-    font-size: 11px;
-    color: #6c757d;
-    margin-top: 2px;
-    word-break: break-word;
-  }
+.history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+  padding: var(--sp-xs) 0;
+  font-size: var(--fs-sm);
+}
+
+.history-row__cert {
+  font-weight: 600;
+  color: var(--base-font-color);
+}
+
+.history-row__issue {
+  font-size: 11px;
+  color: #6c757d;
+}
+
+.history-row__legacy-badge {
+  margin-left: var(--sp-sm);
+  padding: 2px var(--sp-xs);
+  border-radius: var(--radius-sm);
+  background: var(--color-highlight-bg);
+  color: var(--base-red);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.history-row__actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .selection-toolbar {
@@ -589,8 +998,11 @@ export default {
   gap: var(--sp-sm);
 }
 
+// display:block (ไม่ใช่ inline-block) — checkbox ก่อนหน้าเป็น .checkbox-wrapper (inline-flex) ถ้า badge
+// ยัง inline-block อยู่ทั้งสองจะลอยติดกันบนบรรทัดเดียว (margin-bottom ของ checkbox ไม่ตัดบรรทัดให้)
 .issue-badge {
-  display: inline-block;
+  display: block;
+  width: fit-content;
   padding: var(--sp-xs) var(--sp-sm);
   border-radius: var(--radius-sm);
   font-size: 11px;
@@ -604,6 +1016,92 @@ export default {
   &--never {
     background: var(--color-highlight-bg);
     color: #6c757d;
+  }
+}
+
+// Brand checkboxes (showManufacturer / showQr / saveAsDefault) — CheckboxGeneric root คือ inline-flex
+// ต้องบังคับคอลัมน์เอง ไม่งั้นเช็คบ็อกซ์ทั้งหมดจะลอยติดกันบรรทัดเดียว
+.brand-options {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-sm);
+
+  // โหมด customer ต่อจากปุ่ม "เลือกรูป"/"ลบรูป" ของ UploadImage ที่ไม่มี margin-bottom ของตัวเอง
+  // (FormFieldGeneric ของ logo ไม่ได้อยู่ใน .form-row จึงไม่มี margin-bottom var(--sp-lg) แบบ field ทั่วไป)
+  // เว้นเพิ่มเฉพาะโหมดนี้ — โหมด dk มี mb-3 ของ RadioGroupGeneric เว้นให้อยู่แล้ว ไม่ต้องเพิ่มซ้ำ
+  &--spaced {
+    margin-top: var(--sp-lg);
+  }
+}
+
+// Photo section (per certificate card)
+.photo-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-md);
+}
+
+.photo-thumb {
+  width: 70px;
+  height: 70px;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #fafafa;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.photo-thumb-placeholder {
+  font-size: 1.5rem;
+  color: #ced4da;
+}
+
+.photo-controls {
+  flex: 1;
+  min-width: 0;
+}
+
+.photo-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+// UploadImage.vue มี global CSS ที่ centering ปุ่ม "เลือกรูป" กลางกล่อง (.upload-preview{display:grid;
+// place-items:center} ชนกับ .upload-container.compact .upload-preview{display:block} ที่ specificity สูงกว่า
+// .compact-container{display:flex}) — ห้ามแก้ UploadImage.vue (ใช้อยู่อีก 8 หน้า) จึงบังคับ layout ซ้าย
+// เฉพาะภายใน scope นี้ด้วย :deep() ที่ specificity สูงพอชนะ global rule เดิม
+.brand-logo-field,
+.photo-actions {
+  :deep(.upload-container.compact) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  :deep(.upload-preview.compact-container) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-items: start;
+    place-items: start;
+  }
+
+  :deep(.compact-actions) {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
   }
 }
 </style>

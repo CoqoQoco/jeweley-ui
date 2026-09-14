@@ -14,6 +14,9 @@ const PANEL_GAP = 30
 const PANEL_WIDTH = (PAGE_WIDTH - MARGIN_X * 2 - PANEL_GAP) / 2
 const IMAGE_BOX_W = 320
 const IMAGE_BOX_H = 240
+// โหมด customer ใช้กล่องรูปเตี้ยกว่า dk (200 ไม่ใช่ 240) เพื่อเผื่อพื้นที่ให้ header 2 บรรทัด (โลโก้+ชื่อบริษัทยาว)
+// ยังพอดีกับ FOOTER_ZONE_Y แม้ gem table + treatment/comment ตัดคำ 2 บรรทัดพร้อมกัน (วัดจาก harness แล้ว)
+const CUSTOMER_IMAGE_BOX_H = 200
 const QR_SIZE = 66
 
 // กันดักเดียวกับที่ guarantee-card เคยเจอ: node ที่ absolutePosition ยังถูก pdfmake คำนวณ
@@ -42,14 +45,18 @@ export class CertificatePdfBuilder {
     this.certificates = Array.isArray(certificates) ? certificates : []
     this.signerTitle = options.signerTitle || 'General Manager'
     this.invoiceNumber = options.invoiceNumber || ''
+    this.brand = options.brand || { mode: 'dk', showManufacturer: true, showQr: true }
+    this.brandLogoBase64 = options.brandLogoBase64 || null
     this.logoBase64 = null
   }
 
   async preparePDF() {
-    if (!this.logoBase64) {
+    if (this.brand.mode !== 'customer' && !this.logoBase64) {
       this.logoBase64 = await loadCompanyLogo().catch(() => null)
     }
 
+    // integration ชั้นบนเตรียม imageBase64 มาให้แล้ว (รูปใหม่/รูปจากประวัติ/รูปสต็อก) — เรียกซ้ำที่นี่
+    // เพื่อความปลอดภัยเฉยๆ (item ที่มี imageBase64 อยู่แล้วจะถูก skip เอง ไม่โหลดซ้ำ)
     await prepareItemImages(this.getSelectedCertificates())
 
     return this
@@ -107,6 +114,10 @@ export class CertificatePdfBuilder {
   }
 
   buildHeaderRow() {
+    return this.brand.mode === 'customer' ? this.buildCustomerHeaderRow() : this.buildDkHeaderRow()
+  }
+
+  buildDkHeaderRow() {
     return {
       columns: [
         this.logoBase64
@@ -124,16 +135,50 @@ export class CertificatePdfBuilder {
     }
   }
 
+  // โลโก้ลูกค้า (ถ้ามี) + ชื่อบริษัทบรรทัดล่าง — ห้ามตั้ง width+height พร้อมกันกับ fit (pdfmake จะ distort สัดส่วนภาพ)
+  // block นี้สูงกว่า buildDkHeaderRow เล็กน้อย จึงตั้ง margin ให้แน่นกว่า แล้วชดเชยต่อที่ buildImageBlock (ดู comment ที่นั่น)
+  buildCustomerHeaderRow() {
+    const nodes = []
+
+    if (this.brandLogoBase64) {
+      nodes.push({ image: this.brandLogoBase64, fit: [150, 36], margin: [0, 0, 0, 4] })
+    }
+
+    nodes.push({ text: this.brand.name || '', fontSize: this.brandNameFontSize(), bold: true, color: PDF_COLORS.primary })
+
+    return {
+      stack: nodes,
+      margin: [0, 0, 0, 14]
+    }
+  }
+
+  // ชื่อบริษัทลูกค้าอาจยาวมาก (เช่น 65+ ตัวอักษร) — ถ้าใช้ 14pt คงที่จะตัดขึ้นเกิน 2 บรรทัดจน left panel ล้น
+  // ลดขนาดตามความยาวชื่อ ให้ไม่เกิน 2 บรรทัดเสมอ ภายใน PANEL_WIDTH (วัดจาก harness แล้ว)
+  brandNameFontSize() {
+    const length = (this.brand.name || '').length
+    if (length <= 30) return 14
+    if (length <= 55) return 12
+    return 10
+  }
+
   buildImageBlock(certificate) {
+    const isCustomer = this.brand.mode === 'customer'
+    const boxHeight = isCustomer ? CUSTOMER_IMAGE_BOX_H : IMAGE_BOX_H
     const imageData = this.normalizeImage(certificate.imageBase64)
 
     const inner = imageData
-      ? { image: imageData, fit: [IMAGE_BOX_W, IMAGE_BOX_H] }
+      ? { image: imageData, fit: [IMAGE_BOX_W, boxHeight] }
       : {
           canvas: [
-            { type: 'rect', x: 0, y: 0, w: IMAGE_BOX_W, h: IMAGE_BOX_H, lineWidth: 1, lineColor: '#cccccc' }
+            { type: 'rect', x: 0, y: 0, w: IMAGE_BOX_W, h: boxHeight, lineWidth: 1, lineColor: '#cccccc' }
           ]
         }
+
+    // header โหมด customer (โลโก้ + ชื่อบริษัท ที่อาจยาว 2 บรรทัด) สูงกว่า header โหมด dk เสมอ — ตั้ง margin
+    // ด้านล่างของกล่องรูปเป็นค่าคงที่ 12 ไม่ว่าจะมีโลโก้หรือไม่ (ไม่ใช่ conditional ตาม logo) กัน left panel รวม
+    // สูงเกินจนเนื้อหา (รวม gem table + treatment/comment ตัดคำ 2 บรรทัด) ไหลไปชนโซน terms ที่ปักหมุดตายตัว
+    // ด้วย absolutePosition ที่ FOOTER_ZONE_Y (ดู comment เรื่อง absolutePosition gotcha ที่หัวไฟล์)
+    const bottomMargin = isCustomer ? 12 : 20
 
     return {
       columns: [
@@ -141,7 +186,7 @@ export class CertificatePdfBuilder {
         { width: IMAGE_BOX_W, stack: [inner] },
         { width: '*', text: '' }
       ],
-      margin: [0, 0, 0, 20]
+      margin: [0, 0, 0, bottomMargin]
     }
   }
 
@@ -169,12 +214,27 @@ export class CertificatePdfBuilder {
     }
   }
 
+  // บรรทัดแรกของ terms เปลี่ยนตามโหมด (ระบุใครเป็นผู้ผลิต/ผู้ออกใบรับรอง) บรรทัด 2-3 คงเดิมทุกโหมด
+  // ตัดจุด/เว้นวรรคท้ายชื่อออกก่อนต่อ "." ปิดประโยค กันกรณีชื่อลงท้ายด้วย "." อยู่แล้ว (เช่น "... LTD.") กลาย
+  // เป็น ".." — เฉพาะประโยค terms เท่านั้น ส่วน header/signature ยังคงชื่อตามที่ผู้ใช้กรอกไว้ทุกตัวอักษร
+  buildTermsLines() {
+    if (this.brand.mode === 'customer') {
+      const brandName = (this.brand.name || '').replace(/[.\s]+$/, '')
+      const firstLine = this.brand.showManufacturer
+        ? `This certificate describes the item stated herein as manufactured by Duangkaew Jewelry Manufacturer Co., Ltd. for ${brandName}.`
+        : `This certificate describes the item stated herein as issued by ${brandName}.`
+      return [firstLine, ...CERTIFICATE_TERMS.slice(1)]
+    }
+
+    return CERTIFICATE_TERMS
+  }
+
   buildTermsBlock() {
     return {
       columns: [
         {
           width: PANEL_WIDTH,
-          stack: CERTIFICATE_TERMS.map((line) => ({
+          stack: this.buildTermsLines().map((line) => ({
             text: line,
             fontSize: 7,
             lineHeight: 1.25,
@@ -264,24 +324,37 @@ export class CertificatePdfBuilder {
     }
   }
 
+  // dk: ชื่อ+ที่อยู่ Duangkaew (COMPANY_INFO) เหมือนเดิม
+  // customer: ชื่อบริษัทลูกค้า (ไม่มีที่อยู่) + บรรทัดเล็ก "Manufactured by ..." ถ้า showManufacturer เปิดอยู่
+  // จำนวนบรรทัดสูงสุดของทั้งสองโหมดเท่ากัน (4 nodes รวมเส้น) จึงยังพอดีกับ SIGNATURE_BLOCK_HEIGHT เดิม
   buildSignatureBlock(certificate) {
     const lineWidth = 150
 
+    const stackNodes = [
+      {
+        canvas: [{ type: 'line', x1: 0, y1: 0, x2: lineWidth, y2: 0, lineWidth: 0.8, lineColor: '#333333' }],
+        margin: [0, 0, 0, 5]
+      },
+      { text: certificate.signerTitle || this.signerTitle, fontSize: 9.5, bold: true }
+    ]
+
+    if (this.brand.mode === 'customer') {
+      stackNodes.push({ text: this.brand.name || '', fontSize: 7.5, color: PDF_COLORS.darkGray, margin: [0, 10, 0, 1] })
+      if (this.brand.showManufacturer) {
+        stackNodes.push({
+          text: 'Manufactured by Duangkaew Jewelry Manufacturer Co., Ltd.',
+          fontSize: 7,
+          color: PDF_COLORS.darkGray,
+          margin: [0, 1, 0, 0]
+        })
+      }
+    } else {
+      stackNodes.push({ text: COMPANY_INFO.name, fontSize: 7.5, color: PDF_COLORS.darkGray, margin: [0, 10, 0, 1] })
+      stackNodes.push({ text: COMPANY_INFO.address, fontSize: 7, color: PDF_COLORS.darkGray, lineHeight: 1.2 })
+    }
+
     return {
-      columns: [
-        {
-          width: PANEL_WIDTH,
-          stack: [
-            {
-              canvas: [{ type: 'line', x1: 0, y1: 0, x2: lineWidth, y2: 0, lineWidth: 0.8, lineColor: '#333333' }],
-              margin: [0, 0, 0, 5]
-            },
-            { text: certificate.signerTitle || this.signerTitle, fontSize: 9.5, bold: true },
-            { text: COMPANY_INFO.name, fontSize: 7.5, color: PDF_COLORS.darkGray, margin: [0, 10, 0, 1] },
-            { text: COMPANY_INFO.address, fontSize: 7, color: PDF_COLORS.darkGray, lineHeight: 1.2 }
-          ]
-        }
-      ],
+      columns: [{ width: PANEL_WIDTH, stack: stackNodes }],
       absolutePosition: {
         x: PAGE_WIDTH - MARGIN_X - PANEL_WIDTH,
         y: SIGNATURE_ZONE_Y
