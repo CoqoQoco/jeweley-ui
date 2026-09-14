@@ -21,7 +21,7 @@ export class InvoiceExcelBuilder {
     this.invoiceDate = invoiceDate || dayjs()
     this.companyInfo = {
       name: 'Duang Kaew Jewelry Manufacturer Co.,Ltd.',
-      address: '200/16 Rama 6 Rd.,Phayathai,Phayathai,Bangkok 10400 Thailand',
+      address: '200/16 Rama 6 Rd., Phayathai, Phayathai, Bangkok 10400 Thailand',
       phone: '(+662) 6196601-4',
       fax: ' (+662) 2710834',
       email: 'info@dkbkk.com'
@@ -332,7 +332,7 @@ export class InvoiceExcelBuilder {
 
     // Company header | Customer header
     worksheet.mergeCells(`A${row}:E${row}`)
-    worksheet.getCell(`A${row}`).value = 'Form: Duang Kaew Jewelry Manufacturer Co.,Ltd.'
+    worksheet.getCell(`A${row}`).value = 'From: Duang Kaew Jewelry Manufacturer Co.,Ltd.'
     worksheet.getCell(`A${row}`).font = {
       name: 'Arial',
       size: 11,

@@ -303,7 +303,7 @@ export class InvoicePdfBuilder {
                   stack: [
                     // Company Address
                     {
-                      text: 'Form: ' + (this.companyInfo.name || ''),
+                      text: 'From: ' + (this.companyInfo.name || ''),
                       fontSize: 11,
                       bold: true,
                       color: '#8B0000',

@@ -26,7 +26,7 @@ export class InvoicePdfBuilder {
     this.invoiceDate = invoiceDate || dayjs().format('YYYY-MM-DD')
     this.companyInfo = {
       name: 'Duang Kaew Jewelry Manufacturer Co.,Ltd.',
-      address: '200/16 Rama 6 Rd.,Praythai,Phayathai,Bangkok 10400 Thailand',
+      address: '200/16 Rama 6 Rd., Phayathai, Phayathai, Bangkok 10400 Thailand',
       phone: '(+662) 6196601-4',
       fax: ' (+662) 2710834',
       email: 'info@dkbkk.com'
@@ -265,7 +265,7 @@ export class InvoicePdfBuilder {
               stack: [
                 // Company Address
                 {
-                  text: 'Form: Duang Kaew Jewelry Manufacturer Co.,Ltd.',
+                  text: 'From: Duang Kaew Jewelry Manufacturer Co.,Ltd.',
                   fontSize: 11,
                   bold: true,
                   color: '#8B0000',
