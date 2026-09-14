@@ -620,8 +620,12 @@
                           optionLabel="name"
                           optionValue="code"
                           :placeholder="$t('view.sale.saleOrder.saleChannelPlaceholder')"
+                          :disabled="isSaleChannelLocked"
                           class="w-100"
                         />
+                        <small v-if="isSaleChannelLocked" class="text-muted d-block mt-1">
+                          <i class="bi bi-lock-fill mr-1"></i>{{ $t('view.sale.saleOrder.saleChannelLockedHint') }}
+                        </small>
                       </div>
                     </div>
                   </div>
@@ -742,11 +746,28 @@ export default {
   },
 
   computed: {
+    // SO มีจุดขายแล้ว (เกิดตอนสร้าง invoice ใบแรก) → ห้ามเปลี่ยนจุดขายที่ invoice ใบถัดไป
+    isSaleChannelLocked() {
+      return !!this.saleOrderData?.saleChannelCode
+    },
+
     saleChannelOptions() {
-      return this.saleChannelList.map((channel) => ({
+      const options = this.saleChannelList.map((channel) => ({
         code: channel.code,
         name: channel.nameTh || channel.nameEn || channel.code
       }))
+
+      if (
+        this.isSaleChannelLocked &&
+        !options.some((o) => o.code === this.saleOrderData.saleChannelCode)
+      ) {
+        options.push({
+          code: this.saleOrderData.saleChannelCode,
+          name: this.saleOrderData.saleChannelName || this.saleOrderData.saleChannelCode
+        })
+      }
+
+      return options
     },
 
     // ใช้ชุด saleOrderList.paymentMethod.* (ไม่ใช่ invoiceDetail.paymentMethods.*) เพราะชุดหลังถูกใช้ร่วมกับ
@@ -863,8 +884,13 @@ export default {
       this.vatPercent = Number(this.saleOrderData.vatPercent) || 0
 
       this.saleChannelList = await this.saleChannelStore.fetchActiveList({ skipLoading: true })
-      const currentChannel = await this.saleChannelStore.fetchCurrent({ skipLoading: true })
-      this.saleChannelCode = currentChannel ? currentChannel.code : null
+
+      if (this.isSaleChannelLocked) {
+        this.saleChannelCode = this.saleOrderData.saleChannelCode
+      } else {
+        const currentChannel = await this.saleChannelStore.fetchCurrent({ skipLoading: true })
+        this.saleChannelCode = currentChannel ? currentChannel.code : null
+      }
     },
 
     toggleSelectAll(value) {

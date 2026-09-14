@@ -452,6 +452,7 @@ export const saleOrder = {
   paymentCollectWarning: 'เลือก "เงินสด" "โอนเงิน" หรือ "บัตรเครดิต" ระบบจะบันทึกว่าลูกค้าชำระเงินเต็มจำนวนทันที หากลูกค้ายังไม่ชำระ กรุณาเลือก "{creditLabel}" หรือ "{chequeLabel}" แทน',
   saleChannelLabel: 'จุดขาย',
   saleChannelPlaceholder: '-- เลือกจุดขาย --',
+  saleChannelLockedHint: 'ผูกกับใบสั่งขายแล้ว ใบแจ้งหนี้ต้องใช้จุดขายเดียวกัน',
   paymentTerm: 'ระยะเวลาการชำระเงิน (วัน)',
   payCash: 'ชำระทันที',
   dueDate: 'ครบกำหนด',

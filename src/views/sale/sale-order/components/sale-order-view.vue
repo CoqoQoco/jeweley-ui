@@ -739,7 +739,9 @@ export default {
         copyFreight: 0,
         specialDiscount: 0,
         specialAddition: 0,
-        vatPercent: 0
+        vatPercent: 0,
+        saleChannelCode: null,
+        saleChannelName: null
       },
 
     }
@@ -1151,7 +1153,9 @@ export default {
         copyFreight: saleOrderData.copyFreight || 0,
         specialDiscount: saleOrderData.specialDiscount || 0,
         specialAddition: saleOrderData.specialAddition || 0,
-        vatPercent: saleOrderData.vatPercent || 0
+        vatPercent: saleOrderData.vatPercent || 0,
+        saleChannelCode: saleOrderData.saleChannelCode || null,
+        saleChannelName: saleOrderData.saleChannelName || null
       })
 
       if (saleOrderData.items) {
@@ -1260,6 +1264,8 @@ export default {
           currencyRate: response.currencyRate || 33.0,
           markup: response.markup || 3.5,
           goldPerOz: response.goldRate || 2000,
+          saleChannelCode: response.saleChannelCode || null,
+          saleChannelName: response.saleChannelName || null,
           customer: {
             code: response.customerCode || '',
             name: response.customerName || '',

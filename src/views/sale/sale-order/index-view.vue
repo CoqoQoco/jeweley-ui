@@ -37,6 +37,8 @@ const interfaceSaleOrder = {
   remark: null,
   items: [],
   confirmedItems: [],
+  saleChannelCode: null,
+  saleChannelName: null,
   customer: {
     name: null,
     address: null,
@@ -138,6 +140,8 @@ export default {
         currencyRate: saleOrderData.currencyRate || 33.0,
         markup: saleOrderData.markup || 3.5,
         goldPerOz: saleOrderData.goldRate || 2000,
+        saleChannelCode: saleOrderData.saleChannelCode || null,
+        saleChannelName: saleOrderData.saleChannelName || null,
         customer: {
           code: saleOrderData.customerCode || '',
           name: saleOrderData.customerName || '',

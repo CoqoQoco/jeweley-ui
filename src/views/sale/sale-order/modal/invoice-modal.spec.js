@@ -83,3 +83,65 @@ describe('InvoiceModal — paymentName integrity (ป้องกันบั๊
     expect(thResult.startsWith('view.')).toBe(false)
   })
 })
+
+describe('InvoiceModal — sale channel lock (จุดขายต้องตรงกับใบสั่งขาย)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockFetchActiveList.mockResolvedValue([])
+    mockFetchCurrent.mockResolvedValue(null)
+  })
+
+  function mountWithSaleOrder(saleOrderData) {
+    const pinia = createPinia()
+    return shallowMount(InvoiceModal, {
+      global: {
+        plugins: [pinia],
+        mocks: {
+          $t: (key) => key
+        }
+      },
+      props: {
+        isShowModal: true,
+        saleOrderData,
+        stockItems: sampleStockItems
+      }
+    })
+  }
+
+  it('locked: SO มี saleChannelCode แล้ว → dropdown ล็อกไปที่ค่านั้น ไม่เรียก fetchCurrent', async () => {
+    const wrapper = mountWithSaleOrder({
+      ...sampleSaleOrder,
+      saleChannelCode: 'FAIR74',
+      saleChannelName: 'งานแฟร์ 74'
+    })
+    await flushPromises()
+
+    expect(wrapper.vm.isSaleChannelLocked).toBe(true)
+    expect(wrapper.vm.saleChannelCode).toBe('FAIR74')
+    expect(mockFetchCurrent).not.toHaveBeenCalled()
+  })
+
+  it('locked แต่รหัสจุดขายไม่อยู่ใน active list → เติม option ด้วยชื่อจาก saleChannelName', async () => {
+    mockFetchActiveList.mockResolvedValue([{ code: 'SHOP01', nameTh: 'หน้าร้าน' }])
+    const wrapper = mountWithSaleOrder({
+      ...sampleSaleOrder,
+      saleChannelCode: 'FAIR74',
+      saleChannelName: 'งานแฟร์ 74'
+    })
+    await flushPromises()
+
+    const option = wrapper.vm.saleChannelOptions.find((o) => o.code === 'FAIR74')
+    expect(option).toBeTruthy()
+    expect(option.name).toBe('งานแฟร์ 74')
+  })
+
+  it('unlocked: SO ยังไม่มี saleChannelCode → คงพฤติกรรม pre-select ด้วย fetchCurrent เดิม', async () => {
+    mockFetchCurrent.mockResolvedValue({ code: 'SHOP01' })
+    const wrapper = mountWithSaleOrder({ ...sampleSaleOrder })
+    await flushPromises()
+
+    expect(wrapper.vm.isSaleChannelLocked).toBe(false)
+    expect(mockFetchCurrent).toHaveBeenCalled()
+    expect(wrapper.vm.saleChannelCode).toBe('SHOP01')
+  })
+})

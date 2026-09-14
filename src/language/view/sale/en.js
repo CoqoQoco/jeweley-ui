@@ -452,6 +452,7 @@ export const saleOrder = {
   paymentCollectWarning: 'Selecting "Cash", "Transfer", or "Credit Card" records the payment as fully collected immediately. If the customer has not paid yet, please select "{creditLabel}" or "{chequeLabel}" instead',
   saleChannelLabel: 'Sale Channel',
   saleChannelPlaceholder: '-- Select Sale Channel --',
+  saleChannelLockedHint: 'Linked to this sale order — invoices must use the same sale channel',
   paymentTerm: 'Payment Term (Days)',
   payCash: 'Pay Immediately',
   dueDate: 'Due',
