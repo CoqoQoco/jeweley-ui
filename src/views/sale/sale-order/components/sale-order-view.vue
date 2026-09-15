@@ -1356,19 +1356,38 @@ export default {
     // ITEM MANAGEMENT METHODS
     // ============================================
 
+    resetProductSearch() {
+      this.productSearch = {
+        stockNumber: '',
+        stockNumberOrigin: '',
+        productNumber: ''
+      }
+    },
+
     async onSearchProduct() {
-      const rawData = await this.productStore.fetchDataGet({
-        formValue: this.productSearch,
-        skipError: true
-      })
+      let rawData
+      try {
+        rawData = await this.productStore.fetchDataGet({
+          formValue: this.productSearch,
+          skipError: true,
+          rethrow: true
+        })
+      } catch (err) {
+        const status = err?.response?.status
+        if (status === 400 || status === 404) {
+          warning(this.$t('view.sale.saleOrder.warn.stockNotFound'))
+        } else {
+          error(
+            this.$t('view.sale.saleOrder.warn.stockLookupFailed', { status: status || 'Network' })
+          )
+        }
+        this.resetProductSearch()
+        return
+      }
 
       if (!rawData || !rawData.stockNumber) {
         warning(this.$t('view.sale.saleOrder.warn.stockNotFound'))
-        this.productSearch = {
-          stockNumber: '',
-          stockNumberOrigin: '',
-          productNumber: ''
-        }
+        this.resetProductSearch()
         return
       }
 

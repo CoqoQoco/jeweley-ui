@@ -3,6 +3,7 @@ import { shallowMount, flushPromises } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 import SaleOrderView from './sale-order-view.vue'
 import { createLineKey } from '@/services/utils/line-key.js'
+import { warning, error } from '@/services/alert/sweetAlerts.js'
 
 vi.mock('@/services/alert/sweetAlerts.js', () => {
   const warning = vi.fn()
@@ -246,6 +247,51 @@ describe('SaleOrderView — onSearchProduct รองรับสแกนเล
 
     expect(vm.stockItems[1].qty).toBe(3)
     expect(vm.stockItems[0].qty).toBe(firstQtyBefore)
+  })
+
+  it('reject status 400 (ไม่พบข้อมูล) → warning stockNotFound, stockItems ไม่เปลี่ยน', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    vm.productStore.fetchDataGet = vi.fn().mockRejectedValue({ response: { status: 400 } })
+
+    vm.productSearch.stockNumber = 'STK-404'
+    await vm.onSearchProduct()
+
+    expect(warning).toHaveBeenCalledWith('view.sale.saleOrder.warn.stockNotFound')
+    expect(error).not.toHaveBeenCalled()
+    expect(vm.stockItems).toHaveLength(0)
+  })
+
+  it('reject status 500 (server crash) → error stockLookupFailed ไม่ใช่ warning stockNotFound, stockItems ไม่เปลี่ยน', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    vm.productStore.fetchDataGet = vi.fn().mockRejectedValue({ response: { status: 500 } })
+
+    vm.productSearch.stockNumber = 'STK-500'
+    await vm.onSearchProduct()
+
+    expect(error).toHaveBeenCalledWith(
+      'view.sale.saleOrder.warn.stockLookupFailed:{"status":500}'
+    )
+    expect(warning).not.toHaveBeenCalled()
+    expect(vm.stockItems).toHaveLength(0)
+  })
+
+  it('reject ไม่มี response (network failure) → error stockLookupFailed ใช้ status Network', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    vm.productStore.fetchDataGet = vi.fn().mockRejectedValue(new Error('Network Error'))
+
+    vm.productSearch.stockNumber = 'STK-NET'
+    await vm.onSearchProduct()
+
+    expect(error).toHaveBeenCalledWith(
+      'view.sale.saleOrder.warn.stockLookupFailed:{"status":"Network"}'
+    )
+    expect(vm.stockItems).toHaveLength(0)
   })
 })
 

@@ -601,6 +601,7 @@ export const saleOrder = {
     noItemsForExcel: 'No items available to generate Excel',
     saveCustomerFirst: 'Please select a customer before saving',
     stockNotFound: 'Item not found in stock',
+    stockLookupFailed: 'Failed to load product (ERROR {status}). Please contact the developer.',
     stockSold: 'Item {stockNumber} has already been sold',
     stockReservedOther: 'Item {stockNumber} is already reserved on {soNumbers}',
     stockReserved: 'Item {stockNumber} is already reserved',

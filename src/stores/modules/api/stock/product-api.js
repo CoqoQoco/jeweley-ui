@@ -44,7 +44,9 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
     },
     // skipError: true — ใช้เมื่อ caller แสดงข้อความเองแล้ว (เช่นจอสแกนที่ห้ามมี dialog บัง)
     // default false เพื่อไม่เปลี่ยนพฤติกรรม caller เดิมที่พึ่งพา alert กลางจาก axios-helper.js
-    async fetchDataGet({ formValue, skipError = false }) {
+    // rethrow: true — ใช้เมื่อ caller ต้อง distinguish สาเหตุ error เอง (เช่น not-found vs server crash)
+    // default false เพื่อไม่เปลี่ยนพฤติกรรม caller เดิม (~18 จุด) ที่พึ่งพา return undefined เมื่อ error
+    async fetchDataGet({ formValue, skipError = false, rethrow = false }) {
       try {
         //console.log('formValue', formValue)
         this.dataSearch = {}
@@ -58,6 +60,9 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
         })
       } catch (error) {
         console.error('Error get stock product data:', error)
+        if (rethrow) {
+          throw error
+        }
       }
     },
 

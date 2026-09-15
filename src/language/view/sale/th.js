@@ -601,6 +601,7 @@ export const saleOrder = {
     noItemsForExcel: 'ไม่มีสินค้าสำหรับสร้าง Excel',
     saveCustomerFirst: 'กรุณาเลือกลูกค้าก่อนบันทึก',
     stockNotFound: 'ไม่พบสินค้าเลขนี้ในคลังครับ',
+    stockLookupFailed: 'ดึงข้อมูลสินค้าไม่สำเร็จ (ERROR {status}) กรุณาแจ้งผู้พัฒนาครับ',
     stockSold: 'สินค้า {stockNumber} ถูกขายไปแล้วครับ',
     stockReservedOther: 'สินค้า {stockNumber} ถูกจองไว้ที่ {soNumbers} แล้วครับ',
     stockReserved: 'สินค้า {stockNumber} ถูกจองไว้แล้วครับ',
