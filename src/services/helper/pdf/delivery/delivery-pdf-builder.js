@@ -425,7 +425,7 @@ export class DeliveryPdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 30, 70, 70, 45, 55, '*', 20], // 8 columns
+        widths: [15, 30, 118, 96, 52, 70, '*', 24], // 8 columns
         body: this.buildRegularTableBody(items, pageNum)
       },
       layout: {
@@ -445,7 +445,7 @@ export class DeliveryPdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 30, 70, 70, 45, 55, '*', 20], // 8 columns
+        widths: [15, 30, 118, 96, 52, 70, '*', 24], // 8 columns
         body: this.buildFinalTableBody(items, pageNum)
       },
       layout: {
@@ -482,9 +482,17 @@ export class DeliveryPdfBuilder {
     items = items || []
 
     items.forEach((item, index) => {
-      const actualIndex = pageNum * 10 + index
+      const actualIndex = pageNum * this.itemsPerPage + index
       const qty = Number(item.qty) || 0
       sumQty += qty
+
+      if (item.materials && Array.isArray(item.materials)) {
+        item.materials.forEach((m) => {
+          if (m.type === 'Gold') sumGold += Number(m.weight) || 0
+          if (m.type === 'Diamond') sumDiamond += Number(m.weight) || 0
+          if (m.type === 'Gem') sumGem += Number(m.weight) || 0
+        })
+      }
 
       body.push([
         this.setTableCell((actualIndex + 1).toString()),
@@ -546,12 +554,12 @@ export class DeliveryPdfBuilder {
             stack: [
               {
                 columns: [
-                  { text: 'ONE PARCEL ONLY', style: 'parcelText', alignment: 'left', width: '70%' },
+                  { text: 'ONE PARCEL ONLY', style: 'parcelText', alignment: 'left', width: '60%' },
                   {
                     text: 'Confirm and Accept',
                     style: 'parcelText',
                     alignment: 'center',
-                    width: '30%'
+                    width: '40%'
                   }
                 ]
               },
@@ -572,32 +580,33 @@ export class DeliveryPdfBuilder {
               },
               {
                 columns: [
-                  { text: 'ORIGIN THAILAND', style: 'parcelText', alignment: 'left', width: '70%' },
+                  { text: 'ORIGIN THAILAND', style: 'parcelText', alignment: 'left', width: '60%' },
                   {
                     text: '______________________________',
                     style: 'parcelText',
                     alignment: 'center',
-                    width: '30%',
+                    width: '40%',
                     margin: [0, 18, 0, 0]
                   }
                 ]
               },
               {
                 columns: [
-                  { text: '', style: 'parcelText', alignment: 'left', width: '70%' },
+                  { text: '', style: 'parcelText', alignment: 'left', width: '60%' },
                   {
                     text: '(Authorized Signature and Company Stamp)',
                     style: 'parcelText',
                     alignment: 'center',
-                    width: '30%'
+                    width: '40%'
                   }
                 ]
               }
             ],
-            width: '90%'
+            width: '100%'
           }
         ],
-        margin: [0, 15, 0, 0],
+        margin: [0, 6, 0, 0],
+        unbreakable: true,
         pageBreakBefore: false
       }
     ]
@@ -631,7 +640,7 @@ export class DeliveryPdfBuilder {
     if (!rows.length) return ''
     return {
       table: {
-        widths: ['*', 15],
+        widths: ['*', 'auto'],
         body: rows
       },
       layout: {
@@ -742,13 +751,13 @@ export class DeliveryPdfBuilder {
   getDocDefinition() {
     return {
       pageSize: 'A4',
-      pageMargins: [10, 10, 10, 40],
+      pageMargins: [10, 10, 10, 30],
       content: [this.getHeaderContent(), ...this.createPages()],
       footer: function (currentPage, pageCount) {
         return {
           text: currentPage.toString() + ' / ' + pageCount,
           alignment: 'center',
-          margin: [0, 10, 0, 0]
+          margin: [0, 8, 0, 0]
         }
       },
       defaultStyle: {

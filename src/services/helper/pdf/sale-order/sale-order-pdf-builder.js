@@ -533,6 +533,14 @@ export class SaleOrderPdfBuilder {
       sumQty += qty
       sumAmount += amount
 
+      if (item.materials && Array.isArray(item.materials)) {
+        item.materials.forEach((m) => {
+          if (m.type === 'Gold') sumGold += Number(m.weight) || 0
+          if (m.type === 'Diamond') sumDiamond += Number(m.weight) || 0
+          if (m.type === 'Gem') sumGem += Number(m.weight) || 0
+        })
+      }
+
       body.push([
         this.setTableCell((actualIndex + 1).toString()),
         item.imageBase64 || item.imageBlobPath || item.imagePath
@@ -807,12 +815,12 @@ export class SaleOrderPdfBuilder {
             stack: [
               {
                 columns: [
-                  { text: 'ONE PARCEL ONLY', style: 'parcelText', alignment: 'left', width: '70%' },
+                  { text: 'ONE PARCEL ONLY', style: 'parcelText', alignment: 'left', width: '60%' },
                   {
                     text: 'Confirm and Accept',
                     style: 'parcelText',
                     alignment: 'center',
-                    width: '30%'
+                    width: '40%'
                   }
                 ]
               },
@@ -833,24 +841,24 @@ export class SaleOrderPdfBuilder {
               },
               {
                 columns: [
-                  { text: 'ORIGIN THAILAND', style: 'parcelText', alignment: 'left', width: '70%' },
+                  { text: 'ORIGIN THAILAND', style: 'parcelText', alignment: 'left', width: '60%' },
                   {
                     text: '______________________________',
                     style: 'parcelText',
                     alignment: 'center',
-                    width: '30%',
+                    width: '40%',
                     margin: [0, 18, 0, 0]
                   }
                 ]
               },
               {
                 columns: [
-                  { text: '', style: 'parcelText', alignment: 'left', width: '70%' },
+                  { text: '', style: 'parcelText', alignment: 'left', width: '60%' },
                   {
                     text: '(Authorized Signature and Company Stamp)',
                     style: 'parcelText',
                     alignment: 'center',
-                    width: '30%'
+                    width: '40%'
                   }
                 ]
               },
@@ -867,10 +875,11 @@ export class SaleOrderPdfBuilder {
               //   ]
               // }
             ],
-            width: '90%'
+            width: '100%'
           }
         ],
-        margin: [0, 15, 0, 0],
+        margin: [0, 6, 0, 0],
+        unbreakable: true,
         pageBreakBefore: false
       }
     ]
@@ -1110,13 +1119,13 @@ export class SaleOrderPdfBuilder {
   getDocDefinition() {
     return {
       pageSize: 'A4',
-      pageMargins: [10, 10, 10, 40],
+      pageMargins: [10, 10, 10, 30],
       content: [this.getHeaderContent(), ...this.createPages()],
       footer: function (currentPage, pageCount) {
         return {
           text: currentPage.toString() + ' / ' + pageCount,
           alignment: 'center',
-          margin: [0, 10, 0, 0]
+          margin: [0, 8, 0, 0]
         }
       },
       defaultStyle: {

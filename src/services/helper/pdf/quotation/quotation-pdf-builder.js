@@ -852,12 +852,12 @@ export class InvoicePdfBuilder {
             stack: [
               {
                 columns: [
-                  { text: 'ONE PARCEL ONLY', style: 'parcelText', alignment: 'left', width: '70%' },
+                  { text: 'ONE PARCEL ONLY', style: 'parcelText', alignment: 'left', width: '60%' },
                   {
                     text: 'Confirm and Accept',
                     style: 'parcelText',
                     alignment: 'center',
-                    width: '30%'
+                    width: '40%'
                   }
                 ]
               },
@@ -884,30 +884,30 @@ export class InvoicePdfBuilder {
               },
               {
                 columns: [
-                  { text: 'ORIGIN THAILAND', style: 'parcelText', alignment: 'left', width: '70%' },
+                  { text: 'ORIGIN THAILAND', style: 'parcelText', alignment: 'left', width: '60%' },
                   {
                     text: '______________________________',
                     style: 'parcelText',
                     alignment: 'center',
-                    width: '30%',
+                    width: '40%',
                     margin: [0, 18, 0, 0]
                   }
                 ]
               },
               {
                 columns: [
-                  { text: '', style: 'parcelText', alignment: 'left', width: '70%' },
+                  { text: '', style: 'parcelText', alignment: 'left', width: '60%' },
                   {
                     text: '(Authorized Signature and Company Stamp)',
                     style: 'parcelText',
                     alignment: 'center',
-                    width: '30%'
+                    width: '40%'
                   }
                 ]
               },
               // Conditions
               {
-                margin: [0, 10, 0, 0],
+                margin: [0, 4, 0, 0],
                 stack: [
                   { text: 'Price is F.O.B. Bangkok not inclued freight and insurance', style: 'conditionText' },
                   { text: 'Production time within 5-7 weeks', style: 'conditionText' },
@@ -918,10 +918,11 @@ export class InvoicePdfBuilder {
                 ]
               }
             ],
-            width: '90%'
+            width: '100%'
           }
         ],
-        margin: [0, 15, 0, 0],
+        margin: [0, 6, 0, 0],
+        unbreakable: true,
         pageBreakBefore: false
       }
     ]
@@ -1152,13 +1153,13 @@ export class InvoicePdfBuilder {
   getDocDefinition() {
     return {
       pageSize: 'A4',
-      pageMargins: [10, 10, 10, 40],
+      pageMargins: [10, 10, 10, 30],
       content: [this.getHeaderContent(), ...this.createPages()], // ลบ getBreakdownSection()
       footer: function (currentPage, pageCount) {
         return {
           text: currentPage.toString() + ' / ' + pageCount,
           alignment: 'center',
-          margin: [0, 10, 0, 0]
+          margin: [0, 8, 0, 0]
         }
       },
       defaultStyle: {
@@ -1260,7 +1261,7 @@ export class InvoicePdfBuilder {
         conditionText: {
           fontSize: 8,
           color: '#393939',
-          margin: [0, 1, 0, 1]
+          margin: [0, 0, 0, 0]
         }
       }
     }

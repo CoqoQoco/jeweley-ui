@@ -849,12 +849,12 @@ export class InvoicePdfBuilder {
             stack: [
               {
                 columns: [
-                  { text: 'ONE PARCEL ONLY', style: 'parcelText', alignment: 'left', width: '70%' },
+                  { text: 'ONE PARCEL ONLY', style: 'parcelText', alignment: 'left', width: '60%' },
                   {
                     text: 'Confirm and Accept',
                     style: 'parcelText',
                     alignment: 'center',
-                    width: '30%'
+                    width: '40%'
                   }
                 ]
               },
@@ -869,47 +869,48 @@ export class InvoicePdfBuilder {
               },
               {
                 columns: [
-                  { text: netWeightText, width: '70%', style: 'weightText' },
-                  { text: sellerText, width: '30%', style: 'parcelText', alignment: 'center' }
+                  { text: netWeightText, width: '60%', style: 'weightText' },
+                  { text: sellerText, width: '40%', style: 'parcelText', alignment: 'center' }
                 ]
               },
               {
                 columns: [
-                  { text: '', width: '70%' },
-                  { text: supportText, width: '30%', style: 'parcelText', alignment: 'center' }
+                  { text: '', width: '60%' },
+                  { text: supportText, width: '40%', style: 'parcelText', alignment: 'center' }
                 ]
               },
               {
                 columns: [
-                  { text: 'ORIGIN THAILAND', style: 'parcelText', alignment: 'left', width: '70%' },
+                  { text: 'ORIGIN THAILAND', style: 'parcelText', alignment: 'left', width: '60%' },
                   {
                     // เว้นที่ให้เซ็นชื่อเหนือเส้น ≈ 40 pt เท่ากันทั้งสองกรณี
                     // เมื่อไม่มี Support แถวนั้นว่างแต่ยังกินความสูง ~11 pt จึงใช้ 29 ชดเชยให้รวมได้ ~40 pt เท่ากับกรณีมี Support (margin 40)
                     text: '______________________________',
                     style: 'parcelText',
                     alignment: 'center',
-                    width: '30%',
+                    width: '40%',
                     margin: [0, supportText ? 40 : 29, 0, 0]
                   }
                 ]
               },
               {
                 columns: [
-                  { text: '', style: 'parcelText', alignment: 'left', width: '70%' },
+                  { text: '', style: 'parcelText', alignment: 'left', width: '60%' },
                   {
                     text: '(Authorized Signature and Company Stamp)',
                     style: 'parcelText',
                     fontSize: 7.5,
                     alignment: 'center',
-                    width: '30%'
+                    width: '40%'
                   }
                 ]
               }
             ],
-            width: '90%'
+            width: '100%'
           }
         ],
-        margin: [0, 15, 0, 0],
+        margin: [0, 6, 0, 0],
+        unbreakable: true,
         pageBreakBefore: false
       }
     ]
@@ -1159,13 +1160,13 @@ export class InvoicePdfBuilder {
   getDocDefinition() {
     return {
       pageSize: 'A4',
-      pageMargins: [10, 10, 10, 40],
+      pageMargins: [10, 10, 10, 30],
       content: [this.getHeaderContent(), ...this.createPages()],
       footer: function (currentPage, pageCount) {
         return {
           text: currentPage.toString() + ' / ' + pageCount,
           alignment: 'center',
-          margin: [0, 10, 0, 0]
+          margin: [0, 8, 0, 0]
         }
       },
       defaultStyle: {
