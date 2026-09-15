@@ -40,7 +40,11 @@ const interfaceForm = {
   goldSize: null,
   hasCostDetail: null,
   pieceStatus: null,
-  locationCodes: []
+  locationCodes: [],
+  materials: [],
+  materialMatch: 'all',
+  priceMin: null,
+  priceMax: null
 }
 
 export default {
@@ -97,6 +101,7 @@ export default {
       await this.masterStore.fetchGold()
       await this.masterStore.fetchGoldSize()
       await this.masterStore.fetchProductType()
+      await this.masterStore.fetchGem()
     })
   }
 }

@@ -12,6 +12,23 @@ import { formatDecimal } from '@/services/utils/decimal.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
 import { getPieceQty, getPieceQtyReserved, getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 
+// ใช้ร่วมกันระหว่าง fetchDataSearch และ fetchDataSearchReceiptExport
+// materials/materialMatchAll/priceMin/priceMax เป็น filter ใหม่ของ StockProduct/List (ดู jeweley-ui plan)
+const buildSearchParam = (formValue) => {
+  const { materialMatch, ...rest } = formValue
+  const materials = formValue.materials?.length ? formValue.materials : undefined
+  const isBlank = (val) => val === null || val === undefined || val === ''
+
+  return {
+    ...rest,
+    locationCodes: formValue.locationCodes?.length ? formValue.locationCodes : undefined,
+    materials,
+    materialMatchAll: materials ? materialMatch !== 'any' : undefined,
+    priceMin: isBlank(formValue.priceMin) ? undefined : Number(formValue.priceMin),
+    priceMax: isBlank(formValue.priceMax) ? undefined : Number(formValue.priceMax)
+  }
+}
+
 export const usrStockProductApiStore = defineStore('stockProduct', {
   state: () => ({
     dataSearch: {},
@@ -26,10 +43,7 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
           take: take,
           skip: skip,
           sort: sort,
-          search: {
-            ...formValue,
-            locationCodes: formValue.locationCodes?.length ? formValue.locationCodes : undefined
-          }
+          search: buildSearchParam(formValue)
         }
 
         const res = await api.jewelry.post('StockProduct/List', param)
@@ -73,9 +87,7 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
           take: 0,
           skip: 0,
           sort: sort,
-          search: {
-            ...formValue
-          }
+          search: buildSearchParam(formValue)
         }
 
         const res = await api.jewelry.post('StockProduct/List', param)
