@@ -83,6 +83,21 @@ const routes = [
         }
       },
       {
+        path: '/gold-loss-dashboard',
+        name: 'gold-loss-dashboard',
+        component: GoldLossDashboard,
+        meta: {
+          Displayname: {
+            en: 'Gold Loss Dashboard',
+            th: 'แดชบอร์ด Gold Loss'
+          },
+          minorShow: true,
+          // ต้องมีทั้ง PRODUCTION_VIEW และ WORKER_VIEW (OR) — 3 หน้าเดิมที่ redirect เข้ามา
+          // (tang-by-worker/slip-by-worker/by-worker) ใช้ WORKER_VIEW เดี่ยวๆ มาก่อน guard เป็น hasAnyPermission (OR)
+          permissions: [PERMISSIONS.PRODUCTION_VIEW, PERMISSIONS.WORKER_VIEW]
+        }
+      },
+      {
         path: '/report-plan-completed-with-all-gold',
         name: 'report-plan-completed-with-all-gold',
         component: reportPlanCompletedWithAllGold,
@@ -145,21 +160,6 @@ const routes = [
           },
           minorShow: true,
           permissions: [PERMISSIONS.PRODUCTION_VIEW]
-        }
-      },
-      {
-        path: '/gold-loss-dashboard',
-        name: 'gold-loss-dashboard',
-        component: GoldLossDashboard,
-        meta: {
-          Displayname: {
-            en: 'Gold Loss Dashboard',
-            th: 'แดชบอร์ด Gold Loss'
-          },
-          minorShow: true,
-          // ต้องมีทั้ง PRODUCTION_VIEW และ WORKER_VIEW (OR) — 3 หน้าเดิมที่ redirect เข้ามา
-          // (tang-by-worker/slip-by-worker/by-worker) ใช้ WORKER_VIEW เดี่ยวๆ มาก่อน guard เป็น hasAnyPermission (OR)
-          permissions: [PERMISSIONS.PRODUCTION_VIEW, PERMISSIONS.WORKER_VIEW]
         }
       },
       {
