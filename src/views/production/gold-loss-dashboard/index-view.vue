@@ -19,21 +19,27 @@
       <template #overview>
         <OverviewTabView :filter="filter" @navigate-tab="onNavigateTab" />
       </template>
+      <!-- [PLAN-HIDDEN] stage tab — client wants slip-only dashboard for now
       <template #stage>
         <StageTabView :filter="filter" :initialGroup="initialStageGroup" @update:group="onStageGroupChange" />
       </template>
+      -->
+      <!-- [PLAN-HIDDEN] worker tab
       <template #worker>
         <WorkerTabView :filter="filter" @navigate-tab="onNavigateTab" />
       </template>
+      -->
       <template #slip-tang>
         <TangSlipTabView :filter="filter" />
       </template>
       <template #slip-setter>
         <SetterSlipTabView :filter="filter" />
       </template>
+      <!-- [PLAN-HIDDEN] reconcile tab
       <template #reconcile>
         <ReconcileTabView :filter="filter" />
       </template>
+      -->
     </TabViewGeneric>
   </div>
 </template>
@@ -48,16 +54,17 @@ import TabViewGeneric from '@/components/generic/TabViewGeneric.vue'
 
 import GoldLossDashboardFilterView from './components/dashboard-filter-view.vue'
 import OverviewTabView from './components/overview-tab-view.vue'
-import StageTabView from './components/stage-tab/index-tab-view.vue'
-import WorkerTabView from './components/worker-tab/index-tab-view.vue'
+// [PLAN-HIDDEN] import StageTabView from './components/stage-tab/index-tab-view.vue'
+// [PLAN-HIDDEN] import WorkerTabView from './components/worker-tab/index-tab-view.vue'
 import TangSlipTabView from './components/tang-slip-tab/index-tab-view.vue'
 import SetterSlipTabView from './components/setter-slip-tab/index-tab-view.vue'
-import ReconcileTabView from './components/reconcile-tab/index-tab-view.vue'
+// [PLAN-HIDDEN] import ReconcileTabView from './components/reconcile-tab/index-tab-view.vue'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
-const VALID_TABS = ['overview', 'stage', 'worker', 'slip-tang', 'slip-setter', 'reconcile']
+// [PLAN-HIDDEN] const VALID_TABS = ['overview', 'stage', 'worker', 'slip-tang', 'slip-setter', 'reconcile']
+const VALID_TABS = ['overview', 'slip-tang', 'slip-setter']
 const THAI_TIMEZONE = 'Asia/Bangkok'
 // จำนวนเดือนที่เห็นเป็น default (เดือนปัจจุบัน + ย้อนหลัง 5 เดือน) — ให้เห็นแนวโน้มโดยไม่ต้องเลือกช่วงเอง
 const DEFAULT_MONTHS_BACK = 6
@@ -85,11 +92,11 @@ export default {
     TabViewGeneric,
     GoldLossDashboardFilterView,
     OverviewTabView,
-    StageTabView,
-    WorkerTabView,
+    // [PLAN-HIDDEN] StageTabView,
+    // [PLAN-HIDDEN] WorkerTabView,
     TangSlipTabView,
-    SetterSlipTabView,
-    ReconcileTabView
+    SetterSlipTabView
+    // [PLAN-HIDDEN] ReconcileTabView
   },
 
   data() {
@@ -107,11 +114,11 @@ export default {
       const t = (key) => this.$t(`view.production.goldLossDashboard.${key}`)
       return [
         { value: 'overview', label: t('tabOverview') },
-        { value: 'stage', label: t('tabStage'), group: 'plan', groupLabel: t('groupPlan') },
-        { value: 'worker', label: t('tabWorker'), group: 'plan', groupLabel: t('groupPlan') },
+        // [PLAN-HIDDEN] { value: 'stage', label: t('tabStage'), group: 'plan', groupLabel: t('groupPlan') },
+        // [PLAN-HIDDEN] { value: 'worker', label: t('tabWorker'), group: 'plan', groupLabel: t('groupPlan') },
         { value: 'slip-tang', label: t('tabSlipTang'), group: 'slip', groupLabel: t('groupSlip') },
-        { value: 'slip-setter', label: t('tabSlipSetter'), group: 'slip', groupLabel: t('groupSlip') },
-        { value: 'reconcile', label: t('tabReconcile'), group: 'both', groupLabel: t('groupBoth') }
+        { value: 'slip-setter', label: t('tabSlipSetter'), group: 'slip', groupLabel: t('groupSlip') }
+        // [PLAN-HIDDEN] { value: 'reconcile', label: t('tabReconcile'), group: 'both', groupLabel: t('groupBoth') }
       ]
     }
   },

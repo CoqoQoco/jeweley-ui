@@ -1379,6 +1379,9 @@ export default {
       colReturned: 'คืน (g)',
       colLoss: 'Loss (g)',
       colLossPercent: '%loss',
+      colAllowed: 'ยอมให้ (g)',
+      colAllowedPercent: 'ยอมให้ %',
+      colOverAllowed: 'เกินที่ยอมให้ (g)',
       colWorkerCode: 'รหัสช่าง',
       colWorkerName: 'ชื่อช่าง',
 
@@ -1395,7 +1398,16 @@ export default {
       actionPlanTestWorker: 'พบช่างชื่อ {name} ปนอยู่ในข้อมูลจริง {jobCount} งาน {weight}',
       actionSlipNegative: 'ช่าง {code} {name} มีทองคืนมากกว่าจ่ายรวม {weight} ({slipCount} ใบ)',
       actionLowCoverage: '% ผูกใบกับงานอยู่ที่ {percent} ต่ำกว่าเกณฑ์ 80%',
-      actionMoreItems: 'และอีก {count} รายการ'
+      actionMoreItems: 'และอีก {count} รายการ',
+
+      sourceSlipTangTitle: 'ใบช่างแต่ง',
+      sourceSlipSetterTitle: 'ใบช่างฝัง',
+      kpiSlipLossPercentSub: '{percent} ของที่เบิก · ยอมให้ {threshold}',
+      kpiSlipLossPercentSubNoThreshold: '{percent} ของที่เบิก',
+      chartSlipCompareThresholdSeries: 'ยอมให้ loss {dept}',
+      chartGoalAllowedLoss: 'ยอมให้ loss ตามใบ',
+      slipAllowedLegend: 'ยอมให้ loss ตามใบ · เฉลี่ย {percent}',
+      chartRankingTooltip: 'หาย {loss} · ยอมให้ {allowed} ({percent})'
     },
 
     groupByLabel: 'จัดกลุ่มตาม:',
@@ -1427,6 +1439,11 @@ export default {
       both: {
         summary: 'ที่มา: plan_status_detail + tang_slip + worker_slip · เทียบ 2 ฝั่งรายเดือน × แผนก',
         detail: 'แท็บนี้เป็นที่เดียวที่นำตัวเลขฝั่งแผนผลิตกับฝั่งใบมาวางคู่กันได้ ส่วนต่างที่เกิดจากเศษ/ก้าน/ลวดที่คืนผ่านใบถือว่า "อธิบายได้" ส่วนที่เหลือคือช่องโหว่จริง ซึ่งมักแปลว่าออกใบไม่ครบทุกงานครับ'
+      },
+
+      slip: {
+        summary: 'ที่มา: ตาราง tang_slip + worker_slip · คีย์จากหน้า "ออกใบ Gold Loss ช่างแต่ง" และ "ออกใบ Gold Loss ช่างฝัง" · ยอมให้ loss = %loss ที่คีย์ในใบ เฉลี่ยถ่วงน้ำหนักตามน้ำหนักทอง',
+        detail: 'ตัวเลขชุดนี้มาจากใบ Gold Loss ที่ออกตอนปิดงวดของช่างแต่งและช่างฝัง ใช้คิดเงินกับช่างจริง ยอมให้ loss คือ %loss ที่คีย์ไว้ในแต่ละใบ (ช่างแต่งตั้งต่อใบ ช่างฝังตั้งต่อรายการ) นำมาเฉลี่ยถ่วงน้ำหนักตามน้ำหนักทองที่ใช้คิด ไม่ใช่ค่าเฉลี่ยตรงๆ ถ้า %loss จริงสูงกว่าเส้นยอมให้ loss แปลว่าหายเกินที่ยอมให้ครับ'
       }
     }
   }

@@ -13,7 +13,7 @@
 
   Props:
     type      — 'donut' | 'bar' | 'area' | 'line' | 'pie' (default 'donut')
-    series    — Array (required) — apexcharts series
+    series    — Array (required) — apexcharts series (data point เป็นตัวเลขธรรมดาหรือ object {x,y,...} ก็ได้)
     options   — Object (default {}) — merge ทับ default options (props.options ชนะ)
     height    — Number|String (default 320)
     loading   — Boolean (default false) — แสดง spinner แทน chart
@@ -27,6 +27,12 @@
     colors: CHART_PALETTE (จาก chart-colors.js)
     dataLabels: { enabled: false }
     legend: { position: 'bottom', fontSize: '13px' }
+
+  หมายเหตุ: `<apexchart>` ผูก `:key="chartKey"` (= `${type}-${heightPx}`) ตั้งใจ — vue3-apexcharts
+  watch prop `height` แล้วเรียก `refresh()` (destroy + async re-init) พร้อมๆ กับที่ watcher ของ
+  `options`/`series` เรียก `chart.value.updateOptions/updateSeries` บน instance ที่กำลังถูก destroy
+  อยู่ ทำให้ throw `TypeError: Cannot read properties of null` และกราฟหายไปเฉยๆ — เปลี่ยน key เมื่อ
+  height/type เปลี่ยนจึง remount component ใหม่ทั้งตัวแทนการแข่ง race ของ watcher เดิม
 -->
 <template>
   <div class="chart-generic-wrap">
@@ -39,7 +45,7 @@
         <span>{{ resolvedEmptyText }}</span>
       </slot>
     </div>
-    <apexchart v-else :type="type" :height="height" :options="mergedOptions" :series="series" />
+    <apexchart v-else :key="chartKey" :type="type" :height="height" :options="mergedOptions" :series="series" />
   </div>
 </template>
 
@@ -84,6 +90,12 @@ export default {
       return typeof this.height === 'number' ? `${this.height}px` : this.height
     },
 
+    // เปลี่ยน key ทุกครั้งที่ type/height เปลี่ยน → บังคับ remount <apexchart> แทนให้ vue3-apexcharts
+    // เรียก refresh() เอง (ดูหมายเหตุใน header comment ด้านบน)
+    chartKey() {
+      return `${this.type}-${this.heightPx}`
+    },
+
     defaultOptions() {
       return {
         chart: { toolbar: { show: false } },
@@ -102,7 +114,12 @@ export default {
       const total = this.series.reduce((sum, s) => {
         if (typeof s === 'number') return sum + s
         if (s && Array.isArray(s.data)) {
-          return sum + s.data.reduce((a, b) => a + (Number(b) || 0), 0)
+          // data point อาจเป็น object เช่น { x, y, goals } (ไม่ใช่ตัวเลขล้วน) — อ่าน .y ก่อนแปลงเป็นตัวเลข
+          // มิฉะนั้น Number(objectทั้งก้อน) จะได้ NaN แล้วถูกตีความว่า series ว่างเปล่าทั้งที่มีข้อมูลจริง
+          return sum + s.data.reduce((a, b) => {
+            const val = b !== null && typeof b === 'object' ? b.y : b
+            return a + (Number(val) || 0)
+          }, 0)
         }
         return sum
       }, 0)

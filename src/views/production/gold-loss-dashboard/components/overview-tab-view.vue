@@ -1,5 +1,7 @@
 <!--
-  overview-tab-view — KPI ภาพรวม 2 แถวตามต้นทาง (PLAN/SLIP) + กราฟเทียบ 2 ฝั่ง + กล่อง "ต้องดำเนินการ"
+  overview-tab-view — สรุปข้อมูล Gold Loss จากใบ (SLIP) เท่านั้น ตามที่ลูกค้าขอ — ฝั่ง PLAN
+  (แผนผลิต/กระทบยอด/ต่อช่าง) ถูกคอมเมนต์ปิดไว้ชั่วคราวทั้งหมด ดู marker [PLAN-HIDDEN] เพื่อ grep
+  จุดที่ถูกปิดและกู้คืนได้ทุกจุด
 
   เรียก endpoint ตรงด้วย axios-helper (ไม่ผ่าน pinia store ของแท็บอื่น) เพราะ store ของแท็บ
   Stage/TangSlip/Reconcile/Worker เป็น singleton ที่แท็บนั้นๆ ยังอ่านอยู่แม้สลับออกไปแล้ว
@@ -8,13 +10,20 @@
 
   แถว SLIP ยิง endpoint ต่อช่างแบบ groupByMonth:true ทั้งช่างแต่ง (ReportGoldLossTangByWorker) และ
   ช่างฝัง (ReportGoldLossSlipByWorker) แยกกัน 2 endpoint เพราะชื่อฟิลด์ไม่ตรงกัน — map เป็น shape กลาง
-  {workerCode, workerName, year, month, slipCount, issued, returned, loss} ก่อนใช้เสมอ (ดู normalizeTangRow/
-  normalizeSetterRow) ฝั่งช่างฝังไม่มีฟิลด์ loss ตรงๆ ต้องคำนวณจาก totalWeightSend - totalWeightCheck เอง
+  {workerCode, workerName, year, month, slipCount, issued, returned, loss, allowed, allowedBase} ก่อนใช้เสมอ
+  (ดู normalizeTangRow/normalizeSetterRow) ฝั่งช่างฝังไม่มีฟิลด์ loss ตรงๆ ต้องคำนวณจาก
+  totalWeightSend - totalWeightCheck เอง
+
+  "เกณฑ์ในใบ" (threshold%) = Σ allowed / Σ allowedBase × 100 (ถ่วงน้ำหนักตามน้ำหนักทอง ไม่ใช่ค่าเฉลี่ยตรงๆ —
+  ยืนยันแล้วบน prod: เฉลี่ยตรงๆ 3.06% vs ถ่วงน้ำหนัก 2.48%) ช่างแต่ง: allowed=totalAllowedLoss,
+  allowedBase=totalAllowedLossBase (ฟิลด์ใหม่ฝั่ง API — อาจยังไม่มีจนกว่าจะ deploy ต้อง fallback เป็น 0
+  → threshold = null); ช่างฝัง: allowed=totalWeightLossAllowed, allowedBase=totalWeightCheck (มีอยู่แล้ว)
 -->
 <template>
   <div>
-    <SourceStripGeneric source="both" />
+    <SourceStripGeneric source="slip" />
 
+    <!-- [PLAN-HIDDEN] KPI จากแผนผลิต (PLAN) — ลูกค้าขอให้ดูเฉพาะข้อมูลจากใบก่อน
     <SectionCardGeneric
       :title="$t('view.production.goldLossDashboard.overview.sourcePlanTitle')"
       icon="bi-clipboard-data"
@@ -65,12 +74,13 @@
         </div>
       </div>
     </SectionCardGeneric>
+    -->
 
     <SectionCardGeneric
-      :title="$t('view.production.goldLossDashboard.overview.sourceSlipTitle')"
+      :title="$t('view.production.goldLossDashboard.overview.sourceSlipTangTitle')"
       icon="bi-receipt"
-      accent="green"
-      headerStyle="legend"
+      accent="main"
+      headerStyle="dashboard"
       class="section-card-block"
     >
       <div class="kpi-grid">
@@ -78,7 +88,58 @@
           <span class="kpi-card__tag kpi-card__tag--slip">SLIP</span>
           <StatCardGeneric
             icon="bi-journal-text"
-            :value="formatNumberValue(slipSummaryKpi.slipCount)"
+            :value="formatNumberValue(slipKpiByDept.tang.slipCount)"
+            :label="$t('view.production.goldLossDashboard.overview.kpiSlipTotalCount')"
+            :subLabel="emptySubLabel"
+            variant="main"
+          />
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-card__tag kpi-card__tag--slip">SLIP</span>
+          <StatCardGeneric
+            icon="bi-box-arrow-up"
+            :value="formatWeightValue(slipKpiByDept.tang.issued)"
+            :label="$t('view.production.goldLossDashboard.overview.kpiSlipTotalIssued')"
+            :subLabel="emptySubLabel"
+            variant="main"
+          />
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-card__tag kpi-card__tag--slip">SLIP</span>
+          <StatCardGeneric
+            icon="bi-box-arrow-in-down"
+            :value="formatWeightValue(slipKpiByDept.tang.returned)"
+            :label="$t('view.production.goldLossDashboard.overview.kpiSlipTotalReturned')"
+            :subLabel="emptySubLabel"
+            variant="main"
+          />
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-card__tag kpi-card__tag--slip">SLIP</span>
+          <StatCardGeneric
+            icon="bi-droplet-half"
+            :value="formatWeightValue(slipKpiByDept.tang.loss)"
+            :label="$t('view.production.goldLossDashboard.overview.kpiSlipTotalLoss')"
+            :subLabel="lossSubLabel(slipKpiByDept.tang)"
+            variant="main"
+          />
+        </div>
+      </div>
+    </SectionCardGeneric>
+
+    <SectionCardGeneric
+      :title="$t('view.production.goldLossDashboard.overview.sourceSlipSetterTitle')"
+      icon="bi-receipt"
+      accent="green"
+      headerStyle="dashboard"
+      class="section-card-block"
+    >
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-card__tag kpi-card__tag--slip">SLIP</span>
+          <StatCardGeneric
+            icon="bi-journal-text"
+            :value="formatNumberValue(slipKpiByDept.setter.slipCount)"
             :label="$t('view.production.goldLossDashboard.overview.kpiSlipTotalCount')"
             :subLabel="emptySubLabel"
             variant="green"
@@ -88,7 +149,7 @@
           <span class="kpi-card__tag kpi-card__tag--slip">SLIP</span>
           <StatCardGeneric
             icon="bi-box-arrow-up"
-            :value="formatWeightValue(slipSummaryKpi.issued)"
+            :value="formatWeightValue(slipKpiByDept.setter.issued)"
             :label="$t('view.production.goldLossDashboard.overview.kpiSlipTotalIssued')"
             :subLabel="emptySubLabel"
             variant="green"
@@ -98,7 +159,7 @@
           <span class="kpi-card__tag kpi-card__tag--slip">SLIP</span>
           <StatCardGeneric
             icon="bi-box-arrow-in-down"
-            :value="formatWeightValue(slipSummaryKpi.returned)"
+            :value="formatWeightValue(slipKpiByDept.setter.returned)"
             :label="$t('view.production.goldLossDashboard.overview.kpiSlipTotalReturned')"
             :subLabel="emptySubLabel"
             variant="green"
@@ -108,9 +169,9 @@
           <span class="kpi-card__tag kpi-card__tag--slip">SLIP</span>
           <StatCardGeneric
             icon="bi-droplet-half"
-            :value="formatWeightValue(slipSummaryKpi.loss)"
+            :value="formatWeightValue(slipKpiByDept.setter.loss)"
             :label="$t('view.production.goldLossDashboard.overview.kpiSlipTotalLoss')"
-            :subLabel="emptySubLabel"
+            :subLabel="lossSubLabel(slipKpiByDept.setter)"
             variant="green"
           />
         </div>
@@ -159,6 +220,9 @@
               {{ $t('view.production.goldLossDashboard.overview.slipDeptSetter') }}
             </button>
           </div>
+          <span class="slip-dept-toggle-row__threshold">
+            <span class="goal-legend-tick"></span>{{ $t('view.production.goldLossDashboard.overview.slipAllowedLegend', { percent: selectedDeptThresholdLabel }) }}
+          </span>
         </div>
         <ChartGeneric
           type="bar"
@@ -189,6 +253,12 @@
         <template #lossPercentTemplate="{ data }">
           <div class="text-right">{{ formatPercentValue(data.lossPercent) }}</div>
         </template>
+        <template #allowedPercentTemplate="{ data }">
+          <div class="text-right">{{ data.allowedPercent != null ? formatPercentValue(data.allowedPercent) : '—' }}</div>
+        </template>
+        <template #overAllowedTemplate="{ data }">
+          <div class="text-right" :class="{ 'over-allowed--exceeded': data.overAllowed > 0 }">{{ formatSignedDecimal(data.overAllowed) }}</div>
+        </template>
 
         <template #expansion="{ data }">
           <div class="by-worker-block">
@@ -206,6 +276,12 @@
               <template #lossPercentTemplate="{ data: row }">
                 <div class="text-right">{{ formatPercentValue(row.lossPercent) }}</div>
               </template>
+              <template #allowedPercentTemplate="{ data: row }">
+                <div class="text-right">{{ row.allowedPercent != null ? formatPercentValue(row.allowedPercent) : '—' }}</div>
+              </template>
+              <template #overAllowedTemplate="{ data: row }">
+                <div class="text-right" :class="{ 'over-allowed--exceeded': row.overAllowed > 0 }">{{ formatSignedDecimal(row.overAllowed) }}</div>
+              </template>
             </BaseDataTable>
           </div>
         </template>
@@ -219,12 +295,15 @@
               <span class="result-footer-item">{{ $t('view.production.goldLossDashboard.overview.colReturned') }}: {{ formatDecimal(slipMonthlyGrandTotal.returned) }}</span>
               <span class="result-footer-item">{{ $t('view.production.goldLossDashboard.overview.colLoss') }}: {{ formatDecimal(slipMonthlyGrandTotal.loss) }}</span>
               <span class="result-footer-item">{{ $t('view.production.goldLossDashboard.overview.colLossPercent') }}: {{ formatPercentValue(slipMonthlyGrandTotal.lossPercent) }}</span>
+              <span class="result-footer-item">{{ $t('view.production.goldLossDashboard.overview.colAllowed') }}: {{ formatDecimal(slipMonthlyGrandTotal.allowed) }} ({{ slipMonthlyGrandTotal.allowedPercent != null ? formatPercentValue(slipMonthlyGrandTotal.allowedPercent) : '—' }})</span>
+              <span class="result-footer-item" :class="{ 'over-allowed--exceeded': slipMonthlyGrandTotal.overAllowed > 0 }">{{ $t('view.production.goldLossDashboard.overview.colOverAllowed') }}: {{ formatSignedDecimal(slipMonthlyGrandTotal.overAllowed) }}</span>
             </div>
           </div>
         </template>
       </BaseDataTable>
     </SectionCardGeneric>
 
+    <!-- [PLAN-HIDDEN] banner กระทบยอด PLAN vs SLIP — ต้องเปิดใช้อีกครั้งพร้อมแท็บ reconcile
     <div class="reconcile-banner" :class="{ 'reconcile-banner--alert': isLowCoverage }">
       <i class="bi bi-info-circle-fill"></i>
       <span>{{ reconcileBannerText }}</span>
@@ -235,7 +314,9 @@
         @click="goToTab('reconcile')"
       />
     </div>
+    -->
 
+    <!-- [PLAN-HIDDEN] กราฟแนวโน้ม %loss รายเดือน แผน เทียบ ใบ — ต้องเปิดใช้อีกครั้งพร้อมแท็บ reconcile
     <SectionCardGeneric
       :title="$t('view.production.goldLossDashboard.overview.chartTitle')"
       icon="bi-graph-up"
@@ -251,6 +332,7 @@
         :emptyText="$t('common.label.noData')"
       />
     </SectionCardGeneric>
+    -->
 
     <SectionCardGeneric
       :title="$t('view.production.goldLossDashboard.overview.actionTitle')"
@@ -274,7 +356,7 @@
           <ButtonGeneric
             variant="green"
             :label="$t('common.btn.view')"
-            @click="goToTab('worker')"
+            @click="goToTab('slip-tang')"
           />
         </div>
       </div>
@@ -303,7 +385,7 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 // แผนกที่มีการคืนทองจริง — เหมือนกับแท็บ Stage/ต่อช่าง
 const GOLD_LOSS_STAGE_CODES = [50, 60, 70, 80, 90]
 
-// เกณฑ์ของกฎ "ต้องดำเนินการ" ข้อ 1 และ 4 (ดูพิมพ์เขียว Fig. 3)
+// เกณฑ์ของกฎ "ต้องดำเนินการ" ข้อ 1 และ 4 (ดูพิมพ์เขียว Fig. 3) — [PLAN-HIDDEN] ข้อ 1/4 ปิดอยู่ แต่เก็บ constant ไว้กู้คืนได้
 const DIFF_THRESHOLD_PERCENT = 2
 const MIN_JOB_COUNT_FOR_ACTION = 10
 const LINK_COVERAGE_THRESHOLD = 80
@@ -411,10 +493,10 @@ export default {
     // ข้อความเสริมที่ว่างเปล่า — สำรองพื้นที่บรรทัด sub-label ของ StatCardGeneric ไว้เสมอ
     // เพื่อให้การ์ดที่ไม่มีคำอธิบายย่อยสูงเท่ากับการ์ดที่มี (ดูข้อ 2 ของแผน)
     emptySubLabel() {
-      return ' '
+      return ' '
     },
 
-    // map field ของ endpoint ช่างแต่งให้เป็น shape กลาง {workerCode, workerName, year, month, slipCount, issued, returned, loss}
+    // map field ของ endpoint ช่างแต่งให้เป็น shape กลาง {workerCode, workerName, year, month, slipCount, issued, returned, loss, allowed, allowedBase}
     normalizedTangRows() {
       return this.tangWorkerRows.map((r) => this.normalizeTangRow(r))
     },
@@ -428,8 +510,9 @@ export default {
       return this.slipDept === 'tang' ? this.normalizedTangRows : this.normalizedSetterRows
     },
 
-    // 4 การ์ดสรุปฝั่ง SLIP (รวม 2 แผนก) — ต้นทางเดียวกับกราฟ/ตารางด้านล่างเป๊ะ ไม่ยิง endpoint เพิ่ม
-    slipSummaryKpi() {
+    // KPI ต่อแผนก (tang/setter) — รวมยอด + %loss + เกณฑ์ในใบถ่วงน้ำหนัก (ดูหมายเหตุหัวไฟล์) — ต้นทางเดียวกับ
+    // กราฟ/ตารางด้านล่างเป๊ะ ไม่ยิง endpoint เพิ่ม
+    slipKpiByDept() {
       const combine = (rows) =>
         rows.reduce(
           (acc, r) => {
@@ -437,17 +520,22 @@ export default {
             acc.issued += r.issued
             acc.returned += r.returned
             acc.loss += r.loss
+            acc.allowed += r.allowed
+            acc.allowedBase += r.allowedBase
             return acc
           },
-          { slipCount: 0, issued: 0, returned: 0, loss: 0 }
+          { slipCount: 0, issued: 0, returned: 0, loss: 0, allowed: 0, allowedBase: 0 }
         )
-      const tang = combine(this.normalizedTangRows)
-      const setter = combine(this.normalizedSetterRows)
+
+      const buildKpi = (totals) => ({
+        ...totals,
+        lossPercent: this.computeLossPercent(totals.loss, totals.issued),
+        thresholdPercent: this.computeThresholdPercent(totals.allowed, totals.allowedBase)
+      })
+
       return {
-        slipCount: tang.slipCount + setter.slipCount,
-        issued: tang.issued + setter.issued,
-        returned: tang.returned + setter.returned,
-        loss: tang.loss + setter.loss
+        tang: buildKpi(combine(this.normalizedTangRows)),
+        setter: buildKpi(combine(this.normalizedSetterRows))
       }
     },
 
@@ -498,20 +586,30 @@ export default {
       return this.aggregateMonthlyTotals(this.normalizedSetterRows)
     },
 
-    // กราฟที่ 1 — แท่งคู่ต่อเดือน (ช่างแต่ง/ช่างฝัง) แกนซ้าย = loss(g) + เส้น %loss แกนขวา ต่อแผนก
+    // กราฟที่ 1 — แท่งคู่ต่อเดือน (ช่างแต่ง/ช่างฝัง) + เส้น %loss ต่อแผนก + เส้นเกณฑ์ในใบต่อแผนก (ประ)
+    // เดือนที่ไม่มีใบของแผนกนั้น (ไม่มีแถว หรือ issued = 0) ให้ %loss/เกณฑ์เป็น null ไม่ใช่ 0 กันเส้นดิ่งลง 0% หลอกตา
     slipCompareSeries() {
       const tangLabel = this.$t('view.production.goldLossDashboard.overview.slipDeptTang')
       const setterLabel = this.$t('view.production.goldLossDashboard.overview.slipDeptSetter')
 
       const tangLossData = this.slipMonthKeys.map((k) => this.roundDecimal((this.tangMonthlyTotals.get(k) || {}).loss || 0))
       const setterLossData = this.slipMonthKeys.map((k) => this.roundDecimal((this.setterMonthlyTotals.get(k) || {}).loss || 0))
+
       const tangPctData = this.slipMonthKeys.map((k) => {
         const row = this.tangMonthlyTotals.get(k)
-        return row ? this.computeLossPercent(row.loss, row.issued) : 0
+        return row && row.issued > 0 ? this.computeLossPercent(row.loss, row.issued) : null
       })
       const setterPctData = this.slipMonthKeys.map((k) => {
         const row = this.setterMonthlyTotals.get(k)
-        return row ? this.computeLossPercent(row.loss, row.issued) : 0
+        return row && row.issued > 0 ? this.computeLossPercent(row.loss, row.issued) : null
+      })
+      const tangThresholdData = this.slipMonthKeys.map((k) => {
+        const row = this.tangMonthlyTotals.get(k)
+        return row && row.issued > 0 ? this.computeThresholdPercent(row.allowed, row.allowedBase) : null
+      })
+      const setterThresholdData = this.slipMonthKeys.map((k) => {
+        const row = this.setterMonthlyTotals.get(k)
+        return row && row.issued > 0 ? this.computeThresholdPercent(row.allowed, row.allowedBase) : null
       })
 
       return [
@@ -526,6 +624,16 @@ export default {
           name: this.$t('view.production.goldLossDashboard.overview.chartSlipComparePctSeries', { dept: setterLabel }),
           type: 'line',
           data: setterPctData
+        },
+        {
+          name: this.$t('view.production.goldLossDashboard.overview.chartSlipCompareThresholdSeries', { dept: tangLabel }),
+          type: 'line',
+          data: tangThresholdData
+        },
+        {
+          name: this.$t('view.production.goldLossDashboard.overview.chartSlipCompareThresholdSeries', { dept: setterLabel }),
+          type: 'line',
+          data: setterThresholdData
         }
       ]
     },
@@ -535,20 +643,29 @@ export default {
       const setterLabel = this.$t('view.production.goldLossDashboard.overview.slipDeptSetter')
       const pctTangName = this.$t('view.production.goldLossDashboard.overview.chartSlipComparePctSeries', { dept: tangLabel })
       const pctSetterName = this.$t('view.production.goldLossDashboard.overview.chartSlipComparePctSeries', { dept: setterLabel })
+      const thresholdTangName = this.$t('view.production.goldLossDashboard.overview.chartSlipCompareThresholdSeries', { dept: tangLabel })
+      const thresholdSetterName = this.$t('view.production.goldLossDashboard.overview.chartSlipCompareThresholdSeries', { dept: setterLabel })
 
       const series = this.slipCompareSeries
       const weightValues = [...series[0].data, ...series[1].data]
-      const pctValues = [...series[2].data, ...series[3].data]
+      const pctValues = [...series[2].data, ...series[3].data, ...series[4].data, ...series[5].data].filter(
+        (v) => v !== null && v !== undefined
+      )
       const weightMaxRaw = weightValues.length ? Math.max(...weightValues) : 0
       const pctMaxRaw = pctValues.length ? Math.max(...pctValues) : 0
-      // ให้ทั้ง 2 แท่ง/2 เส้นใช้สเกลเดียวกัน (แม้แกนที่สองจะถูกซ่อน) ไม่งั้นความสูงเทียบกันไม่ได้จริง
+      // ให้ทั้ง 2 แท่ง/4 เส้นใช้สเกลเดียวกัน (แม้แกนที่ซ่อนจะไม่แสดง) ไม่งั้นความสูงเทียบกันไม่ได้จริง
       const weightMax = weightMaxRaw > 0 ? Math.ceil(weightMaxRaw * 1.2) : undefined
       const pctMax = pctMaxRaw > 0 ? Math.ceil(pctMaxRaw * 1.2) : undefined
 
+      const pctFormatter = (v) => (v === null || v === undefined ? '—' : `${Number(v).toFixed(2)}%`)
+
       return {
         chart: { stacked: false },
+        colors: [CHART_TOKENS.primary, CHART_TOKENS.green, CHART_TOKENS.primary, CHART_TOKENS.green, CHART_TOKENS.primary, CHART_TOKENS.green],
         plotOptions: { bar: { columnWidth: '45%' } },
-        stroke: { width: [0, 0, 3, 3], curve: 'smooth' },
+        fill: { opacity: [0.85, 0.85, 1, 1, 1, 1] },
+        stroke: { width: [0, 0, 3, 3, 2, 2], dashArray: [0, 0, 0, 0, 6, 6], curve: 'smooth' },
+        markers: { size: [0, 0, 4, 4, 4, 4], strokeWidth: 0 },
         xaxis: { categories: this.slipMonthKeys.map((k) => this.formatMonthKeyLabel(k)) },
         yaxis: [
           {
@@ -569,7 +686,7 @@ export default {
             opposite: true,
             min: 0,
             max: pctMax,
-            labels: { formatter: (v) => `${Number(v).toFixed(2)}%` }
+            labels: { formatter: pctFormatter }
           },
           {
             seriesName: pctSetterName,
@@ -577,17 +694,49 @@ export default {
             min: 0,
             max: pctMax,
             show: false
+          },
+          {
+            seriesName: thresholdTangName,
+            opposite: true,
+            min: 0,
+            max: pctMax,
+            show: false
+          },
+          {
+            seriesName: thresholdSetterName,
+            opposite: true,
+            min: 0,
+            max: pctMax,
+            show: false
           }
-        ]
+        ],
+        tooltip: {
+          shared: true,
+          y: {
+            formatter: (value, opts) => {
+              if (value === null || value === undefined) return '—'
+              const seriesIndex = opts && typeof opts.seriesIndex === 'number' ? opts.seriesIndex : 0
+              return seriesIndex <= 1 ? this.formatWeightValue(value) : `${Number(value).toFixed(2)}%`
+            }
+          }
+        }
       }
     },
 
-    // รวม loss ทั้งช่วงต่อช่าง (ของแผนกที่เลือกอยู่) เรียงมากไปน้อย — ใช้ทั้งตัด top N และเป็นข้อมูลกราฟอันดับ
+    // รวม loss/เกณฑ์ในใบทั้งช่วงต่อช่าง (ของแผนกที่เลือกอยู่) เรียงมากไปน้อย — ใช้ทั้งตัด top N และเป็นข้อมูลกราฟอันดับ
     selectedDeptWorkerTotals() {
       const map = new Map()
       this.selectedDeptRows.forEach((r) => {
-        const acc = map.get(r.workerCode) || { workerCode: r.workerCode, workerName: r.workerName, totalLoss: 0 }
+        const acc = map.get(r.workerCode) || {
+          workerCode: r.workerCode,
+          workerName: r.workerName,
+          totalLoss: 0,
+          totalAllowed: 0,
+          totalAllowedBase: 0
+        }
         acc.totalLoss += r.loss
+        acc.totalAllowed += r.allowed
+        acc.totalAllowedBase += r.allowedBase
         map.set(r.workerCode, acc)
       })
       return [...map.values()].sort((a, b) => b.totalLoss - a.totalLoss)
@@ -601,20 +750,40 @@ export default {
       return this.selectedDeptWorkerTotals.length > MAX_WORKER_BARS
     },
 
-    // กราฟที่ 2 — แท่งเรียงอันดับ loss รวมทั้งช่วง (สีเดียว) ของทุกช่างในแผนกที่เลือก เกิน 12 คนค่อยรวมท้ายเป็น "อื่นๆ"
+    selectedDeptColor() {
+      return this.slipDept === 'tang' ? CHART_TOKENS.primary : CHART_TOKENS.green
+    },
+
+    // เกณฑ์ในใบเฉลี่ยถ่วงน้ำหนักของแผนกที่เลือกอยู่ ทั้งช่วงที่กรอง — ใช้แสดงเป็น chip ข้างตัวสลับแผนก
+    selectedDeptThresholdLabel() {
+      const percent = this.slipKpiByDept[this.slipDept].thresholdPercent
+      return percent != null ? this.formatPercentValue(percent) : '—'
+    },
+
+    // กราฟที่ 2 — แท่งเรียงอันดับ loss รวมทั้งช่วง (สีตามแผนก) ของทุกช่างในแผนกที่เลือก เกิน 12 คนค่อยรวมท้ายเป็น "อื่นๆ"
     slipByWorkerRankingRows() {
       const rows = this.selectedDeptWorkerTotals.slice(0, MAX_WORKER_BARS).map((w) => ({
         label: `${w.workerCode} ${w.workerName}`,
-        loss: this.roundDecimal(w.totalLoss)
+        loss: this.roundDecimal(w.totalLoss),
+        allowed: this.roundDecimal(w.totalAllowed),
+        thresholdPercent: this.computeThresholdPercent(w.totalAllowed, w.totalAllowedBase)
       }))
 
       if (this.hasOtherWorkers) {
-        const otherTotal = this.selectedDeptWorkerTotals
-          .slice(MAX_WORKER_BARS)
-          .reduce((acc, w) => acc + w.totalLoss, 0)
+        const otherTotals = this.selectedDeptWorkerTotals.slice(MAX_WORKER_BARS).reduce(
+          (acc, w) => {
+            acc.loss += w.totalLoss
+            acc.allowed += w.totalAllowed
+            acc.allowedBase += w.totalAllowedBase
+            return acc
+          },
+          { loss: 0, allowed: 0, allowedBase: 0 }
+        )
         rows.push({
           label: this.$t('view.production.goldLossDashboard.overview.otherWorkersLabel'),
-          loss: this.roundDecimal(otherTotal)
+          loss: this.roundDecimal(otherTotals.loss),
+          allowed: this.roundDecimal(otherTotals.allowed),
+          thresholdPercent: this.computeThresholdPercent(otherTotals.allowed, otherTotals.allowedBase)
         })
       }
 
@@ -622,12 +791,28 @@ export default {
       return rows
     },
 
-    // ให้ ChartGeneric แสดง empty state ได้ถูกต้องเมื่อไม่มีช่างเลย (เดิม series ว่างเปล่าจะโดนตีความว่า "ไม่มีข้อมูล" อยู่แล้ว)
+    // ให้ ChartGeneric แสดง empty state ได้ถูกต้องเมื่อไม่มีช่างเลย — data point เป็น {x,y,goals} object
+    // (goals ใส่เฉพาะตอน allowed > 0 กันเส้นยอมให้โผล่ตอนไม่มีเกณฑ์)
     slipByWorkerSeries() {
+      const goalName = this.$t('view.production.goldLossDashboard.overview.chartGoalAllowedLoss')
       return [
         {
           name: this.$t('view.production.goldLossDashboard.overview.colLoss'),
-          data: this.slipByWorkerRankingRows.map((r) => r.loss)
+          data: this.slipByWorkerRankingRows.map((r) => {
+            const point = { x: r.label, y: r.loss }
+            if (r.allowed > 0) {
+              point.goals = [
+                {
+                  name: goalName,
+                  value: r.allowed,
+                  strokeWidth: 3,
+                  strokeHeight: 14,
+                  strokeColor: CHART_TOKENS.sub
+                }
+              ]
+            }
+            return point
+          })
         }
       ]
     },
@@ -636,25 +821,33 @@ export default {
       return Math.max(WORKER_BAR_MIN_HEIGHT, this.slipByWorkerRankingRows.length * WORKER_BAR_ROW_HEIGHT + 60)
     },
 
+    // กันเส้นยอมให้ (goal marker) และ value label โผล่นอกกรอบแกน — เผื่อพื้นที่ label ที่ไปอยู่นอกแท่งแล้วมากกว่าเดิม
+    slipByWorkerXaxisMax() {
+      const values = this.slipByWorkerRankingRows.flatMap((r) => [r.loss || 0, r.allowed || 0])
+      const max = values.length ? Math.max(...values) : 0
+      return max > 0 ? Math.ceil(max * 1.25) : undefined
+    },
+
     slipByWorkerOptions() {
       return {
         chart: { type: 'bar', stacked: false, toolbar: { show: false } },
-        colors: [CHART_TOKENS.primary],
+        colors: [this.selectedDeptColor],
         plotOptions: {
-          bar: { horizontal: true, borderRadius: 4, barHeight: '65%' }
+          bar: { horizontal: true, borderRadius: 4, barHeight: '65%', dataLabels: { position: 'top' } }
         },
+        // label วางที่ปลายแท่ง (position: 'top' ด้านบน) แล้วดันออกด้วย offsetX บวกให้พ้นแท่ง — สีเข้มกลาง
+        // (CHART_TOKENS.sub) แทนสีเดียวกับแท่งเพื่อให้อ่านออกตอนอยู่นอกแท่ง
         dataLabels: {
           enabled: true,
-          formatter: (v) => this.formatDecimal(v),
-          style: { fontSize: '12px', colors: [CHART_TOKENS.primary] },
-          offsetX: 24
+          formatter: (v) => this.formatWeightValue(v),
+          style: { fontSize: '12px', fontWeight: 600, colors: [CHART_TOKENS.sub] },
+          offsetX: 40
         },
         // gotcha ApexCharts: horizontal bar สลับ "แกนไหนรับ formatter" กับที่ชื่อ prop บอกไว้ —
-        // xaxis.categories ยังคือชื่อช่าง (ถูกต้องตามชื่อ) แต่ formatter/title ของแกนตัวเลข (กรัม)
-        // ต้องผูกกับ xaxis เช่นกัน ไม่ใช่ yaxis — ถ้าใส่ formatter ตัวเลขไว้ที่ yaxis.labels แกนชื่อช่าง
-        // (ซึ่งเรนเดอร์ผ่าน yaxis label engine ตอน horizontal) จะโดน format เป็น NaN แทน (เทสจริงแล้วเจอเคสนี้)
+        // xaxis ยังคือแกนตัวเลข (loss) ที่ต้อง format/กำหนด max ที่นี่ ส่วนชื่อช่างมาจาก data point {x,y,goals}
+        // แทน xaxis.categories (ตัดออกแล้วเพราะใช้ data point object แทน)
         xaxis: {
-          categories: this.slipByWorkerRankingRows.map((r) => r.label),
+          max: this.slipByWorkerXaxisMax,
           title: { text: this.$t('view.production.goldLossByStage.unitGram') },
           labels: { formatter: (v) => this.formatDecimal(v) }
         },
@@ -663,7 +856,18 @@ export default {
         },
         grid: { xaxis: { lines: { show: true } } },
         tooltip: {
-          y: { formatter: (v) => this.formatWeightValue(v) }
+          y: {
+            formatter: (value, opts) => {
+              const dataPointIndex = opts && typeof opts.dataPointIndex === 'number' ? opts.dataPointIndex : -1
+              const row = this.slipByWorkerRankingRows[dataPointIndex]
+              if (!row) return this.formatWeightValue(value)
+              return this.$t('view.production.goldLossDashboard.overview.chartRankingTooltip', {
+                loss: this.formatWeightValue(row.loss),
+                allowed: this.formatWeightValue(row.allowed),
+                percent: row.thresholdPercent != null ? this.formatPercentValue(row.thresholdPercent) : '—'
+              })
+            }
+          }
         }
       }
     },
@@ -675,7 +879,10 @@ export default {
         { field: 'issued', header: this.$t('view.production.goldLossDashboard.overview.colIssued'), sortable: false, minWidth: '120px', align: 'right', format: 'decimal2' },
         { field: 'returned', header: this.$t('view.production.goldLossDashboard.overview.colReturned'), sortable: false, minWidth: '120px', align: 'right', format: 'decimal2' },
         { field: 'loss', header: this.$t('view.production.goldLossDashboard.overview.colLoss'), sortable: false, minWidth: '110px', align: 'right', format: 'decimal2' },
-        { field: 'lossPercent', header: this.$t('view.production.goldLossDashboard.overview.colLossPercent'), sortable: false, minWidth: '100px', align: 'right' }
+        { field: 'lossPercent', header: this.$t('view.production.goldLossDashboard.overview.colLossPercent'), sortable: false, minWidth: '100px', align: 'right' },
+        { field: 'allowed', header: this.$t('view.production.goldLossDashboard.overview.colAllowed'), sortable: false, minWidth: '110px', align: 'right', format: 'decimal2' },
+        { field: 'allowedPercent', header: this.$t('view.production.goldLossDashboard.overview.colAllowedPercent'), sortable: false, minWidth: '90px', align: 'right' },
+        { field: 'overAllowed', header: this.$t('view.production.goldLossDashboard.overview.colOverAllowed'), sortable: false, minWidth: '130px', align: 'right' }
       ]
     },
 
@@ -687,7 +894,10 @@ export default {
         { field: 'issued', header: this.$t('view.production.goldLossDashboard.overview.colIssued'), sortable: false, minWidth: '120px', align: 'right', format: 'decimal2' },
         { field: 'returned', header: this.$t('view.production.goldLossDashboard.overview.colReturned'), sortable: false, minWidth: '120px', align: 'right', format: 'decimal2' },
         { field: 'loss', header: this.$t('view.production.goldLossDashboard.overview.colLoss'), sortable: false, minWidth: '110px', align: 'right', format: 'decimal2' },
-        { field: 'lossPercent', header: this.$t('view.production.goldLossDashboard.overview.colLossPercent'), sortable: false, minWidth: '100px', align: 'right' }
+        { field: 'lossPercent', header: this.$t('view.production.goldLossDashboard.overview.colLossPercent'), sortable: false, minWidth: '100px', align: 'right' },
+        { field: 'allowed', header: this.$t('view.production.goldLossDashboard.overview.colAllowed'), sortable: false, minWidth: '110px', align: 'right', format: 'decimal2' },
+        { field: 'allowedPercent', header: this.$t('view.production.goldLossDashboard.overview.colAllowedPercent'), sortable: false, minWidth: '90px', align: 'right' },
+        { field: 'overAllowed', header: this.$t('view.production.goldLossDashboard.overview.colOverAllowed'), sortable: false, minWidth: '130px', align: 'right' }
       ]
     },
 
@@ -697,19 +907,21 @@ export default {
       const map = new Map()
       this.slipMonthKeys.forEach((key) => {
         const [y, m] = key.split('-').map(Number)
-        map.set(key, { monthKey: key, year: y, month: m, slipCount: 0, issued: 0, returned: 0, loss: 0, workers: [] })
+        map.set(key, { monthKey: key, year: y, month: m, slipCount: 0, issued: 0, returned: 0, loss: 0, allowed: 0, allowedBase: 0, workers: [] })
       })
 
       this.selectedDeptRows.forEach((r) => {
         const key = this.monthKeyOf(r.year, r.month)
         if (!map.has(key)) {
-          map.set(key, { monthKey: key, year: r.year, month: r.month, slipCount: 0, issued: 0, returned: 0, loss: 0, workers: [] })
+          map.set(key, { monthKey: key, year: r.year, month: r.month, slipCount: 0, issued: 0, returned: 0, loss: 0, allowed: 0, allowedBase: 0, workers: [] })
         }
         const row = map.get(key)
         row.slipCount += r.slipCount
         row.issued += r.issued
         row.returned += r.returned
         row.loss += r.loss
+        row.allowed += r.allowed
+        row.allowedBase += r.allowedBase
         row.workers.push({
           workerCode: r.workerCode,
           workerName: r.workerName,
@@ -717,7 +929,10 @@ export default {
           issued: r.issued,
           returned: r.returned,
           loss: r.loss,
-          lossPercent: this.computeLossPercent(r.loss, r.issued)
+          lossPercent: this.computeLossPercent(r.loss, r.issued),
+          allowed: r.allowed,
+          allowedPercent: this.computeThresholdPercent(r.allowed, r.allowedBase),
+          overAllowed: r.loss - r.allowed
         })
       })
 
@@ -725,6 +940,8 @@ export default {
         .map((row) => ({
           ...row,
           lossPercent: this.computeLossPercent(row.loss, row.issued),
+          allowedPercent: this.computeThresholdPercent(row.allowed, row.allowedBase),
+          overAllowed: row.loss - row.allowed,
           workers: [...row.workers].sort((a, b) => b.loss - a.loss)
         }))
         .sort((a, b) => (a.monthKey < b.monthKey ? 1 : -1))
@@ -737,11 +954,15 @@ export default {
           acc.issued += row.issued
           acc.returned += row.returned
           acc.loss += row.loss
+          acc.allowed += row.allowed
+          acc.allowedBase += row.allowedBase
           return acc
         },
-        { slipCount: 0, issued: 0, returned: 0, loss: 0 }
+        { slipCount: 0, issued: 0, returned: 0, loss: 0, allowed: 0, allowedBase: 0 }
       )
       total.lossPercent = this.computeLossPercent(total.loss, total.issued)
+      total.allowedPercent = this.computeThresholdPercent(total.allowed, total.allowedBase)
+      total.overAllowed = total.loss - total.allowed
       return total
     },
 
@@ -841,48 +1062,48 @@ export default {
     actionItems() {
       const items = []
 
-      this.planHighDiffRows.forEach((r) => {
-        items.push({
-          key: `plan-worker-${r.statusCode}-${r.workerCode}`,
-          tagClass: 'plan',
-          tagLabel: 'PLAN',
-          tab: 'worker',
-          text: this.$t('view.production.goldLossDashboard.overview.actionPlanHighDiff', {
-            code: r.workerCode,
-            name: r.workerName,
-            dept: r.statusName,
-            percent: this.formatDecimal(r.lossPercent),
-            diff: `+${this.formatDecimal(r.diffFromStageAvgPercent)}`,
-            jobCount: this.formatNumberValue(r.jobCount)
-          })
-        })
-      })
+      // [PLAN-HIDDEN] กฎ 1 — PLAN: เฉพาะช่างที่ "แย่กว่า" ค่าเฉลี่ยแผนกเกิน 2 จุด
+      // this.planHighDiffRows.forEach((r) => {
+      //   items.push({
+      //     key: `plan-worker-${r.statusCode}-${r.workerCode}`,
+      //     tagClass: 'plan',
+      //     tagLabel: 'PLAN',
+      //     tab: 'worker',
+      //     text: this.$t('view.production.goldLossDashboard.overview.actionPlanHighDiff', {
+      //       code: r.workerCode,
+      //       name: r.workerName,
+      //       dept: r.statusName,
+      //       percent: this.formatDecimal(r.lossPercent),
+      //       diff: `+${this.formatDecimal(r.diffFromStageAvgPercent)}`,
+      //       jobCount: this.formatNumberValue(r.jobCount)
+      //     })
+      //   })
+      // })
 
-      // กฎ 2 — PLAN: พบช่างทดสอบที่มีข้อมูลจริงปนอยู่ — รวมยอดข้ามแผนกเป็น 1 บรรทัดต่อ 1 รหัสช่าง
-      // (แถวดิบเป็นระดับช่าง x แผนก ถ้าไม่รวมก่อน ช่างคนเดียวที่มีงานหลายแผนกจะขึ้นซ้ำหลายบรรทัด)
-      const testWorkerGroups = new Map()
-      this.workerRows
-        .filter((r) => this.isTestWorker(r) && (r.jobCount || 0) > 0)
-        .forEach((r) => {
-          const key = r.workerCode || r.workerName
-          const group = testWorkerGroups.get(key) || { workerName: r.workerName, jobCount: 0, weight: 0 }
-          group.jobCount += r.jobCount || 0
-          group.weight += r.sumGoldWeightSend || 0
-          testWorkerGroups.set(key, group)
-        })
-      testWorkerGroups.forEach((group, key) => {
-        items.push({
-          key: `plan-test-${key}`,
-          tagClass: 'plan',
-          tagLabel: 'PLAN',
-          tab: 'worker',
-          text: this.$t('view.production.goldLossDashboard.overview.actionPlanTestWorker', {
-            name: group.workerName,
-            jobCount: this.formatNumberValue(group.jobCount),
-            weight: this.formatWeightValue(group.weight)
-          })
-        })
-      })
+      // [PLAN-HIDDEN] กฎ 2 — PLAN: พบช่างทดสอบที่มีข้อมูลจริงปนอยู่ — รวมยอดข้ามแผนกเป็น 1 บรรทัดต่อ 1 รหัสช่าง
+      // const testWorkerGroups = new Map()
+      // this.workerRows
+      //   .filter((r) => this.isTestWorker(r) && (r.jobCount || 0) > 0)
+      //   .forEach((r) => {
+      //     const key = r.workerCode || r.workerName
+      //     const group = testWorkerGroups.get(key) || { workerName: r.workerName, jobCount: 0, weight: 0 }
+      //     group.jobCount += r.jobCount || 0
+      //     group.weight += r.sumGoldWeightSend || 0
+      //     testWorkerGroups.set(key, group)
+      //   })
+      // testWorkerGroups.forEach((group, key) => {
+      //   items.push({
+      //     key: `plan-test-${key}`,
+      //     tagClass: 'plan',
+      //     tagLabel: 'PLAN',
+      //     tab: 'worker',
+      //     text: this.$t('view.production.goldLossDashboard.overview.actionPlanTestWorker', {
+      //       name: group.workerName,
+      //       jobCount: this.formatNumberValue(group.jobCount),
+      //       weight: this.formatWeightValue(group.weight)
+      //     })
+      //   })
+      // })
 
       // กฎ 3 — SLIP: ช่างแต่ง (รวมทุกใบทั้งช่วง) ที่คืนมากกว่าจ่าย — endpoint นี้รวมยอดระดับช่าง ไม่ใช่ระดับใบ
       // จึงระบุเป็น "ช่าง" ไม่ใช่เลขที่ใบเดี่ยวๆ (เฉพาะช่างแต่ง — ฝั่งช่างฝังไม่มีฟิลด์ loss ดิบแบบเดียวกัน)
@@ -903,18 +1124,18 @@ export default {
           })
         })
 
-      // กฎ 4 — BOTH: % ผูกใบกับงานต่ำกว่าเกณฑ์
-      if (this.isLowCoverage) {
-        items.push({
-          key: 'both-low-coverage',
-          tagClass: 'both',
-          tagLabel: 'BOTH',
-          tab: 'reconcile',
-          text: this.$t('view.production.goldLossDashboard.overview.actionLowCoverage', {
-            percent: this.formatPercentValue(this.reconcileSummary.linkCoveragePercent)
-          })
-        })
-      }
+      // [PLAN-HIDDEN] กฎ 4 — BOTH: % ผูกใบกับงานต่ำกว่าเกณฑ์
+      // if (this.isLowCoverage) {
+      //   items.push({
+      //     key: 'both-low-coverage',
+      //     tagClass: 'both',
+      //     tagLabel: 'BOTH',
+      //     tab: 'reconcile',
+      //     text: this.$t('view.production.goldLossDashboard.overview.actionLowCoverage', {
+      //       percent: this.formatPercentValue(this.reconcileSummary.linkCoveragePercent)
+      //     })
+      //   })
+      // }
 
       return items
     },
@@ -942,11 +1163,11 @@ export default {
   methods: {
     async fetchAll() {
       await Promise.all([
-        this.fetchPlanReport(),
+        // [PLAN-HIDDEN] this.fetchPlanReport(),
         this.fetchTangWorkerReport(),
-        this.fetchSetterWorkerReport(),
-        this.fetchReconcileReport(),
-        this.fetchWorkerReport()
+        this.fetchSetterWorkerReport()
+        // [PLAN-HIDDEN] this.fetchReconcileReport(),
+        // [PLAN-HIDDEN] this.fetchWorkerReport()
       ])
     },
 
@@ -1044,7 +1265,9 @@ export default {
         slipCount: row.slipCount || 0,
         issued: row.totalIssued || 0,
         returned: row.totalReturned || 0,
-        loss: row.totalRawLoss || 0
+        loss: row.totalRawLoss || 0,
+        allowed: row.totalAllowedLoss || 0,
+        allowedBase: row.totalAllowedLossBase || 0
       }
     },
 
@@ -1059,7 +1282,9 @@ export default {
         slipCount: row.slipCount || 0,
         issued,
         returned,
-        loss: issued - returned
+        loss: issued - returned,
+        allowed: row.totalWeightLossAllowed || 0,
+        allowedBase: returned
       }
     },
 
@@ -1090,6 +1315,11 @@ export default {
       return issued ? Math.round((loss / issued) * 100 * 100) / 100 : 0
     },
 
+    // "เกณฑ์ในใบ" ถ่วงน้ำหนักตามน้ำหนักทอง — allowedBase <= 0 (ยังไม่มีข้อมูล/ฟิลด์ใหม่ยังไม่ deploy) ถือว่าไม่มีเกณฑ์
+    computeThresholdPercent(allowed, allowedBase) {
+      return allowedBase > 0 ? Math.round((allowed / allowedBase) * 100 * 100) / 100 : null
+    },
+
     roundDecimal(value) {
       return Math.round((value || 0) * 100) / 100
     },
@@ -1098,9 +1328,12 @@ export default {
       const map = new Map()
       rows.forEach((r) => {
         const key = this.monthKeyOf(r.year, r.month)
-        const acc = map.get(key) || { issued: 0, loss: 0 }
+        const acc = map.get(key) || { issued: 0, loss: 0, allowed: 0, allowedBase: 0, slipCount: 0 }
         acc.issued += r.issued
         acc.loss += r.loss
+        acc.allowed += r.allowed
+        acc.allowedBase += r.allowedBase
+        acc.slipCount += r.slipCount
         map.set(key, acc)
       })
       return map
@@ -1108,6 +1341,19 @@ export default {
 
     goToTab(tab) {
       this.$emit('navigate-tab', tab)
+    },
+
+    // subLabel ของการ์ด Loss รวม — มีเกณฑ์ในใบ (thresholdPercent != null) ก็โชว์เทียบด้วย ไม่มีก็โชว์แค่ %ของที่เบิก
+    lossSubLabel(deptKpi) {
+      if (deptKpi.thresholdPercent != null) {
+        return this.$t('view.production.goldLossDashboard.overview.kpiSlipLossPercentSub', {
+          percent: this.formatPercentValue(deptKpi.lossPercent),
+          threshold: this.formatPercentValue(deptKpi.thresholdPercent)
+        })
+      }
+      return this.$t('view.production.goldLossDashboard.overview.kpiSlipLossPercentSubNoThreshold', {
+        percent: this.formatPercentValue(deptKpi.lossPercent)
+      })
     },
 
     formatDecimal(value) {
@@ -1129,6 +1375,12 @@ export default {
       const num = value || 0
       const sign = num > 0 ? '+' : ''
       return `${sign}${this.formatDecimal(num)} ${this.$t('view.production.goldLossByStage.unitGram')}`
+    },
+
+    formatSignedDecimal(value) {
+      const num = value || 0
+      const sign = num > 0 ? '+' : ''
+      return `${sign}${this.formatDecimal(num)}`
     },
 
     formatPercentValue(value) {
@@ -1155,7 +1407,6 @@ export default {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: stretch;
   gap: var(--sp-md);
-  margin-bottom: var(--sp-lg);
 
   @media (max-width: 1024px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1211,6 +1462,27 @@ export default {
     font-weight: 600;
     color: var(--base-font-color);
   }
+}
+
+.slip-dept-toggle-row__threshold {
+  margin-left: auto;
+  font-size: var(--fs-sm);
+  color: var(--base-sub-color);
+  white-space: nowrap;
+}
+
+.goal-legend-tick {
+  display: inline-block;
+  width: 3px;
+  height: 14px;
+  background: var(--base-sub-color);
+  vertical-align: middle;
+  margin-right: var(--sp-xs);
+}
+
+.over-allowed--exceeded {
+  color: var(--base-red);
+  font-weight: 700;
 }
 
 .group-by-toggle {

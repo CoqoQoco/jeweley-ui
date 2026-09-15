@@ -18,6 +18,7 @@
         />
       </div>
 
+      <!-- [PLAN-HIDDEN] department filter — dashboard shows slip-only data for now
       <div>
         <span
           class="title-text"
@@ -35,6 +36,7 @@
           :showClear="true"
         />
       </div>
+      -->
 
       <div>
         <span
@@ -70,7 +72,7 @@ import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import SearchBarGeneric from '@/components/generic/SearchBarGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import DateRangeGeneric from '@/components/prime-vue/DateRangeGeneric.vue'
-import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+// [PLAN-HIDDEN] import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 
 // แผนกที่มีการคืนทองจริง — ห้ามรวม 95 (บัตรต้นทุน) / 100 (สำเร็จ) / 500 เพราะไม่มีการคืนทองให้คำนวณ loss
@@ -87,7 +89,7 @@ export default {
     SearchBarGeneric,
     ButtonGeneric,
     DateRangeGeneric,
-    MultiSelectGeneric,
+    // [PLAN-HIDDEN] MultiSelectGeneric,
     DropdownGeneric
   },
 
@@ -164,7 +166,7 @@ export default {
   },
 
   created() {
-    this.masterApiStore.fetchPlanStatus()
+    // [PLAN-HIDDEN] this.masterApiStore.fetchPlanStatus()
     this.loadWorkers()
   }
 }

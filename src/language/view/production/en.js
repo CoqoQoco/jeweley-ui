@@ -1379,6 +1379,9 @@ export default {
       colReturned: 'Returned (g)',
       colLoss: 'Loss (g)',
       colLossPercent: '%Loss',
+      colAllowed: 'Allowed (g)',
+      colAllowedPercent: 'Allowed %',
+      colOverAllowed: 'Over allowed (g)',
       colWorkerCode: 'Worker Code',
       colWorkerName: 'Worker Name',
 
@@ -1395,7 +1398,16 @@ export default {
       actionPlanTestWorker: 'Found test worker {name} mixed into real data: {jobCount} jobs, {weight}',
       actionSlipNegative: 'Worker {code} {name} returned more gold than issued, total {weight} ({slipCount} slips)',
       actionLowCoverage: 'Slip-to-job linkage is {percent}, below the 80% threshold',
-      actionMoreItems: 'and {count} more'
+      actionMoreItems: 'and {count} more',
+
+      sourceSlipTangTitle: 'Tang Slips',
+      sourceSlipSetterTitle: 'Setter Slips',
+      kpiSlipLossPercentSub: '{percent} of issued · allowed {threshold}',
+      kpiSlipLossPercentSubNoThreshold: '{percent} of issued',
+      chartSlipCompareThresholdSeries: 'Allowed loss {dept}',
+      chartGoalAllowedLoss: 'Allowed loss per slip',
+      slipAllowedLegend: 'Allowed loss per slip · avg {percent}',
+      chartRankingTooltip: 'Loss {loss} · allowed {allowed} ({percent})'
     },
 
     groupByLabel: 'Group by:',
@@ -1427,6 +1439,11 @@ export default {
       both: {
         summary: 'Source: plan_status_detail + tang_slip + worker_slip · compares both sides by month x department',
         detail: 'This is the only tab allowed to place the plan-side and slip-side numbers next to each other. The gap explained by scrap/stem/wire returned via slips is "explained"; the remainder is a real gap, usually meaning some jobs were never issued a slip.'
+      },
+
+      slip: {
+        summary: 'Source: tang_slip + worker_slip tables · keyed on the Tang and Setter Gold Loss slip pages · allowed loss = %loss set on slips, weighted by gold weight',
+        detail: 'These figures come from the Gold Loss slips issued at period close for tang and setter workers and are used for actual worker charges. The allowed loss is the %loss set on each slip (per slip for tang, per line for setter), averaged weighted by the gold weight it applies to — not a simple mean. If actual %loss is above the allowed-loss line, the loss exceeded what was allowed.'
       }
     }
   }

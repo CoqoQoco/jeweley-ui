@@ -6,10 +6,11 @@
   ตัวอย่างการใช้งาน:
   <SourceStripGeneric source="plan" />
   <SourceStripGeneric source="slip-tang" />
+  <SourceStripGeneric source="slip" />
   <SourceStripGeneric source="both" />
 
   Props:
-    source — 'plan' | 'slip-tang' | 'slip-setter' | 'both' (ข้อความอยู่ใน i18n namespace goldLossDashboard.sourceStrip)
+    source — 'plan' | 'slip-tang' | 'slip-setter' | 'slip' | 'both' (slip = ทั้ง 2 แผนกรวมกัน; ข้อความอยู่ใน i18n namespace goldLossDashboard.sourceStrip)
 
   Slots: ไม่มี (ข้อความมาจาก i18n ทั้งหมด เพื่อบังคับให้ทุก source ต้องมีข้อความกำกับ)
 -->
@@ -38,6 +39,7 @@ const SOURCE_KEY_MAP = {
   plan: 'plan',
   'slip-tang': 'slipTang',
   'slip-setter': 'slipSetter',
+  slip: 'slip',
   both: 'both'
 }
 
@@ -45,6 +47,7 @@ const SOURCE_ACCENT_MAP = {
   plan: 'plan',
   'slip-tang': 'slip',
   'slip-setter': 'slip',
+  slip: 'slip',
   both: 'both'
 }
 
@@ -52,6 +55,7 @@ const SOURCE_ICON_MAP = {
   plan: 'bi-clipboard-data',
   'slip-tang': 'bi-receipt',
   'slip-setter': 'bi-receipt',
+  slip: 'bi-receipt',
   both: 'bi-link-45deg'
 }
 
@@ -59,6 +63,7 @@ const SOURCE_BADGE_MAP = {
   plan: 'PLAN',
   'slip-tang': 'SLIP',
   'slip-setter': 'SLIP',
+  slip: 'SLIP',
   both: 'BOTH'
 }
 

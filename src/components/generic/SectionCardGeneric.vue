@@ -24,6 +24,14 @@
     slot content
   [/SectionCardGeneric]
 
+  ตัวอย่างการใช้งาน (dashboard style — หัวข้อ + เส้น ไม่มีกรอบครอบ, ใช้กับกลุ่ม KPI ที่การ์ดลูก
+  (เช่น StatCardGeneric) มีกรอบของตัวเองอยู่แล้ว กันกรอบซ้อน 2 ชั้น):
+  [SectionCardGeneric title="สรุปข้อมูล PLAN" icon="bi-clipboard-data" accent="main" headerStyle="dashboard"]
+    [div class="kpi-grid"]
+      [StatCardGeneric ... /]
+    [/div]
+  [/SectionCardGeneric]
+
   ตัวอย่างการใช้งาน (ไม่มี title):
   [SectionCardGeneric]
     [BaseDataTable :items="items" :columns="columns" /]
@@ -32,16 +40,23 @@
   Props:
     title       — section title (optional)
     description — section description (optional, filled mode เท่านั้น)
-    icon        — Bootstrap icon class เช่น 'bi-box-arrow-up' (legend / filled mode เท่านั้น)
-    accent      — 'main' | 'green' (สีของ legend text+icon, default 'main' — legend mode เท่านั้น)
-    headerStyle — 'underline' | 'legend' | 'filled' (default 'underline' = ใช้ pageTitle เดิม)
+    icon        — Bootstrap icon class เช่น 'bi-box-arrow-up' (legend / filled / dashboard mode เท่านั้น)
+    accent      — 'main' | 'green' (สีของ text+icon, default 'main' — legend + dashboard mode เท่านั้น)
+    headerStyle — 'underline' | 'legend' | 'filled' | 'dashboard' (default 'underline' = ใช้ pageTitle เดิม)
+                  dashboard = หัวข้อ + เส้นคั่น ไม่มีกรอบ/พื้นครอบ (ไม่ double-border กับการ์ดลูกที่มีกรอบเอง)
 
   Slots:
     default         — เนื้อหาหลักของ card
-    #header-actions — ปุ่ม/badge มุมขวาบนใน filled header (filled mode เท่านั้น — forward ไป pageTitle rightSlot)
+    #header-actions — ปุ่ม/badge มุมขวาบนใน filled header (filled mode — forward ไป pageTitle rightSlot)
+                      และ dashboard header (dashboard mode — วางท้ายแถวหัวข้อ)
 -->
 <template>
-  <div :class="['section-card', { 'section-card--legend': isLegendMode, 'section-card--filled': isFilledMode }]">
+  <div
+    :class="[
+      'section-card',
+      { 'section-card--legend': isLegendMode, 'section-card--filled': isFilledMode, 'section-card--dashboard': isDashboardMode }
+    ]"
+  >
     <pageTitle
       v-if="isFilledMode"
       :title="title"
@@ -53,7 +68,7 @@
     >
       <template #rightSlot><slot name="header-actions" /></template>
     </pageTitle>
-    <pageTitle v-else-if="title && !isLegendMode" :title="title" :isShowBtnClose="false" />
+    <pageTitle v-else-if="title && headerStyle === 'underline'" :title="title" :isShowBtnClose="false" />
     <span
       v-else-if="title && isLegendMode"
       :class="['section-legend', `section-legend--${accent}`]"
@@ -61,6 +76,18 @@
       <i v-if="icon" :class="['bi', icon]"></i>
       {{ title }}
     </span>
+    <div
+      v-else-if="title && isDashboardMode"
+      class="section-dashboard-header"
+      :class="`section-dashboard-header--${accent}`"
+    >
+      <i v-if="icon" :class="['bi', icon]"></i>
+      <span class="section-dashboard-header__title">{{ title }}</span>
+      <span class="section-dashboard-header__rule"></span>
+      <div v-if="$slots['header-actions']" class="section-dashboard-header__actions">
+        <slot name="header-actions" />
+      </div>
+    </div>
 
     <div v-if="isFilledMode" class="section-card-body">
       <slot />
@@ -102,7 +129,7 @@ export default {
     headerStyle: {
       type: String,
       default: 'underline',
-      validator: (v) => ['underline', 'legend', 'filled'].includes(v)
+      validator: (v) => ['underline', 'legend', 'filled', 'dashboard'].includes(v)
     }
   },
 
@@ -113,6 +140,10 @@ export default {
 
     isFilledMode() {
       return this.headerStyle === 'filled'
+    },
+
+    isDashboardMode() {
+      return this.headerStyle === 'dashboard'
     }
   }
 }
@@ -168,6 +199,55 @@ export default {
 .section-card--filled {
   padding: 0;
   overflow: hidden; /* clip filled header's top radius to the card's own radius */
+}
+
+// dashboard mode — heading only, no enclosing box (child cards like StatCardGeneric already have their own border)
+.section-card.section-card--dashboard {
+  border: none;
+  box-shadow: none;
+  background: transparent !important;
+  padding: 0;
+}
+
+.section-dashboard-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-md);
+
+  i {
+    font-size: var(--fs-xl);
+  }
+}
+
+.section-dashboard-header__title {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.section-dashboard-header__rule {
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.section-dashboard-header__actions {
+  flex-shrink: 0;
+}
+
+.section-dashboard-header--main {
+  i,
+  .section-dashboard-header__title {
+    color: var(--base-font-color);
+  }
+}
+
+.section-dashboard-header--green {
+  i,
+  .section-dashboard-header__title {
+    color: var(--base-green);
+  }
 }
 
 .section-card-body {
