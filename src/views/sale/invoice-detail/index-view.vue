@@ -238,6 +238,7 @@
         :isShowModal="showPaymentModal"
         :invoiceData="invoiceData"
         :paidAmount="paidAmount"
+        :grandTotalRounded="grandTotalRounded"
         @close-modal="showPaymentModal = false"
         @save-payment="handleSavePayment"
       />
@@ -347,7 +348,6 @@ export default {
       isShowContinuousPreview: false,
       continuousPreviewModel: null,
       lastPreviewPrintData: null,
-      paidAmount: 0,
       versionList: [],
       originalInvoiceData: null,
       originalInvoiceItems: [],
@@ -396,6 +396,12 @@ export default {
     },
     grandTotalRounded() {
       return this.documentTotals.grandTotalRounded
+    },
+
+    // รวมยอดจาก invoiceData.payments เสมอ (soft-deleted ถูก backend กรองออกแล้ว) — ไม่พึ่ง API แยกที่อาจไม่ sync หลังบันทึก/ลบ
+    paidAmount() {
+      const payments = Array.isArray(this.invoiceData?.payments) ? this.invoiceData.payments : []
+      return payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
     },
 
     remainingBalance() {
@@ -525,8 +531,6 @@ export default {
     const invoiceNumber = this.$route.query.invoiceNumber
     if (invoiceNumber) {
       await this.loadInvoiceData(invoiceNumber)
-      // Load payment history after invoice data is loaded
-      await this.loadPaymentHistory()
     } else {
       this.loadError = this.$t('view.sale.invoiceDetail.error.noInvoiceNumber')
     }
@@ -1706,30 +1710,13 @@ export default {
         formData.append('ReceiptImage', paymentData.receiptImage)
       }
 
-      // Call API to save payment record
+      // Call API to save payment record — response = { paymentRunning, message } เมื่อสำเร็จ, ถ้า error axios-helper reject promise ให้แล้ว (ไม่ไหลมาถึงบรรทัดนี้)
       const response = await this.invoiceStore.createPayment(formData)
 
       if (response) {
         await this.loadInvoiceData(paymentData.invoiceNumber)
-      }
-
-      // Close modal after processing
-      this.showPaymentModal = false
-    },
-
-    async loadPaymentHistory() {
-      // Load payment records from API
-      const response = await this.invoiceStore.fetchPaymentList({
-        formValue: {
-          invoiceNumber: this.invoiceData.invoiceNumber
-        }
-      })
-
-      if (response && response.data) {
-        // Calculate total paid amount
-        this.paidAmount = response.data.reduce((sum, payment) => {
-          return sum + payment.amount
-        }, 0)
+        success(this.$t('view.sale.invoiceDetail.success.recordPayment'))
+        this.showPaymentModal = false
       }
     },
 

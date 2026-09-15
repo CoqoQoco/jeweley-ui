@@ -156,7 +156,7 @@
                       <p class="mb-0 mt-1 info-text">
                         <i class="bi bi-cash-stack mr-1"></i>{{ $t('view.sale.invoiceDetail.invoiceAmount') }}:
                         <strong
-                          >{{ formatNumber(invoiceData.grandTotal) }}
+                          >{{ formatNumber(grandTotalRounded) }}
                           {{ invoiceData.currencyUnit || 'THB' }}</strong
                         >
                       </p>
@@ -194,10 +194,11 @@ import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import UploadImage from '@/components/prime-vue/UploadImage.vue'
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
-import { warning, success } from '@/services/alert/sweetAlerts.js'
+import { warning } from '@/services/alert/sweetAlerts.js'
 import { useMasterBankStore } from '@/stores/modules/api/master/master-bank-store.js'
 import { compressImage } from '@/services/utils/image-compress.js'
 import { PAYMENT_METHODS, getPaymentApiName } from '@/constants/payment-methods.js'
+import { roundHalfUp } from '@/services/utils/money.js'
 import dayjs from 'dayjs'
 
 // value string ที่ v-model ของฟอร์มนี้ใช้ ('credit_card' มี underscore ต่างจาก key ของ constants)
@@ -229,6 +230,10 @@ export default {
     paidAmount: {
       type: Number,
       default: 0
+    },
+    grandTotalRounded: {
+      type: Number,
+      default: null
     }
   },
 
@@ -264,9 +269,10 @@ export default {
 
   computed: {
     remainingAmount() {
-      const total = this.invoiceData.grandTotal || 0
+      const total = this.grandTotalRounded || 0
       const paid = this.paidAmount || 0
-      return total - paid
+      const deposit = Number(this.invoiceData.deposit) || 0
+      return roundHalfUp(total - deposit - paid, 2)
     },
 
     paymentMethods() {
@@ -407,8 +413,6 @@ export default {
       }
 
       this.$emit('save-payment', paymentDataToEmit)
-      success(this.$t('view.sale.invoiceDetail.success.recordPayment'))
-      this.closeModal()
     }
   }
 }
