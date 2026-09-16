@@ -134,7 +134,7 @@
                       <CheckboxGeneric
                         :modelValue="selectedItems.includes(slotProps.data.id)"
                         @update:modelValue="(value) => toggleItemSelection(slotProps.data, value)"
-                        :disabled="!slotProps.data.isConfirm"
+                        :disabled="!slotProps.data.isConfirm || isInvoiceBlocked(slotProps.data)"
                         :binary="true"
                       />
                     </div>
@@ -187,6 +187,9 @@
                     <span class="confirmed-text">
                       {{ slotProps.data.productNumber || '-' }}
                     </span>
+                    <small v-if="isInvoiceBlocked(slotProps.data)" class="d-block text-danger">
+                      {{ $t('view.sale.saleOrder.warn.placeholderCannotInvoice') }}
+                    </small>
                   </template>
                 </Column>
 
@@ -883,9 +886,15 @@ export default {
       return this.stockItems.filter((item) => item.isConfirm && !item.invoice)
     },
 
+    // T4: บรรทัดรอผลิต/รอแปลงที่ยืนยันแล้วยังออกใบแจ้งหนี้ไม่ได้ (ยังไม่มีของจริงในคลัง) — ตัดออกจากที่เลือกได้
+    selectableAvailableItems() {
+      return this.availableItems.filter((item) => !this.isInvoiceBlocked(item))
+    },
+
     isAllSelected() {
       return (
-        this.availableItems.length > 0 && this.selectedItems.length === this.availableItems.length
+        this.selectableAvailableItems.length > 0 &&
+        this.selectedItems.length === this.selectableAvailableItems.length
       )
     },
 
@@ -1037,17 +1046,25 @@ export default {
 
     toggleSelectAll(value) {
       if (value) {
-        // Select all confirmed items
-        this.selectedItems = this.availableItems.map((item) => item.id)
+        // Select all confirmed items (ยกเว้นรายการรอผลิต/รอแปลงที่ออกใบแจ้งหนี้ไม่ได้)
+        this.selectedItems = this.selectableAvailableItems.map((item) => item.id)
       } else {
         // Deselect all
         this.selectedItems = []
       }
     },
 
+    // T4: บรรทัดรอผลิต/รอแปลงที่ยืนยันแล้ว ยังไม่มีของจริงในคลัง — ออกใบแจ้งหนี้ไม่ได้
+    isInvoiceBlocked(item) {
+      return !!item.isPlaceholder
+    },
+
     toggleItemSelection(item, value) {
       // Don't allow selection of unconfirmed items
       if (!item.isConfirm) {
+        return
+      }
+      if (this.isInvoiceBlocked(item)) {
         return
       }
 

@@ -154,6 +154,7 @@
                       <CheckboxGeneric
                         :modelValue="selectedItems.includes(slotProps.data.lineKey)"
                         @update:modelValue="(value) => toggleItemSelection(slotProps.data, value)"
+                        :disabled="!!isSelectableReason(slotProps.data)"
                         :binary="true"
                       />
                     </div>
@@ -228,6 +229,9 @@
                         ></i>
                         {{ slotProps.data.isConfirm ? $t('view.sale.saleOrder.statusConfirmed') : $t('view.sale.saleOrder.statusPending') }}
                       </span>
+                      <small v-if="isSelectableReason(slotProps.data)" class="d-block text-danger">
+                        {{ isSelectableReason(slotProps.data) }}
+                      </small>
                     </div>
                   </template>
                 </Column>
@@ -319,7 +323,8 @@
 
                 <Column field="available" :header="$t('view.sale.saleOrder.qtyAvailableCol')" style="width: 110px">
                   <template #body="slotProps">
-                    <div class="text-center" :class="{ 'text-danger font-weight-bold': isRowShort(slotProps.data) }">
+                    <div v-if="slotProps.data.isPlaceholder" class="text-center">—</div>
+                    <div v-else class="text-center" :class="{ 'text-danger font-weight-bold': isRowShort(slotProps.data) }">
                       {{ rowAvailable(slotProps.data) }}
                       <small v-if="isRowShort(slotProps.data)" class="d-block text-danger">
                         {{ $t('view.sale.saleOrder.qtyShortage', { k: rowShortage(slotProps.data) }) }}
@@ -856,10 +861,15 @@ export default {
         .map(ensureLineKey)
     },
 
+    // T3/T4: เทียบกับรายการที่เลือกได้จริงเท่านั้น (ตัดบรรทัดรอผลิต/รอแปลงที่ยังไม่มีเลข/ซ้ำ/ยืนยันแล้วออกไปห้ามออกใบแจ้งหนี้)
+    selectableAvailableItems() {
+      return this.availableItems.filter((item) => !this.isSelectableReason(item))
+    },
+
     isAllSelected() {
       return (
-        this.availableItems.length > 0 &&
-        this.selectedItems.length === this.availableItems.length
+        this.selectableAvailableItems.length > 0 &&
+        this.selectedItems.length === this.selectableAvailableItems.length
       )
     },
 
@@ -1060,6 +1070,8 @@ export default {
 
     rowShortage(item) {
       if (item.isConfirm) return 0
+      // T3: บรรทัดรอผลิต/รอแปลงไม่มีของจริงในคลัง — ไม่มี concept "ขาด" ให้เช็ค
+      if (item.isPlaceholder) return 0
       const sumQty = this.selectedUnconfirmedQtyByStockNumber[item.stockNumber] || 0
       const shortage = sumQty - this.rowAvailable(item)
       return shortage > 0 ? shortage : 0
@@ -1127,13 +1139,15 @@ export default {
 
     toggleSelectAll(value) {
       if (value) {
-        this.selectedItems = this.availableItems.map((item) => item.lineKey)
+        this.selectedItems = this.selectableAvailableItems.map((item) => item.lineKey)
       } else {
         this.selectedItems = []
       }
     },
 
     toggleItemSelection(item, value) {
+      if (this.isSelectableReason(item)) return
+
       if (value) {
         if (!this.selectedItems.includes(item.lineKey)) {
           this.selectedItems.push(item.lineKey)
@@ -1144,6 +1158,25 @@ export default {
           this.selectedItems.splice(index, 1)
         }
       }
+    },
+
+    // T3/T4: บรรทัดรอผลิต/รอแปลง — ยังไม่ยืนยัน ต้องมีเลขที่ผลิตและห้ามซ้ำก่อนเลือกได้
+    // ยืนยันแล้ว ห้ามเลือกเข้าใบแจ้งหนี้เด็ดขาด (ไม่มีของจริงในคลัง)
+    isDuplicateProductionNumber(item) {
+      if (!item.stockNumber) return false
+      return this.availableItems.some(
+        (i) => i.lineKey !== item.lineKey && i.stockNumber === item.stockNumber
+      )
+    },
+
+    isSelectableReason(item) {
+      if (!item.isPlaceholder) return null
+      if (item.isConfirm) return this.$t('view.sale.saleOrder.warn.placeholderCannotInvoice')
+      if (!item.stockNumber) return this.$t('view.sale.saleOrder.warn.productionNumberRequired')
+      if (this.isDuplicateProductionNumber(item)) {
+        return this.$t('view.sale.saleOrder.warn.productionNumberDuplicate', { code: item.stockNumber })
+      }
+      return null
     },
 
     formatCurrency(amount) {
@@ -1352,6 +1385,7 @@ export default {
             appraisalPrice: item.appraisalPrice,
             discount: item.discountPercent,
             isConfirm: true,
+            isPlaceholder: !!item.isPlaceholder,
             confirmedAt: new Date().toISOString()
           }))
         }

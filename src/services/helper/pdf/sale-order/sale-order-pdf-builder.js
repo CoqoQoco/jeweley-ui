@@ -26,6 +26,11 @@ export class SaleOrderPdfBuilder {
     this.itemsPerPage = Number(options.itemsPerPage) || 10
     this.showCifLabel = options.showCifLabel !== undefined ? options.showCifLabel : true
     this.showDecimals = options.showDecimals != null ? options.showDecimals : true
+    // T6: 'customer' (ค่าเริ่มต้น) = เอกสารที่ลูกค้าเห็น ไม่มีเครื่องหมายต้องผลิต/รอแปลงใดๆ
+    // 'internal' = ฉบับภายใน — เอกสารเดียวกัน บวกคอลัมน์ "สถานะของ" ต่อบรรทัด
+    this.printMode = options.printMode === 'internal' ? 'internal' : 'customer'
+    // T6: ใบแปลงสินค้าที่ยังไม่เสร็จของบรรทัดรอผลิต/รอแปลง — ใช้โชว์เลขที่เอกสาร CV ในคอลัมน์สถานะของ (ฉบับภายในเท่านั้น)
+    this.pendingConversions = soData?.pendingConversions || []
 
     // Financial adjustments
     this.specialDiscount = Number(soData.specialDiscount) || 0
@@ -367,107 +372,93 @@ export class SaleOrderPdfBuilder {
     }
   }
 
-  // ชื่อหัวข้อคั่นก่อนตารางรายการรอผลิต/รอแปลง — ขึ้นเฉพาะหน้าแรกของ section นี้
-  getCopyItemsSectionTitle() {
-    return {
-      margin: [0, 4, 0, 4],
-      text: i18n.global.t('view.sale.saleOrder.copyItemsPdfSectionTitle'),
-      bold: true,
-      fontSize: 11,
-      color: '#8B0000'
-    }
+  // T1/T6: บรรทัดสินค้าจริงตามด้วยบรรทัดลูก (copy line ที่ parentLineKey ตรงกัน) เรียงตามลำดับที่สร้าง
+  // แล้วต่อท้ายด้วย copy line ที่ไม่มีบรรทัดแม่ — ตารางเดียว ไม่มี section แยก ไม่มี page break บังคับระหว่าง stock/copy
+  get mergedPrintItems() {
+    const rows = []
+    const childKeysUsed = new Set()
+
+    this.items.forEach((parent) => {
+      rows.push(parent)
+      this.copyItems
+        .filter((child) => child.parentLineKey && child.parentLineKey === parent.lineKey)
+        .forEach((child) => {
+          childKeysUsed.add(child.lineKey)
+          rows.push(child)
+        })
+    })
+
+    this.copyItems
+      .filter((child) => !childKeysUsed.has(child.lineKey))
+      .forEach((child) => rows.push(child))
+
+    return rows
   }
 
-  // คอลัมน์ Style/Product ของรายการรอผลิต/รอแปลง — ไม่มีเลขที่ผลิตจริง ใช้ placeholder + sourceStockNumber (ถ้ามี)
-  getCopyStyleCode(item) {
-    const code = formatItemStyleCode(item)
-    const placeholder = i18n.global.t('view.sale.saleOrder.needsProduction')
-    const placeholderLine = item.sourceStockNumber
-      ? `${placeholder} (${item.sourceStockNumber})`
-      : placeholder
-    return code ? `${code}\n${placeholderLine}` : placeholderLine
+  // T6: ฉบับภายในเท่านั้น — สถานะของแต่ละบรรทัด (มีของ/ต้องผลิต/รอแปลง พร้อมเลขที่เอกสาร CV ถ้ามี)
+  getStockStatusLabel(item) {
+    const isCopyLine = this.copyItems.includes(item)
+    if (!isCopyLine) return i18n.global.t('view.sale.saleOrder.internalStatusInStock')
+
+    const pending = this.pendingConversions.find((p) => p.soLineKey === item.lineKey)
+    if (pending) {
+      return i18n.global.t('view.sale.saleOrder.internalStatusPendingConvertWithDoc', {
+        running: pending.running
+      })
+    }
+    return i18n.global.t('view.sale.saleOrder.needsProduction')
+  }
+
+  // T6: เติมคอลัมน์ "สถานะของ" ท้ายแถว เฉพาะฉบับภายใน (printMode === 'internal') — customer ไม่มีคอลัมน์นี้เลย
+  withStatusColumn(cells, extraCell) {
+    if (this.printMode !== 'internal') return cells
+    return [...cells, extraCell !== undefined ? extraCell : {}]
+  }
+
+  get tableColumnWidths() {
+    const base = [15, 43, 100, 49, 50, 58, '*', 20, 62, 72]
+    return this.printMode === 'internal' ? [...base, 60] : base
   }
 
   createPages() {
     const itemsPerPage = this.itemsPerPage
     const pages = []
-    const totalStockItems = this.items ? this.items.length : 0
-    const totalCopyItems = this.copyItems ? this.copyItems.length : 0
+    const allRows = this.mergedPrintItems
+    const totalItems = allRows.length
 
-    if (totalStockItems === 0 && totalCopyItems === 0) {
+    if (totalItems === 0) {
       pages.push(this.getEmptyPageContent())
       pages.push(...this.getSummarySection())
       return pages
     }
 
-    const totalStockPages = totalStockItems > 0 ? Math.ceil(totalStockItems / itemsPerPage) : 0
-    const totalCopyPages = totalCopyItems > 0 ? Math.ceil(totalCopyItems / itemsPerPage) : 0
-    const totalPagesOverall = totalStockPages + totalCopyPages
+    const totalPages = Math.ceil(totalItems / itemsPerPage)
 
-    let pageIndex = 0 // นับต่อเนื่องข้าม section (stock แล้วต่อด้วย copy)
-
-    for (let pageNum = 0; pageNum < totalStockPages; pageNum++) {
+    for (let pageNum = 0; pageNum < totalPages; pageNum++) {
       const startIdx = pageNum * itemsPerPage
-      const endIdx = Math.min(startIdx + itemsPerPage, totalStockItems)
-      const pageItems = this.items.slice(startIdx, endIdx)
-      const isLastOverallPage = pageIndex === totalPagesOverall - 1
+      const endIdx = Math.min(startIdx + itemsPerPage, totalItems)
+      const pageItems = allRows.slice(startIdx, endIdx)
+      const isLastPage = pageNum === totalPages - 1
 
       const pageContent = []
 
-      if (pageIndex > 0) {
+      if (pageNum > 0) {
         pageContent.push(this.getHeaderContent())
       }
 
-      if (isLastOverallPage) {
-        pageContent.push(this.getFinalPageTableContent(pageItems, pageNum, totalPagesOverall > 1))
+      if (isLastPage) {
+        pageContent.push(this.getFinalPageTableContent(pageItems, pageNum, totalPages > 1))
       } else {
         pageContent.push(this.getRegularPageTableContent(pageItems, pageNum))
       }
 
       pageContent.push(...this.getSummarySection())
 
-      if (pageIndex < totalPagesOverall - 1) {
+      if (pageNum < totalPages - 1) {
         pageContent.push({ text: '', pageBreak: 'after' })
       }
 
       pages.push(...pageContent)
-      pageIndex++
-    }
-
-    for (let pageNum = 0; pageNum < totalCopyPages; pageNum++) {
-      const startIdx = pageNum * itemsPerPage
-      const endIdx = Math.min(startIdx + itemsPerPage, totalCopyItems)
-      const pageItems = this.copyItems.slice(startIdx, endIdx)
-      const isLastOverallPage = pageIndex === totalPagesOverall - 1
-
-      const pageContent = []
-
-      if (pageIndex > 0) {
-        pageContent.push(this.getHeaderContent())
-      }
-
-      if (pageNum === 0) {
-        pageContent.push(this.getCopyItemsSectionTitle())
-      }
-
-      const styleCodeFn = (item) => this.getCopyStyleCode(item)
-
-      if (isLastOverallPage) {
-        pageContent.push(
-          this.getFinalPageTableContent(pageItems, pageNum, totalPagesOverall > 1, styleCodeFn)
-        )
-      } else {
-        pageContent.push(this.getRegularPageTableContent(pageItems, pageNum, styleCodeFn))
-      }
-
-      pageContent.push(...this.getSummarySection())
-
-      if (pageIndex < totalPagesOverall - 1) {
-        pageContent.push({ text: '', pageBreak: 'after' })
-      }
-
-      pages.push(...pageContent)
-      pageIndex++
     }
 
     return pages
@@ -478,20 +469,23 @@ export class SaleOrderPdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 43, 100, 49, 50, 58, '*', 20, 62, 72],
+        widths: this.tableColumnWidths,
         body: [
-          [
-            this.setTableHeader('No.'),
-            this.setTableHeader(''),
-            this.setTableHeader('Style/Product'),
-            this.setTableHeader('Description'),
-            this.setTableHeader('Gold (gms)'),
-            this.setTableHeader('Diamond (cts)'),
-            this.setTableHeader('Gem (cts)'),
-            this.setTableHeader('Qty'),
-            this.setTableHeader('Price (' + this.currencyUnit + ')'),
-            this.setTableHeader('Amount')
-          ]
+          this.withStatusColumn(
+            [
+              this.setTableHeader('No.'),
+              this.setTableHeader(''),
+              this.setTableHeader('Style/Product'),
+              this.setTableHeader('Description'),
+              this.setTableHeader('Gold (gms)'),
+              this.setTableHeader('Diamond (cts)'),
+              this.setTableHeader('Gem (cts)'),
+              this.setTableHeader('Qty'),
+              this.setTableHeader('Price (' + this.currencyUnit + ')'),
+              this.setTableHeader('Amount')
+            ],
+            this.setTableHeader(i18n.global.t('view.sale.saleOrder.internalStatusColLabel'))
+          )
         ]
       },
       layout: {
@@ -511,13 +505,13 @@ export class SaleOrderPdfBuilder {
     }
   }
 
-  getRegularPageTableContent(items, pageNum, styleCodeFn = formatItemStyleCode) {
+  getRegularPageTableContent(items, pageNum) {
     return {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 43, 100, 49, 50, 58, '*', 20, 62, 72],
-        body: this.buildRegularTableBody(items, pageNum, styleCodeFn)
+        widths: this.tableColumnWidths,
+        body: this.buildRegularTableBody(items, pageNum)
       },
       layout: {
         hLineWidth: function () {
@@ -542,13 +536,13 @@ export class SaleOrderPdfBuilder {
     }
   }
 
-  getFinalPageTableContent(items, pageNum, showGrandTotalRow, styleCodeFn = formatItemStyleCode) {
+  getFinalPageTableContent(items, pageNum, showGrandTotalRow) {
     return {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 43, 100, 49, 50, 58, '*', 20, 62, 72],
-        body: this.buildFinalTableBody(items, pageNum, showGrandTotalRow, styleCodeFn)
+        widths: this.tableColumnWidths,
+        body: this.buildFinalTableBody(items, pageNum, showGrandTotalRow)
       },
       layout: {
         hLineWidth: function () {
@@ -573,22 +567,27 @@ export class SaleOrderPdfBuilder {
     }
   }
 
-  buildRegularTableBody(items, pageNum, styleCodeFn = formatItemStyleCode) {
+  buildRegularTableBody(items, pageNum) {
     const body = []
 
     // Header
-    body.push([
-      this.setTableHeader(''),
-      this.setTableHeader(''),
-      this.setTableHeader('Style/Product'),
-      this.setTableHeader('Description'),
-      this.setTableHeader('Gold (gms)'),
-      this.setTableHeader('Diamond (cts)'),
-      this.setTableHeader('Gem (cts)'),
-      this.setTableHeader('Qty'),
-      this.setTableHeader('Price (' + this.currencyUnit + ')'),
-      this.setTableHeader('Amount (' + this.currencyUnit + ')')
-    ])
+    body.push(
+      this.withStatusColumn(
+        [
+          this.setTableHeader(''),
+          this.setTableHeader(''),
+          this.setTableHeader('Style/Product'),
+          this.setTableHeader('Description'),
+          this.setTableHeader('Gold (gms)'),
+          this.setTableHeader('Diamond (cts)'),
+          this.setTableHeader('Gem (cts)'),
+          this.setTableHeader('Qty'),
+          this.setTableHeader('Price (' + this.currencyUnit + ')'),
+          this.setTableHeader('Amount (' + this.currencyUnit + ')')
+        ],
+        this.setTableHeader(i18n.global.t('view.sale.saleOrder.internalStatusColLabel'))
+      )
+    )
 
     // Content rows
     let sumGold = 0,
@@ -617,41 +616,48 @@ export class SaleOrderPdfBuilder {
         })
       }
 
-      body.push([
-        this.setTableCell((actualIndex + 1).toString()),
-        item.imageBase64 || item.imageBlobPath || item.imagePath
-          ? this.setTabImageCell(item.imageBase64, item.imageBlobPath || item.imagePath)
-          : this.setTableCell(''),
-        this.setTableCell(styleCodeFn(item)),
-        this.setTableCell(this.getDescription(item)),
-        this.buildMaterialTable(item.materials, 'Gold'),
-        this.buildMaterialTable(item.materials, 'Diamond'),
-        this.buildMaterialTable(item.materials, 'Gem'),
-        this.setTableCellRight(qty ? qty.toString() : '0'),
-        this.setTableCellRight(this.formatPrice(Number(convertedPrice))),
-        this.setTableCellRight(this.roundNoDecimal(amount))
-      ])
+      body.push(
+        this.withStatusColumn(
+          [
+            this.setTableCell((actualIndex + 1).toString()),
+            item.imageBase64 || item.imageBlobPath || item.imagePath
+              ? this.setTabImageCell(item.imageBase64, item.imageBlobPath || item.imagePath)
+              : this.setTableCell(''),
+            this.setTableCell(formatItemStyleCode(item)),
+            this.setTableCell(this.getDescription(item)),
+            this.buildMaterialTable(item.materials, 'Gold'),
+            this.buildMaterialTable(item.materials, 'Diamond'),
+            this.buildMaterialTable(item.materials, 'Gem'),
+            this.setTableCellRight(qty ? qty.toString() : '0'),
+            this.setTableCellRight(this.formatPrice(Number(convertedPrice))),
+            this.setTableCellRight(this.roundNoDecimal(amount))
+          ],
+          this.setTableCell(this.getStockStatusLabel(item))
+        )
+      )
     })
 
     // Footer: Total weight, qty, amount
-    body.push([
-      { text: 'Total', style: 'summaryLabelColored', alignment: 'right', colSpan: 4 },
-      { text: '', style: 'summaryLabelColored', alignment: 'right' },
-      { text: '', style: 'summaryLabelColored', alignment: 'right' },
-      { text: '', style: 'summaryLabelColored', alignment: 'right' },
-      { text: this.formatWeight(sumGold), style: 'summaryLabelColored', alignment: 'right' },
-      { text: this.formatWeight(sumDiamond), style: 'summaryLabelColored', alignment: 'right' },
-      { text: this.formatWeight(sumGem), style: 'summaryLabelColored', alignment: 'right' },
-      { text: sumQty, style: 'summaryLabelColored', alignment: 'right' },
-      { text: '', style: 'summaryLabelColored', alignment: 'right' },
-      { text: this.roundNoDecimal(sumAmount), style: 'summaryLabelColored', alignment: 'right' }
-    ])
+    body.push(
+      this.withStatusColumn([
+        { text: 'Total', style: 'summaryLabelColored', alignment: 'right', colSpan: 4 },
+        { text: '', style: 'summaryLabelColored', alignment: 'right' },
+        { text: '', style: 'summaryLabelColored', alignment: 'right' },
+        { text: '', style: 'summaryLabelColored', alignment: 'right' },
+        { text: this.formatWeight(sumGold), style: 'summaryLabelColored', alignment: 'right' },
+        { text: this.formatWeight(sumDiamond), style: 'summaryLabelColored', alignment: 'right' },
+        { text: this.formatWeight(sumGem), style: 'summaryLabelColored', alignment: 'right' },
+        { text: sumQty, style: 'summaryLabelColored', alignment: 'right' },
+        { text: '', style: 'summaryLabelColored', alignment: 'right' },
+        { text: this.roundNoDecimal(sumAmount), style: 'summaryLabelColored', alignment: 'right' }
+      ], { text: '', style: 'summaryLabelColored' })
+    )
 
     return body
   }
 
-  buildFinalTableBody(items, pageNum, showGrandTotalRow, styleCodeFn = formatItemStyleCode) {
-    const body = this.buildRegularTableBody(items, pageNum, styleCodeFn)
+  buildFinalTableBody(items, pageNum, showGrandTotalRow) {
+    const body = this.buildRegularTableBody(items, pageNum)
 
     // Grand Total row (น้ำหนักรวม + จำนวนชิ้นรวมทุกหน้า ของทั้งเอกสาร รวม copyItems) — แสดงเฉพาะเมื่อเอกสารมีมากกว่า 1 หน้า
     if (showGrandTotalRow) {
@@ -671,47 +677,25 @@ export class SaleOrderPdfBuilder {
         }
       })
 
-      body.push([
-        { text: 'Grand Total', style: 'grandTotalLabel', alignment: 'right', colSpan: 4 },
-        {},
-        {},
-        {},
-        { text: this.formatWeight(sumGoldAll), style: 'grandTotalLabel', alignment: 'right' },
-        { text: this.formatWeight(sumDiamondAll), style: 'grandTotalLabel', alignment: 'right' },
-        { text: this.formatWeight(sumGemAll), style: 'grandTotalLabel', alignment: 'right' },
-        { text: sumQtyAll, style: 'grandTotalLabel', alignment: 'right' },
-        {},
-        {}
-      ])
+      body.push(
+        this.withStatusColumn([
+          { text: 'Grand Total', style: 'grandTotalLabel', alignment: 'right', colSpan: 4 },
+          {},
+          {},
+          {},
+          { text: this.formatWeight(sumGoldAll), style: 'grandTotalLabel', alignment: 'right' },
+          { text: this.formatWeight(sumDiamondAll), style: 'grandTotalLabel', alignment: 'right' },
+          { text: this.formatWeight(sumGemAll), style: 'grandTotalLabel', alignment: 'right' },
+          { text: sumQtyAll, style: 'grandTotalLabel', alignment: 'right' },
+          {},
+          {}
+        ])
+      )
     }
 
     // SUBTOTAL row (F.O.B Bangkok)
-    body.push([
-      {
-        text: '',
-        style: 'summaryLabel',
-        alignment: 'right',
-        colSpan: 7,
-        border: [true, false, false, false]
-      },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      { text: 'F.O.B Bangkok', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
-      {},
-      {
-        text: this.roundNoDecimal(this.subtotal),
-        style: 'totalSummaryLabelColored',
-        alignment: 'right'
-      }
-    ])
-
-    // SPECIAL DISCOUNT
-    if (this.specialDiscount > 0) {
-      body.push([
+    body.push(
+      this.withStatusColumn([
         {
           text: '',
           style: 'summaryLabel',
@@ -725,140 +709,176 @@ export class SaleOrderPdfBuilder {
         {},
         {},
         {},
-        {
-          text: 'SPECIAL DISCOUNT',
-          style: 'totalSummaryLabelColored',
-          alignment: 'right',
-          colSpan: 2
-        },
+        { text: 'F.O.B Bangkok', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
         {},
         {
-          text: '-' + this.roundNoDecimal(this.specialDiscount),
+          text: this.roundNoDecimal(this.subtotal),
           style: 'totalSummaryLabelColored',
-          alignment: 'right',
-          color: '#ff4d4d'
+          alignment: 'right'
         }
       ])
+    )
+
+    // SPECIAL DISCOUNT
+    if (this.specialDiscount > 0) {
+      body.push(
+        this.withStatusColumn([
+          {
+            text: '',
+            style: 'summaryLabel',
+            alignment: 'right',
+            colSpan: 7,
+            border: [true, false, false, false]
+          },
+          {},
+          {},
+          {},
+          {},
+          {},
+          {},
+          {
+            text: 'SPECIAL DISCOUNT',
+            style: 'totalSummaryLabelColored',
+            alignment: 'right',
+            colSpan: 2
+          },
+          {},
+          {
+            text: '-' + this.roundNoDecimal(this.specialDiscount),
+            style: 'totalSummaryLabelColored',
+            alignment: 'right',
+            color: '#ff4d4d'
+          }
+        ])
+      )
     }
 
     // SPECIAL ADDITION
     if (this.specialAddition > 0) {
-      body.push([
-        {
-          text: '',
-          style: 'summaryLabel',
-          alignment: 'right',
-          colSpan: 7,
-          border: [true, false, false, false]
-        },
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {
-          text: 'SPECIAL ADDITION',
-          style: 'totalSummaryLabelColored',
-          alignment: 'right',
-          colSpan: 2
-        },
-        {},
-        {
-          text: '+' + this.roundNoDecimal(this.specialAddition),
-          style: 'totalSummaryLabelColored',
-          alignment: 'right',
-          color: '#038387'
-        }
-      ])
+      body.push(
+        this.withStatusColumn([
+          {
+            text: '',
+            style: 'summaryLabel',
+            alignment: 'right',
+            colSpan: 7,
+            border: [true, false, false, false]
+          },
+          {},
+          {},
+          {},
+          {},
+          {},
+          {},
+          {
+            text: 'SPECIAL ADDITION',
+            style: 'totalSummaryLabelColored',
+            alignment: 'right',
+            colSpan: 2
+          },
+          {},
+          {
+            text: '+' + this.roundNoDecimal(this.specialAddition),
+            style: 'totalSummaryLabelColored',
+            alignment: 'right',
+            color: '#038387'
+          }
+        ])
+      )
     }
 
     // FREIGHT & INSURANCE
     if (this.freightAndInsurance > 0) {
-      body.push([
-        {
-          text: '',
-          style: 'summaryLabel',
-          alignment: 'right',
-          colSpan: 7,
-          border: [true, false, false, false]
-        },
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {
-          text: 'FREIGHT & INSURANCE',
-          style: 'totalSummaryLabelColored',
-          alignment: 'right',
-          colSpan: 2
-        },
-        {},
-        {
-          text: this.roundNoDecimal(this.freightAndInsurance),
-          style: 'totalSummaryLabelColored',
-          alignment: 'right'
-        }
-      ])
+      body.push(
+        this.withStatusColumn([
+          {
+            text: '',
+            style: 'summaryLabel',
+            alignment: 'right',
+            colSpan: 7,
+            border: [true, false, false, false]
+          },
+          {},
+          {},
+          {},
+          {},
+          {},
+          {},
+          {
+            text: 'FREIGHT & INSURANCE',
+            style: 'totalSummaryLabelColored',
+            alignment: 'right',
+            colSpan: 2
+          },
+          {},
+          {
+            text: this.roundNoDecimal(this.freightAndInsurance),
+            style: 'totalSummaryLabelColored',
+            alignment: 'right'
+          }
+        ])
+      )
     }
 
     // VAT
     if (this.vatPercent > 0) {
-      body.push([
-        {
-          text: '',
-          style: 'summaryLabel',
-          alignment: 'right',
-          colSpan: 7,
-          border: [true, false, false, false]
-        },
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {
-          text: `VAT (${this.vatPercent}%)`,
-          style: 'totalSummaryLabelColored',
-          alignment: 'right',
-          colSpan: 2
-        },
-        {},
-        {
-          text: this.roundNoDecimal(this.vatAmount),
-          style: 'totalSummaryLabelColored',
-          alignment: 'right'
-        }
-      ])
+      body.push(
+        this.withStatusColumn([
+          {
+            text: '',
+            style: 'summaryLabel',
+            alignment: 'right',
+            colSpan: 7,
+            border: [true, false, false, false]
+          },
+          {},
+          {},
+          {},
+          {},
+          {},
+          {},
+          {
+            text: `VAT (${this.vatPercent}%)`,
+            style: 'totalSummaryLabelColored',
+            alignment: 'right',
+            colSpan: 2
+          },
+          {},
+          {
+            text: this.roundNoDecimal(this.vatAmount),
+            style: 'totalSummaryLabelColored',
+            alignment: 'right'
+          }
+        ])
+      )
     }
 
     // GRAND TOTAL (C.I.F)
     const grandTotal = this.grandTotalRounded
 
-    body.push([
-      {
-        text: this.convertNumberToWords(grandTotal),
-        style: 'summaryLabelColored',
-        alignment: 'left',
-        colSpan: 7
-      },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      { text: this.showCifLabel ? 'C.I.F' : '', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
-      {},
-      {
-        text: this.roundNoDecimal(grandTotal),
-        style: 'totalSummaryLabelColored',
-        alignment: 'right'
-      }
-    ])
+    body.push(
+      this.withStatusColumn([
+        {
+          text: this.convertNumberToWords(grandTotal),
+          style: 'summaryLabelColored',
+          alignment: 'left',
+          colSpan: 7
+        },
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        { text: this.showCifLabel ? 'C.I.F' : '', style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
+        {},
+        {
+          text: this.roundNoDecimal(grandTotal),
+          style: 'totalSummaryLabelColored',
+          alignment: 'right'
+        }
+      ])
+    )
 
     return body
   }

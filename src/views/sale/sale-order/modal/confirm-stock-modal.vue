@@ -157,7 +157,7 @@
                       <CheckboxGeneric
                         :modelValue="selectedItemsSet.has(slotProps.data.lineKey)"
                         @update:modelValue="(value) => toggleItemSelection(slotProps.data, value)"
-                        :disabled="slotProps.data.isConfirm"
+                        :disabled="slotProps.data.isConfirm || !!isSelectableReason(slotProps.data)"
                         :binary="true"
                       />
                     </div>
@@ -212,6 +212,9 @@
                       >
                         {{ formatDate(slotProps.data.confirmedDate) }}
                       </div>
+                      <small v-if="isSelectableReason(slotProps.data)" class="d-block text-danger">
+                        {{ isSelectableReason(slotProps.data) }}
+                      </small>
                     </div>
                   </template>
                 </Column>
@@ -288,7 +291,8 @@
 
                 <Column field="available" :header="$t('view.sale.saleOrder.qtyAvailableCol')" style="width: 110px">
                   <template #body="slotProps">
-                    <div class="text-center" :class="{ 'text-danger font-weight-bold': isRowShort(slotProps.data) }">
+                    <div v-if="slotProps.data.isPlaceholder" class="text-center">—</div>
+                    <div v-else class="text-center" :class="{ 'text-danger font-weight-bold': isRowShort(slotProps.data) }">
                       {{ rowAvailable(slotProps.data) }}
                       <small v-if="isRowShort(slotProps.data)" class="d-block text-danger">
                         {{ $t('view.sale.saleOrder.qtyShortage', { k: rowShortage(slotProps.data) }) }}
@@ -445,9 +449,11 @@ export default {
   },
 
   computed: {
-    // Only show unconfirmed items in the selection
+    // Only show unconfirmed items in the selection — ตัดรายการรอผลิต/รอแปลงที่ยังเลือกไม่ได้ออกด้วย (ยังไม่มีเลขที่ผลิต/เลขซ้ำ)
     selectableItems() {
-      return this.stockItems.filter((item) => !item.isConfirm && item.isRemainProduct === true)
+      return this.stockItems.filter(
+        (item) => !item.isConfirm && item.isRemainProduct === true && !this.isSelectableReason(item)
+      )
     },
 
     filteredStockItems() {
@@ -555,6 +561,8 @@ export default {
     },
 
     rowShortage(item) {
+      // T3: บรรทัดรอผลิต/รอแปลงไม่มีของจริงในคลัง — ไม่มี concept "ขาด" ให้เช็ค
+      if (item.isPlaceholder) return 0
       const sumQty = this.selectedQtyByStockNumber[item.stockNumber] || 0
       const shortage = sumQty - this.rowAvailable(item)
       return shortage > 0 ? shortage : 0
@@ -562,6 +570,23 @@ export default {
 
     isRowShort(item) {
       return this.rowShortage(item) > 0
+    },
+
+    // T3: เหตุผลที่บรรทัดรอผลิต/รอแปลงยังเลือกยืนยันไม่ได้ — ต้องมีเลขที่ผลิตก่อน และห้ามซ้ำกับบรรทัดอื่นในใบเดียวกัน
+    isDuplicateProductionNumber(item) {
+      if (!item.stockNumber) return false
+      return this.filteredStockItems.some(
+        (i) => i.lineKey !== item.lineKey && i.stockNumber === item.stockNumber
+      )
+    },
+
+    isSelectableReason(item) {
+      if (!item.isPlaceholder) return null
+      if (!item.stockNumber) return this.$t('view.sale.saleOrder.warn.productionNumberRequired')
+      if (this.isDuplicateProductionNumber(item)) {
+        return this.$t('view.sale.saleOrder.warn.productionNumberDuplicate', { code: item.stockNumber })
+      }
+      return null
     },
 
     getRowClass(data) {
@@ -632,6 +657,10 @@ export default {
     toggleItemSelection(item, value) {
       // Don't allow selection of already confirmed items
       if (item.isConfirm) {
+        return
+      }
+      // T3: บรรทัดรอผลิต/รอแปลงที่ยังไม่มีเลขที่ผลิต/เลขซ้ำ ยังเลือกไม่ได้
+      if (this.isSelectableReason(item)) {
         return
       }
 
@@ -752,6 +781,7 @@ export default {
             appraisalPrice: item.appraisalPrice,
             discount: item.discountPercent,
             isConfirm: true,
+            isPlaceholder: !!item.isPlaceholder,
             confirmedAt: new Date().toISOString()
           }))
         }

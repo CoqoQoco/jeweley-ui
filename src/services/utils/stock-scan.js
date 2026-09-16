@@ -71,6 +71,7 @@ export function buildScanStockLine(rawData, overrides = {}) {
     isRemainProduct: true,
     isConfirm: false,
     isInvoice: false,
+    isPlaceholder: false,
     ...overrides
   }
 }

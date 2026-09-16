@@ -2,7 +2,6 @@ import dayjs from 'dayjs'
 import ExcelJS from 'exceljs'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount, roundHalfUp } from '@/services/utils/money.js'
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
-import { i18n } from '@/plugins/i18n/config.js'
 
 export class SaleOrderExcelBuilder {
   constructor(soData, options = {}) {
@@ -63,6 +62,29 @@ export class SaleOrderExcelBuilder {
   // stock items + copy items รวมกัน — ใช้คิดยอดรวม/น้ำหนักรวมทั้งใบ (P2-3)
   get allItems() {
     return [...this.items, ...this.copyItems]
+  }
+
+  // T1: บรรทัดสินค้าจริงตามด้วยบรรทัดลูก (copy line ที่ parentLineKey ตรงกัน) เรียงตามลำดับที่สร้าง
+  // แล้วต่อท้ายด้วย copy line ที่ไม่มีบรรทัดแม่ — ตารางเดียว ไม่มี section แยกอีกต่อไป
+  get mergedPrintItems() {
+    const rows = []
+    const childKeysUsed = new Set()
+
+    this.items.forEach((parent) => {
+      rows.push(parent)
+      this.copyItems
+        .filter((child) => child.parentLineKey && child.parentLineKey === parent.lineKey)
+        .forEach((child) => {
+          childKeysUsed.add(child.lineKey)
+          rows.push(child)
+        })
+    })
+
+    this.copyItems
+      .filter((child) => !childKeysUsed.has(child.lineKey))
+      .forEach((child) => rows.push(child))
+
+    return rows
   }
 
   formatCurrency(amount) {
@@ -371,7 +393,7 @@ export class SaleOrderExcelBuilder {
 
   // === ITEMS TABLE ===
 
-  // เขียนหัวตาราง "No./Image/Style.../Amount" 1 แถว — reuse ทั้ง section stock และ section copyItems
+  // เขียนหัวตาราง "No./Image/Style.../Amount" 1 แถว
   writeTableHeader(worksheet, row) {
     const headers = [
       'No.',
@@ -403,18 +425,8 @@ export class SaleOrderExcelBuilder {
     worksheet.getRow(row).height = 25
   }
 
-  // คอลัมน์ Style/Product ของรายการรอผลิต/รอแปลง — ไม่มีเลขที่ผลิตจริง ใช้ placeholder + sourceStockNumber (ถ้ามี)
-  getCopyStyleCode(item) {
-    const code = formatItemStyleCode(item)
-    const placeholder = i18n.global.t('view.sale.saleOrder.needsProduction')
-    const placeholderLine = item.sourceStockNumber
-      ? `${placeholder} (${item.sourceStockNumber})`
-      : placeholder
-    return code ? `${code}\n${placeholderLine}` : placeholderLine
-  }
-
-  // เขียนแถวรายการสินค้า 1 section (stock หรือ copyItems) + แถว "Total" ปิดท้าย — reuse ระหว่าง 2 section
-  writeItemRows(worksheet, startRow, items, styleCodeFn) {
+  // เขียนแถวรายการสินค้า + แถว "Total" ปิดท้าย — T1: ตารางเดียว (บรรทัดสินค้าจริง + บรรทัดลูก/ไม่ผูกบรรทัดแม่) ไม่มี section แยกอีกต่อไป
+  writeItemRows(worksheet, startRow, items) {
     let row = startRow
     const itemImageData = []
 
@@ -464,7 +476,7 @@ export class SaleOrderExcelBuilder {
       sumQty += qty
       sumAmount += amount
 
-      const styleProduct = styleCodeFn(item)
+      const styleProduct = formatItemStyleCode(item)
 
       const cells = [
         { col: 'A', value: index + 1, align: 'right', wrap: false },
@@ -557,28 +569,9 @@ export class SaleOrderExcelBuilder {
     this.writeTableHeader(worksheet, row)
     row++
 
-    const stockResult = this.writeItemRows(worksheet, row, this.items, formatItemStyleCode)
-    row = stockResult.nextRow
-    let itemImageData = stockResult.itemImageData
-
-    // รายการรอผลิต/รอแปลง — ตารางแยกส่วนหลัง stock items (P2-5)
-    if (this.copyItems.length > 0) {
-      const titleCell = worksheet.getCell(`A${row}`)
-      worksheet.mergeCells(`A${row}:J${row}`)
-      titleCell.value = i18n.global.t('view.sale.saleOrder.copyItemsPdfSectionTitle')
-      titleCell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FF8B0000' } }
-      worksheet.getRow(row).height = 20
-      row++
-
-      this.writeTableHeader(worksheet, row)
-      row++
-
-      const copyResult = this.writeItemRows(worksheet, row, this.copyItems, (item) =>
-        this.getCopyStyleCode(item)
-      )
-      row = copyResult.nextRow
-      itemImageData = [...itemImageData, ...copyResult.itemImageData]
-    }
+    const result = this.writeItemRows(worksheet, row, this.mergedPrintItems)
+    row = result.nextRow
+    const itemImageData = result.itemImageData
 
     // === Summary Rows (mirrors PDF buildFinalTableBody) ===
 

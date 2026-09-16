@@ -542,7 +542,6 @@ export const saleOrder = {
   copyItemsTotal: 'Total Price (Copy Items)',
   copyToProductionBtn: 'Copy as pending production',
   copyFromSource: 'From {stockNumber}',
-  copyItemsPdfSectionTitle: 'Pending Production / Conversion Items',
   copySubtotalRow: '+ Pending Production / Conversion ({n} items)',
   docSubtotalRow: 'Total (All Items)',
   fillFromStockBtn: 'Fill from Stock',
@@ -552,6 +551,15 @@ export const saleOrder = {
   copyLineProgress: 'Ordered {ordered} · Filled {filled} · Remaining {qty}',
   filledFromCopyHint: 'Filled from a pending production line',
   createConvertBtn: 'Create Stock Convert',
+  noStockYetTag: 'No stock yet',
+  unlinkedGroupLabel: 'Not linked to a parent line',
+  productionNumberPlaceholder: 'Type the production number',
+  productionNumberHint: 'Required before confirming',
+  printInternalBtn: 'Print Internal Copy',
+  internalStatusColLabel: 'Stock Status',
+  internalStatusInStock: 'In Stock',
+  internalStatusPendingConvertWithDoc: 'Pending Conversion (CV {running})',
+  replaceConfirmedModalTitle: 'Replace with Real Stock',
   pendingConvertNotice: '{count} converted item(s) ready to fill',
   pendingConvertFillBtn: 'Fill',
   pendingConvertPickLineTitle: 'Select Line to Fill',
@@ -614,7 +622,8 @@ export const saleOrder = {
     cancelConfirm: 'Cancelled confirmation for item {stockNumber}',
     deleteSO: 'Sale order deleted successfully',
     fillFromStock: 'Filled item {stockNumber} into the order',
-    convertCreated: 'Created stock convert document {running} successfully'
+    convertCreated: 'Created stock convert document {running} successfully',
+    replaceConfirmedStock: 'Replaced with real stock {stockNumber} successfully'
   },
   warn: {
     incompleteCustomer: 'Incomplete customer info',
@@ -640,7 +649,12 @@ export const saleOrder = {
     duplicateItemNewLine: 'Item {stockNumber} is already in the list, added as a new line',
     qtyExceedAvailableTotal: 'Item {stockNumber} totals {total} across all lines, exceeding {available} available',
     stillShortBeforeSubmit: 'Some items now exceed available stock. Please adjust quantity before confirming.',
-    fillNoAvailable: 'Item {stockNumber} is not available (already used by other lines)'
+    fillNoAvailable: 'Item {stockNumber} is not available (already used by other lines)',
+    productionNumberRequired: 'Please enter a production number before confirming',
+    productionNumberDuplicate: 'Production number {code} duplicates another line in this sale order',
+    productionNumberMatchesStock: 'This number already exists in stock — the system will not reserve stock for it',
+    placeholderCannotInvoice: 'No real stock yet — fill the item before invoicing',
+    replaceStockInsufficientQty: 'Not enough stock for this number (available {available}, needed {needed})'
   },
   confirm: {
     cancelCreate: 'Do you want to cancel creating this sale order?',
@@ -656,7 +670,9 @@ export const saleOrder = {
     fillProductMismatchTitle: 'Product does not match the ordered item',
     fillProductMismatchMessage: 'The scanned product does not match the ordered item. Confirm to fill anyway?',
     openConvertTitle: 'Open Stock Convert Document',
-    openConvertMessage: 'Do you want to open stock convert document {running} now?'
+    openConvertMessage: 'Do you want to open stock convert document {running} now?',
+    unlinkChildrenOnDeleteParentTitle: 'Delete Parent Line',
+    unlinkChildrenOnDeleteParent: 'This line has {count} pending production/conversion line(s) linked to it. Deleting it will unlink them (they remain in the order). Continue?'
   }
 }
 

@@ -3,7 +3,7 @@
     <div class="card-header">
       <h6 class="mb-0">{{ $t('view.sale.saleOrder.itemList') }}</h6>
       <div class="card-header-actions">
-        <span class="badge badge-warning">{{ stockItems.length }} {{ $t('view.sale.saleOrder.itemUnit') }}</span>
+        <span class="badge badge-warning">{{ mergedRows.length }} {{ $t('view.sale.saleOrder.itemUnit') }}</span>
         <!-- Gear button for column settings -->
         <div class="stock-col-settings-wrapper">
           <button class="stock-col-settings-btn" @click.stop="isSettingsOpen = !isSettingsOpen" title="ตั้งค่าคอลัมน์">
@@ -37,7 +37,7 @@
     <div class="card-body p-0" @focusin="onRowFocusIn">
       <!-- eslint-disable-next-line no-restricted-imports -->
       <DataTable
-        :value="stockItemsWithGrouping"
+        :value="mergedRows"
         dataKey="lineKey"
         :scrollable="true"
         scrollHeight="10000000px"
@@ -45,10 +45,6 @@
         stripedRows
         responsiveLayout="scroll"
         showGridlines
-        :rowGroupMode="'subheader'"
-        :groupRowsBy="'groupKey'"
-        :sortField="'sortOrder'"
-        :sortOrder="1"
         :rowClass="getRowClass"
         @row-click="onRowClick"
       >
@@ -58,7 +54,7 @@
             <Column header="" :frozen="!!frozenCols['action']" :alignFrozen="frozenCols['action'] || undefined" />
             <Column header="" :frozen="!!frozenCols['image']" :alignFrozen="frozenCols['image'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.stockNumberOld')" :frozen="!!frozenCols['stockNumberOld']" :alignFrozen="frozenCols['stockNumberOld'] || undefined" />
-            <Column :header="$t('view.sale.saleOrder.stockNumberNew')" :frozen="!!frozenCols['stockNumber']" :alignFrozen="frozenCols['stockNumber'] || undefined" />
+            <Column :header="$t('view.sale.saleOrder.productionNumber')" :frozen="!!frozenCols['stockNumber']" :alignFrozen="frozenCols['stockNumber'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.productCode')" :frozen="!!frozenCols['productNumber']" :alignFrozen="frozenCols['productNumber'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.saleStatus')" :frozen="!!frozenCols['isConfirm']" :alignFrozen="frozenCols['isConfirm'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.description')" :frozen="!!frozenCols['description']" :alignFrozen="frozenCols['description'] || undefined" />
@@ -81,7 +77,7 @@
           :alignFrozen="frozenCols['index'] || undefined"
         >
           <template #body="slotProps">
-            <span>{{ slotProps.index + 1 }}</span>
+            <span v-if="!isDivider(slotProps.data)">{{ slotProps.index + 1 }}</span>
           </template>
         </Column>
 
@@ -90,7 +86,7 @@
           :alignFrozen="frozenCols['action'] || undefined"
         >
           <template #body="slotProps">
-            <div class="d-flex justify-content-center align-items-center">
+            <div v-if="!isDivider(slotProps.data)" class="d-flex justify-content-center align-items-center">
               <button
                 :class="[
                   'btn',
@@ -131,7 +127,7 @@
                 <span class="bi bi-arrow-counterclockwise"></span>
               </button>
               <button
-                v-if="slotProps.data.isConfirm && !slotProps.data.invoice && !isViewMode"
+                v-if="slotProps.data.isConfirm && !slotProps.data.invoice && !isViewMode && !isPlaceholderRow(slotProps.data)"
                 class="btn btn-sm btn-outline-main ml-2"
                 type="button"
                 :title="$t('view.sale.saleOrder.moveUpTitle')"
@@ -141,7 +137,7 @@
                 <span class="bi bi-arrow-up"></span>
               </button>
               <button
-                v-if="slotProps.data.isConfirm && !slotProps.data.invoice && !isViewMode"
+                v-if="slotProps.data.isConfirm && !slotProps.data.invoice && !isViewMode && !isPlaceholderRow(slotProps.data)"
                 class="btn btn-sm btn-outline-main ml-2"
                 type="button"
                 :title="$t('view.sale.saleOrder.moveDownTitle')"
@@ -151,13 +147,40 @@
                 <span class="bi bi-arrow-down"></span>
               </button>
               <button
-                v-if="!isViewMode"
+                v-if="!isViewMode && !isPlaceholderRow(slotProps.data)"
                 class="btn btn-sm btn-dark ml-2"
                 type="button"
                 :title="$t('view.sale.saleOrder.copyToProductionBtn')"
                 @click="$emit('copy-item', slotProps.data)"
               >
                 <span class="bi bi-files"></span>
+              </button>
+              <button
+                v-if="!isViewMode && isPlaceholderRow(slotProps.data) && !slotProps.data.isConfirm && !isFullyFilled(slotProps.data)"
+                class="btn btn-sm btn-green ml-2"
+                type="button"
+                :title="$t('view.sale.saleOrder.fillFromStockBtn')"
+                @click="$emit('fill-from-stock', slotProps.data)"
+              >
+                <span class="bi bi-box-arrow-in-down"></span>
+              </button>
+              <button
+                v-if="!isViewMode && isPlaceholderRow(slotProps.data) && slotProps.data.isConfirm && !slotProps.data.invoice"
+                class="btn btn-sm btn-green ml-2"
+                type="button"
+                :title="$t('view.sale.saleOrder.fillFromStockBtn')"
+                @click="$emit('replace-confirmed-stock', slotProps.data)"
+              >
+                <span class="bi bi-box-arrow-in-down"></span>
+              </button>
+              <button
+                v-if="!isViewMode && isPlaceholderRow(slotProps.data) && canConvert"
+                class="btn btn-sm btn-outline-main ml-2"
+                type="button"
+                :title="$t('view.sale.saleOrder.createConvertBtn')"
+                @click="$emit('create-convert', slotProps.data)"
+              >
+                <span class="bi bi-arrow-repeat"></span>
               </button>
             </div>
           </template>
@@ -169,7 +192,12 @@
         >
           <template #body="slotProps">
             <div class="image-container">
-              <div v-if="slotProps.data.imagePath">
+              <img
+                v-if="slotProps.data.imageBase64"
+                :src="slotProps.data.imageBase64"
+                class="copy-img-thumb"
+              />
+              <div v-else-if="slotProps.data.imagePath">
                 <imagePreview
                   :imageName="slotProps.data.imagePath"
                   :path="slotProps.data.imagePath"
@@ -187,27 +215,58 @@
           :alignFrozen="frozenCols['stockNumberOld'] || undefined"
         >
           <template #body="slotProps">
-            <span>{{
-              `${
-                slotProps.data.stockNumberOrigin
-                  ? slotProps.data.stockNumberOrigin || ''
-                  : slotProps.data.stockNumber || ''
-              }`
-            }}</span>
+            <span v-if="isPlaceholderRow(slotProps.data)">{{ slotProps.data.sourceStockNumber || '-' }}</span>
+            <span v-else>{{ slotProps.data.stockNumberOrigin || slotProps.data.stockNumber || '' }}</span>
           </template>
         </Column>
 
-        <Column field="stockNumber" :header="$t('view.sale.saleOrder.productionNumber')" style="min-width: 150px"
+        <Column field="stockNumber" :header="$t('view.sale.saleOrder.productionNumber')" style="min-width: 190px"
           :frozen="!!frozenCols['stockNumber']"
           :alignFrozen="frozenCols['stockNumber'] || undefined"
         >
           <template #body="slotProps">
-            <div class="d-flex flex-column">
-              <span>{{ `${slotProps.data.stockNumber}` }}</span>
-              <small v-if="slotProps.data.message" class="text-main">{{
-                `${slotProps.data.message}`
+            <div v-if="isPlaceholderRow(slotProps.data)" class="d-flex flex-column">
+              <div class="d-flex align-items-center">
+                <span v-if="slotProps.data._rowKind === 'child'" class="child-indent-prefix">↳</span>
+                <input
+                  v-if="!slotProps.data.isConfirm && !slotProps.data.invoice"
+                  v-model.trim="slotProps.data.stockNumber"
+                  type="text"
+                  class="form-control bg-input input-bg"
+                  :placeholder="$t('view.sale.saleOrder.productionNumberPlaceholder')"
+                  @blur="$emit('blur-copy-stock-number', slotProps.data)"
+                  style="background-color: #b5dad4; width: 100%"
+                />
+                <span v-else class="confirmed-text">{{ slotProps.data.stockNumber || '-' }}</span>
+              </div>
+              <small v-if="!slotProps.data.isConfirm && !slotProps.data.invoice" class="text-muted">
+                {{ $t('view.sale.saleOrder.productionNumberHint') }}
+              </small>
+              <span v-if="!isFullyFilled(slotProps.data)" class="badge badge-warning mt-1">
+                {{ $t('view.sale.saleOrder.noStockYetTag') }}
+              </span>
+              <small v-if="slotProps.data.sourceStockNumber" class="text-main">
+                {{ $t('view.sale.saleOrder.copyFromSource', { stockNumber: slotProps.data.sourceStockNumber }) }}
+              </small>
+              <small v-if="hasOrderedQty(slotProps.data)" class="text-main">
+                {{
+                  $t('view.sale.saleOrder.copyLineProgress', {
+                    ordered: slotProps.data.orderedQty,
+                    filled: filledQtyFor(slotProps.data),
+                    qty: slotProps.data.qty || 0
+                  })
+                }}
+              </small>
+              <span v-if="isFullyFilled(slotProps.data)" class="badge badge-success mt-1">
+                {{ $t('view.sale.saleOrder.fullyFilledBadge') }}
+              </span>
+            </div>
+            <div v-else>
+              <span>{{ slotProps.data.stockNumber || '' }}</span>
+              <small v-if="slotProps.data.message" class="text-main d-block">{{
+                slotProps.data.message
               }}</small>
-              <small v-if="slotProps.data.sourceCopyLineKey" class="text-main">
+              <small v-if="slotProps.data.sourceCopyLineKey" class="text-main d-block">
                 {{ $t('view.sale.saleOrder.filledFromCopyHint') }}
               </small>
             </div>
@@ -219,7 +278,7 @@
           :alignFrozen="frozenCols['productNumber'] || undefined"
         >
           <template #body="slotProps">
-            <div v-if="!slotProps.data.stockNumber">
+            <div v-if="isPlaceholderRow(slotProps.data)">
               <input
                 v-if="!slotProps.data.isConfirm && !slotProps.data.invoice"
                 v-model="slotProps.data.productNumber"
@@ -233,34 +292,40 @@
               </span>
             </div>
             <div v-else>
-              <span>{{ slotProps.data.productNumber }}</span>
+              <span>{{ slotProps.data.productNumber || '' }}</span>
             </div>
           </template>
         </Column>
 
-        <!-- Confirmation Status Column for Stock Items -->
+        <!-- Confirmation Status Column -->
         <Column field="isConfirm" :header="$t('view.sale.saleOrder.saleStatus')" style="min-width: 120px"
           :frozen="!!frozenCols['isConfirm']"
           :alignFrozen="frozenCols['isConfirm'] || undefined"
         >
           <template #body="slotProps">
-            <div v-if="!slotProps.data.isRemainProduct && !slotProps.data.isConfirm">
-              <span class="text-center text-main">
-                {{ slotProps.data.message }}
-              </span>
-            </div>
-            <div class="text-center" v-else-if="slotProps.data.invoice">
-              <span class="badge badge-success">
-                {{ slotProps.data.invoice }}
-              </span>
-            </div>
-            <div class="text-center" v-else>
-              <span
-                :class="['badge', slotProps.data.isConfirm ? 'badge-success' : 'badge-warning']"
-              >
-                {{ slotProps.data.isConfirm ? $t('view.sale.saleOrder.statusConfirmed') : $t('view.sale.saleOrder.statusPending') }}
-              </span>
-            </div>
+            <template v-if="!isDivider(slotProps.data)">
+              <div v-if="!slotProps.data.isRemainProduct && !slotProps.data.isConfirm">
+                <span class="text-center text-main">
+                  {{ slotProps.data.message }}
+                </span>
+              </div>
+              <div class="text-center" v-else-if="slotProps.data.invoice">
+                <a
+                  href="#"
+                  class="badge badge-success invoice-link"
+                  @click.prevent="openInvoiceDetail(slotProps.data.invoice)"
+                >
+                  {{ slotProps.data.invoice }}
+                </a>
+              </div>
+              <div class="text-center" v-else>
+                <span
+                  :class="['badge', slotProps.data.isConfirm ? 'badge-success' : 'badge-warning']"
+                >
+                  {{ slotProps.data.isConfirm ? $t('view.sale.saleOrder.statusConfirmed') : $t('view.sale.saleOrder.statusPending') }}
+                </span>
+              </div>
+            </template>
           </template>
         </Column>
 
@@ -269,17 +334,22 @@
           :alignFrozen="frozenCols['description'] || undefined"
         >
           <template #body="slotProps">
-            <input
-              v-if="!slotProps.data.isConfirm && !slotProps.data.invoice"
-              v-model="slotProps.data.description"
-              type="text"
-              class="form-control bg-input input-bg"
-              @blur="$emit('blur-description', { item: slotProps.data, stockNumber: slotProps.data.stockNumber, field: 'description', event: $event })"
-              style="background-color: #b5dad4; width: 100%"
-            />
-            <span v-else class="confirmed-text">
-              {{ slotProps.data.description || '-' }}
-            </span>
+            <div v-if="isDivider(slotProps.data)" class="orphan-divider-label">
+              <i class="bi bi-arrow-return-right mr-1"></i>{{ $t('view.sale.saleOrder.unlinkedGroupLabel') }}
+            </div>
+            <template v-else>
+              <input
+                v-if="!slotProps.data.isConfirm && !slotProps.data.invoice"
+                v-model="slotProps.data.description"
+                type="text"
+                class="form-control bg-input input-bg"
+                @blur="$emit('blur-description', { item: slotProps.data, stockNumber: slotProps.data.stockNumber, field: 'description', event: $event })"
+                style="background-color: #b5dad4; width: 100%"
+              />
+              <span v-else class="confirmed-text">
+                {{ slotProps.data.description || '-' }}
+              </span>
+            </template>
           </template>
         </Column>
 
@@ -296,7 +366,7 @@
                 class="material-cell"
               >
                 <div class="material-typecode-gold">
-                  {{ item.typeCode }}
+                  {{ item.typeCode || '' }}
                 </div>
                 <div class="material-weight">
                   {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
@@ -320,7 +390,7 @@
                 class="material-cell"
               >
                 <div class="material-typecode">
-                  {{ `${item.qty ? `(${item.qty})` : ''} ${item.typeCode}` }}
+                  {{ materialLabel(item) }}
                 </div>
                 <div class="material-weight">
                   {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
@@ -342,7 +412,7 @@
                 class="material-cell"
               >
                 <div class="material-typecode">
-                  {{ `${item.qty ? `(${item.qty})` : ''} ${item.typeCode}` }}
+                  {{ materialLabel(item) }}
                 </div>
                 <div class="material-weight">
                   {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
@@ -357,7 +427,7 @@
           :alignFrozen="frozenCols['priceOrigin'] || undefined"
         >
           <template #body="slotProps">
-            <div class="qty-container">
+            <div v-if="!isDivider(slotProps.data)" class="qty-container">
               <span>{{
                 Number(slotProps.data.priceOrigin || slotProps.data.price || 0).toFixed(2)
               }}</span>
@@ -370,7 +440,7 @@
           :alignFrozen="frozenCols['appraisalPrice'] || undefined"
         >
           <template #body="slotProps">
-            <div class="qty-container">
+            <div v-if="!isDivider(slotProps.data)" class="qty-container">
               <input
                 v-if="!slotProps.data.isConfirm && !slotProps.data.invoice"
                 v-model.number="slotProps.data.appraisalPrice"
@@ -393,7 +463,7 @@
           :alignFrozen="frozenCols['discountPercent'] || undefined"
         >
           <template #body="slotProps">
-            <div class="qty-container">
+            <div v-if="!isDivider(slotProps.data)" class="qty-container">
               <input
                 v-if="!slotProps.data.isConfirm && !slotProps.data.invoice"
                 v-model.number="slotProps.data.discountPercent"
@@ -418,7 +488,7 @@
           :alignFrozen="frozenCols['discountPrice'] || undefined"
         >
           <template #body="slotProps">
-            <div class="qty-container">
+            <div v-if="!isDivider(slotProps.data)" class="qty-container">
               <span>{{
                 (
                   Number(slotProps.data.appraisalPrice || 0) *
@@ -433,8 +503,8 @@
           :frozen="!!frozenCols['currencyRate']"
           :alignFrozen="frozenCols['currencyRate'] || undefined"
         >
-          <template #body>
-            <div class="qty-container">
+          <template #body="slotProps">
+            <div v-if="!isDivider(slotProps.data)" class="qty-container">
               <span>{{ formSaleOrder.currencyRate }}</span>
             </div>
           </template>
@@ -448,7 +518,7 @@
           :alignFrozen="frozenCols['priceAfterMultiply'] || undefined"
         >
           <template #body="slotProps">
-            <div class="qty-container">
+            <div v-if="!isDivider(slotProps.data)" class="qty-container">
               <span>{{
                 formatDocMoney(convertedUnitPrice(slotProps.data, formSaleOrder.currencyRate, formSaleOrder.currencyUnit))
               }}</span>
@@ -461,7 +531,7 @@
           :alignFrozen="frozenCols['qty'] || undefined"
         >
           <template #body="slotProps">
-            <div class="qty-cell">
+            <div v-if="!isDivider(slotProps.data)" class="qty-cell">
               <div class="qty-container">
                 <input
                   v-if="!slotProps.data.isConfirm && !slotProps.data.invoice"
@@ -469,10 +539,10 @@
                   type="number"
                   class="form-control text-right bg-input input-bg"
                   min="0"
-                  :max="qtyMaxFor(slotProps.data)"
+                  :max="isPlaceholderRow(slotProps.data) ? undefined : qtyMaxFor(slotProps.data)"
                   step="1"
-                  @input="onQtyInput(slotProps.data)"
-                  @blur="onQtyBlur(slotProps.data, $event)"
+                  @input="onQtyInputRow(slotProps.data)"
+                  @blur="onQtyBlurRow(slotProps.data, $event)"
                   style="background-color: #b5dad4; width: 100%"
                 />
                 <span v-else class="confirmed-text text-right">
@@ -480,7 +550,7 @@
                 </span>
               </div>
               <small
-                v-if="!slotProps.data.isConfirm && !slotProps.data.invoice"
+                v-if="!slotProps.data.isConfirm && !slotProps.data.invoice && !isPlaceholderRow(slotProps.data)"
                 class="qty-hint"
                 :class="{ 'qty-hint-danger': isRowShort(slotProps.data) }"
               >
@@ -504,53 +574,13 @@
           :alignFrozen="frozenCols['total'] || undefined"
         >
           <template #body="slotProps">
-            <div class="qty-container">
+            <div v-if="!isDivider(slotProps.data)" class="qty-container">
               <span>{{
                 formatDocMoney(lineAmount(slotProps.data, formSaleOrder.currencyRate, formSaleOrder.currencyUnit))
               }}</span>
             </div>
           </template>
         </Column>
-
-        <!-- Row Group Template for Invoice Number -->
-        <template #groupheader="slotProps">
-          <!-- สินค้าที่มี Invoice แล้ว -->
-          <div
-            v-if="slotProps.data.invoice"
-            class="p-1"
-            style="background-color: #f8f9fa; border-left: 4px solid #038387"
-          >
-            <span class="font-weight-bold">{{ $t('view.sale.saleOrder.invoiceLabel') }}: </span>
-            <a
-              href="#"
-              @click.prevent="openInvoiceDetail(slotProps.data.invoice)"
-              class="text-primary font-weight-bold"
-              style="text-decoration: underline; cursor: pointer"
-            >
-              {{
-                slotProps.data.dkInvoiceNumber
-                  ? `${slotProps.data.invoice} ( DK No:  ${slotProps.data.dkInvoiceNumber} )`
-                  : slotProps.data.invoice
-              }}
-            </a>
-          </div>
-          <!-- สินค้าที่ยืนยันแล้วแต่ยังไม่มี Invoice (รอออก Invoice) -->
-          <div
-            v-else-if="slotProps.data.isConfirm"
-            class="p-1"
-            style="background-color: var(--base-green); border-left: 4px solid #038387"
-          >
-            <span class="font-weight-bold text-white">{{ $t('view.sale.saleOrder.pendingInvoice') }}</span>
-          </div>
-          <!-- สินค้าที่ยังไม่ได้ยืนยัน (รอยืนยันสินค้า) -->
-          <div
-            v-else
-            class="p-1"
-            style="background-color: #fff3cd; border-left: 4px solid #fabc3f"
-          >
-            <span class="font-weight-bold badge badge-warning">{{ $t('view.sale.saleOrder.pendingConfirm') }}</span>
-          </div>
-        </template>
 
         <ColumnGroup type="footer">
           <!-- total -->
@@ -895,6 +925,9 @@ import { convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/
 import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
+import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
+import { PermissionService } from '@/services/permission/permission.js'
+import { PERMISSIONS } from '@/services/permission/config.js'
 
 export default {
   name: 'StockItemsTable',
@@ -909,8 +942,18 @@ export default {
 
   mixins: [activeRowHighlight],
 
+  setup() {
+    const authStore = useAuthStore()
+    return { authStore }
+  },
+
   props: {
     stockItems: {
+      type: Array,
+      default: () => []
+    },
+    // รายการรอผลิต/รอแปลง — บรรทัดลูกจะแทรกอยู่ใต้บรรทัดสินค้าจริงที่ parentLineKey ตรงกัน (T1)
+    copyItems: {
       type: Array,
       default: () => []
     },
@@ -957,10 +1000,32 @@ export default {
     isUnconfirming: {
       type: Boolean,
       default: false
+    },
+    // lineKey ของ copyItem → qty รวมของบรรทัดสินค้าจริงที่เติมมาจากบรรทัดนั้น (sourceCopyLineKey ตรงกัน)
+    filledQtyByCopyLineKey: {
+      type: Object,
+      default: () => ({})
     }
   },
 
-  emits: ['delete-item', 'edit-item', 'copy-item', 'cancel-confirmation', 'move-item', 'blur-price', 'blur-qty', 'blur-description', 'update:special-discount', 'update:special-addition', 'update:freight', 'update:vat-percent'],
+  emits: [
+    'delete-item',
+    'edit-item',
+    'copy-item',
+    'cancel-confirmation',
+    'move-item',
+    'blur-price',
+    'blur-qty',
+    'blur-description',
+    'blur-copy-stock-number',
+    'fill-from-stock',
+    'replace-confirmed-stock',
+    'create-convert',
+    'update:special-discount',
+    'update:special-addition',
+    'update:freight',
+    'update:vat-percent'
+  ],
 
   data() {
     return {
@@ -971,7 +1036,7 @@ export default {
 
   computed: {
     activeRowItems() {
-      return this.stockItemsWithGrouping
+      return this.mergedRows
     },
 
     isTotalFrozenRight() {
@@ -998,7 +1063,7 @@ export default {
         { field: 'action', label: 'Action' },
         { field: 'image', label: 'รูป' },
         { field: 'stockNumberOld', label: this.$t('view.sale.saleOrder.stockNumberOld') },
-        { field: 'stockNumber', label: this.$t('view.sale.saleOrder.stockNumberNew') },
+        { field: 'stockNumber', label: this.$t('view.sale.saleOrder.productionNumber') },
         { field: 'productNumber', label: this.$t('view.sale.saleOrder.productCode') },
         { field: 'isConfirm', label: this.$t('view.sale.saleOrder.saleStatus') },
         { field: 'description', label: this.$t('view.sale.saleOrder.description') },
@@ -1016,40 +1081,35 @@ export default {
       ]
     },
 
-    stockItemsWithGrouping() {
-      return this.stockItems
-        .map((item) => {
-          let groupKey = ''
-          let sortOrder = 0
+    canConvert() {
+      const permissionService = new PermissionService(this.authStore.getUser, this.authStore.permissions)
+      return permissionService.hasPermission(PERMISSIONS.STOCK_CONVERT)
+    },
 
-          if (item.invoice) {
-            groupKey = `invoice_${item.invoice}`
-            sortOrder = 1
-          } else if (item.isConfirm) {
-            groupKey = 'confirmed_pending_invoice'
-            sortOrder = 2
-          } else {
-            groupKey = 'pending_confirmation'
-            sortOrder = 3
-          }
+    // T1: บรรทัดของตาราง = stock line ตามด้วยบรรทัดลูก (copy line ที่ parentLineKey ตรงกัน) เรียงตามลำดับที่ถูกสร้าง
+    // แล้วต่อท้ายด้วย copy line ที่ไม่มีบรรทัดแม่ (orphan) หลังเส้นแบ่ง "ไม่ผูกกับบรรทัดแม่"
+    mergedRows() {
+      const rows = []
+      const childKeysUsed = new Set()
 
-          return {
-            ...item,
-            groupKey,
-            sortOrder
-          }
-        })
-        .sort((a, b) => {
-          if (a.sortOrder !== b.sortOrder) {
-            return a.sortOrder - b.sortOrder
-          }
+      this.stockItems.forEach((parent) => {
+        rows.push({ ...parent, _rowKind: 'stock' })
 
-          if (a.invoice && b.invoice) {
-            return a.invoice.localeCompare(b.invoice)
-          }
+        this.copyItems
+          .filter((child) => child.parentLineKey && child.parentLineKey === parent.lineKey)
+          .forEach((child) => {
+            childKeysUsed.add(child.lineKey)
+            rows.push({ ...child, _rowKind: 'child' })
+          })
+      })
 
-          return 0
-        })
+      const orphans = this.copyItems.filter((child) => !childKeysUsed.has(child.lineKey))
+      if (orphans.length > 0) {
+        rows.push({ lineKey: '__orphan_divider__', _rowKind: 'divider' })
+        orphans.forEach((child) => rows.push({ ...child, _rowKind: 'orphan' }))
+      }
+
+      return rows
     }
   },
 
@@ -1062,7 +1122,35 @@ export default {
   },
 
   methods: {
-    // silver lot: qty ต่อบรรทัดห้ามเกิน qtyAvailable ของ piece (ทองยัง max 1 เหมือนเดิม)
+    isDivider(data) {
+      return data._rowKind === 'divider'
+    },
+
+    // รายการรอผลิต/รอแปลง — ยังไม่มีของจริงในคลัง (ยืนยันได้แต่ออกใบแจ้งหนี้ไม่ได้)
+    isPlaceholderRow(data) {
+      return data.isPlaceholder === true
+    },
+
+    isFullyFilled(item) {
+      return (Number(item.qty) || 0) <= 0
+    },
+
+    hasOrderedQty(item) {
+      return item.orderedQty !== undefined && item.orderedQty !== null
+    },
+
+    filledQtyFor(item) {
+      return this.filledQtyByCopyLineKey[item.lineKey] || 0
+    },
+
+    // T7: ชื่อ/รหัสวัตถุดิบอาจไม่มี typeCode — ห้ามให้ template literal โชว์คำว่า "undefined" (เดิม `${qty} ${item.typeCode}`)
+    materialLabel(item) {
+      const qtyPart = item.qty ? `(${item.qty})` : ''
+      const code = item.typeCode || ''
+      return [qtyPart, code].filter(Boolean).join(' ')
+    },
+
+    // silver lot: qty ต่อบรรทัดห้ามเกิน qtyAvailable ของ piece (ทองยัง max 1 เหมือนเดิม) — ไม่ใช้กับบรรทัดรอผลิต/รอแปลง (ไม่มีของจริงให้เช็ค)
     qtyMaxFor(item) {
       return getPieceQtyAvailable(item)
     },
@@ -1091,6 +1179,11 @@ export default {
       }
     },
 
+    onQtyInputRow(item) {
+      if (this.isPlaceholderRow(item)) return
+      this.onQtyInput(item)
+    },
+
     onQtyBlur(item, event) {
       const max = this.qtyMaxFor(item)
       const qty = Number(item.qty) || 0
@@ -1099,6 +1192,14 @@ export default {
         warning(this.$t('view.sale.saleOrder.qtyExceedAvailable', { available: max }))
       }
       this.$emit('blur-qty', { item, stockNumber: item.stockNumber, field: 'qty', event })
+    },
+
+    onQtyBlurRow(item, event) {
+      if (this.isPlaceholderRow(item)) {
+        this.$emit('blur-qty', { item, stockNumber: item.stockNumber, field: 'qty', event })
+        return
+      }
+      this.onQtyBlur(item, event)
     },
 
     isFirstConfirmedPending(item) {
@@ -1135,6 +1236,15 @@ export default {
       if (wrapper && !wrapper.contains(e.target)) {
         this.isSettingsOpen = false
       }
+    },
+
+    // T1: rowClass ของ mixin ตัดสินแค่ row-active — ทับด้วยเวอร์ชันนี้เพื่อเพิ่ม class ของบรรทัดลูก/ไม่ผูกบรรทัดแม่/เส้นแบ่ง
+    getRowClass(data) {
+      const classes = [this.isActiveRow(data) ? 'row-active' : '']
+      if (data._rowKind === 'divider') classes.push('orphan-divider-row')
+      else if (data._rowKind === 'child') classes.push('copy-child-row')
+      else if (data._rowKind === 'orphan') classes.push('copy-orphan-row')
+      return classes.filter(Boolean).join(' ')
     },
 
     openInvoiceDetail(invoiceNumber) {
@@ -1447,6 +1557,13 @@ export default {
   align-items: center;
 }
 
+.copy-img-thumb {
+  width: 25px;
+  height: 25px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
 /* Confirmed text styling */
 .confirmed-text {
   display: block;
@@ -1482,6 +1599,15 @@ export default {
   }
 }
 
+.invoice-link {
+  cursor: pointer;
+  text-decoration: underline;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
 .text-right {
   text-align: right;
 }
@@ -1500,6 +1626,31 @@ export default {
 
 .mr-2 {
   margin-right: 0.5rem;
+}
+
+/* T1: บรรทัดลูก (copy line ที่ผูกกับบรรทัดแม่) — คั่นสี indent เบาๆ ให้เห็นว่าเป็นแบบเดียวกัน คนละวัตถุดิบ */
+.child-indent-prefix {
+  font-weight: 700;
+  color: var(--base-font-color);
+  margin-right: var(--sp-xs);
+}
+
+:deep(tr.copy-child-row > td),
+:deep(tr.copy-orphan-row > td) {
+  background-color: var(--color-highlight-bg, #fff8ec);
+}
+
+/* T1: เส้นแบ่งรายการรอผลิต/รอแปลงที่ไม่ผูกกับบรรทัดแม่ */
+:deep(tr.orphan-divider-row > td) {
+  background-color: var(--color-card-bg, #f3f3f3);
+  border-top: 2px dashed var(--base-warning, #f0ad4e);
+  border-bottom: 2px dashed var(--base-warning, #f0ad4e);
+}
+
+.orphan-divider-label {
+  color: var(--base-sub-color);
+  font-weight: 600;
+  font-size: var(--fs-sm);
 }
 
 /* Column settings gear */

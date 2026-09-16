@@ -542,7 +542,6 @@ export const saleOrder = {
   copyItemsTotal: 'ราคารวม (สินค้าสำเนา)',
   copyToProductionBtn: 'คัดลอกเป็นรายการรอผลิต',
   copyFromSource: 'จากเลข {stockNumber}',
-  copyItemsPdfSectionTitle: 'รายการรอผลิต / รอแปลง',
   copySubtotalRow: '+ รายการรอผลิต / รอแปลง ({n} รายการ)',
   docSubtotalRow: 'ยอดรวมสินค้าทั้งใบ',
   fillFromStockBtn: 'เติมของจากคลัง',
@@ -552,6 +551,15 @@ export const saleOrder = {
   copyLineProgress: 'สั่ง {ordered} · เติมแล้ว {filled} · ค้าง {qty}',
   filledFromCopyHint: 'เติมจากรายการรอผลิต',
   createConvertBtn: 'สร้างใบแปลงสินค้า',
+  noStockYetTag: 'ยังไม่มีของ',
+  unlinkedGroupLabel: 'ไม่ผูกกับบรรทัดแม่',
+  productionNumberPlaceholder: 'พิมพ์เลขที่ผลิต',
+  productionNumberHint: 'ต้องกรอกก่อนยืนยัน',
+  printInternalBtn: 'พิมพ์ฉบับภายใน',
+  internalStatusColLabel: 'สถานะของ',
+  internalStatusInStock: 'มีของ',
+  internalStatusPendingConvertWithDoc: 'รอแปลง (CV {running})',
+  replaceConfirmedModalTitle: 'เติมของจริงแทนเลขที่ผลิต',
   pendingConvertNotice: 'มีชิ้นที่แปลงเสร็จรอเติม {count} รายการ',
   pendingConvertFillBtn: 'เติมของ',
   pendingConvertPickLineTitle: 'เลือกบรรทัดที่จะเติม',
@@ -614,7 +622,8 @@ export const saleOrder = {
     cancelConfirm: 'ยกเลิกการยืนยันสินค้า {stockNumber} แล้ว',
     deleteSO: 'ลบใบสั่งขายสำเร็จ',
     fillFromStock: 'เติมสินค้า {stockNumber} เข้ารายการแล้ว',
-    convertCreated: 'สร้างใบแปลงสินค้าเลขที่ {running} สำเร็จ'
+    convertCreated: 'สร้างใบแปลงสินค้าเลขที่ {running} สำเร็จ',
+    replaceConfirmedStock: 'เปลี่ยนเป็นของจริงเลข {stockNumber} สำเร็จ'
   },
   warn: {
     incompleteCustomer: 'ข้อมูลลูกค้าไม่ครบ',
@@ -640,7 +649,12 @@ export const saleOrder = {
     duplicateItemNewLine: 'สินค้า {stockNumber} มีในรายการแล้ว เพิ่มเป็นบรรทัดใหม่ให้ครับ',
     qtyExceedAvailableTotal: 'สินค้า {stockNumber} รวมทุกบรรทัด {total} ชิ้น เกินจำนวนพร้อมขาย {available} ชิ้นครับ',
     stillShortBeforeSubmit: 'มีสินค้าบางรายการจำนวนเกินพร้อมขายแล้ว กรุณาปรับจำนวนก่อนยืนยันครับ',
-    fillNoAvailable: 'สินค้า {stockNumber} ไม่พร้อมขาย (ถูกใช้ในบรรทัดอื่นหมดแล้ว)'
+    fillNoAvailable: 'สินค้า {stockNumber} ไม่พร้อมขาย (ถูกใช้ในบรรทัดอื่นหมดแล้ว)',
+    productionNumberRequired: 'กรุณากรอกเลขที่ผลิตก่อนยืนยัน',
+    productionNumberDuplicate: 'เลขที่ผลิต {code} ซ้ำกับบรรทัดอื่นในใบสั่งขายนี้',
+    productionNumberMatchesStock: 'เลขนี้มีอยู่จริงในคลัง ระบบจะไม่จองของให้ครับ',
+    placeholderCannotInvoice: 'ยังไม่มีของจริงในคลัง ต้องเติมของก่อนออกบิล',
+    replaceStockInsufficientQty: 'เลขนี้มีของไม่พอ (มี {available} ต้องการ {needed})'
   },
   confirm: {
     cancelCreate: 'คุณต้องการยกเลิกการสร้างใบสั่งขายนี้หรือไม่?',
@@ -656,7 +670,9 @@ export const saleOrder = {
     fillProductMismatchTitle: 'แบบไม่ตรงกับรายการที่สั่ง',
     fillProductMismatchMessage: 'แบบไม่ตรงกับรายการที่สั่ง ยืนยันเติมไหม?',
     openConvertTitle: 'เปิดดูใบแปลงสินค้า',
-    openConvertMessage: 'ต้องการเปิดดูใบแปลงสินค้าเลขที่ {running} เลยหรือไม่?'
+    openConvertMessage: 'ต้องการเปิดดูใบแปลงสินค้าเลขที่ {running} เลยหรือไม่?',
+    unlinkChildrenOnDeleteParentTitle: 'ลบบรรทัดแม่',
+    unlinkChildrenOnDeleteParent: 'บรรทัดนี้มีรายการรอผลิต/รอแปลงผูกอยู่ {count} รายการ ลบแล้วรายการเหล่านั้นจะไม่ผูกกับบรรทัดแม่อีกต่อไป (ยังอยู่ในใบ) ดำเนินการต่อหรือไม่?'
   }
 }
 

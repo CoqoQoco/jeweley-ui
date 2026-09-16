@@ -322,9 +322,10 @@
       </div>
     </div>
 
-    <!-- Stock Items Table (Like Quotation) -->
+    <!-- Stock Items Table (T1: ตารางเดียว รวมบรรทัดสินค้าจริง + รายการรอผลิต/รอแปลงเป็นบรรทัดลูก) -->
     <StockItemsTable
       :stockItems="stockItems"
+      :copyItems="copyItems"
       :formSaleOrder="formSaleOrder"
       :soTotalAfterSpecial="soTotalAfterSpecial"
       :soTotalBeforeVat="soTotalBeforeVat"
@@ -336,38 +337,27 @@
       :docSubTotal="documentTotals.subTotal"
       :isViewMode="isViewMode"
       :isUnconfirming="isUnconfirming"
-      @delete-item="deleteStockItem($event)"
-      @edit-item="onEditStock($event)"
+      :filledQtyByCopyLineKey="filledQtyByCopyLineKey"
+      @delete-item="onDeleteItem($event)"
+      @edit-item="onEditItem($event)"
       @copy-item="onCopyStockToProduction($event)"
       @cancel-confirmation="reverseStockConfirm($event)"
       @move-item="moveStockItem($event)"
-      @blur-price="onBlurPrice($event.item, $event.stockNumber, $event.field)"
-      @blur-qty="onBlurQty($event.item, $event.stockNumber, $event.field)"
+      @blur-price="onBlurPriceRouter($event.item, $event.stockNumber, $event.field)"
+      @blur-qty="onBlurQtyRouter($event.item, $event.stockNumber, $event.field)"
       @blur-description="onBlurDescription($event.item, $event.stockNumber, $event.field)"
+      @blur-copy-stock-number="onCopyStockNumberBlur($event)"
+      @fill-from-stock="onOpenFillFromStockModal($event)"
+      @replace-confirmed-stock="onOpenReplaceConfirmedModal($event)"
+      @create-convert="onCreateConvertForCopyLine($event)"
       @update:special-discount="formSaleOrder.specialDiscount = $event"
       @update:special-addition="formSaleOrder.specialAddition = $event"
       @update:freight="formSaleOrder.freight = $event"
       @update:vat-percent="formSaleOrder.vatPercent = $event"
     />
 
-
     <!-- P5-4: แจ้งเตือนใบแปลงสินค้าที่แปลงเสร็จแล้ว รอเติมเข้าบรรทัดรอผลิต/รอแปลง -->
     <PendingConvertNotice :items="pendingConversions" @fill="onFillPendingConversion" />
-
-    <!-- Copy Items Table (without Stock ID - requires production) -->
-    <CopyItemsTable
-      :copyItems="copyItems"
-      :formSaleOrder="formSaleOrder"
-      :isViewMode="isViewMode"
-      :filledQtyByCopyLineKey="filledQtyByCopyLineKey"
-      @delete-item="deleteCopyItem($event)"
-      @edit-item="onEditCopyItem($event)"
-      @blur-price="onBlurCopyPrice($event.item, $event.stockNumber, $event.field)"
-      @blur-qty="onBlurCopyQty($event.item, $event.stockNumber, $event.field)"
-      @blur-description="onBlurDescription($event.item, $event.stockNumber, $event.field)"
-      @fill-from-stock="onOpenFillFromStockModal($event)"
-      @create-convert="onCreateConvertForCopyLine($event)"
-    />
 
     <!-- Order Summary -->
     <OrderSummarySection
@@ -505,6 +495,16 @@
             <i v-else class="bi bi-file-earmark-excel mr-1"></i>
             Export Excel
           </button>
+          <button
+            class="btn btn-sm btn-outline-main"
+            type="button"
+            @click="exportInternalPDF"
+            :disabled="(stockItems.length === 0 && copyItems.length === 0) || isExportingInternalPDF"
+          >
+            <span v-if="isExportingInternalPDF" class="spinner-border spinner-border-sm mr-2"></span>
+            <i v-else class="bi bi-file-earmark-text mr-1"></i>
+            {{ $t('view.sale.saleOrder.printInternalBtn') }}
+          </button>
           <div
             class="d-flex align-items-center"
             style="gap: 4px; cursor: pointer; white-space: nowrap"
@@ -636,6 +636,15 @@
     @closeModal="isShow.pickCopyLineModal = false"
     @confirm="onPickCopyLineConfirm"
   />
+
+  <!-- T5: สลับบรรทัดรอผลิต/รอแปลงที่ยืนยันแล้วให้เป็นของจริง -->
+  <ReplaceConfirmedStockModal
+    :isShow="isShow.replaceConfirmedModal"
+    :copyItem="replaceConfirmedCopyItem"
+    :initialStockNumber="replaceConfirmedInitialStockNumber"
+    @closeModal="onCloseReplaceConfirmedModal"
+    @confirm="onReplaceConfirmedStockConfirm"
+  />
 </template>
 
 <script>
@@ -653,10 +662,11 @@ import ConfirmAndInvoiceModal from '../modal/confirm-and-invoice-modal.vue'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import { success, error, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
 import { storage } from '@/services/storage.js'
 import { createLineKey, ensureLineKey } from '@/services/utils/line-key.js'
-import { buildCopyItem } from '@/services/utils/copy-item.js'
+import { buildCopyItem, isPlaceholderItem } from '@/services/utils/copy-item.js'
 import { getPieceQtyAvailable, sumUnconfirmedQtyByStockNumber } from '@/services/utils/stock-piece-qty.js'
 import { lookupStockProduct } from '@/services/utils/stock-scan.js'
 import { CURRENCY_UNITS } from '@/constants/currency-units.js'
@@ -669,11 +679,11 @@ import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.
 import { useUserApiStore } from '@/stores/modules/api/user/user-store.js'
 import { useStockConvertApiStore } from '@/stores/modules/api/stock/stock-convert-store.js'
 import StockItemsTable from './stock-items-table.vue'
-import CopyItemsTable from './copy-items-table.vue'
 import OrderSummarySection from './order-summary-section.vue'
 import FillFromStockModal from '../modal/fill-from-stock-modal.vue'
 import PendingConvertNotice from './pending-convert-notice.vue'
 import PickCopyLineModal from '../modal/pick-copy-line-modal.vue'
+import ReplaceConfirmedStockModal from '../modal/replace-confirmed-stock-modal.vue'
 import sourcePickerModal from '@/views/stock/convert/components/source-picker-modal.vue'
 
 const SALE_ROLE_ID = 6 // tbm_user_role: 6 = Sale
@@ -716,12 +726,12 @@ export default {
     CustomerCreateModal,
     CustomerEditModal,
     StockItemsTable,
-    CopyItemsTable,
     OrderSummarySection,
     CheckboxGeneric,
     FillFromStockModal,
     PendingConvertNotice,
     PickCopyLineModal,
+    ReplaceConfirmedStockModal,
     sourcePickerModal
   },
 
@@ -766,6 +776,7 @@ export default {
       isExportingPDF: false,
       isPreviewingPDF: false,
       isExportingExcel: false,
+      isExportingInternalPDF: false,
       pdfShowCifLabel: true,
       pdfShowDecimals: true,
       productSearch: {
@@ -792,10 +803,13 @@ export default {
         confirmAndInvoiceModal: false,
         fillFromStockModal: false,
         sourcePickerModal: false,
-        pickCopyLineModal: false
+        pickCopyLineModal: false,
+        replaceConfirmedModal: false
       },
       fillFromStockCopyItem: {},
       fillFromStockInitialStockNumber: '',
+      replaceConfirmedCopyItem: {},
+      replaceConfirmedInitialStockNumber: '',
       pendingConversions: [],
       createConvertCopyItem: null,
       pendingConvertTarget: null,
@@ -900,15 +914,21 @@ export default {
       return this.copyItems.length
     },
 
+    // T3: modal ยืนยันสินค้า/ยืนยัน+ออกใบแจ้งหนี้ ต้องเห็นบรรทัดรอผลิต/รอแปลง (copyItems) ด้วย ไม่ใช่แค่ stockItems
+    allItemsForConfirmModals() {
+      return [...this.stockItems, ...this.copyItems]
+    },
+
     stockItemsForInvoice() {
-      return this.stockItems.map((item) => ({
+      return this.allItemsForConfirmModals.map((item) => ({
         ...item,
         isConfirm: item.isConfirm || false
       }))
     },
 
+    // T4: modal ออกใบแจ้งหนี้ต้องเห็นบรรทัดรอผลิต/รอแปลงที่ยืนยันแล้วด้วย (แสดงแบบ disabled พร้อมเหตุผล)
     confirmedStockItemsOnly() {
-      return this.stockItems.filter((item) => item.isConfirm && !item.isInvoice)
+      return this.allItemsForConfirmModals.filter((item) => item.isConfirm && !item.isInvoice)
     },
 
     confirmedStockItemsCount() {
@@ -1193,8 +1213,8 @@ export default {
 
       this.isLoadingData = true
 
-      const newStockItems = saleOrderData.items.filter((item) => item.stockNumber != null)
-      const newCopyItems = saleOrderData.items.filter((item) => item.stockNumber == null)
+      const newStockItems = saleOrderData.items.filter((item) => !isPlaceholderItem(item))
+      const newCopyItems = saleOrderData.items.filter((item) => isPlaceholderItem(item))
 
       this.formSaleOrder = {
         ...this.formSaleOrder,
@@ -1220,12 +1240,14 @@ export default {
         if (!item.appraisalPrice) {
           item.appraisalPrice = item.price || 0
         }
+        item.isPlaceholder = false
         ensureLineKey(item)
       })
       newCopyItems.forEach((item) => {
         if (!item.appraisalPrice) {
           item.appraisalPrice = item.price || 0
         }
+        item.isPlaceholder = true
         ensureLineKey(item)
       })
 
@@ -1280,60 +1302,42 @@ export default {
           this.stockItems = saleOrderData.items.stockItems || []
           this.copyItems = saleOrderData.items.copyItems || []
         } else if (Array.isArray(saleOrderData.items)) {
-          this.stockItems = saleOrderData.items.filter((item) => item.stockNumber != null)
-          this.copyItems = saleOrderData.items.filter((item) => item.stockNumber == null)
+          this.stockItems = saleOrderData.items.filter((item) => !isPlaceholderItem(item))
+          this.copyItems = saleOrderData.items.filter((item) => isPlaceholderItem(item))
         } else if (Array.isArray(saleOrderData.items.allItems)) {
-          this.stockItems = saleOrderData.items.allItems.filter((item) => item.stockNumber != null)
-          this.copyItems = saleOrderData.items.allItems.filter((item) => item.stockNumber == null)
+          this.stockItems = saleOrderData.items.allItems.filter((item) => !isPlaceholderItem(item))
+          this.copyItems = saleOrderData.items.allItems.filter((item) => isPlaceholderItem(item))
         }
       }
 
-      // เติม lineKey ย้อนหลังให้ใบเก่าที่ยังไม่มี (ใบสั่งขายที่บันทึกไว้ก่อนมี lineKey)
-      this.stockItems.forEach(ensureLineKey)
-      this.copyItems.forEach(ensureLineKey)
+      // เติม lineKey ย้อนหลังให้ใบเก่าที่ยังไม่มี (ใบสั่งขายที่บันทึกไว้ก่อนมี lineKey) + normalize isPlaceholder
+      this.stockItems.forEach((item) => {
+        item.isPlaceholder = false
+        ensureLineKey(item)
+      })
+      this.copyItems.forEach((item) => {
+        item.isPlaceholder = true
+        ensureLineKey(item)
+      })
 
       // จับคู่กับ confirmedItems ด้วย lineKey ก่อน (ถ้ามี) แล้ว fallback เป็น stockNumber แบบ "ใช้แล้วตัดออก"
       // กันสองบรรทัดที่เลขสินค้าเดียวกันแย่งจับคู่กับ confirmedItem ตัวเดียวกัน
+      // T3: บรรทัดรอผลิต/รอแปลง (copyItems) ก็ยืนยันได้แล้ว — ต้อง match กับ pool เดียวกันด้วย ไม่ใช่แค่ stockItems
       const confirmedItemsPool = [...(saleOrderData.confirmedItems || [])]
 
-      this.stockItems.forEach((item) => {
-        item.isConfirm = false
-        item.isInvoice = false
-        item.invoice = null
-        item.invoiceItem = null
-        item.dkInvoiceNumber = null
+      this.stockItems.forEach((item) => this.applyConfirmedMatch(item, confirmedItemsPool))
+      this.copyItems.forEach((item) => this.applyConfirmedMatch(item, confirmedItemsPool))
 
-        let matchIndex = confirmedItemsPool.findIndex(
-          (ci) => ci.lineKey && item.lineKey && ci.lineKey === item.lineKey
-        )
-        if (matchIndex === -1) {
-          matchIndex = confirmedItemsPool.findIndex(
-            (ci) => !ci.lineKey && ci.stockNumber === item.stockNumber
-          )
-        }
-        if (matchIndex === -1) return
-
-        const [confirmedItem] = confirmedItemsPool.splice(matchIndex, 1)
-
-        item.id = confirmedItem.id
-        item.stockNumber = confirmedItem.stockNumber
-
-        item.isConfirm = confirmedItem.isConfirm
-        item.invoiceItem = confirmedItem.invoiceItem
-        item.dkInvoiceNumber = confirmedItem.dkInvoiceNumber
-        item.isInvoice = confirmedItem.isInvoice
-        item.invoice = confirmedItem.invoice
-
-        if (confirmedItem.isConfirm) {
-          item.appraisalPrice = confirmedItem.priceOrigin
-          item.discountPercent = confirmedItem.discount
-          item.qty = confirmedItem.qty
-        }
-        //item.discountPercent = confirmedItem.discount || 0
-
-        item.isRemainProduct = confirmedItem.isRemainProduct
-        item.message = confirmedItem.message
-      })
+      // T5: หลังเติมของจริงแทนบรรทัดรอผลิต/รอแปลงที่ยืนยันแล้ว (ReplaceConfirmedStock) backend จะตอบ isPlaceholder:false
+      // กลับมาที่บรรทัดนั้น — ต้องย้ายบรรทัดจาก copyItems ไป stockItems ให้ตรงกับสถานะจริง ไม่งั้นตารางจะยังจัดกลุ่มเป็นบรรทัดลูก/ไม่ผูก
+      const movedToStock = this.copyItems.filter((item) => item.isPlaceholder === false)
+      if (movedToStock.length > 0) {
+        this.copyItems = this.copyItems.filter((item) => item.isPlaceholder !== false)
+        movedToStock.forEach((item) => {
+          item.parentLineKey = null
+        })
+        this.stockItems = [...this.stockItems, ...movedToStock]
+      }
 
       this.$nextTick(() => {
         this.isLoadingData = false
@@ -1341,6 +1345,50 @@ export default {
 
       this.refreshStockAvailability()
       this.loadPendingConversions()
+    },
+
+    // ใช้ร่วมกันทั้ง stockItems และ copyItems — เขียนทับสถานะยืนยัน/invoice ของบรรทัดจาก stockConfirm[] ที่ match กัน
+    // (match ด้วย lineKey ก่อนเสมอ fallback เป็น stockNumber เฉพาะรายการเก่าที่ไม่มี lineKey)
+    applyConfirmedMatch(item, confirmedItemsPool) {
+      item.isConfirm = false
+      item.isInvoice = false
+      item.invoice = null
+      item.invoiceItem = null
+      item.dkInvoiceNumber = null
+
+      let matchIndex = confirmedItemsPool.findIndex(
+        (ci) => ci.lineKey && item.lineKey && ci.lineKey === item.lineKey
+      )
+      if (matchIndex === -1) {
+        matchIndex = confirmedItemsPool.findIndex(
+          (ci) => !ci.lineKey && ci.stockNumber === item.stockNumber
+        )
+      }
+      if (matchIndex === -1) return
+
+      const [confirmedItem] = confirmedItemsPool.splice(matchIndex, 1)
+
+      item.id = confirmedItem.id
+      item.stockNumber = confirmedItem.stockNumber
+
+      item.isConfirm = confirmedItem.isConfirm
+      item.invoiceItem = confirmedItem.invoiceItem
+      item.dkInvoiceNumber = confirmedItem.dkInvoiceNumber
+      item.isInvoice = confirmedItem.isInvoice
+      item.invoice = confirmedItem.invoice
+
+      if (confirmedItem.isConfirm) {
+        item.appraisalPrice = confirmedItem.priceOrigin
+        item.discountPercent = confirmedItem.discount
+        item.qty = confirmedItem.qty
+      }
+
+      if (Object.prototype.hasOwnProperty.call(confirmedItem, 'isPlaceholder')) {
+        item.isPlaceholder = confirmedItem.isPlaceholder
+      }
+
+      item.isRemainProduct = confirmedItem.isRemainProduct
+      item.message = confirmedItem.message
     },
 
     async getSaleOrderData(soNumber) {
@@ -1520,7 +1568,8 @@ export default {
         stockNumberOrigin,
         isRemainProduct: true,
         isConfirm: false,
-        isInvoice: false
+        isInvoice: false,
+        isPlaceholder: false
       }
 
       // สินค้าหมด (ขายแล้ว/ไม่มีของ) — ถามก่อนว่าจะเพิ่มเป็นรายการรอผลิต/รอแปลงแทนไหม แทนที่จะบล็อกเฉยๆ
@@ -1635,7 +1684,7 @@ export default {
         const original = this.stockItems[idx]
 
         if (Number(shortage) > 0) {
-          newCopyItems.push(buildCopyItem(original, { qty: shortage }))
+          newCopyItems.push(buildCopyItem(original, { qty: shortage, parentLineKey: original.lineKey }))
         }
 
         if (remove) {
@@ -1653,37 +1702,81 @@ export default {
       await this.fetchSaveSaleOrder()
     },
 
-    // P4-2: ลบบรรทัดที่ยังไม่ confirm ซึ่งเติมมาจากรายการรอผลิต/รอแปลง (sourceCopyLineKey) — ต้องคืน qty กลับให้ copy line เดิม (ถ้ายังอยู่)
-    deleteStockItem(item) {
-      this.stockItems = this.stockItems.filter((i) => i.lineKey !== item.lineKey)
-
-      if (!item.isConfirm && item.sourceCopyLineKey) {
-        const copyIndex = this.copyItems.findIndex((c) => c.lineKey === item.sourceCopyLineKey)
-        if (copyIndex !== -1) {
-          const updatedCopyItems = [...this.copyItems]
-          const current = updatedCopyItems[copyIndex]
-          updatedCopyItems[copyIndex] = {
-            ...current,
-            qty: (Number(current.qty) || 0) + (Number(item.qty) || 0)
-          }
-          this.copyItems = updatedCopyItems
-        }
+    // T1: emit เดียวกันจากตารางรวม ต้องแยกว่าเป็นบรรทัดสินค้าจริงหรือบรรทัดรอผลิต/รอแปลงก่อนลบ
+    onDeleteItem(item) {
+      if (item.isPlaceholder) {
+        this.deleteCopyItem(item)
+      } else {
+        this.deleteStockItem(item)
       }
-
-      this.recalculateAll()
     },
 
-    deleteCopyItem(index) {
-      this.copyItems.splice(index, 1)
+    onEditItem(item) {
+      if (item.isPlaceholder) {
+        this.onEditCopyItem(item)
+      } else {
+        this.onEditStock(item)
+      }
+    },
+
+    // P4-2: ลบบรรทัดที่ยังไม่ confirm ซึ่งเติมมาจากรายการรอผลิต/รอแปลง (sourceCopyLineKey) — ต้องคืน qty กลับให้ copy line เดิม (ถ้ายังอยู่)
+    // T1: ถ้ามีบรรทัดลูก (parentLineKey ตรงกับบรรทัดนี้) ต้องเตือนก่อนว่าบรรทัดลูกจะไม่ผูกกับบรรทัดแม่อีกต่อไป
+    deleteStockItem(item) {
+      const children = this.copyItems.filter((c) => c.parentLineKey === item.lineKey)
+
+      const doDelete = () => {
+        this.stockItems = this.stockItems.filter((i) => i.lineKey !== item.lineKey)
+
+        if (children.length > 0) {
+          this.copyItems = this.copyItems.map((c) =>
+            c.parentLineKey === item.lineKey ? { ...c, parentLineKey: null } : c
+          )
+        }
+
+        if (!item.isConfirm && item.sourceCopyLineKey) {
+          const copyIndex = this.copyItems.findIndex((c) => c.lineKey === item.sourceCopyLineKey)
+          if (copyIndex !== -1) {
+            const updatedCopyItems = [...this.copyItems]
+            const current = updatedCopyItems[copyIndex]
+            updatedCopyItems[copyIndex] = {
+              ...current,
+              qty: (Number(current.qty) || 0) + (Number(item.qty) || 0)
+            }
+            this.copyItems = updatedCopyItems
+          }
+        }
+
+        this.recalculateAll()
+      }
+
+      if (children.length > 0) {
+        confirmThenSubmit(
+          this.$t('view.sale.saleOrder.confirm.unlinkChildrenOnDeleteParent', { count: children.length }),
+          this.$t('view.sale.saleOrder.confirm.unlinkChildrenOnDeleteParentTitle'),
+          (result) => {
+            if (result.isConfirmed) doDelete()
+          },
+          { confirmText: this.$t('common.btn.confirm'), cancelText: this.$t('common.btn.cancel') },
+          'warning'
+        )
+        return
+      }
+
+      doDelete()
+    },
+
+    deleteCopyItem(item) {
+      this.copyItems = this.copyItems.filter((i) => i.lineKey !== item.lineKey)
       this.recalculateAll()
     },
 
     // P2-1.1: คัดลอกบรรทัดสินค้าจริงเป็นรายการ "รอผลิต/รอแปลง" — จำนวนเริ่มต้น = ส่วนที่ขาด (ถ้ามี) ไม่งั้น 1
+    // T1: ผูก parentLineKey กับบรรทัดต้นทางเสมอ — บรรทัดใหม่จะแสดงเป็นบรรทัดลูกใต้บรรทัดนี้ในตารางรวม
     onCopyStockToProduction(item) {
       const available = getPieceQtyAvailable(item)
       const shortage = (Number(item.qty) || 0) - available
       const qty = shortage > 0 ? shortage : 1
-      const copy = buildCopyItem(item, { qty })
+      const copy = buildCopyItem(item, { qty, parentLineKey: item.lineKey })
       this.copyItems = [...this.copyItems, copy]
       this.recalculateAll()
     },
@@ -1818,10 +1911,15 @@ export default {
 
     // P5-4: กดปุ่ม "เติมของ" จากแถบแจ้งเตือนใบแปลงที่เสร็จแล้ว — จับคู่ soLineKey กับบรรทัดรอผลิต/รอแปลงเดิม
     // ถ้าบรรทัดนั้นถูกลบไปแล้ว ให้ผู้ใช้เลือกบรรทัดอื่นแทน
+    // T5: บรรทัดที่ยืนยันแล้วต้องสลับด้วย ReplaceConfirmedStock ไม่ใช่ FillFromStockModal (ซึ่งใช้กับบรรทัดที่ยังไม่ยืนยันเท่านั้น)
     onFillPendingConversion(pending) {
       const matched = this.copyItems.find((c) => c.lineKey === pending.soLineKey)
       if (matched) {
-        this.onOpenFillFromStockModal(matched, pending.resultStockNumber)
+        if (matched.isConfirm) {
+          this.onOpenReplaceConfirmedModal(matched, pending.resultStockNumber)
+        } else {
+          this.onOpenFillFromStockModal(matched, pending.resultStockNumber)
+        }
         return
       }
       this.pendingConvertTarget = pending
@@ -1833,7 +1931,48 @@ export default {
       const pending = this.pendingConvertTarget
       this.pendingConvertTarget = null
       if (!pending) return
-      this.onOpenFillFromStockModal(copyItem, pending.resultStockNumber)
+      if (copyItem.isConfirm) {
+        this.onOpenReplaceConfirmedModal(copyItem, pending.resultStockNumber)
+      } else {
+        this.onOpenFillFromStockModal(copyItem, pending.resultStockNumber)
+      }
+    },
+
+    // T5: เปิด modal สลับบรรทัดรอผลิต/รอแปลงที่ยืนยันแล้ว ให้เป็นของจริง (SaleOrder/ReplaceConfirmedStock)
+    onOpenReplaceConfirmedModal(copyItem, initialStockNumber = '') {
+      this.replaceConfirmedCopyItem = copyItem
+      this.replaceConfirmedInitialStockNumber = initialStockNumber || ''
+      this.isShow.replaceConfirmedModal = true
+    },
+
+    onCloseReplaceConfirmedModal() {
+      this.isShow.replaceConfirmedModal = false
+      this.replaceConfirmedCopyItem = {}
+      this.replaceConfirmedInitialStockNumber = ''
+    },
+
+    async onReplaceConfirmedStockConfirm({ copyItem, stockNumber, stockNumberOrigin }) {
+      const res = await this.saleOrderStore.replaceConfirmedStock({
+        soNumber: this.formSaleOrder.number,
+        saleOrderProductId: copyItem.id,
+        newStockNumber: stockNumber,
+        qty: copyItem.qty
+      })
+
+      this.onCloseReplaceConfirmedModal()
+
+      if (!res) return
+
+      success(
+        this.$t('view.sale.saleOrder.success.replaceConfirmedStock', {
+          stockNumber: res.stockNumber || stockNumberOrigin || stockNumber
+        })
+      )
+
+      if (this.formSaleOrder.number) {
+        const response = await this.getSaleOrderData(this.formSaleOrder.number)
+        if (response) this.loadSaleOrderData(response)
+      }
     },
 
     // ============================================
@@ -2147,6 +2286,46 @@ export default {
       await builder.prepare()
       await builder.downloadExcel('SO_' + (this.formSaleOrder.number || 'DRAFT') + '.xlsx')
       this.isExportingExcel = false
+    },
+
+    // T6: ฉบับภายใน — เอกสารเดียวกับที่ลูกค้าเห็น บวกคอลัมน์ "สถานะของ" ต่อบรรทัด (มีของ/ต้องผลิต/รอแปลง)
+    // reuse SaleOrderPdfBuilder ตัวเดียวกับฉบับลูกค้า ต่างกันแค่ flag printMode
+    async exportInternalPDF() {
+      if (this.stockItems.length === 0 && this.copyItems.length === 0) {
+        warning(this.$t('view.sale.saleOrder.warn.noItemsForPDF'))
+        return
+      }
+
+      this.isExportingInternalPDF = true
+      const pdfData = {
+        soNumber: this.formSaleOrder.number,
+        createDate: this.formSaleOrder.date,
+        customerName: this.formSaleOrder.customerName,
+        customerAddress: this.formSaleOrder.customerAddress,
+        customerTel: this.formSaleOrder.customerPhone,
+        customerEmail: this.formSaleOrder.customerEmail,
+        remark: this.formSaleOrder.remark,
+        salePerson: this.formSaleOrder.salePerson,
+        saleSupport: this.formSaleOrder.saleSupport,
+        specialDiscount: this.formSaleOrder.specialDiscount || 0,
+        specialAddition: this.formSaleOrder.specialAddition || 0,
+        freight: this.formSaleOrder.freight || 0,
+        vatPercent: this.formSaleOrder.vatPercent || 0,
+        items: this.stockItems,
+        copyItems: this.copyItems,
+        pendingConversions: this.pendingConversions
+      }
+      const pdfBuilder = new SaleOrderPdfBuilder(pdfData, {
+        currencyUnit: this.formSaleOrder.currencyUnit || 'THB',
+        currencyRate: Number(this.formSaleOrder.currencyRate) || 1,
+        showCifLabel: this.pdfShowCifLabel,
+        showDecimals: this.pdfShowDecimals,
+        printMode: 'internal'
+      })
+      const pdf = await pdfBuilder.generatePDF()
+      const soNumber = this.formSaleOrder.number || 'DRAFT'
+      pdf.download(`SO_${soNumber}_INTERNAL.pdf`)
+      this.isExportingInternalPDF = false
     },
 
     async confirmOrder() {
@@ -2466,7 +2645,7 @@ export default {
       this.stockItems[realIndex] = newCal
     },
 
-    // ใช้ร่วมกันทั้ง StockItemsTable และ CopyItemsTable (ทั้งคู่ emit event เดียวกันนี้) —
+    // T1: ตารางรวม (StockItemsTable) ยิง event เดียวกันนี้ทั้งบรรทัดสินค้าจริงและบรรทัดรอผลิต/รอแปลง —
     // ต้องหาใน stockItems ก่อน แล้วค่อย fallback ไป copyItems ตาม lineKey ที่ส่งมา
     onBlurDescription(item, stockNumber, fieldName) {
       const stockIndex = this.stockItems.findIndex((i) => i.lineKey === item.lineKey)
@@ -2513,6 +2692,47 @@ export default {
 
     onBlurCopyFreight(freight) {
       this.formSaleOrder.copyFreight = freight ? Number(freight).toFixed(2) : 0
+    },
+
+    // T1: ตารางรวมยิง blur-price/blur-qty เดียวกันทั้งบรรทัดสินค้าจริงและบรรทัดรอผลิต/รอแปลง — แยกปลายทางด้วย isPlaceholder
+    onBlurPriceRouter(item, stockNumber, fieldName) {
+      if (item.isPlaceholder) {
+        this.onBlurCopyPrice(item, stockNumber, fieldName)
+      } else {
+        this.onBlurPrice(item, stockNumber, fieldName)
+      }
+    },
+
+    onBlurQtyRouter(item, stockNumber, fieldName) {
+      if (item.isPlaceholder) {
+        this.onBlurCopyQty(item, stockNumber, fieldName)
+      } else {
+        this.onBlurQty(item, stockNumber, fieldName)
+      }
+    },
+
+    // T2: บันทึกเลขที่ผลิตที่พนักงานพิมพ์บนบรรทัดรอผลิต/รอแปลง + ตรวจซ้ำ/เตือนถ้าเลขนี้มีอยู่จริงในคลัง (ไม่บล็อก)
+    async onCopyStockNumberBlur(item) {
+      const copyIndex = this.copyItems.findIndex((i) => i.lineKey === item.lineKey)
+      if (copyIndex === -1) return
+
+      const value = (item.stockNumber || '').trim() || null
+      this.copyItems[copyIndex] = { ...this.copyItems[copyIndex], stockNumber: value }
+
+      if (!value) return
+
+      const duplicate = [...this.stockItems, ...this.copyItems].some(
+        (i) => i.lineKey !== item.lineKey && i.stockNumber === value
+      )
+      if (duplicate) {
+        warning(this.$t('view.sale.saleOrder.warn.productionNumberDuplicate', { code: value }))
+        return
+      }
+
+      const list = await this.productStore.fetchStockAvailability([value])
+      if (Array.isArray(list) && list.some((row) => row.stockNumber === value)) {
+        warning(this.$t('view.sale.saleOrder.warn.productionNumberMatchesStock'))
+      }
     },
 
     getNetWeight(items) {

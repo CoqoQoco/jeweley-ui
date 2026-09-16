@@ -124,6 +124,20 @@ export const usrSaleOrderApiStore = defineStore('saleOrder', {
 
     async fetchInactive({ soNumber }) {
       return await api.jewelry.post('SaleOrder/Inactive', { soNumber })
+    },
+
+    // สลับบรรทัดรอผลิต/รอแปลงที่ยืนยันแล้ว (isPlaceholder) ให้เป็นของจริง — จองสต็อกให้ คงบรรทัด/ราคาเดิม
+    async replaceConfirmedStock({ soNumber, saleOrderProductId, newStockNumber, qty }) {
+      const param = {
+        soNumber,
+        saleOrderProductId,
+        newStockNumber,
+        ...(qty !== undefined && qty !== null ? { qty } : {})
+      }
+
+      return await api.jewelry.post('SaleOrder/ReplaceConfirmedStock', param, {
+        skipLoading: false
+      })
     }
   }
 })
