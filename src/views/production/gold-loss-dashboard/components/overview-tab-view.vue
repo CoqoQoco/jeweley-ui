@@ -241,6 +241,8 @@
       headerStyle="legend"
       class="section-card-block"
     >
+      <SlipMonthlyGuideView :dept="slipDept" />
+
       <BaseDataTable
         :items="slipMonthlyTableRows"
         :totalRecords="slipMonthlyTableRows.length"
@@ -381,6 +383,7 @@ import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import ChartGeneric from '@/components/prime-vue/ChartGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import SlipMonthlyGuideView from './slip-monthly-guide-view.vue'
 
 // แผนกที่มีการคืนทองจริง — เหมือนกับแท็บ Stage/ต่อช่าง
 const GOLD_LOSS_STAGE_CODES = [50, 60, 70, 80, 90]
@@ -419,7 +422,8 @@ export default {
     SectionCardGeneric,
     ButtonGeneric,
     ChartGeneric,
-    BaseDataTable
+    BaseDataTable,
+    SlipMonthlyGuideView
   },
 
   props: {

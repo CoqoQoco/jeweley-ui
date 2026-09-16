@@ -1385,6 +1385,41 @@ export default {
       colWorkerCode: 'Worker Code',
       colWorkerName: 'Worker Name',
 
+      monthlyGuide: {
+        toggleShow: 'How to read this table',
+        toggleHide: 'Hide guide',
+        columnsTitle: 'Column meanings ({dept})',
+        termSlipCount: 'Slips',
+        descSlipCount: 'Number of slips in the month',
+        termIssuedReturned: 'Issued / Returned (g)',
+        descIssuedReturned: 'Gold issued to the worker / gold returned by the worker',
+        termLoss: 'Loss (g)',
+        descLoss: 'Actual gold lost = Issued − Returned',
+        termLossPercent: '%loss',
+        descLossPercent: 'Loss ÷ Issued × 100',
+        termAllowed: 'Allowed (g)',
+        termAllowedPercent: 'Allowed %',
+        termOverAllowed: 'Over allowed (g)',
+        descOverAllowed: 'Loss − Allowed',
+        overAllowedHint: 'Negative = lost less than allowed (good) · positive shown in red = lost more than allowed',
+        tang: {
+          descAllowed: 'Sum over all slips — each slip: returned job weight × %loss set on the slip (manual extra lines excluded)',
+          descAllowedPercent: 'Total allowed ÷ total returned job weight × 100 (weighted by gold weight)'
+        },
+        setter: {
+          descAllowed: "Sum over all job items — each item: returned weight × that item's %loss",
+          descAllowedPercent: 'Total allowed ÷ total returned weight × 100 (weighted by gold weight)'
+        },
+        weightedTitle: 'Allowed % is not a simple average',
+        exampleA: 'Slip A  returned 100 g  set 3%  → allowed 3.00 g',
+        exampleB: 'Slip B  returned 10 g  set 5%  → allowed 0.50 g',
+        exampleResult: 'Simple average (3% + 5%) ÷ 2 = 4% ✗   ·   Weighted 3.50 ÷ 110 = 3.18% ✓ (used in this table)',
+        noteCompare: '%loss and Allowed % use different bases — do not compare them directly; use "Over allowed (g)" instead',
+        noteZero: 'All-zero rows = months in the selected range with no slips · "—" = no base to calculate',
+        noteExpand: 'Click > on a row to see per-worker breakdown (highest loss first) — month totals = sum of its workers',
+        noteTotal: 'The "Total" row recalculates % from the period totals, not by averaging monthly %'
+      },
+
       pointUnit: ' pts',
 
       reconcileNote: 'These two rows use different definitions — do not subtract one from the other. Unexplained gap: {gap}',
