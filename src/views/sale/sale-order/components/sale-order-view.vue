@@ -685,6 +685,7 @@ import PendingConvertNotice from './pending-convert-notice.vue'
 import PickCopyLineModal from '../modal/pick-copy-line-modal.vue'
 import ReplaceConfirmedStockModal from '../modal/replace-confirmed-stock-modal.vue'
 import sourcePickerModal from '@/views/stock/convert/components/source-picker-modal.vue'
+import DepositSection from './deposit-section.vue'
 
 const SALE_ROLE_ID = 6 // tbm_user_role: 6 = Sale
 
@@ -732,7 +733,8 @@ export default {
     PendingConvertNotice,
     PickCopyLineModal,
     ReplaceConfirmedStockModal,
-    sourcePickerModal
+    sourcePickerModal,
+    DepositSection
   },
 
   setup() {

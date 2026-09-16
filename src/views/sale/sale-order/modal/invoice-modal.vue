@@ -161,11 +161,7 @@
                 <!-- Stock Number Origin Column -->
                 <Column field="stockNumberOrigin" :header="$t('view.sale.saleOrder.stockNumberOld')" style="min-width: 150px">
                   <template #body="slotProps">
-                    <span>{{
-                      slotProps.data.stockNumberOrigin
-                        ? slotProps.data.stockNumberOrigin || ''
-                        : slotProps.data.stockNumber || ''
-                    }}</span>
+                    <span>{{ isPlaceholderItem(slotProps.data) ? '' : (slotProps.data.stockNumberOrigin || slotProps.data.stockNumber || '') }}</span>
                   </template>
                 </Column>
 
@@ -786,6 +782,7 @@ import { usrSaleOrderDepositApiStore } from '@/stores/modules/api/sale/sale-orde
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { getPaymentApiName } from '@/constants/payment-methods.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
+import { isPlaceholderItem } from '@/services/utils/copy-item.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -1001,6 +998,8 @@ export default {
   },
 
   methods: {
+    isPlaceholderItem,
+
     async loadInitialData() {
       // Reset selections when modal opens
       this.selectedItems = []

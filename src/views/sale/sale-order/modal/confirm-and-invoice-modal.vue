@@ -181,11 +181,7 @@
                 <!-- Stock Number Origin Column -->
                 <Column field="stockNumberOrigin" :header="$t('view.sale.saleOrder.stockNumberOld')" style="min-width: 150px">
                   <template #body="slotProps">
-                    <span>{{
-                      slotProps.data.stockNumberOrigin
-                        ? slotProps.data.stockNumberOrigin || ''
-                        : slotProps.data.stockNumber || ''
-                    }}</span>
+                    <span>{{ isPlaceholderItem(slotProps.data) ? '' : (slotProps.data.stockNumberOrigin || slotProps.data.stockNumber || '') }}</span>
                   </template>
                 </Column>
 
@@ -750,6 +746,7 @@ import { getPaymentApiName } from '@/constants/payment-methods.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
 import { ensureLineKey } from '@/services/utils/line-key.js'
 import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
+import { isPlaceholderItem } from '@/services/utils/copy-item.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -997,6 +994,8 @@ export default {
   },
 
   methods: {
+    isPlaceholderItem,
+
     async loadInitialData() {
       // เติม lineKey ย้อนหลังให้แถวที่ยังไม่มี (ข้อมูลเก่าที่เข้ามาทางอื่น) กันชนกันตอนเลือกรายการ
       this.stockItems.forEach(ensureLineKey)

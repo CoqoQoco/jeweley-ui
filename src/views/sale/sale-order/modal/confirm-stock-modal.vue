@@ -167,7 +167,7 @@
                 <Column field="stockNumber" :header="$t('view.sale.saleOrder.stockNumberOld')" style="width: 120px">
                   <template #body="slotProps">
                     <div class="d-flex flex-column">
-                      <span class="text-main">{{ slotProps.data.stockNumberOrigin || slotProps.data.stockNumber }}</span>
+                      <span v-if="!isPlaceholderItem(slotProps.data)" class="text-main">{{ slotProps.data.stockNumberOrigin || slotProps.data.stockNumber }}</span>
                       <small class="text-muted">{{ slotProps.data.stockNumber }}</small>
                     </div>
                   </template>
@@ -401,6 +401,7 @@ import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.
 import { success, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
+import { isPlaceholderItem } from '@/services/utils/copy-item.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -529,6 +530,8 @@ export default {
   },
 
   methods: {
+    isPlaceholderItem,
+
     async loadInitialData() {
       this.selectedItems = []
       await this.loadAvailability()

@@ -215,8 +215,7 @@
           :alignFrozen="frozenCols['stockNumberOld'] || undefined"
         >
           <template #body="slotProps">
-            <span v-if="isPlaceholderRow(slotProps.data)">{{ slotProps.data.sourceStockNumber || '-' }}</span>
-            <span v-else>{{ slotProps.data.stockNumberOrigin || slotProps.data.stockNumber || '' }}</span>
+            <span v-if="!isPlaceholderRow(slotProps.data)">{{ slotProps.data.stockNumberOrigin || slotProps.data.stockNumber || '' }}</span>
           </template>
         </Column>
 
@@ -239,7 +238,7 @@
                 />
                 <span v-else class="confirmed-text">{{ slotProps.data.stockNumber || '-' }}</span>
               </div>
-              <small v-if="!slotProps.data.isConfirm && !slotProps.data.invoice" class="text-muted">
+              <small v-if="!slotProps.data.isConfirm && !slotProps.data.invoice && !slotProps.data.stockNumber" class="text-muted">
                 {{ $t('view.sale.saleOrder.productionNumberHint') }}
               </small>
               <span v-if="!isFullyFilled(slotProps.data)" class="badge badge-warning mt-1">
@@ -923,6 +922,7 @@ import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import { formatDecimal, formatMoney } from '@/services/utils/decimal.js'
 import { convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
 import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
+import { isPlaceholderItem } from '@/services/utils/copy-item.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
@@ -1127,8 +1127,9 @@ export default {
     },
 
     // รายการรอผลิต/รอแปลง — ยังไม่มีของจริงในคลัง (ยืนยันได้แต่ออกใบแจ้งหนี้ไม่ได้)
+    // isPlaceholderItem เป็น single source of truth — ห้ามเช็ค stockNumber == null เอง (copy line ตอนนี้มีเลขที่ผลิตได้แล้ว)
     isPlaceholderRow(data) {
-      return data.isPlaceholder === true
+      return isPlaceholderItem(data)
     },
 
     isFullyFilled(item) {
