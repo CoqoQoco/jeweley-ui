@@ -22,10 +22,29 @@ export function warning(msg, title, callback) {
     if (callback) callback()
   })
 }
+// ข้อความ shortage จาก backend มาเป็นก้อนเดียวคั่นด้วย "; " (เช่น "Validation errors: เลข A พร้อมขาย 1 แต่ขอ 5; เลข B ...")
+// แตกเป็นรายบรรทัดแทนก้อนเดียวให้อ่านง่ายขึ้น
+function formatValidationErrors(msg) {
+  const prefix = 'Validation errors:'
+  if (typeof msg !== 'string' || !msg.startsWith(prefix)) return msg
+
+  const lines = msg
+    .slice(prefix.length)
+    .split(/;\s*/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+
+  if (lines.length <= 1) return msg
+
+  return `<div style="text-align: left;">${lines.map((line) => `<div>• ${line}</div>`).join('')}</div>`
+}
+
 export function error(msg, title, callback, stacktrace) {
   let titleShow = null
   if (title) titleShow = title
   else titleShow = 'ผิดพลาด'
+
+  const msgShow = formatValidationErrors(msg)
 
   // Create DOM error message template
   let isShowSeeMore = false
@@ -39,11 +58,11 @@ export function error(msg, title, callback, stacktrace) {
                         (See more..)
                       </span>`
 
-  let errorMessage = `<div 
-                        id="errorMessage" 
+  let errorMessage = `<div
+                        id="errorMessage"
                         class="d-flex justify-content-center align-items-center"
                       >
-                        ${msg} ${stacktrace ? btnSeeMore : ''}
+                        ${msgShow} ${stacktrace ? btnSeeMore : ''}
                       </div>`
 
   let stacktraceMessage = `<div

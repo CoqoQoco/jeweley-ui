@@ -392,6 +392,7 @@ import ItemList from './components/item-list.vue'
 import InvoiceCreationForm from './components/invoice-creation-form.vue'
 import QrScanner from '@/views/mobile/scan/components/qr-scanner.vue'
 import { computeDocumentTotals, lineAmount } from '@/services/utils/money.js'
+import { createLineKey } from '@/services/utils/line-key.js'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 
@@ -731,10 +732,13 @@ export default {
       // รวม invoicedItems + editItems กลับเป็น stockItems / copyItems
       const allItems = [...this.invoicedItems, ...this.editItems]
 
+      // spread item ก่อนเสมอ (ไม่ใช่ list field ตายตัว) — เก็บ lineKey/sourceStockNumber/productNameEn/Th/
+      // priceTransactions ฯลฯ ไว้ครบ ไม่ทิ้งข้อมูลของ copy item ที่สร้างจากหน้าเว็บ (P2-6)
       const newStockItems = allItems
         .filter((item) => item.stockNumber)
         .map((item) => ({
-          stockNumber: item.stockNumber,
+          ...item,
+          lineKey: item.lineKey || createLineKey(),
           productNumber: item.productNumber || '',
           description: item.description || '',
           costPrice: Number(item.costPrice) || 0,
@@ -751,6 +755,8 @@ export default {
       const newCopyItems = allItems
         .filter((item) => !item.stockNumber)
         .map((item) => ({
+          ...item,
+          lineKey: item.lineKey || createLineKey(),
           stockNumber: null,
           productNumber: item.productNumber || '',
           description: item.description || '',
@@ -760,9 +766,7 @@ export default {
           tagPriceMultiplier: Number(item.tagPriceMultiplier) || 1,
           discountPercent: Number(item.discountPercent) || 0,
           qty: Number(item.qty) || 1,
-          materials: item.materials || [],
-          imagePath: null,
-          imageBlobPath: null
+          materials: item.materials || []
         }))
 
       const existingFreight = Number(this.soData.freight) || 0
@@ -787,6 +791,9 @@ export default {
         specialAddition: this.soData.specialAddition || 0,
         vat: this.soData.vat || 0,
         freight: existingFreight,
+        // ต้องรวม copyItems ด้วยเสมอ (P2-3) — this.documentTotals ยังอิง allCurrentItems (invoicedItems + editItems)
+        // อยู่ ณ จุดนี้ (isEditing ยังไม่ถูกตั้งเป็น false)
+        subTotal: Number(this.documentTotals.subTotal) || 0,
         data: JSON.stringify({
           stockItems: newStockItems,
           copyItems: newCopyItems,

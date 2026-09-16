@@ -99,7 +99,9 @@ export default {
         goldPerOz: quotationData.goldPerOz || 0,
         specialDiscount: quotationData.specialDiscount || 0,
         specialAddition: quotationData.specialAddition || 0,
-        vat: quotationData.vat || 0
+        // sale-order-view.vue's loadQuotationData() reads vatPercent (ไม่ใช่ vat) — ต้องใช้ key เดียวกัน
+        // ไม่งั้น VAT ของใบเสนอราคาหายตอนแปลงเป็นใบสั่งขาย
+        vatPercent: quotationData.vat || 0
       }
     },
 

@@ -24,6 +24,12 @@ vi.mock('@/stores/modules/api/sale/sale-channel-store.js', () => ({
   }))
 }))
 
+// D5: SO deposit balance — default ไม่มีมัดจำค้าง (balance: 0) เพื่อไม่กระทบพฤติกรรมเดิมของเทสต์ชุดนี้
+const mockDepositFetchList = vi.fn().mockResolvedValue({ balance: 0, totalReceived: 0, totalApplied: 0, deposits: [] })
+vi.mock('@/stores/modules/api/sale/sale-order-deposit-store.js', () => ({
+  usrSaleOrderDepositApiStore: vi.fn(() => ({ fetchList: mockDepositFetchList }))
+}))
+
 vi.mock('@/components/modal/modal-view.vue', () => ({
   default: {
     name: 'ModalView',
@@ -61,6 +67,7 @@ describe('InvoiceModal — paymentName integrity (ป้องกันบั๊
     mockFetchCreate.mockResolvedValue({ invoiceNumber: 'INV-0001' })
     mockFetchActiveList.mockResolvedValue([])
     mockFetchCurrent.mockResolvedValue(null)
+    mockDepositFetchList.mockResolvedValue({ balance: 0, totalReceived: 0, totalApplied: 0, deposits: [] })
   })
 
   const runWith = async (tMock) => {
@@ -81,6 +88,51 @@ describe('InvoiceModal — paymentName integrity (ป้องกันบั๊
     expect(enResult).toBe('เงินสด (Cash)')
     expect(thResult).toBe(enResult)
     expect(thResult.startsWith('view.')).toBe(false)
+  })
+})
+
+describe('InvoiceModal — P4-3 line-aware invoicing (saleOrderProductId)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockFetchCreate.mockResolvedValue({ invoiceNumber: 'INV-0001' })
+    mockFetchActiveList.mockResolvedValue([])
+    mockFetchCurrent.mockResolvedValue(null)
+  })
+
+  it('ทุกรายการมี id → ส่ง saleOrderProductId ให้ทุกบรรทัด', async () => {
+    const wrapper = createWrapper()
+    await flushPromises()
+
+    wrapper.vm.selectedItems = [1]
+    await wrapper.vm.generateInvoice()
+
+    const items = mockFetchCreate.mock.calls[0][0].formValue.items
+    expect(items).toHaveLength(1)
+    expect(items[0].saleOrderProductId).toBe(1)
+  })
+
+  it('มีบางรายการไม่มี id → ไม่ส่ง saleOrderProductId ให้ทุกบรรทัด (fallback stockNumber-only) + console.warn', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const mixedStockItems = [
+      { id: 1, isConfirm: true, invoice: false, stockNumber: 'S1', qty: 1, appraisalPrice: 100, discountPercent: 0 },
+      { id: null, isConfirm: true, invoice: false, stockNumber: 'S2', qty: 1, appraisalPrice: 100, discountPercent: 0 }
+    ]
+    const pinia = createPinia()
+    const wrapper = shallowMount(InvoiceModal, {
+      global: { plugins: [pinia], mocks: { $t: (key) => key } },
+      props: { isShowModal: true, saleOrderData: sampleSaleOrder, stockItems: mixedStockItems }
+    })
+    await flushPromises()
+
+    wrapper.vm.selectedItems = mixedStockItems.map((i) => i.id)
+    await wrapper.vm.generateInvoice()
+
+    const items = mockFetchCreate.mock.calls[0][0].formValue.items
+    expect(items).toHaveLength(2)
+    items.forEach((item) => expect(item.saleOrderProductId).toBeUndefined())
+    expect(warnSpy).toHaveBeenCalled()
+
+    warnSpy.mockRestore()
   })
 })
 

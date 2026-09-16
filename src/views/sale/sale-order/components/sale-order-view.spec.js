@@ -21,7 +21,10 @@ vi.mock('@/stores/modules/api/sale/sale-order-store.js', () => ({
 }))
 
 vi.mock('@/stores/modules/api/stock/product-api.js', () => ({
-  usrStockProductApiStore: vi.fn(() => ({ fetchDataGet: vi.fn().mockResolvedValue(null) }))
+  usrStockProductApiStore: vi.fn(() => ({
+    fetchDataGet: vi.fn().mockResolvedValue(null),
+    fetchStockAvailability: vi.fn().mockResolvedValue([])
+  }))
 }))
 
 const mockFetchDataList = vi.fn().mockResolvedValue({ data: [] })
@@ -332,5 +335,100 @@ describe('SaleOrderView — ย้ายจังหวะบันทึก (op
     expect(mockFetchSave).toHaveBeenCalledTimes(1)
     expect(mockFetchGet).toHaveBeenCalledTimes(1)
     expect(mockFetchSave.mock.invocationCallOrder[0]).toBeLessThan(mockFetchGet.mock.invocationCallOrder[0])
+  })
+})
+
+describe('SaleOrderView — P4-1/P4-2 เติมของจากคลัง (copy line ↔ stock line)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockFetchSave.mockResolvedValue('SO-0001')
+    mockFetchDataList.mockResolvedValue({ data: [] })
+  })
+
+  it('deleteStockItem: ลบบรรทัดที่เติมจาก copy line (unconfirmed) ต้องคืน qty กลับให้ copy line เดิม', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    const copyLineKey = createLineKey()
+    vm.copyItems = [{ lineKey: copyLineKey, qty: 2, orderedQty: 4, productNumber: 'R001' }]
+
+    const stockLine = makeItem('STK-001')
+    stockLine.sourceCopyLineKey = copyLineKey
+    stockLine.qty = 2
+    vm.stockItems = [stockLine]
+
+    vm.deleteStockItem(stockLine)
+
+    expect(vm.stockItems).toHaveLength(0)
+    expect(vm.copyItems[0].qty).toBe(4)
+  })
+
+  it('deleteStockItem: copy line ต้นทางถูกลบไปแล้ว → ไม่ throw และไม่แก้ copyItems', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    const stockLine = makeItem('STK-002')
+    stockLine.sourceCopyLineKey = 'not-exist'
+    vm.copyItems = []
+    vm.stockItems = [stockLine]
+
+    expect(() => vm.deleteStockItem(stockLine)).not.toThrow()
+    expect(vm.stockItems).toHaveLength(0)
+    expect(vm.copyItems).toHaveLength(0)
+  })
+
+  it('deleteStockItem: บรรทัดที่ confirm แล้ว ต้องไม่คืน qty กลับ copy line แม้มี sourceCopyLineKey', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    const copyLineKey = createLineKey()
+    vm.copyItems = [{ lineKey: copyLineKey, qty: 0, orderedQty: 4 }]
+
+    const stockLine = makeItem('STK-003', { isConfirm: true })
+    stockLine.sourceCopyLineKey = copyLineKey
+    stockLine.qty = 4
+    vm.stockItems = [stockLine]
+
+    vm.deleteStockItem(stockLine)
+
+    expect(vm.copyItems[0].qty).toBe(0)
+  })
+
+  it('onFillCopyLineFromStock: fill ครั้งแรก → ตั้ง orderedQty, ลด qty, เพิ่มบรรทัดสินค้าจริง และเรียก fetchSave', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    const copyLineKey = createLineKey()
+    vm.copyItems = [
+      { lineKey: copyLineKey, qty: 4, productNumber: 'R001', appraisalPrice: 500, discountPercent: 10 }
+    ]
+    vm.stockItems = []
+
+    const newLine = { lineKey: createLineKey(), stockNumber: 'STK-100', qty: 1, sourceCopyLineKey: copyLineKey }
+
+    await vm.onFillCopyLineFromStock({ copyItem: vm.copyItems[0], newLine, qty: 1 })
+
+    expect(vm.stockItems).toHaveLength(1)
+    expect(vm.stockItems[0].stockNumber).toBe('STK-100')
+    expect(vm.stockItems[0].sourceCopyLineKey).toBe(copyLineKey)
+    expect(vm.copyItems[0].orderedQty).toBe(4)
+    expect(vm.copyItems[0].qty).toBe(3)
+    expect(mockFetchSave).toHaveBeenCalledTimes(1)
+    expect(vm.isShow.fillFromStockModal).toBeFalsy()
+  })
+
+  it('onFillCopyLineFromStock: fill ครั้งที่สอง (orderedQty มีแล้ว) ต้องไม่ถูกเขียนทับ', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    const copyLineKey = createLineKey()
+    vm.copyItems = [{ lineKey: copyLineKey, qty: 3, orderedQty: 4 }]
+
+    const newLine = { lineKey: createLineKey(), stockNumber: 'STK-101', qty: 3, sourceCopyLineKey: copyLineKey }
+
+    await vm.onFillCopyLineFromStock({ copyItem: vm.copyItems[0], newLine, qty: 3 })
+
+    expect(vm.copyItems[0].orderedQty).toBe(4)
+    expect(vm.copyItems[0].qty).toBe(0)
   })
 })

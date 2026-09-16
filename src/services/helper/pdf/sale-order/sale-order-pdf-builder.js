@@ -4,11 +4,15 @@ import { formatMoney } from '@/services/utils/decimal.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
+import { i18n } from '@/plugins/i18n/config.js'
 
 export class SaleOrderPdfBuilder {
   constructor(soData, options = {}) {
     this.soData = soData || {}
     this.items = soData?.items || []
+    // รายการรอผลิต/รอแปลง — ยังไม่มี stockNumber จริง พิมพ์แยกส่วนหลังตาราง stock (P2-5)
+    // เติมของครบแล้ว (qty 0) ไม่ต้องพิมพ์ซ้ำในเอกสาร — ยังอยู่ใน SO JSON เพื่อ traceability แต่ตัดออกจากหน้าพิมพ์ (P4-2)
+    this.copyItems = (soData?.copyItems || []).filter((item) => (Number(item.qty) || 0) > 0)
     this.companyInfo = {
       name: 'Duang Kaew Jewelry Manufacturer Co.,Ltd.',
       address: '200/16 Rama 6 Rd., Phayathai, Phayathai, Bangkok 10400 Thailand',
@@ -30,8 +34,9 @@ export class SaleOrderPdfBuilder {
     this.vatPercent = Number(soData.vatPercent) || Number(soData.vat) || 0
 
     // Calculate totals — ปัดเศษที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
+    // รวม copyItems ด้วยเสมอ (P2-3) ให้ตรงกับยอดรวมที่หน้าจอ/หัวใบสั่งขายเก็บไว้
     const totals = computeDocumentTotals({
-      items: this.items,
+      items: this.allItems,
       currencyRate: this.currencyRate,
       currencyUnit: this.currencyUnit,
       specialDiscount: this.specialDiscount,
@@ -52,6 +57,11 @@ export class SaleOrderPdfBuilder {
     this.roundingAdjustment = totals.roundingAdjustment
   }
 
+  // stock items + copy items รวมกัน — ใช้คิดยอดรวม/น้ำหนักรวมทั้งใบ (P2-3)
+  get allItems() {
+    return [...this.items, ...this.copyItems]
+  }
+
   async preparePDF() {
     if (!this.logoBase64) {
       try {
@@ -68,12 +78,13 @@ export class SaleOrderPdfBuilder {
   }
 
   async prepareImages() {
-    if (!this.items || !Array.isArray(this.items)) return
+    const items = this.allItems
+    if (!items || !Array.isArray(items) || items.length === 0) return
 
     const { getAzureBlobAsBase64 } = await import('@/config/azure-storage-config.js')
 
     await Promise.all(
-      this.items.map(async (item) => {
+      items.map(async (item) => {
         if (item.imageBase64) return
 
         // ใช้ imageBlobPath ก่อน, ถ้าไม่มีใช้ imagePath
@@ -356,42 +367,107 @@ export class SaleOrderPdfBuilder {
     }
   }
 
+  // ชื่อหัวข้อคั่นก่อนตารางรายการรอผลิต/รอแปลง — ขึ้นเฉพาะหน้าแรกของ section นี้
+  getCopyItemsSectionTitle() {
+    return {
+      margin: [0, 4, 0, 4],
+      text: i18n.global.t('view.sale.saleOrder.copyItemsPdfSectionTitle'),
+      bold: true,
+      fontSize: 11,
+      color: '#8B0000'
+    }
+  }
+
+  // คอลัมน์ Style/Product ของรายการรอผลิต/รอแปลง — ไม่มีเลขที่ผลิตจริง ใช้ placeholder + sourceStockNumber (ถ้ามี)
+  getCopyStyleCode(item) {
+    const code = formatItemStyleCode(item)
+    const placeholder = i18n.global.t('view.sale.saleOrder.needsProduction')
+    const placeholderLine = item.sourceStockNumber
+      ? `${placeholder} (${item.sourceStockNumber})`
+      : placeholder
+    return code ? `${code}\n${placeholderLine}` : placeholderLine
+  }
+
   createPages() {
     const itemsPerPage = this.itemsPerPage
     const pages = []
-    const totalItems = this.items ? this.items.length : 0
-    const totalPages = Math.ceil(totalItems / itemsPerPage)
+    const totalStockItems = this.items ? this.items.length : 0
+    const totalCopyItems = this.copyItems ? this.copyItems.length : 0
 
-    if (totalPages === 0) {
+    if (totalStockItems === 0 && totalCopyItems === 0) {
       pages.push(this.getEmptyPageContent())
+      pages.push(...this.getSummarySection())
       return pages
     }
 
-    for (let pageNum = 0; pageNum < totalPages; pageNum++) {
+    const totalStockPages = totalStockItems > 0 ? Math.ceil(totalStockItems / itemsPerPage) : 0
+    const totalCopyPages = totalCopyItems > 0 ? Math.ceil(totalCopyItems / itemsPerPage) : 0
+    const totalPagesOverall = totalStockPages + totalCopyPages
+
+    let pageIndex = 0 // นับต่อเนื่องข้าม section (stock แล้วต่อด้วย copy)
+
+    for (let pageNum = 0; pageNum < totalStockPages; pageNum++) {
       const startIdx = pageNum * itemsPerPage
-      const endIdx = Math.min(startIdx + itemsPerPage, totalItems)
+      const endIdx = Math.min(startIdx + itemsPerPage, totalStockItems)
       const pageItems = this.items.slice(startIdx, endIdx)
-      const isLastPage = pageNum === totalPages - 1
+      const isLastOverallPage = pageIndex === totalPagesOverall - 1
 
       const pageContent = []
 
-      if (pageNum > 0) {
+      if (pageIndex > 0) {
         pageContent.push(this.getHeaderContent())
       }
 
-      if (isLastPage) {
-        pageContent.push(this.getFinalPageTableContent(pageItems, pageNum, totalPages))
+      if (isLastOverallPage) {
+        pageContent.push(this.getFinalPageTableContent(pageItems, pageNum, totalPagesOverall > 1))
       } else {
         pageContent.push(this.getRegularPageTableContent(pageItems, pageNum))
       }
 
       pageContent.push(...this.getSummarySection())
 
-      if (pageNum < totalPages - 1) {
+      if (pageIndex < totalPagesOverall - 1) {
         pageContent.push({ text: '', pageBreak: 'after' })
       }
 
       pages.push(...pageContent)
+      pageIndex++
+    }
+
+    for (let pageNum = 0; pageNum < totalCopyPages; pageNum++) {
+      const startIdx = pageNum * itemsPerPage
+      const endIdx = Math.min(startIdx + itemsPerPage, totalCopyItems)
+      const pageItems = this.copyItems.slice(startIdx, endIdx)
+      const isLastOverallPage = pageIndex === totalPagesOverall - 1
+
+      const pageContent = []
+
+      if (pageIndex > 0) {
+        pageContent.push(this.getHeaderContent())
+      }
+
+      if (pageNum === 0) {
+        pageContent.push(this.getCopyItemsSectionTitle())
+      }
+
+      const styleCodeFn = (item) => this.getCopyStyleCode(item)
+
+      if (isLastOverallPage) {
+        pageContent.push(
+          this.getFinalPageTableContent(pageItems, pageNum, totalPagesOverall > 1, styleCodeFn)
+        )
+      } else {
+        pageContent.push(this.getRegularPageTableContent(pageItems, pageNum, styleCodeFn))
+      }
+
+      pageContent.push(...this.getSummarySection())
+
+      if (pageIndex < totalPagesOverall - 1) {
+        pageContent.push({ text: '', pageBreak: 'after' })
+      }
+
+      pages.push(...pageContent)
+      pageIndex++
     }
 
     return pages
@@ -435,13 +511,13 @@ export class SaleOrderPdfBuilder {
     }
   }
 
-  getRegularPageTableContent(items, pageNum) {
+  getRegularPageTableContent(items, pageNum, styleCodeFn = formatItemStyleCode) {
     return {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
         widths: [15, 43, 100, 49, 50, 58, '*', 20, 62, 72],
-        body: this.buildRegularTableBody(items, pageNum)
+        body: this.buildRegularTableBody(items, pageNum, styleCodeFn)
       },
       layout: {
         hLineWidth: function () {
@@ -466,13 +542,13 @@ export class SaleOrderPdfBuilder {
     }
   }
 
-  getFinalPageTableContent(items, pageNum, totalPages) {
+  getFinalPageTableContent(items, pageNum, showGrandTotalRow, styleCodeFn = formatItemStyleCode) {
     return {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
         widths: [15, 43, 100, 49, 50, 58, '*', 20, 62, 72],
-        body: this.buildFinalTableBody(items, pageNum, totalPages)
+        body: this.buildFinalTableBody(items, pageNum, showGrandTotalRow, styleCodeFn)
       },
       layout: {
         hLineWidth: function () {
@@ -497,7 +573,7 @@ export class SaleOrderPdfBuilder {
     }
   }
 
-  buildRegularTableBody(items, pageNum) {
+  buildRegularTableBody(items, pageNum, styleCodeFn = formatItemStyleCode) {
     const body = []
 
     // Header
@@ -546,7 +622,7 @@ export class SaleOrderPdfBuilder {
         item.imageBase64 || item.imageBlobPath || item.imagePath
           ? this.setTabImageCell(item.imageBase64, item.imageBlobPath || item.imagePath)
           : this.setTableCell(''),
-        this.setTableCell(formatItemStyleCode(item)),
+        this.setTableCell(styleCodeFn(item)),
         this.setTableCell(this.getDescription(item)),
         this.buildMaterialTable(item.materials, 'Gold'),
         this.buildMaterialTable(item.materials, 'Diamond'),
@@ -574,28 +650,26 @@ export class SaleOrderPdfBuilder {
     return body
   }
 
-  buildFinalTableBody(items, pageNum, totalPages) {
-    const body = this.buildRegularTableBody(items, pageNum)
+  buildFinalTableBody(items, pageNum, showGrandTotalRow, styleCodeFn = formatItemStyleCode) {
+    const body = this.buildRegularTableBody(items, pageNum, styleCodeFn)
 
-    // Grand Total row (น้ำหนักรวม + จำนวนชิ้นรวมทุกหน้า) — แสดงเฉพาะเมื่อเอกสารมีมากกว่า 1 หน้า
-    if (totalPages > 1) {
+    // Grand Total row (น้ำหนักรวม + จำนวนชิ้นรวมทุกหน้า ของทั้งเอกสาร รวม copyItems) — แสดงเฉพาะเมื่อเอกสารมีมากกว่า 1 หน้า
+    if (showGrandTotalRow) {
       let sumGoldAll = 0,
         sumDiamondAll = 0,
         sumGemAll = 0,
         sumQtyAll = 0
 
-      if (this.items && Array.isArray(this.items)) {
-        this.items.forEach((item) => {
-          sumQtyAll += Number(item.qty) || 0
-          if (item.materials && Array.isArray(item.materials)) {
-            item.materials.forEach((m) => {
-              if (m.type === 'Gold') sumGoldAll += Number(m.weight) || 0
-              if (m.type === 'Diamond') sumDiamondAll += Number(m.weight) || 0
-              if (m.type === 'Gem') sumGemAll += Number(m.weight) || 0
-            })
-          }
-        })
-      }
+      this.allItems.forEach((item) => {
+        sumQtyAll += Number(item.qty) || 0
+        if (item.materials && Array.isArray(item.materials)) {
+          item.materials.forEach((m) => {
+            if (m.type === 'Gold') sumGoldAll += Number(m.weight) || 0
+            if (m.type === 'Diamond') sumDiamondAll += Number(m.weight) || 0
+            if (m.type === 'Gem') sumGemAll += Number(m.weight) || 0
+          })
+        }
+      })
 
       body.push([
         { text: 'Grand Total', style: 'grandTotalLabel', alignment: 'right', colSpan: 4 },
@@ -790,21 +864,19 @@ export class SaleOrderPdfBuilder {
   }
 
   getSummarySection() {
-    // Calculate net weight
+    // Calculate net weight — รวม copyItems ด้วย (P2-3)
     let gold = 0
     let diamond = 0
     let gem = 0
-    if (this.items && Array.isArray(this.items)) {
-      this.items.forEach((item) => {
-        if (item.materials) {
-          item.materials.forEach((m) => {
-            if (m.type === 'Gold') gold += Number(m.weight) || 0
-            if (m.type === 'Diamond') diamond += Number(m.weight) || 0
-            if (m.type === 'Gem') gem += Number(m.weight) || 0
-          })
-        }
-      })
-    }
+    this.allItems.forEach((item) => {
+      if (item.materials) {
+        item.materials.forEach((m) => {
+          if (m.type === 'Gold') gold += Number(m.weight) || 0
+          if (m.type === 'Diamond') diamond += Number(m.weight) || 0
+          if (m.type === 'Gem') gem += Number(m.weight) || 0
+        })
+      }
+    })
     const net = (diamond + gem) / 5 + gold
     const netWeightText = `NET WEIGHT OF MERCHANDISES ${net ? net.toFixed(2) : (0).toFixed(2)} (gms.)`
 

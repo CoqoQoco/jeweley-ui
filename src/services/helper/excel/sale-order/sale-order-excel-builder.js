@@ -2,11 +2,15 @@ import dayjs from 'dayjs'
 import ExcelJS from 'exceljs'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount, roundHalfUp } from '@/services/utils/money.js'
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
+import { i18n } from '@/plugins/i18n/config.js'
 
 export class SaleOrderExcelBuilder {
   constructor(soData, options = {}) {
     this.soData = soData || {}
     this.items = soData?.items || []
+    // รายการรอผลิต/รอแปลง — ยังไม่มี stockNumber จริง พิมพ์แยกส่วนหลังตาราง stock (P2-5)
+    // เติมของครบแล้ว (qty 0) ไม่ต้องพิมพ์ซ้ำในเอกสาร — ยังอยู่ใน SO JSON เพื่อ traceability แต่ตัดออกจากหน้าพิมพ์ (P4-2)
+    this.copyItems = (soData?.copyItems || []).filter((item) => (Number(item.qty) || 0) > 0)
     this.companyInfo = {
       name: 'Duang Kaew Jewelry Manufacturer Co.,Ltd.',
       address: '200/16 Rama 6 Rd., Phayathai, Phayathai, Bangkok 10400 Thailand',
@@ -27,8 +31,9 @@ export class SaleOrderExcelBuilder {
     this.vatPercent = Number(soData.vatPercent) || Number(soData.vat) || 0
 
     // Calculate totals (same formula as SaleOrderPdfBuilder) — ปัดเศษที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
+    // รวม copyItems ด้วยเสมอ (P2-3) ให้ตรงกับยอดรวมที่หน้าจอ/หัวใบสั่งขายเก็บไว้
     const totals = computeDocumentTotals({
-      items: this.items,
+      items: this.allItems,
       currencyRate: this.currencyRate,
       currencyUnit: this.currencyUnit,
       specialDiscount: this.specialDiscount,
@@ -55,6 +60,11 @@ export class SaleOrderExcelBuilder {
     this.imageCache = new Map()
   }
 
+  // stock items + copy items รวมกัน — ใช้คิดยอดรวม/น้ำหนักรวมทั้งใบ (P2-3)
+  get allItems() {
+    return [...this.items, ...this.copyItems]
+  }
+
   formatCurrency(amount) {
     if (!this.showDecimals) {
       return new Intl.NumberFormat('th-TH', { maximumFractionDigits: 0 }).format(roundHalfUp(Number(amount) || 0, 0))
@@ -78,10 +88,11 @@ export class SaleOrderExcelBuilder {
   }
 
   async prepareImages() {
-    if (!this.items || !Array.isArray(this.items)) return
+    const items = this.allItems
+    if (!items || !Array.isArray(items) || items.length === 0) return
     const { getAzureBlobAsBase64 } = await import('@/config/azure-storage-config.js')
     await Promise.all(
-      this.items.map(async (item) => {
+      items.map(async (item) => {
         const blobPath = item.imageBlobPath || item.imagePath
         if (!blobPath || this.imageCache.has(blobPath)) return
         const base64 = await getAzureBlobAsBase64(blobPath, 'stock')
@@ -360,11 +371,8 @@ export class SaleOrderExcelBuilder {
 
   // === ITEMS TABLE ===
 
-  buildItemsTable(worksheet, startRow) {
-    let row = startRow
-    const itemImageData = []
-
-    // Table Header — mirrors PDF columns exactly
+  // เขียนหัวตาราง "No./Image/Style.../Amount" 1 แถว — reuse ทั้ง section stock และ section copyItems
+  writeTableHeader(worksheet, row) {
     const headers = [
       'No.',
       'Image',
@@ -393,16 +401,30 @@ export class SaleOrderExcelBuilder {
       }
     })
     worksheet.getRow(row).height = 25
-    row++
+  }
 
-    // Table Body
+  // คอลัมน์ Style/Product ของรายการรอผลิต/รอแปลง — ไม่มีเลขที่ผลิตจริง ใช้ placeholder + sourceStockNumber (ถ้ามี)
+  getCopyStyleCode(item) {
+    const code = formatItemStyleCode(item)
+    const placeholder = i18n.global.t('view.sale.saleOrder.needsProduction')
+    const placeholderLine = item.sourceStockNumber
+      ? `${placeholder} (${item.sourceStockNumber})`
+      : placeholder
+    return code ? `${code}\n${placeholderLine}` : placeholderLine
+  }
+
+  // เขียนแถวรายการสินค้า 1 section (stock หรือ copyItems) + แถว "Total" ปิดท้าย — reuse ระหว่าง 2 section
+  writeItemRows(worksheet, startRow, items, styleCodeFn) {
+    let row = startRow
+    const itemImageData = []
+
     let sumGold = 0,
       sumDiamond = 0,
       sumGem = 0,
       sumQty = 0,
       sumAmount = 0
 
-    this.items.forEach((item, index) => {
+    items.forEach((item, index) => {
       // ปัดที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
       const qty = Number(item.qty) || 0
       const convertedPrice = convertedUnitPrice(item, this.currencyRate, this.currencyUnit)
@@ -442,7 +464,7 @@ export class SaleOrderExcelBuilder {
       sumQty += qty
       sumAmount += amount
 
-      const styleProduct = formatItemStyleCode(item)
+      const styleProduct = styleCodeFn(item)
 
       const cells = [
         { col: 'A', value: index + 1, align: 'right', wrap: false },
@@ -525,6 +547,38 @@ export class SaleOrderExcelBuilder {
     })
     worksheet.getRow(row).height = 25
     row++
+
+    return { nextRow: row, itemImageData }
+  }
+
+  buildItemsTable(worksheet, startRow) {
+    let row = startRow
+
+    this.writeTableHeader(worksheet, row)
+    row++
+
+    const stockResult = this.writeItemRows(worksheet, row, this.items, formatItemStyleCode)
+    row = stockResult.nextRow
+    let itemImageData = stockResult.itemImageData
+
+    // รายการรอผลิต/รอแปลง — ตารางแยกส่วนหลัง stock items (P2-5)
+    if (this.copyItems.length > 0) {
+      const titleCell = worksheet.getCell(`A${row}`)
+      worksheet.mergeCells(`A${row}:J${row}`)
+      titleCell.value = i18n.global.t('view.sale.saleOrder.copyItemsPdfSectionTitle')
+      titleCell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FF8B0000' } }
+      worksheet.getRow(row).height = 20
+      row++
+
+      this.writeTableHeader(worksheet, row)
+      row++
+
+      const copyResult = this.writeItemRows(worksheet, row, this.copyItems, (item) =>
+        this.getCopyStyleCode(item)
+      )
+      row = copyResult.nextRow
+      itemImageData = [...itemImageData, ...copyResult.itemImageData]
+    }
 
     // === Summary Rows (mirrors PDF buildFinalTableBody) ===
 
@@ -677,21 +731,19 @@ export class SaleOrderExcelBuilder {
   buildSummarySection(worksheet, startRow) {
     let row = startRow
 
-    // Calculate net weight (same formula as SaleOrderPdfBuilder.getSummarySection)
+    // Calculate net weight (same formula as SaleOrderPdfBuilder.getSummarySection) — รวม copyItems ด้วย (P2-3)
     let gold = 0,
       diamond = 0,
       gem = 0
-    if (this.items && Array.isArray(this.items)) {
-      this.items.forEach((item) => {
-        if (item.materials) {
-          item.materials.forEach((m) => {
-            if (m.type === 'Gold') gold += Number(m.weight) || 0
-            if (m.type === 'Diamond') diamond += Number(m.weight) || 0
-            if (m.type === 'Gem') gem += Number(m.weight) || 0
-          })
-        }
-      })
-    }
+    this.allItems.forEach((item) => {
+      if (item.materials) {
+        item.materials.forEach((m) => {
+          if (m.type === 'Gold') gold += Number(m.weight) || 0
+          if (m.type === 'Diamond') diamond += Number(m.weight) || 0
+          if (m.type === 'Gem') gem += Number(m.weight) || 0
+        })
+      }
+    })
     const net = (diamond + gem) / 5 + gold
     const netWeightText = `NET WEIGHT OF MERCHANDISES ${net ? net.toFixed(2) : (0).toFixed(2)} (gms.)`
     const smallFont = { name: 'Arial', size: 9 }

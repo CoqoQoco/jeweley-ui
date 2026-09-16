@@ -42,29 +42,40 @@ export async function buildReceiptFromInvoice(invoiceNumber) {
     }
   }
 
-  // 4. Filter: เฉพาะตัวที่อยู่ใน confirmedItems
-  const confirmedItems = invoiceResponse.confirmedItems || []
-  const stockConfirm = soResponse.stockConfirm || []
+  // 4. เฉพาะบรรทัดที่เป็นของ invoice นี้จริงๆ (invoice === invoiceNumber) ก่อนเสมอ — กันสองบรรทัดเลขสินค้าเดียวกัน
+  // ที่ confirm ให้คนละใบแจ้งหนี้ปนกัน (ห้าม match ด้วย stockNumber ตรงๆ ข้าม invoice)
+  const stockConfirmPool = (soResponse.stockConfirm || []).filter(
+    (ci) => ci.invoice === invoiceResponse.invoiceNumber
+  )
 
-  // 5. Map จาก stockConfirm: appraisalPrice = confirmed.priceOrigin, qty = confirmed.qty, discountPercent = confirmed.discount
-  // item ที่ match stockConfirm ไม่เจอ — fallback ไปราคาป้าย (item.price) และ qty 1 ชิ้น, ข้าม item ถ้ายังไม่มีราคาเลย
-  const items = stockItems
-    .filter((item) => confirmedItems.some((ci) => ci.stockNumber === item.stockNumber))
-    .map((item) => {
-      const confirmed = stockConfirm.find((c) => c.stockNumber === item.stockNumber)
-      const appraisalPrice = confirmed ? confirmed.priceOrigin : item.price
-      if (appraisalPrice === undefined || appraisalPrice === null) return null
+  // 5. จับคู่ SO JSON line กับ stockConfirmPool แบบ "ใช้แล้วตัดออก" (lineKey ก่อน แล้ว fallback stockNumber)
+  // appraisalPrice = confirmed.priceOrigin, qty = confirmed.qty, discountPercent = confirmed.discount
+  // item ที่จับคู่ไม่เจอ (ไม่ได้เป็นของ invoice นี้) — ข้ามไป
+  const items = []
+  stockItems.forEach((item) => {
+    let matchIndex = stockConfirmPool.findIndex(
+      (ci) => ci.lineKey && item.lineKey && ci.lineKey === item.lineKey
+    )
+    if (matchIndex === -1) {
+      matchIndex = stockConfirmPool.findIndex(
+        (ci) => !ci.lineKey && ci.stockNumber === item.stockNumber
+      )
+    }
+    if (matchIndex === -1) return
 
-      return {
-        stockNumber: item.stockNumber,
-        stockNumberOrigin: item.stockNumberOrigin,
-        description: item.description,
-        appraisalPrice,
-        discountPercent: confirmed ? confirmed.discount : 0,
-        qty: confirmed ? confirmed.qty : item.qty || 1
-      }
+    const [confirmed] = stockConfirmPool.splice(matchIndex, 1)
+    const appraisalPrice = confirmed.priceOrigin ?? item.price
+    if (appraisalPrice === undefined || appraisalPrice === null) return
+
+    items.push({
+      stockNumber: item.stockNumber,
+      stockNumberOrigin: item.stockNumberOrigin,
+      description: item.description,
+      appraisalPrice,
+      discountPercent: confirmed.discount || 0,
+      qty: confirmed.qty || item.qty || 1
     })
-    .filter((item) => item !== null)
+  })
 
   const itemsWithMaterials = await fetchReceiptMaterials(items)
 
@@ -95,6 +106,9 @@ export async function buildReceiptFromInvoice(invoiceNumber) {
     vatPercent: invoiceResponse.vat,
     // ยอดจริงถูกปัดขึ้นด้วย CeilMoney ที่ backend แล้ว — ห้ามคำนวณเองฝั่ง client
     grandTotal: invoiceResponse.grandTotalRounded ?? invoiceResponse.grandTotalRaw,
+    // D6: มัดจำที่หักจากใบสั่งขาย (SO deposit) มากับ Invoice/Get ตรงๆ — ต้องส่งต่อให้ builder หักออกจากยอดคงเหลือ
+    // ไม่งั้นพิมพ์ซ้ำบิลที่มีมัดจำจะโชว์ยอดคงเหลือเกินจริง (ไม่รวมมัดจำ)
+    deposit: invoiceResponse.deposit,
     // paidAmount / remainingAmount ไม่ส่ง — ปล่อยให้ buildReceiptText() คำนวณเอง
     company: { website: companyInfo.info?.website, social: companyInfo.social }
   }

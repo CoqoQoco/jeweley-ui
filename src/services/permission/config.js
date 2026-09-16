@@ -61,6 +61,7 @@ export const PERMISSIONS = {
   //sale
   SALE_VIEW: 'sale:view',
   SALE_CREATE: 'sale:create',
+  SALE_DEPOSIT: 'sale:deposit',
 
   // Ticket Management
   TICKET_MANAGE: 'ticket:manage',
@@ -141,6 +142,7 @@ export const ROLE_PERMISSIONS = {
 
     PERMISSIONS.SALE_VIEW,
     PERMISSIONS.SALE_CREATE,
+    PERMISSIONS.SALE_DEPOSIT,
 
     PERMISSIONS.CATALOG_VIEW,
 
@@ -277,6 +279,7 @@ export const ROLE_PERMISSIONS = {
   Sale: [
     PERMISSIONS.SALE_VIEW,
     PERMISSIONS.SALE_CREATE,
+    PERMISSIONS.SALE_DEPOSIT,
 
     // Mobile Features (เฉพาะพื้นฐาน + Sale)
     PERMISSIONS.MOBILE_DASHBOARD,

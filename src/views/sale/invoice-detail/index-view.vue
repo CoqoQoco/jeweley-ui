@@ -352,6 +352,7 @@ export default {
       originalInvoiceData: null,
       originalInvoiceItems: [],
       currentViewingVersion: null,
+      isCancelingInvoice: false,
     }
   },
 
@@ -489,6 +490,7 @@ export default {
               key: 'cancel-invoice',
               icon: 'bi-x-circle',
               danger: true,
+              disabled: this.isCancelingInvoice,
               label: this.$t('view.sale.invoiceDetail.cancelInvoiceOnly'),
               hint: this.$t('view.sale.invoiceDetail.cancelInvoiceOnlyHint'),
               command: this.confirmReverseInvoice
@@ -497,6 +499,7 @@ export default {
               key: 'cancel-unconfirm',
               icon: 'bi-x-octagon',
               danger: true,
+              disabled: this.isCancelingInvoice,
               label: this.$t('view.sale.invoiceDetail.cancelInvoiceUnconfirm'),
               hint: this.$t('view.sale.invoiceDetail.cancelInvoiceUnconfirmHint'),
               command: this.confirmCancelAndUnconfirm
@@ -603,20 +606,16 @@ export default {
 
           this.invoiceItems.forEach(ensureLineKey)
 
-          this.invoiceItems = this.invoiceItems.filter((item) => {
-            return invoiceResponse.confirmedItems.some(
-              (invItem) =>
-                (invItem.lineKey && invItem.lineKey === item.lineKey) ||
-                invItem.stockNumber === item.stockNumber
-            )
-          })
-
-          // จับคู่กับ stockConfirm ด้วย lineKey ก่อน (ถ้ามี) แล้ว fallback เป็น stockNumber แบบ "ใช้แล้วตัดออก"
-          // กันสองบรรทัดที่เลขสินค้าเดียวกันแย่งจับคู่กับแถวเดียวกัน
-          const stockConfirmPool = [...(saleOrderData.stockConfirm || [])]
+          // P4-3: ขอบเขตของ "บรรทัดที่เป็นของใบแจ้งหนี้นี้จริงๆ" ต้องยึด invoice === invoiceNumber ก่อนเสมอ
+          // (ไม่ใช่ match ด้วย stockNumber ตรงๆ) กันสองบรรทัดเลขสินค้าเดียวกันที่ confirm ให้คนละ invoice หลุดมาปนกัน
+          const stockConfirmPool = (saleOrderData.stockConfirm || []).filter(
+            (ci) => ci.invoice === invoiceResponse.invoiceNumber
+          )
           const invConfirmedPool = [...(invoiceResponse.confirmedItems || [])]
 
-          this.invoiceItems.forEach((item) => {
+          // จับคู่กับ stockConfirmPool (ที่ scope ไว้แล้ว) ด้วย lineKey ก่อน แล้ว fallback เป็น stockNumber
+          // แบบ "ใช้แล้วตัดออก" — เก็บเฉพาะ SO JSON line ที่จับคู่ได้จริง (เป็นของ invoice นี้)
+          this.invoiceItems = this.invoiceItems.filter((item) => {
             let matchIndex = stockConfirmPool.findIndex(
               (ci) => ci.lineKey && item.lineKey && ci.lineKey === item.lineKey
             )
@@ -626,21 +625,24 @@ export default {
               )
             }
 
-            if (matchIndex !== -1) {
-              const [confirmedItem] = stockConfirmPool.splice(matchIndex, 1)
+            if (matchIndex === -1) return false
 
-              item.id = confirmedItem.id
-              item.stockNumber = confirmedItem.stockNumber
-              item.appraisalPrice = confirmedItem.priceOrigin
-              item.qty = confirmedItem.qty
-              item.discountPercent = confirmedItem.discount
-              item.isConfirm = true
-              item.isInvoice = true
-              item.invoice = invoiceResponse.invoiceNumber
-              item.invoiceItem = confirmedItem.invoiceItem
-              item.dkInvoiceNumber = confirmedItem.dkInvoiceNumber
-            }
+            const [confirmedItem] = stockConfirmPool.splice(matchIndex, 1)
 
+            item.id = confirmedItem.id
+            item.stockNumber = confirmedItem.stockNumber
+            item.appraisalPrice = confirmedItem.priceOrigin
+            item.qty = confirmedItem.qty
+            item.discountPercent = confirmedItem.discount
+            item.isConfirm = true
+            item.isInvoice = true
+            item.invoice = invoiceResponse.invoiceNumber
+            item.invoiceItem = confirmedItem.invoiceItem
+            item.dkInvoiceNumber = confirmedItem.dkInvoiceNumber
+            return true
+          })
+
+          this.invoiceItems.forEach((item) => {
             // earringStemSize มีเฉพาะใน Invoice/Get response (ไม่มีใน stockConfirm)
             let invMatchIndex = invConfirmedPool.findIndex(
               (ci) => ci.lineKey && item.lineKey && ci.lineKey === item.lineKey
@@ -1331,24 +1333,33 @@ export default {
       this.reverseInvoice(reason)
     },
     async reverseInvoice(deleteReason) {
+      // U4: กันกดยกเลิก invoice ซ้ำระหว่างรอ API
+      if (this.isCancelingInvoice) return
+
       if (!this.invoiceData || !this.invoiceData.invoiceNumber) {
         error(this.$t('view.sale.invoiceDetail.error.noInvoiceData'), this.$t('view.sale.invoiceDetail.error.cannotCancel'))
         return
       }
 
-      await this.invoiceStore.fetchDelete({
-        formValue: { invoiceNumber: this.invoiceData.invoiceNumber, deleteReason }
-      })
+      this.isCancelingInvoice = true
 
-      success(this.$t('view.sale.invoiceDetail.success.cancelInvoice'), this.$t('view.sale.invoiceDetail.success.cancelInvoiceTitle'))
-
-      if (this.fromRoute === 'sale-order' && this.invoiceData.soNumber) {
-        this.$router.push({
-          path: '/sale-order',
-          query: { soNumber: this.invoiceData.soNumber, mode: 'view' }
+      try {
+        await this.invoiceStore.fetchDelete({
+          formValue: { invoiceNumber: this.invoiceData.invoiceNumber, deleteReason }
         })
-      } else {
-        this.$router.back()
+
+        success(this.$t('view.sale.invoiceDetail.success.cancelInvoice'), this.$t('view.sale.invoiceDetail.success.cancelInvoiceTitle'))
+
+        if (this.fromRoute === 'sale-order' && this.invoiceData.soNumber) {
+          this.$router.push({
+            path: '/sale-order',
+            query: { soNumber: this.invoiceData.soNumber, mode: 'view' }
+          })
+        } else {
+          this.$router.back()
+        }
+      } finally {
+        this.isCancelingInvoice = false
       }
     },
     confirmCancelAndUnconfirm() {
@@ -1382,26 +1393,35 @@ export default {
       )
     },
     async cancelAndUnconfirmInvoice() {
+      // U4: กันกดยกเลิก+ถอนยืนยัน invoice ซ้ำระหว่างรอ API
+      if (this.isCancelingInvoice) return
+
       if (!this.invoiceData || !this.invoiceData.invoiceNumber) {
         error(this.$t('view.sale.invoiceDetail.error.noInvoiceData'), this.$t('view.sale.invoiceDetail.error.cannotCancel'))
         return
       }
 
-      const res = await this.invoiceStore.fetchCancelAndUnconfirm({
-        invoiceNumber: this.invoiceData.invoiceNumber
-      })
-      if (!res) return
+      this.isCancelingInvoice = true
 
-      const count = res.unconfirmedItemCount ?? this.invoiceItems.length
-      success(
-        this.$t('view.sale.invoiceDetail.success.cancelInvoiceUnconfirm', { count }),
-        this.$t('view.sale.invoiceDetail.success.cancelInvoiceUnconfirmTitle')
-      )
+      try {
+        const res = await this.invoiceStore.fetchCancelAndUnconfirm({
+          invoiceNumber: this.invoiceData.invoiceNumber
+        })
+        if (!res) return
 
-      this.$router.push({
-        path: '/sale-order',
-        query: { soNumber: res.soNumber || this.invoiceData.soNumber, mode: 'view' }
-      })
+        const count = res.unconfirmedItemCount ?? this.invoiceItems.length
+        success(
+          this.$t('view.sale.invoiceDetail.success.cancelInvoiceUnconfirm', { count }),
+          this.$t('view.sale.invoiceDetail.success.cancelInvoiceUnconfirmTitle')
+        )
+
+        this.$router.push({
+          path: '/sale-order',
+          query: { soNumber: res.soNumber || this.invoiceData.soNumber, mode: 'view' }
+        })
+      } finally {
+        this.isCancelingInvoice = false
+      }
     },
     openVersionModal() {
       this.showVersionModal = true

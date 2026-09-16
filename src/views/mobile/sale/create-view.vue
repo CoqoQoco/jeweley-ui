@@ -207,6 +207,8 @@ import QrScanner from '@/views/mobile/scan/components/qr-scanner.vue'
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import { CURRENCY_UNITS } from '@/constants/currency-units.js'
 import { storage } from '@/services/storage.js'
+import { computeDocumentTotals } from '@/services/utils/money.js'
+import { createLineKey } from '@/services/utils/line-key.js'
 
 const CURRENCY_STORAGE_KEY = 'mobile-sale-currency'
 
@@ -484,11 +486,13 @@ export default {
     },
 
     async saveOrder(status) {
-      // สร้าง stockItems ตาม format ของ web
+      // spread item ก่อนเสมอ — เก็บ lineKey/sourceStockNumber ฯลฯ ไว้ครบ (P2-6) แล้วเติม lineKey ให้ทุกบรรทัด
+      // ตั้งแต่สร้างครั้งแรก (รายการใหม่จากมือถือไม่เคยมี lineKey มาก่อน)
       const stockItems = this.items
         .filter((item) => item.stockNumber)
         .map((item) => ({
-          stockNumber: item.stockNumber,
+          ...item,
+          lineKey: item.lineKey || createLineKey(),
           productNumber: item.productNumber || '',
           description: item.description || '',
           costPrice: Number(item.costPrice) || 0,
@@ -506,6 +510,8 @@ export default {
       const copyItems = this.items
         .filter((item) => !item.stockNumber)
         .map((item) => ({
+          ...item,
+          lineKey: item.lineKey || createLineKey(),
           stockNumber: null,
           productNumber: item.productNumber || '',
           description: item.description || '',
@@ -515,10 +521,19 @@ export default {
           tagPriceMultiplier: Number(item.tagPriceMultiplier) || 1,
           discountPercent: Number(item.discountPercent) || 0,
           qty: Number(item.qty) || 1,
-          materials: item.materials || [],
-          imagePath: null,
-          imageBlobPath: null
+          materials: item.materials || []
         }))
+
+      // ยอดรวม F.O.B. รวม copyItems ด้วยเสมอ (P2-3) — ใช้สูตรเดียวกับหน้าเว็บ
+      const subTotal = computeDocumentTotals({
+        items: [...stockItems, ...copyItems],
+        currencyRate: this.currencyRate,
+        currencyUnit: this.currencyUnit,
+        specialDiscount: this.quotationFinancials.specialDiscount,
+        specialAddition: this.quotationFinancials.specialAddition,
+        freight: this.quotationFinancials.freight,
+        vatPercent: this.quotationFinancials.vat
+      }).subTotal
 
       const formValue = {
         soNumber: '',
@@ -540,6 +555,7 @@ export default {
         specialAddition: this.quotationFinancials.specialAddition || 0,
         vat: this.quotationFinancials.vat || 0,
         freight: this.quotationFinancials.freight || 0,
+        subTotal: Number(subTotal) || 0,
         // items เป็น JSON string ในฟิลด์ data
         data: JSON.stringify({
           stockItems: stockItems,

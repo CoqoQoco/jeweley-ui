@@ -190,6 +190,25 @@
                 </div>
                 <div></div>
               </div>
+              <!-- ชื่อสินค้า — เฉพาะรายการรอผลิต/รอแปลง (งานแปลงต้องเปลี่ยนชื่อสินค้าจากของเดิม) -->
+              <div class="form-col-sm-container mt-2" v-if="mode === 'copy'">
+                <div>
+                  <span class="title-text">{{ $t('view.sale.costStock.productNameEn') }}</span>
+                  <input
+                    class="form-control form-control-sm"
+                    type="text"
+                    v-model="stock.productNameEn"
+                  />
+                </div>
+                <div>
+                  <span class="title-text">{{ $t('view.sale.costStock.productNameTh') }}</span>
+                  <input
+                    class="form-control form-control-sm"
+                    type="text"
+                    v-model="stock.productNameTh"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -661,7 +680,7 @@ import { stockProductImageApiStor } from '@/stores/modules/api/stock/image-api.j
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { warning, success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
-import { compressOptimalImage } from '@/services/helper/file/compress-image.js'
+import { compressOptimalImage, compressCopyItemImage } from '@/services/helper/file/compress-image.js'
 import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
 import { getTermHistory } from '@/services/helper/breakdown-term-history-store.js'
 import { isAlloyDescription } from '@/services/helper/breakdown-alloy-detect.js'
@@ -709,6 +728,19 @@ export default {
       default: ''
     },
     currencyRate: {
+      type: Number,
+      default: null
+    },
+    // 'stock' = แก้สินค้าจริง (มี stockNumber) — 'copy' = แก้บรรทัด "รอผลิต/รอแปลง" (ไม่มี stockNumber จริง)
+    // copy mode ต้องไม่มีทางเรียก fetchUpdateStockProduct (เขียนทับสินค้าจริง) เด็ดขาด
+    mode: {
+      type: String,
+      default: 'stock',
+      validator: (value) => ['stock', 'copy'].includes(value)
+    },
+    // markup ของฟอร์มที่เรียกใช้ modal นี้ (ใบเสนอราคา/ใบสั่งขาย) — ใช้กับ "ใช้ต้นทุนต่อชิ้นเป็นราคาประเมิน"
+    // ไม่ระบุ = fallback ไป $parent.customer.markup (พฤติกรรมเดิมของหน้าใบเสนอราคา)
+    markup: {
       type: Number,
       default: null
     }
@@ -956,7 +988,8 @@ export default {
       // ถ้าเลือกใช้ต้นทุนต่อชิ้นเป็นราคาพิเศษ
       if (this.useCostPerPiece) {
         // costPerPiece เป็นหน่วยที่แสดง — แปลงเป็นบาทก่อนคูณ markup (appraisalPrice ต้องเป็นบาทเสมอ)
-        const markup = this.$parent?.customer?.markup || 1
+        // markup prop มาก่อนเสมอ (ใบสั่งขายไม่มี $parent.customer) — fallback $parent.customer.markup ไว้เพื่อ backward compat กับใบเสนอราคา
+        const markup = this.markup ?? this.$parent?.customer?.markup ?? 1
         this.stock.appraisalPrice = Number((this.toThb(this.costPerPiece, rate) * markup).toFixed(2))
       }
       // ส่งข้อมูลกลับ parent - ใช้ deep copy เพื่อป้องกัน reference issues
@@ -1049,6 +1082,12 @@ export default {
     },
 
     onSubmit() {
+      // copy mode (บรรทัด "รอผลิต/รอแปลง") ไม่มี stockNumber จริง — ต้องไม่เรียก fetchConfirm (เขียนทับสินค้าจริง)
+      // เด็ดขาด แม้จะเข้าทางนี้ผ่านการกด Enter ในฟอร์ม ให้ตกไปที่ onSave (client-side, ส่งกลับ parent) แทน
+      if (this.mode === 'copy') {
+        this.onSave()
+        return
+      }
       confirmSubmit('', this.$t('view.sale.costStock.confirm.save'), async () => {
         this.fetchConfirm()
       })
@@ -1219,9 +1258,12 @@ export default {
         warning(this.$t('view.sale.costStock.error.imageTypeOnly'))
         return
       }
-      const compressedFile = await compressOptimalImage(file)
+      // copy mode: บีบอัดเล็กกว่า (สูงสุด 800px, ~150KB) เพราะเก็บเป็น imageBase64 ตรงๆ ใน JSON เอกสาร
+      const compressedFile = this.mode === 'copy'
+        ? await compressCopyItemImage(file)
+        : await compressOptimalImage(file)
 
-      if (this.uploadMode && this.stock.stockNumber) {
+      if (this.mode !== 'copy' && this.uploadMode && this.stock.stockNumber) {
         const form = new FormData()
         form.append('StockNumber', this.stock.stockNumber)
         form.append('Image', compressedFile)

@@ -331,9 +331,14 @@
       :soVatAmount="soVatAmount"
       :grandTotalRaw="grandTotalRaw"
       :grandTotalRounded="grandTotalRounded"
+      :copyItemsCount="copyItems.length"
+      :copySubTotal="copySubTotal"
+      :docSubTotal="documentTotals.subTotal"
       :isViewMode="isViewMode"
+      :isUnconfirming="isUnconfirming"
       @delete-item="deleteStockItem($event)"
       @edit-item="onEditStock($event)"
+      @copy-item="onCopyStockToProduction($event)"
       @cancel-confirmation="reverseStockConfirm($event)"
       @move-item="moveStockItem($event)"
       @blur-price="onBlurPrice($event.item, $event.stockNumber, $event.field)"
@@ -350,11 +355,14 @@
     <CopyItemsTable
       :copyItems="copyItems"
       :formSaleOrder="formSaleOrder"
+      :isViewMode="isViewMode"
+      :filledQtyByCopyLineKey="filledQtyByCopyLineKey"
       @delete-item="deleteCopyItem($event)"
       @edit-item="onEditCopyItem($event)"
       @blur-price="onBlurCopyPrice($event.item, $event.stockNumber, $event.field)"
       @blur-qty="onBlurCopyQty($event.item, $event.stockNumber, $event.field)"
       @blur-description="onBlurDescription($event.item, $event.stockNumber, $event.field)"
+      @fill-from-stock="onOpenFillFromStockModal($event)"
     />
 
     <!-- Order Summary -->
@@ -374,6 +382,19 @@
       :isViewMode="isViewMode"
       :validationErrors="validationErrors"
       @update:remark="formSaleOrder.remark = $event"
+    />
+
+    <!-- Deposit Section — แสดงเฉพาะเมื่อ SO มีเลขที่แล้ว -->
+    <DepositSection
+      v-if="hasSaleOrderNumber"
+      ref="depositSection"
+      class="mt-3"
+      :soNumber="formSaleOrder.number"
+      :currencyUnit="formSaleOrder.currencyUnit"
+      :grandTotalRounded="grandTotalRounded"
+      :customerName="formSaleOrder.customerName"
+      :customerAddress="formSaleOrder.customerAddress"
+      :customerPhone="formSaleOrder.customerPhone"
     />
 
     <!-- Action Buttons -->
@@ -454,7 +475,7 @@
             class="btn btn-sm btn-main"
             type="button"
             @click="exportPDF"
-            :disabled="stockItems.length === 0 || isExportingPDF"
+            :disabled="(stockItems.length === 0 && copyItems.length === 0) || isExportingPDF"
           >
             <span v-if="isExportingPDF" class="spinner-border spinner-border-sm mr-2"></span>
             <i v-else class="bi bi-file-earmark-pdf mr-1"></i>
@@ -464,7 +485,7 @@
             class="btn btn-sm btn-outline-main"
             type="button"
             @click="previewPDF"
-            :disabled="stockItems.length === 0 || isPreviewingPDF"
+            :disabled="(stockItems.length === 0 && copyItems.length === 0) || isPreviewingPDF"
           >
             <span v-if="isPreviewingPDF" class="spinner-border spinner-border-sm mr-2"></span>
             <i v-else class="bi bi-eye mr-1"></i>
@@ -474,7 +495,7 @@
             class="btn btn-sm btn-outline-main"
             type="button"
             @click="exportExcel"
-            :disabled="stockItems.length === 0 || isExportingExcel"
+            :disabled="(stockItems.length === 0 && copyItems.length === 0) || isExportingExcel"
           >
             <span v-if="isExportingExcel" class="spinner-border spinner-border-sm mr-2"></span>
             <i v-else class="bi bi-file-earmark-excel mr-1"></i>
@@ -528,6 +549,10 @@
     :isShow="isShow.isEditStock"
     :modelStock="modelEditStock"
     :uploadMode="true"
+    :mode="editStockMode"
+    :markup="formSaleOrder.markup"
+    :currencyUnit="formSaleOrder.currencyUnit"
+    :currencyRate="formSaleOrder.currencyRate"
     @closeModal="onCloseEditStockModal"
   />
 
@@ -556,9 +581,11 @@
     :isShowModal="isShow.confirmStockModal"
     :saleOrderData="formSaleOrder"
     :stockItems="stockItemsForInvoice"
+    :isSaving="isOnDraft"
     @close-modal="onCloseConfirmStockModal"
     @items-confirmed="onStockItemsConfirmed"
     @save-draft="saveDraft"
+    @adjust-qty="onAdjustQty"
   />
 
   <!-- Invoice Modal -->
@@ -575,8 +602,19 @@
     :isShowModal="isShow.confirmAndInvoiceModal"
     :saleOrderData="formSaleOrder"
     :stockItems="stockItemsForConfirmAndInvoice"
+    :isSaving="isOnDraft"
     @close-modal="onCloseConfirmAndInvoiceModal"
     @invoice-created="onInvoiceCreated"
+    @adjust-qty="onAdjustQty"
+  />
+
+  <!-- Fill Copy Line From Stock Modal -->
+  <FillFromStockModal
+    :isShow="isShow.fillFromStockModal"
+    :copyItem="fillFromStockCopyItem"
+    :usedQtyByStockNumber="unconfirmedQtyByStockNumber"
+    @closeModal="onCloseFillFromStockModal"
+    @confirm="onFillCopyLineFromStock"
   />
 </template>
 
@@ -598,6 +636,9 @@ import { success, error, warning, confirmSubmit } from '@/services/alert/sweetAl
 import { formatISOString } from '@/services/utils/dayjs.js'
 import { storage } from '@/services/storage.js'
 import { createLineKey, ensureLineKey } from '@/services/utils/line-key.js'
+import { buildCopyItem } from '@/services/utils/copy-item.js'
+import { getPieceQtyAvailable, sumUnconfirmedQtyByStockNumber } from '@/services/utils/stock-piece-qty.js'
+import { lookupStockProduct } from '@/services/utils/stock-scan.js'
 import { CURRENCY_UNITS } from '@/constants/currency-units.js'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 
@@ -609,15 +650,27 @@ import { useUserApiStore } from '@/stores/modules/api/user/user-store.js'
 import StockItemsTable from './stock-items-table.vue'
 import CopyItemsTable from './copy-items-table.vue'
 import OrderSummarySection from './order-summary-section.vue'
+import FillFromStockModal from '../modal/fill-from-stock-modal.vue'
 
 const SALE_ROLE_ID = 6 // tbm_user_role: 6 = Sale
 
 // ฟิลด์หนักที่มากับ StockProduct/Get แต่หน้าใบสั่งขาย/ใบแจ้งหนี้ไม่ได้อ่าน ตัดออกก่อนบันทึกเพื่อลดขนาด payload
 const HEAVY_ITEM_FIELDS = ['imageBase64', 'priceTransactions', 'planPriceItems', 'reservations']
+// รายการรอผลิต/รอแปลง (copyItems) ต้องเก็บ priceTransactions (ต้นทุนไว้ใช้ตอนแปลงเป็นสินค้าจริงใน Phase ถัดไป)
+// และ imageBase64 (รูปที่ถ่ายเอง ไม่มี endpoint อัปโหลด blob ให้ของที่ยังไม่มี stockNumber จริง)
+const HEAVY_COPY_ITEM_FIELDS = ['planPriceItems', 'reservations']
 
 function stripHeavyItemFields(item) {
   const cleaned = { ...item, imageBlobPath: null }
   HEAVY_ITEM_FIELDS.forEach((field) => {
+    delete cleaned[field]
+  })
+  return cleaned
+}
+
+function stripHeavyCopyItemFields(item) {
+  const cleaned = { ...item, imageBlobPath: null }
+  HEAVY_COPY_ITEM_FIELDS.forEach((field) => {
     delete cleaned[field]
   })
   return cleaned
@@ -641,7 +694,8 @@ export default {
     StockItemsTable,
     CopyItemsTable,
     OrderSummarySection,
-    CheckboxGeneric
+    CheckboxGeneric,
+    FillFromStockModal
   },
 
   setup() {
@@ -697,6 +751,7 @@ export default {
       type: 'STOCK-PRODUCT',
       isLoadingData: false,
       customerLocallyEdited: false,
+      isUnconfirming: false,
 
       // Modal states
       isShow: {
@@ -706,10 +761,13 @@ export default {
         editCustomer: false,
         invoiceModal: false,
         confirmStockModal: false,
-        confirmAndInvoiceModal: false
+        confirmAndInvoiceModal: false,
+        fillFromStockModal: false
       },
+      fillFromStockCopyItem: {},
       modelEditStock: {},
       editStockLineKey: null,
+      editStockMode: 'stock',
       overallDiscountPercent: 0,
 
       formSaleOrder: {
@@ -910,8 +968,9 @@ export default {
       return this.copyItems.length
     },
 
+    // ต้องเท่ากับ grandTotalRounded เสมอ (P2-3) — ตัวเลขเดียวกับที่บันทึกเป็นยอดรวมของใบสั่งขายและพิมพ์บน PDF
     totalOrderAmount() {
-      return this.selectedItemsTotal + (Number(this.formSaleOrder.freight) || 0)
+      return this.grandTotalRounded
     },
 
     validationErrors() {
@@ -940,9 +999,10 @@ export default {
     },
 
     // ยอดรวม F.O.B. ของใบสั่งขาย — ต้องคิดจากตัวกลาง computeDocumentTotals เพื่อให้เกณฑ์การปัดตรงกับใบ PDF (half-up)
+    // รวม copyItems ด้วยเสมอ (P2-3) — มัดจำจะตัดจากยอดรวมนี้ในเฟสถัดไป จึงต้องครอบคลุมทั้งใบ ไม่ใช่แค่สินค้าที่มีอยู่ในคลัง
     documentTotals() {
       return computeDocumentTotals({
-        items: this.stockItems,
+        items: [...this.stockItems, ...this.copyItems],
         currencyRate: this.formSaleOrder.currencyRate,
         currencyUnit: this.formSaleOrder.currencyUnit,
         specialDiscount: this.formSaleOrder.specialDiscount,
@@ -950,6 +1010,14 @@ export default {
         freight: this.formSaleOrder.freight,
         vatPercent: this.formSaleOrder.vatPercent
       })
+    },
+    // ยอดรวมเฉพาะ copyItems — สูตรเดียวกับที่ documentTotals ใช้คิด subTotal (lineAmount ตรงๆ) กันตัวเลขเพี้ยน
+    // จาก getAppraisalPrice fallback ที่ตาราง stock-items-table ใช้แสดงผลแถวอื่น (ดู footer bridge rows)
+    copySubTotal() {
+      return this.copyItems.reduce(
+        (sum, item) => sum + lineAmount(item, this.formSaleOrder.currencyRate, this.formSaleOrder.currencyUnit),
+        0
+      )
     },
     soTotalAfterSpecial() {
       const total = Number(this.documentTotals.subTotal) || 0
@@ -963,6 +1031,19 @@ export default {
     },
     soGrandTotal() {
       return this.documentTotals.grandTotalRaw
+    },
+    // P4-1: qty รวมของบรรทัดที่ยังไม่ confirm ต่อ stockNumber — ใช้หัก available ก่อนเติมของจากคลัง
+    unconfirmedQtyByStockNumber() {
+      return sumUnconfirmedQtyByStockNumber(this.stockItems)
+    },
+    // P4-2: lineKey ของ copyItem → qty รวมของบรรทัดสินค้าจริงที่เติมมาจากบรรทัดนั้น (sourceCopyLineKey ตรงกัน)
+    filledQtyByCopyLineKey() {
+      const map = {}
+      this.stockItems.forEach((item) => {
+        if (!item.sourceCopyLineKey) return
+        map[item.sourceCopyLineKey] = (map[item.sourceCopyLineKey] || 0) + (Number(item.qty) || 0)
+      })
+      return map
     },
     grandTotalRaw() {
       return this.documentTotals.grandTotalRaw
@@ -1120,6 +1201,8 @@ export default {
       this.$nextTick(() => {
         this.isLoadingData = false
       })
+
+      this.refreshStockAvailability()
     },
 
     loadSaleOrderData(saleOrderData) {
@@ -1221,6 +1304,8 @@ export default {
       this.$nextTick(() => {
         this.isLoadingData = false
       })
+
+      this.refreshStockAvailability()
     },
 
     async getSaleOrderData(soNumber) {
@@ -1365,45 +1450,13 @@ export default {
     },
 
     async onSearchProduct() {
-      let rawData
-      try {
-        rawData = await this.productStore.fetchDataGet({
-          formValue: this.productSearch,
-          skipError: true,
-          rethrow: true
-        })
-      } catch (err) {
-        const status = err?.response?.status
-        if (status === 400 || status === 404) {
-          warning(this.$t('view.sale.saleOrder.warn.stockNotFound'))
-        } else {
-          error(
-            this.$t('view.sale.saleOrder.warn.stockLookupFailed', { status: status || 'Network' })
-          )
-        }
-        this.resetProductSearch()
-        return
-      }
-
-      if (!rawData || !rawData.stockNumber) {
-        warning(this.$t('view.sale.saleOrder.warn.stockNotFound'))
+      const rawData = await lookupStockProduct(this.productStore, this.productSearch, this.$t)
+      if (!rawData) {
         this.resetProductSearch()
         return
       }
 
       const stockNumberOrigin = rawData.stockNumberOrigin || rawData.stockNumber
-
-      if (String(rawData.status).toUpperCase() === 'SOLD' || Number(rawData.qty) <= 0) {
-        warning(
-          this.$t('view.sale.saleOrder.warn.stockSold', { stockNumber: stockNumberOrigin })
-        )
-        this.productSearch = {
-          stockNumber: '',
-          stockNumberOrigin: '',
-          productNumber: ''
-        }
-        return
-      }
 
       // ของซ้ำ (เลขสินค้าเดียวกัน) ไม่บล็อกอีกต่อไป — เพิ่มเป็นบรรทัดใหม่ต่อท้ายตามลำดับที่ scan
       // ราคา/ส่วนลดของบรรทัดใหม่ ให้คัดลอกจากบรรทัดแรกที่เลขสินค้าเดียวกัน (ถ้ามี) แทนราคาจากคลัง
@@ -1433,6 +1486,26 @@ export default {
         isRemainProduct: true,
         isConfirm: false,
         isInvoice: false
+      }
+
+      // สินค้าหมด (ขายแล้ว/ไม่มีของ) — ถามก่อนว่าจะเพิ่มเป็นรายการรอผลิต/รอแปลงแทนไหม แทนที่จะบล็อกเฉยๆ
+      if (String(rawData.status).toUpperCase() === 'SOLD' || Number(rawData.qty) <= 0) {
+        confirmSubmit(
+          this.$t('view.sale.saleOrder.confirm.stockSoldAddCopyMessage', {
+            stockNumber: stockNumberOrigin
+          }),
+          this.$t('view.sale.saleOrder.confirm.stockSoldAddCopyTitle'),
+          (result) => {
+            if (!result.isConfirmed) return
+            const copy = buildCopyItem(data, { qty: 1 })
+            this.copyItems = [...this.copyItems, copy]
+            this.recalculateAll()
+          },
+          { confirmText: this.$t('common.btn.confirm'), cancelText: this.$t('common.btn.cancel') },
+          'question'
+        )
+        this.resetProductSearch()
+        return
       }
 
       if (existingSameStock) {
@@ -1478,6 +1551,7 @@ export default {
       }
 
       this.recalculateAll()
+      this.refreshStockAvailability()
 
       this.productSearch = {
         stockNumber: '',
@@ -1486,8 +1560,81 @@ export default {
       }
     },
 
+    // U2: รีเฟรช qtyAvailable สดจากคลังลงทุกบรรทัดที่ยังไม่ confirm/invoice — เขียนทับ snapshot เดิมที่ scan มา
+    // เงียบเมื่อ fail (fetchStockAvailability คืน [] เอง) กันไม่ให้ block หน้า
+    async refreshStockAvailability() {
+      const stockNumbers = [
+        ...new Set(
+          this.stockItems
+            .filter((item) => !item.isConfirm && !item.invoice && item.stockNumber)
+            .map((item) => item.stockNumber)
+        )
+      ]
+
+      if (stockNumbers.length === 0) return
+
+      const list = await this.productStore.fetchStockAvailability(stockNumbers)
+      if (!Array.isArray(list) || list.length === 0) return
+
+      const availabilityMap = new Map(list.map((row) => [row.stockNumber, row.qtyAvailable]))
+
+      this.stockItems.forEach((item) => {
+        if (item.isConfirm || item.invoice) return
+        if (!availabilityMap.has(item.stockNumber)) return
+        item.qtyAvailable = availabilityMap.get(item.stockNumber)
+      })
+    },
+
+    // U3: parent ถือ stockItems จริง — modal ปรับจำนวนแล้ว emit กลับมาให้ parent เขียนทับ + บันทึกผ่าน path เดิม (fetchSaveSaleOrder → SaleOrder/Upsert)
+    // ต้อง await ให้ save จบก่อน — ไม่งั้น modal กดยืนยันซ้อนได้ระหว่าง Upsert ตัวนี้ยังไม่เสร็จ แล้ว Upsert ของ confirm มาทับด้วยข้อมูลเก่า
+    // P2-1.3: ส่วนที่ขาด (shortage > 0) ต้องเพิ่มเป็นบรรทัดรอผลิต/รอแปลงในการ save รอบเดียวกันนี้ด้วย ไม่ปล่อยหาย
+    async onAdjustQty(updates) {
+      if (!Array.isArray(updates) || updates.length === 0) return
+
+      const newCopyItems = []
+
+      updates.forEach(({ lineKey, qty, shortage, remove }) => {
+        const idx = this.stockItems.findIndex((i) => i.lineKey === lineKey)
+        if (idx === -1) return
+
+        const original = this.stockItems[idx]
+
+        if (Number(shortage) > 0) {
+          newCopyItems.push(buildCopyItem(original, { qty: shortage }))
+        }
+
+        if (remove) {
+          this.stockItems.splice(idx, 1)
+        } else {
+          this.stockItems[idx] = { ...original, qty }
+        }
+      })
+
+      if (newCopyItems.length > 0) {
+        this.copyItems = [...this.copyItems, ...newCopyItems]
+      }
+
+      this.recalculateAll()
+      await this.fetchSaveSaleOrder()
+    },
+
+    // P4-2: ลบบรรทัดที่ยังไม่ confirm ซึ่งเติมมาจากรายการรอผลิต/รอแปลง (sourceCopyLineKey) — ต้องคืน qty กลับให้ copy line เดิม (ถ้ายังอยู่)
     deleteStockItem(item) {
       this.stockItems = this.stockItems.filter((i) => i.lineKey !== item.lineKey)
+
+      if (!item.isConfirm && item.sourceCopyLineKey) {
+        const copyIndex = this.copyItems.findIndex((c) => c.lineKey === item.sourceCopyLineKey)
+        if (copyIndex !== -1) {
+          const updatedCopyItems = [...this.copyItems]
+          const current = updatedCopyItems[copyIndex]
+          updatedCopyItems[copyIndex] = {
+            ...current,
+            qty: (Number(current.qty) || 0) + (Number(item.qty) || 0)
+          }
+          this.copyItems = updatedCopyItems
+        }
+      }
+
       this.recalculateAll()
     },
 
@@ -1496,32 +1643,89 @@ export default {
       this.recalculateAll()
     },
 
+    // P2-1.1: คัดลอกบรรทัดสินค้าจริงเป็นรายการ "รอผลิต/รอแปลง" — จำนวนเริ่มต้น = ส่วนที่ขาด (ถ้ามี) ไม่งั้น 1
+    onCopyStockToProduction(item) {
+      const available = getPieceQtyAvailable(item)
+      const shortage = (Number(item.qty) || 0) - available
+      const qty = shortage > 0 ? shortage : 1
+      const copy = buildCopyItem(item, { qty })
+      this.copyItems = [...this.copyItems, copy]
+      this.recalculateAll()
+    },
+
     onEditStock(item) {
       this.modelEditStock = JSON.parse(JSON.stringify(item))
       this.editStockLineKey = item.lineKey
+      this.editStockMode = 'stock'
       this.isShow.isEditStock = true
     },
 
     onEditCopyItem(item) {
       this.modelEditStock = JSON.parse(JSON.stringify(item))
       this.editStockLineKey = item.lineKey
+      this.editStockMode = 'copy'
       this.isShow.isEditStock = true
     },
 
     onCloseEditStockModal(payload) {
       this.isShow.isEditStock = false
       if (payload && payload.action === 'save' && payload.data) {
-        const realIndex = this.stockItems.findIndex((i) => i.lineKey === this.editStockLineKey)
+        const targetList = this.editStockMode === 'copy' ? this.copyItems : this.stockItems
+        const realIndex = targetList.findIndex((i) => i.lineKey === this.editStockLineKey)
         if (realIndex !== -1) {
-          this.stockItems[realIndex] = JSON.parse(JSON.stringify(payload.data))
+          targetList[realIndex] = JSON.parse(JSON.stringify(payload.data))
 
           if (payload.data.priceDiscount !== undefined && payload.data.priceDiscount !== null) {
-            this.stockItems[realIndex].discountPrice = payload.data.priceDiscount
+            targetList[realIndex].discountPrice = payload.data.priceDiscount
           }
         }
       }
       this.modelEditStock = {}
       this.editStockLineKey = null
+      this.editStockMode = 'stock'
+    },
+
+    // P4-1: เปิด modal เติมของจากคลังให้กับรายการรอผลิต/รอแปลง (copyItem) ที่เลือก
+    onOpenFillFromStockModal(copyItem) {
+      this.fillFromStockCopyItem = copyItem
+      this.isShow.fillFromStockModal = true
+    },
+
+    onCloseFillFromStockModal() {
+      this.isShow.fillFromStockModal = false
+      this.fillFromStockCopyItem = {}
+    },
+
+    // P4-1: บันทึกบรรทัดสินค้าจริงใหม่ (เติมมาจากคลัง) + ลด qty ของ copyItem เดิม แล้ว save ผ่าน path เดิม (เหมือน onAdjustQty)
+    async onFillCopyLineFromStock({ copyItem, newLine, qty }) {
+      const copyIndex = this.copyItems.findIndex((c) => c.lineKey === copyItem.lineKey)
+      if (copyIndex === -1) {
+        this.onCloseFillFromStockModal()
+        return
+      }
+
+      this.stockItems = [...this.stockItems, newLine]
+
+      const updatedCopyItems = [...this.copyItems]
+      const current = updatedCopyItems[copyIndex]
+      const orderedQty = current.orderedQty ?? current.qty
+      updatedCopyItems[copyIndex] = {
+        ...current,
+        orderedQty,
+        qty: Math.max(0, (Number(current.qty) || 0) - (Number(qty) || 0))
+      }
+      this.copyItems = updatedCopyItems
+
+      this.recalculateAll()
+      this.onCloseFillFromStockModal()
+
+      await this.fetchSaveSaleOrder()
+
+      success(
+        this.$t('view.sale.saleOrder.success.fillFromStock', {
+          stockNumber: newLine.stockNumberOrigin || newLine.stockNumber
+        })
+      )
     },
 
     // ============================================
@@ -1610,6 +1814,9 @@ export default {
           this.loadSaleOrderData(response)
         }
       }
+
+      // D5: มัดจำ SO อาจถูกหักไปแล้วตอนออก invoice — โหลดยอดคงเหลือ/ประวัติมัดจำใหม่
+      await this.$refs.depositSection?.reloadDeposits()
     },
 
     openInvoiceDetail(invoiceNumber) {
@@ -1639,7 +1846,7 @@ export default {
 
       const stockItemsData = this.stockItems.map(stripHeavyItemFields)
 
-      const copyItemsData = this.copyItems.map(stripHeavyItemFields)
+      const copyItemsData = this.copyItems.map(stripHeavyCopyItemFields)
 
       const formValue = {
         soNumber: this.formSaleOrder.number || '',
@@ -1662,6 +1869,9 @@ export default {
         specialDiscount: this.formSaleOrder.specialDiscount || 0,
         specialAddition: this.formSaleOrder.specialAddition || 0,
         vat: this.formSaleOrder.vatPercent || 0,
+        // ต้องส่งเป็น top-level เสมอ (ไม่ใช่แค่ใน data JSON) — backend เก็บ Freight เป็นคอลัมน์แยก
+        // และ getSaleOrderData() อ่านค่ากลับมาจาก response.freight (top-level) ตอนโหลดใบ
+        freight: this.formSaleOrder.freight || 0,
         remark: this.formSaleOrder.remark || '',
         salePerson: (this.formSaleOrder.salePerson || '').trim() || null,
         saleSupport: (this.formSaleOrder.saleSupport || '').trim() || null,
@@ -1726,7 +1936,7 @@ export default {
     },
 
     async exportPDF() {
-      if (this.stockItems.length === 0) {
+      if (this.stockItems.length === 0 && this.copyItems.length === 0) {
         warning(this.$t('view.sale.saleOrder.warn.noItemsForPDF'))
         return
       }
@@ -1746,7 +1956,8 @@ export default {
         specialAddition: this.formSaleOrder.specialAddition || 0,
         freight: this.formSaleOrder.freight || 0,
         vatPercent: this.formSaleOrder.vatPercent || 0,
-        items: this.stockItems
+        items: this.stockItems,
+        copyItems: this.copyItems
       }
       const pdfBuilder = new SaleOrderPdfBuilder(pdfData, {
         currencyUnit: this.formSaleOrder.currencyUnit || 'THB',
@@ -1761,7 +1972,7 @@ export default {
     },
 
     async previewPDF() {
-      if (this.stockItems.length === 0) {
+      if (this.stockItems.length === 0 && this.copyItems.length === 0) {
         warning(this.$t('view.sale.saleOrder.warn.noItemsForPDF'))
         return
       }
@@ -1781,7 +1992,8 @@ export default {
         specialAddition: this.formSaleOrder.specialAddition || 0,
         freight: this.formSaleOrder.freight || 0,
         vatPercent: this.formSaleOrder.vatPercent || 0,
-        items: this.stockItems
+        items: this.stockItems,
+        copyItems: this.copyItems
       }
       const pdfBuilder = new SaleOrderPdfBuilder(pdfData, {
         currencyUnit: this.formSaleOrder.currencyUnit || 'THB',
@@ -1795,7 +2007,7 @@ export default {
     },
 
     async exportExcel() {
-      if (this.stockItems.length === 0) {
+      if (this.stockItems.length === 0 && this.copyItems.length === 0) {
         warning(this.$t('view.sale.saleOrder.warn.noItemsForExcel'))
         return
       }
@@ -1815,7 +2027,8 @@ export default {
         specialAddition: this.formSaleOrder.specialAddition || 0,
         freight: this.formSaleOrder.freight || 0,
         vatPercent: this.formSaleOrder.vatPercent || 0,
-        items: this.stockItems
+        items: this.stockItems,
+        copyItems: this.copyItems
       }
       const builder = new SaleOrderExcelBuilder(data, {
         currencyUnit: this.formSaleOrder.currencyUnit || 'THB',
@@ -1907,27 +2120,35 @@ export default {
     },
 
     async onReverseStockConfirm(item) {
-      const stockItemsToUnconfirm = [
-        {
-          id: item.id,
-          stockNumber: item.stockNumber
+      // U4: กันกดยกเลิกยืนยันซ้ำระหว่างรอ API
+      if (this.isUnconfirming) return
+      this.isUnconfirming = true
+
+      try {
+        const stockItemsToUnconfirm = [
+          {
+            id: item.id,
+            stockNumber: item.stockNumber
+          }
+        ]
+
+        await this.saleOrderStore.unconfirmStockItems({
+          soNumber: this.formSaleOrder.number,
+          stockItems: stockItemsToUnconfirm
+        })
+
+        const stockNumber = item.stockNumberOrigin || item.stockNumber
+        success(this.$t('view.sale.saleOrder.success.cancelConfirmTitle'), this.$t('view.sale.saleOrder.success.cancelConfirm', { stockNumber }))
+
+        if (this.formSaleOrder.number) {
+          const response = await this.getSaleOrderData(this.formSaleOrder.number)
+
+          if (response) {
+            this.loadSaleOrderData(response)
+          }
         }
-      ]
-
-      await this.saleOrderStore.unconfirmStockItems({
-        soNumber: this.formSaleOrder.number,
-        stockItems: stockItemsToUnconfirm
-      })
-
-      const stockNumber = item.stockNumberOrigin || item.stockNumber
-      success(this.$t('view.sale.saleOrder.success.cancelConfirmTitle'), this.$t('view.sale.saleOrder.success.cancelConfirm', { stockNumber }))
-
-      if (this.formSaleOrder.number) {
-        const response = await this.getSaleOrderData(this.formSaleOrder.number)
-
-        if (response) {
-          this.loadSaleOrderData(response)
-        }
+      } finally {
+        this.isUnconfirming = false
       }
     },
 
@@ -2137,15 +2358,25 @@ export default {
       this.stockItems[realIndex] = newCal
     },
 
+    // ใช้ร่วมกันทั้ง StockItemsTable และ CopyItemsTable (ทั้งคู่ emit event เดียวกันนี้) —
+    // ต้องหาใน stockItems ก่อน แล้วค่อย fallback ไป copyItems ตาม lineKey ที่ส่งมา
     onBlurDescription(item, stockNumber, fieldName) {
-      const realIndex = this.stockItems.findIndex((i) => i.lineKey === item.lineKey)
-      if (realIndex === -1) return
-
-      let newCal = {
-        ...item,
-        [fieldName]: item[fieldName] ? item[fieldName] : ''
+      const stockIndex = this.stockItems.findIndex((i) => i.lineKey === item.lineKey)
+      if (stockIndex !== -1) {
+        this.stockItems[stockIndex] = {
+          ...item,
+          [fieldName]: item[fieldName] ? item[fieldName] : ''
+        }
+        return
       }
-      this.stockItems[realIndex] = newCal
+
+      const copyIndex = this.copyItems.findIndex((i) => i.lineKey === item.lineKey)
+      if (copyIndex !== -1) {
+        this.copyItems[copyIndex] = {
+          ...item,
+          [fieldName]: item[fieldName] ? item[fieldName] : ''
+        }
+      }
     },
 
     onBlurCopyPrice(item, stockNumber, fieldName) {
@@ -2174,22 +2405,6 @@ export default {
 
     onBlurCopyFreight(freight) {
       this.formSaleOrder.copyFreight = freight ? Number(freight).toFixed(2) : 0
-    },
-
-    calculateGrandTotal() {
-      const stockTotal = this.stockItems.reduce((sum, item) => {
-        return sum + this.getTotalConvertedPrice(item)
-      }, 0)
-      let freight = Number(this.formSaleOrder.freight || 0)
-      return stockTotal + freight
-    },
-
-    calculateStockTotal() {
-      return this.getSumTotalConvertedPrice(this.stockItems) + (this.formSaleOrder.freight || 0)
-    },
-
-    calculateCopyTotal() {
-      return this.getSumTotalConvertedPrice(this.copyItems) + (this.formSaleOrder.copyFreight || 0)
     },
 
     getNetWeight(items) {

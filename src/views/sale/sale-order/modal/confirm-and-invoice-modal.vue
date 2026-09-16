@@ -92,7 +92,26 @@
                   <span class="badge badge-success mr-2">
                     <i class="bi bi-check-circle mr-1"></i>{{ $t('view.sale.saleOrder.confirmedCount', { count: confirmedItemsCount }) }}
                   </span>
+                  <ButtonGeneric
+                    v-if="hasShortItems"
+                    variant="outline"
+                    icon="bi-arrow-repeat"
+                    :label="$t('view.sale.saleOrder.btnAdjustToAvailable')"
+                    @click="adjustToAvailable"
+                  />
                 </div>
+              </div>
+
+              <!-- แจ้งเตือนรายการที่จำนวนเกินพร้อมขาย -->
+              <div v-if="hasShortItems" class="alert alert-danger mb-3">
+                <div class="font-weight-bold mb-1">
+                  <i class="bi bi-exclamation-triangle-fill mr-1"></i>{{ $t('view.sale.saleOrder.shortageWarningTitle') }}
+                </div>
+                <ul class="mb-0 pl-3">
+                  <li v-for="item in shortSelectedItems" :key="item.lineKey">
+                    {{ $t('view.sale.saleOrder.shortageWarningLine', { stockNumber: item.stockNumber, origin: item.stockNumberOrigin || item.stockNumber, shortage: rowShortage(item) }) }}
+                  </li>
+                </ul>
               </div>
 
               <!-- Stock Items Table -->
@@ -105,6 +124,7 @@
                 stripedRows
                 responsiveLayout="scroll"
                 showGridlines
+                :rowClass="getRowClass"
               >
                 <ColumnGroup type="header">
                   <Row>
@@ -122,6 +142,7 @@
                     <Column :header="$t('view.sale.saleOrder.convertedRate')" />
                     <Column :header="$t('view.sale.saleOrder.convertedPrice') + ' (' + (saleOrderData.currencyUnit || 'THB') + ')'" />
                     <Column :header="$t('common.field.quantity')" />
+                    <Column :header="$t('view.sale.saleOrder.qtyAvailableCol')" />
                     <Column :header="$t('view.sale.saleOrder.totalPrice') + ' (' + (saleOrderData.currencyUnit || 'THB') + ')'" />
                   </Row>
                 </ColumnGroup>
@@ -296,6 +317,17 @@
                   </template>
                 </Column>
 
+                <Column field="available" :header="$t('view.sale.saleOrder.qtyAvailableCol')" style="width: 110px">
+                  <template #body="slotProps">
+                    <div class="text-center" :class="{ 'text-danger font-weight-bold': isRowShort(slotProps.data) }">
+                      {{ rowAvailable(slotProps.data) }}
+                      <small v-if="isRowShort(slotProps.data)" class="d-block text-danger">
+                        {{ $t('view.sale.saleOrder.qtyShortage', { k: rowShortage(slotProps.data) }) }}
+                      </small>
+                    </div>
+                  </template>
+                </Column>
+
                 <Column
                   field="total"
                   :header="$t('view.sale.saleOrder.totalPrice') + ' (' + (saleOrderData.currencyUnit || 'THB') + ')'"
@@ -360,6 +392,8 @@
                         </div>
                       </template>
                     </Column>
+                    <!-- เว้นตำแหน่งให้คอลัมน์ "พร้อมขาย" ที่เพิ่มใหม่ -->
+                    <Column></Column>
                     <Column>
                       <template #footer>
                         <div class="text-right type-container">
@@ -371,7 +405,7 @@
 
                   <!-- ส่วนลดพิเศษ -->
                   <Row>
-                    <Column :colspan="14">
+                    <Column :colspan="15">
                       <template #footer>
                         <div class="text-right type-container">
                           <span>{{ $t('view.sale.invoiceDetail.specialDiscount') }}:</span>
@@ -397,7 +431,7 @@
 
                   <!-- ส่วนเพิ่มพิเศษ -->
                   <Row>
-                    <Column :colspan="14">
+                    <Column :colspan="15">
                       <template #footer>
                         <div class="text-right type-container">
                           <span>{{ $t('view.sale.invoiceDetail.specialSurcharge') }}:</span>
@@ -423,7 +457,7 @@
 
                   <!-- ยอดรวมหลังปรับ -->
                   <Row>
-                    <Column :colspan="14">
+                    <Column :colspan="15">
                       <template #footer>
                         <div class="text-right type-container">
                           <span class="font-weight-bold">{{ $t('view.sale.saleOrder.adjustedTotal') }}:</span>
@@ -443,7 +477,7 @@
 
                   <!-- Freight & Insurance -->
                   <Row>
-                    <Column :colspan="14">
+                    <Column :colspan="15">
                       <template #footer>
                         <div class="text-right type-container">
                           <span>{{ $t('view.sale.quotation.freightInsurance') }}:</span>
@@ -469,7 +503,7 @@
 
                   <!-- ยอดรวมก่อน VAT -->
                   <Row>
-                    <Column :colspan="14">
+                    <Column :colspan="15">
                       <template #footer>
                         <div class="text-right type-container">
                           <span class="font-weight-bold">{{ $t('view.sale.saleOrder.beforeVatTotal') }}:</span>
@@ -487,7 +521,7 @@
 
                   <!-- VAT -->
                   <Row>
-                    <Column :colspan="14">
+                    <Column :colspan="15">
                       <template #footer>
                         <div class="text-right type-container d-flex align-items-center justify-content-end">
                           <span class="mr-2 mt-1">{{ $t('view.sale.quotation.vatPercentLabel') }}</span>
@@ -517,7 +551,7 @@
 
                   <!-- ยอดรวมสุดท้าย -->
                   <Row>
-                    <Column :colspan="14">
+                    <Column :colspan="15">
                       <template #footer>
                         <div class="text-right type-container">
                           <h6 class="mb-0 text-primary">{{ $t('view.sale.saleOrder.invoiceTotal') }}:</h6>
@@ -543,9 +577,23 @@
                   <div class="title-text-lg mb-3">{{ $t('view.sale.saleOrder.paymentInfo') }}</div>
 
                   <div class="row">
-                    <!-- ราคามัดจำ -->
+                    <!-- ราคามัดจำ / หักมัดจำจากใบสั่งขาย -->
                     <div class="col-md-3">
-                      <div class="form-group">
+                      <div class="form-group" v-if="hasDepositBalance">
+                        <label class="title-text">{{ $t('view.sale.saleOrder.depositApplyLabel') }}</label>
+                        <InputTextGeneric
+                          type="number"
+                          :min="0"
+                          :max="maxDepositApply"
+                          step="0.01"
+                          :modelValue="depositApplyAmount"
+                          @update:modelValue="onDepositApplyInput"
+                        />
+                        <small class="text-muted">{{
+                          $t('view.sale.saleOrder.depositBalanceHint', { balance: formatPriceWithCurrency(soDepositBalance) })
+                        }}</small>
+                      </div>
+                      <div class="form-group" v-else>
                         <label class="title-text">{{ $t('view.sale.saleOrder.depositPrice') }}</label>
                         <input
                           v-model.number="depositAmount"
@@ -605,7 +653,7 @@
                       <div class="form-group">
                         <label class="title-text">{{ $t('view.sale.saleOrder.remainingBalance') }}</label>
                         <div class="form-control bg-light font-weight-bold text-primary">
-                          {{ formatPriceWithCurrency(grandTotal - (depositAmount || 0)) }}
+                          {{ formatPriceWithCurrency(grandTotal - effectiveDepositAmount) }}
                         </div>
                       </div>
                     </div>
@@ -653,7 +701,7 @@
                 class="btn btn-main mr-2"
                 type="button"
                 @click="confirmAndCreateInvoice"
-                :disabled="selectedItemsCount === 0"
+                :disabled="selectedItemsCount === 0 || hasShortItems || isSubmitting || isSaving"
               >
                 <i class="bi bi-lightning-charge mr-1"></i>
                 {{ $t('view.sale.saleOrder.confirmAndCreate') }}
@@ -684,14 +732,19 @@ import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { useSaleChannelApiStore } from '@/stores/modules/api/sale/sale-channel-store.js'
-import { warning, error, success } from '@/services/alert/sweetAlerts.js'
+import { usrSaleOrderDepositApiStore } from '@/stores/modules/api/sale/sale-order-deposit-store.js'
+import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
+import { warning, error, success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { getPaymentApiName } from '@/constants/payment-methods.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
 import { ensureLineKey } from '@/services/utils/line-key.js'
+import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -706,7 +759,9 @@ export default {
     Row,
     DropdownGeneric,
     CheckboxGeneric,
-    imagePreview
+    ButtonGeneric,
+    imagePreview,
+    InputTextGeneric
   },
 
   props: {
@@ -721,10 +776,15 @@ export default {
     stockItems: {
       type: Array,
       default: () => []
+    },
+    // true ระหว่าง parent กำลัง Upsert SO (เช่นหลังกด "ปรับจำนวนเท่าที่มี") — ต้องกันกดยืนยันซ้อนจนกว่าจะ save เสร็จ
+    isSaving: {
+      type: Boolean,
+      default: false
     }
   },
 
-  emits: ['close-modal', 'invoice-created'],
+  emits: ['close-modal', 'invoice-created', 'adjust-qty'],
 
   data() {
     return {
@@ -732,16 +792,24 @@ export default {
       invoiceStore: useInvoiceApiStore(),
       saleOrderStore: usrSaleOrderApiStore(),
       saleChannelStore: useSaleChannelApiStore(),
+      depositStore: usrSaleOrderDepositApiStore(),
+      productStore: usrStockProductApiStore(),
       specialDiscount: 0,
       specialAddition: 0,
       freightAndInsurance: 0,
       vatPercent: 0,
       depositAmount: 0,
+      // D5: มัดจำคงเหลือของ SO — เมื่อมี ให้หักจากมัดจำ SO แทนกรอกใหม่
+      soDepositBalance: 0,
+      depositApplyAmount: 0,
+      depositApplyTouched: false,
       paymentMethod: 'cash',
       paymentDays: 0,
       dkInvoiceNumber: null,
       saleChannelCode: null,
-      saleChannelList: []
+      saleChannelList: [],
+      availabilityMap: {},
+      isSubmitting: false
     }
   },
 
@@ -807,6 +875,27 @@ export default {
       return this.availableItems.filter((item) => item.isConfirm).length
     },
 
+    // U3: บรรทัดที่ isConfirm แล้วจองสต็อกไว้แล้ว ไม่ต้องเช็ค — เช็คเฉพาะบรรทัดที่ยังไม่ confirm และถูกเลือกอยู่
+    selectedUnconfirmedQtyByStockNumber() {
+      const map = {}
+      this.stockItems.forEach((item) => {
+        if (item.isConfirm) return
+        if (!this.selectedItems.includes(item.lineKey)) return
+        map[item.stockNumber] = (map[item.stockNumber] || 0) + (Number(item.qty) || 0)
+      })
+      return map
+    },
+
+    shortSelectedItems() {
+      return this.stockItems.filter(
+        (item) => this.selectedItems.includes(item.lineKey) && this.isRowShort(item)
+      )
+    },
+
+    hasShortItems() {
+      return this.shortSelectedItems.length > 0
+    },
+
     selectedStockItemsForTotals() {
       return this.stockItems.filter((item) => this.selectedItems.includes(item.lineKey))
     },
@@ -858,6 +947,20 @@ export default {
     // ยอดรวมสุดท้ายรวม VAT — ปัดครึ่งขึ้นเป็นจำนวนเต็มเสมอ ให้ตรงกับยอดที่พิมพ์บนใบแจ้งหนี้
     grandTotal() {
       return this.documentTotals.grandTotalRounded
+    },
+
+    // D5: SO มีมัดจำคงเหลือ → ใช้ช่อง "หักมัดจำ" แทนช่องกรอกมัดจำอิสระ
+    hasDepositBalance() {
+      return this.soDepositBalance > 0
+    },
+
+    maxDepositApply() {
+      return Math.max(0, Math.min(this.soDepositBalance, this.grandTotal))
+    },
+
+    // ยอดมัดจำที่ใช้จริงในการคำนวณ/ส่ง API — สลับตามว่า SO มีมัดจำคงเหลือให้หักหรือไม่
+    effectiveDepositAmount() {
+      return this.hasDepositBalance ? this.depositApplyAmount || 0 : this.depositAmount || 0
     }
   },
 
@@ -869,6 +972,17 @@ export default {
         }
       },
       immediate: true
+    },
+
+    // prefill "หักมัดจำ" ให้เท่า max ใหม่เสมอตราบใดที่ผู้ใช้ยังไม่ได้แก้ค่าเอง (ตามที่เลือกรายการเปลี่ยน)
+    // ถ้าผู้ใช้แก้เองแล้ว แค่หรี่ลงเมื่อ max ใหม่ต่ำกว่าค่าที่พิมพ์ไว้ (กันเกิน max)
+    maxDepositApply(newMax) {
+      if (!this.hasDepositBalance) return
+      if (!this.depositApplyTouched) {
+        this.depositApplyAmount = newMax
+      } else if (this.depositApplyAmount > newMax) {
+        this.depositApplyAmount = newMax
+      }
     }
   },
 
@@ -882,6 +996,8 @@ export default {
       this.specialAddition = Number(this.saleOrderData.specialAddition) || 0
       this.freightAndInsurance = Number(this.saleOrderData.freight) || 0
       this.vatPercent = Number(this.saleOrderData.vatPercent) || 0
+      this.depositAmount = 0
+      this.depositApplyTouched = false
 
       this.saleChannelList = await this.saleChannelStore.fetchActiveList({ skipLoading: true })
 
@@ -890,6 +1006,122 @@ export default {
       } else {
         const currentChannel = await this.saleChannelStore.fetchCurrent({ skipLoading: true })
         this.saleChannelCode = currentChannel ? currentChannel.code : null
+      }
+
+      await this.loadAvailability()
+      await this.loadDepositBalance()
+    },
+
+    // D5: ดึงมัดจำคงเหลือของ SO นี้ — เมื่อมี ให้เปลี่ยนช่องกรอกมัดจำเป็น "หักมัดจำ"
+    async loadDepositBalance() {
+      const soNumber = this.saleOrderData.number || this.saleOrderData.soNumber
+      if (!soNumber) {
+        this.soDepositBalance = 0
+        this.depositApplyAmount = 0
+        return
+      }
+
+      const res = await this.depositStore.fetchList({ soNumber })
+      this.soDepositBalance = res?.balance || 0
+      this.depositApplyAmount = this.soDepositBalance > 0 ? this.maxDepositApply : 0
+    },
+
+    onDepositApplyInput(val) {
+      this.depositApplyTouched = true
+      const num = Number(val) || 0
+      this.depositApplyAmount = Math.min(Math.max(num, 0), this.maxDepositApply)
+    },
+
+    // U3: เช็ค availability สดจาก API ทุกครั้งที่เปิด modal (และก่อนกดยืนยันอีกครั้ง กันของถูกขายไปแล้วระหว่างเปิดจออยู่)
+    async loadAvailability() {
+      const stockNumbers = [
+        ...new Set(this.availableItems.map((item) => item.stockNumber).filter(Boolean))
+      ]
+
+      if (stockNumbers.length === 0) {
+        this.availabilityMap = {}
+        return
+      }
+
+      const list = await this.productStore.fetchStockAvailability(stockNumbers)
+      const map = {}
+      list.forEach((row) => {
+        map[row.stockNumber] = row.qtyAvailable
+      })
+      this.availabilityMap = map
+    },
+
+    rowAvailable(item) {
+      if (Object.prototype.hasOwnProperty.call(this.availabilityMap, item.stockNumber)) {
+        return Number(this.availabilityMap[item.stockNumber]) || 0
+      }
+      return getPieceQtyAvailable(item)
+    },
+
+    rowShortage(item) {
+      if (item.isConfirm) return 0
+      const sumQty = this.selectedUnconfirmedQtyByStockNumber[item.stockNumber] || 0
+      const shortage = sumQty - this.rowAvailable(item)
+      return shortage > 0 ? shortage : 0
+    },
+
+    isRowShort(item) {
+      return this.rowShortage(item) > 0
+    },
+
+    getRowClass(data) {
+      return { 'row-short': this.selectedItems.includes(data.lineKey) && this.isRowShort(data) }
+    },
+
+    // ปุ่ม "ปรับจำนวนเท่าที่มี" — ปรับ qty ของบรรทัดที่ขาดให้เหลือเท่า available แล้วยกเลิกเลือกบรรทัดที่ available = 0
+    adjustToAvailable() {
+      const shortItems = this.shortSelectedItems
+      if (shortItems.length === 0) return
+
+      const example = shortItems[0]
+      const exampleNewQty = Math.max(0, Math.floor(this.rowAvailable(example)))
+
+      confirmSubmit(
+        this.$t('view.sale.saleOrder.confirm.adjustToAvailableMessage', {
+          count: shortItems.length,
+          stockNumber: example.stockNumberOrigin || example.stockNumber,
+          oldQty: example.qty,
+          newQty: exampleNewQty
+        }),
+        this.$t('view.sale.saleOrder.confirm.adjustToAvailableTitle'),
+        (result) => {
+          if (!result.isConfirmed) return
+          this.applyAdjustToAvailable()
+        },
+        { confirmText: this.$t('common.btn.confirm'), cancelText: this.$t('common.btn.cancel') },
+        'warning'
+      )
+    },
+
+    // P2-1.3: ส่วนที่ขาดต้องเพิ่มเป็นรายการรอผลิต/รอแปลงเสมอ (shortage) — parent (onAdjustQty) เป็นคนสร้างบรรทัดจริง
+    applyAdjustToAvailable() {
+      const updates = []
+
+      this.shortSelectedItems.forEach((item) => {
+        const available = this.rowAvailable(item)
+        const originalQty = Number(item.qty) || 0
+
+        if (available >= 1) {
+          const flooredAvailable = Math.floor(available)
+          updates.push({
+            lineKey: item.lineKey,
+            qty: flooredAvailable,
+            shortage: originalQty - flooredAvailable
+          })
+        } else {
+          updates.push({ lineKey: item.lineKey, qty: 0, shortage: originalQty, remove: true })
+          const idx = this.selectedItems.indexOf(item.lineKey)
+          if (idx > -1) this.selectedItems.splice(idx, 1)
+        }
+      })
+
+      if (updates.length > 0) {
+        this.$emit('adjust-qty', updates)
       }
     },
 
@@ -1066,6 +1298,10 @@ export default {
     },
 
     async confirmAndCreateInvoice() {
+      // U4: กันกดยืนยันซ้ำระหว่างรอ API — รวมถึงระหว่าง parent กำลัง Upsert SO อยู่ (เช่นหลังกด "ปรับจำนวนเท่าที่มี")
+      // กัน race: Upsert ของ adjust-qty ที่ยังค้างอยู่มาทับ Upsert ของ confirm ทีหลัง
+      if (this.isSubmitting || this.isSaving) return
+
       if (this.selectedItemsCount === 0) {
         warning(this.$t('view.sale.saleOrder.validation.selectItems'))
         return
@@ -1078,6 +1314,23 @@ export default {
 
       if (!this.saleOrderData.customerName) {
         warning(this.$t('view.sale.saleOrder.validation.noCustomerName'))
+        return
+      }
+
+      this.isSubmitting = true
+
+      try {
+        await this.submitConfirmAndInvoice()
+      } finally {
+        this.isSubmitting = false
+      }
+    },
+
+    async submitConfirmAndInvoice() {
+      // U3: เช็ค availability อีกครั้งก่อนยืนยันจริง เผื่อของถูกขายไปหลังเปิดจอ
+      await this.loadAvailability()
+      if (this.hasShortItems) {
+        warning(this.$t('view.sale.saleOrder.warn.stillShortBeforeSubmit'))
         return
       }
 
@@ -1109,6 +1362,30 @@ export default {
           error(this.$t('view.sale.saleOrder.error.confirmFailed'), this.$t('view.sale.saleOrder.error.confirmFailedTitle'))
           return
         }
+
+        // P4-3: SaleOrder/ConfirmStockItems ไม่คืน id (saleOrderProductId) ต่อแถว — reload SO เพื่อดึง id
+        // ของบรรทัดที่เพิ่งยืนยันมาแมพกลับด้วย lineKey ก่อนสร้าง Invoice
+        const freshSo = await this.saleOrderStore.fetchGet({
+          formValue: { soNumber: this.saleOrderData.number || this.saleOrderData.soNumber }
+        })
+        const freshConfirmed = freshSo?.stockConfirm || []
+        selectedStockItems.forEach((item) => {
+          const match = freshConfirmed.find(
+            (ci) => ci.lineKey && item.lineKey && ci.lineKey === item.lineKey
+          )
+          if (match) {
+            item.id = match.id
+          }
+        })
+      }
+
+      // P4-3: line-aware invoicing — ส่ง saleOrderProductId ก็ต่อเมื่อ "ทุกบรรทัด" มี id เท่านั้น (backend ปฏิเสธ mixed request)
+      const allHaveSaleOrderProductId =
+        selectedStockItems.length > 0 && selectedStockItems.every((item) => item.id !== undefined && item.id !== null)
+      if (!allHaveSaleOrderProductId) {
+        console.warn(
+          '[confirm-and-invoice-modal] Some selected items are missing saleOrderProductId — falling back to stockNumber-only Invoice/Create (no saleOrderProductId sent).'
+        )
       }
 
       // Step 2: create invoice
@@ -1127,7 +1404,9 @@ export default {
         currencyRate: this.saleOrderData.currencyRate || 1.0,
 
         deliveryDate: this.saleOrderData.expectedDeliveryDate || this.saleOrderData.deliveryDate,
-        deposit: this.depositAmount || 0,
+        deposit: this.effectiveDepositAmount,
+        // D5: มี SO deposit balance ให้หัก → ส่ง depositApplyAmount คู่กับ deposit เสมอ (ค่าเดียวกัน)
+        ...(this.hasDepositBalance ? { depositApplyAmount: this.effectiveDepositAmount } : {}),
         saleChannelCode: this.saleChannelCode || null,
 
         specialDiscount: this.specialDiscount || 0,
@@ -1154,6 +1433,7 @@ export default {
           stockNumber: item.stockNumber,
           stockNumberOrigin: item.stockNumberOrigin || item.stockNumber,
           id: item.id,
+          ...(allHaveSaleOrderProductId ? { saleOrderProductId: item.id } : {}),
           priceOrigin: item.appraisalPrice || item.price || 0,
           currencyUnit: this.saleOrderData.currencyUnit || 'THB',
           currencyRate: this.saleOrderData.currencyRate || 1.0,
@@ -1197,10 +1477,14 @@ export default {
       this.freightAndInsurance = 0
       this.vatPercent = 0
       this.depositAmount = 0
+      this.soDepositBalance = 0
+      this.depositApplyAmount = 0
+      this.depositApplyTouched = false
       this.paymentMethod = 'cash'
       this.paymentDays = 0
       this.dkInvoiceNumber = null
       this.saleChannelCode = null
+      this.availabilityMap = {}
 
       this.$emit('close-modal')
     }
@@ -1258,6 +1542,11 @@ export default {
   justify-content: flex-end;
   align-items: center;
   margin-right: 5px;
+}
+
+// แถวที่เลือกแล้วจำนวนเกินพร้อมขาย
+:deep(tr.row-short > td) {
+  background-color: var(--status-cancelled-bg) !important;
 }
 
 @media (max-width: 768px) {

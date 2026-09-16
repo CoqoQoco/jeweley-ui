@@ -155,4 +155,72 @@ const compressImageToMaxSize = async (file, maxSizeKB = 300, initialQuality = 0.
   })
 }
 
-export { compressOptimalImage, compressMultipleImages, compressImageToMaxSize }
+/**
+ * บีบอัดรูปสำหรับบรรทัด "รายการรอผลิต/รอแปลง" (copy item) ในใบเสนอราคา/ใบสั่งขาย — ไม่มี endpoint
+ * อัปโหลด blob สำหรับสินค้าที่ยังไม่มี stockNumber จริง จึงเก็บเป็น imageBase64 ตรงๆ ใน JSON ของเอกสาร
+ * จำกัดด้านยาวสุด 800px และเป้าหมายไม่เกิน ~150KB กัน JSON เอกสารบวมเกินไป
+ * @param {File} file - ไฟล์รูปภาพที่ต้องการบีบอัด
+ * @returns {Promise<File>} - ไฟล์รูปภาพที่ถูกบีบอัดแล้ว
+ */
+const compressCopyItemImage = async (file) => {
+  if (!file.type.match(/image.*/)) return file
+
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.onload = (readerEvent) => {
+      const image = new Image()
+      image.onload = () => {
+        const maxDimension = 800
+        let currentWidth = image.width
+        let currentHeight = image.height
+
+        if (currentWidth > currentHeight) {
+          if (currentWidth > maxDimension) {
+            currentHeight = Math.round((currentHeight * maxDimension) / currentWidth)
+            currentWidth = maxDimension
+          }
+        } else if (currentHeight > maxDimension) {
+          currentWidth = Math.round((currentWidth * maxDimension) / currentHeight)
+          currentHeight = maxDimension
+        }
+
+        const canvas = document.createElement('canvas')
+        canvas.width = currentWidth
+        canvas.height = currentHeight
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(image, 0, 0, currentWidth, currentHeight)
+
+        const targetBytes = 150 * 1024
+
+        const tryCompression = (attemptQuality) => {
+          canvas.toBlob(
+            (blob) => {
+              if (blob.size <= targetBytes || attemptQuality <= 0.4) {
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: new Date().getTime()
+                })
+                resolve(compressedFile)
+              } else {
+                tryCompression(attemptQuality - 0.1)
+              }
+            },
+            'image/jpeg',
+            attemptQuality
+          )
+        }
+
+        tryCompression(0.85)
+      }
+      image.src = readerEvent.target.result
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
+export {
+  compressOptimalImage,
+  compressMultipleImages,
+  compressImageToMaxSize,
+  compressCopyItemImage
+}

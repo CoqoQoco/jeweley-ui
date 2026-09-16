@@ -18,3 +18,14 @@ export function getPieceQtyAvailable(item) {
   }
   return getPieceQty(item) - getPieceQtyReserved(item)
 }
+
+// รวม qty ของทุกบรรทัดที่ยังไม่ confirm/invoice ต่อ stockNumber เดียวกัน — ใช้เช็ค available
+// ก่อน confirm/เติมของ (silver lot อาจสแกนเลขเดียวกันหลายบรรทัด)
+export function sumUnconfirmedQtyByStockNumber(items) {
+  const map = {}
+  ;(items || []).forEach((item) => {
+    if (item.isConfirm || item.invoice || !item.stockNumber) return
+    map[item.stockNumber] = (map[item.stockNumber] || 0) + (Number(item.qty) || 0)
+  })
+  return map
+}

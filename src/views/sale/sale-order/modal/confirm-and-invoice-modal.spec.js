@@ -17,8 +17,9 @@ vi.mock('@/stores/modules/api/sale/invoice-store.js', () => ({
 }))
 
 const mockConfirmStockItems = vi.fn().mockResolvedValue({ success: true })
+const mockFetchGet = vi.fn().mockResolvedValue({ stockConfirm: [] })
 vi.mock('@/stores/modules/api/sale/sale-order-store.js', () => ({
-  usrSaleOrderApiStore: vi.fn(() => ({ confirmStockItems: mockConfirmStockItems }))
+  usrSaleOrderApiStore: vi.fn(() => ({ confirmStockItems: mockConfirmStockItems, fetchGet: mockFetchGet }))
 }))
 
 const mockFetchActiveList = vi.fn().mockResolvedValue([])
@@ -28,6 +29,12 @@ vi.mock('@/stores/modules/api/sale/sale-channel-store.js', () => ({
     fetchActiveList: mockFetchActiveList,
     fetchCurrent: mockFetchCurrent
   }))
+}))
+
+// D5: SO deposit balance — default ไม่มีมัดจำค้าง (balance: 0) เพื่อไม่กระทบพฤติกรรมเดิมของเทสต์ชุดนี้
+const mockDepositFetchList = vi.fn().mockResolvedValue({ balance: 0, totalReceived: 0, totalApplied: 0, deposits: [] })
+vi.mock('@/stores/modules/api/sale/sale-order-deposit-store.js', () => ({
+  usrSaleOrderDepositApiStore: vi.fn(() => ({ fetchList: mockDepositFetchList }))
 }))
 
 vi.mock('@/components/modal/modal-view.vue', () => ({
@@ -104,6 +111,107 @@ describe('ConfirmAndInvoiceModal — paymentName integrity (ป้องกั�
 
     const creditOption = wrapper.vm.paymentMethodOptions.find((o) => o.id === 5)
     expect(creditOption.name).toBe('view.sale.saleOrderList.paymentMethod.creditTerm')
+  })
+})
+
+describe('ConfirmAndInvoiceModal — P4-3 line-aware invoicing (saleOrderProductId)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockFetchCreate.mockResolvedValue({ invoiceNumber: 'INV-0001' })
+    mockConfirmStockItems.mockResolvedValue({ success: true })
+    mockFetchGet.mockResolvedValue({ stockConfirm: [] })
+    mockFetchActiveList.mockResolvedValue([])
+    mockFetchCurrent.mockResolvedValue(null)
+  })
+
+  it('รายการที่ confirm อยู่แล้ว (มี id ครบ) → ส่ง saleOrderProductId ให้ทุกบรรทัด ไม่ต้อง reload SO', async () => {
+    const confirmedItem = {
+      id: 1,
+      lineKey: 'lk-confirmed',
+      isConfirm: true,
+      isRemainProduct: true,
+      invoice: false,
+      stockNumber: 'S1',
+      qty: 1,
+      appraisalPrice: 100,
+      discountPercent: 0
+    }
+    const pinia = createPinia()
+    const wrapper = shallowMount(ConfirmAndInvoiceModal, {
+      global: { plugins: [pinia], mocks: { $t: (key, params) => (params ? `${key}:${JSON.stringify(params)}` : key) } },
+      props: { isShowModal: true, saleOrderData: sampleSaleOrder, stockItems: [confirmedItem] }
+    })
+    await flushPromises()
+
+    wrapper.vm.selectedItems = ['lk-confirmed']
+    await wrapper.vm.confirmAndCreateInvoice()
+
+    const items = mockFetchCreate.mock.calls[0][0].formValue.items
+    expect(items[0].saleOrderProductId).toBe(1)
+    expect(mockFetchGet).not.toHaveBeenCalled()
+  })
+
+  it('รายการที่ยังไม่ confirm → confirm ก่อน แล้ว reload SO เพื่อดึง id มาส่ง saleOrderProductId', async () => {
+    const unconfirmedItem = {
+      id: null,
+      lineKey: 'lk-1',
+      isConfirm: false,
+      isRemainProduct: true,
+      invoice: false,
+      stockNumber: 'S2',
+      qty: 1,
+      appraisalPrice: 100,
+      discountPercent: 0
+    }
+    mockFetchGet.mockResolvedValue({ stockConfirm: [{ id: 99, lineKey: 'lk-1', stockNumber: 'S2' }] })
+
+    const pinia = createPinia()
+    const wrapper = shallowMount(ConfirmAndInvoiceModal, {
+      global: { plugins: [pinia], mocks: { $t: (key, params) => (params ? `${key}:${JSON.stringify(params)}` : key) } },
+      props: { isShowModal: true, saleOrderData: sampleSaleOrder, stockItems: [unconfirmedItem] }
+    })
+    await flushPromises()
+
+    wrapper.vm.selectedItems = ['lk-1']
+    await wrapper.vm.confirmAndCreateInvoice()
+
+    expect(mockConfirmStockItems).toHaveBeenCalledTimes(1)
+    expect(mockFetchGet).toHaveBeenCalledTimes(1)
+
+    const items = mockFetchCreate.mock.calls[0][0].formValue.items
+    expect(items[0].saleOrderProductId).toBe(99)
+  })
+
+  it('reload SO แล้วยังหา id ไม่เจอ (บาง lineKey ไม่ match) → ไม่ส่ง saleOrderProductId ให้ทุกบรรทัด + console.warn', async () => {
+    const unconfirmedItem = {
+      id: null,
+      lineKey: 'lk-2',
+      isConfirm: false,
+      isRemainProduct: true,
+      invoice: false,
+      stockNumber: 'S3',
+      qty: 1,
+      appraisalPrice: 100,
+      discountPercent: 0
+    }
+    mockFetchGet.mockResolvedValue({ stockConfirm: [] })
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const pinia = createPinia()
+    const wrapper = shallowMount(ConfirmAndInvoiceModal, {
+      global: { plugins: [pinia], mocks: { $t: (key, params) => (params ? `${key}:${JSON.stringify(params)}` : key) } },
+      props: { isShowModal: true, saleOrderData: sampleSaleOrder, stockItems: [unconfirmedItem] }
+    })
+    await flushPromises()
+
+    wrapper.vm.selectedItems = ['lk-2']
+    await wrapper.vm.confirmAndCreateInvoice()
+
+    const items = mockFetchCreate.mock.calls[0][0].formValue.items
+    items.forEach((item) => expect(item.saleOrderProductId).toBeUndefined())
+    expect(warnSpy).toHaveBeenCalled()
+
+    warnSpy.mockRestore()
   })
 })
 

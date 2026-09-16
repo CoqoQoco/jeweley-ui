@@ -85,6 +85,58 @@ describe('buildReceiptText — signature block', () => {
   })
 })
 
+describe('buildReceiptText — มัดจำ (Deposit)', () => {
+  it('มีมัดจำเท่ากับยอดเต็ม (ไม่มี payments) → แสดงบรรทัด Deposit และมีบล็อก SIGNATURES (จ่ายครบแล้ว)', () => {
+    const data = baseData({
+      grandTotal: 11250,
+      deposit: 11250,
+      payments: []
+    })
+    const text = buildReceiptText(data)
+
+    expect(text).toContain('Deposit')
+    expect(text).toContain('SIGNATURES')
+  })
+
+  it('มีมัดจำบางส่วน (น้อยกว่ายอดเต็ม, ไม่มี payments อื่น) → Outstanding ต้อง = grand - deposit', () => {
+    const data = baseData({
+      grandTotal: 11250,
+      deposit: 5000,
+      payments: []
+    })
+    const text = buildReceiptText(data)
+    const lines = text.split('\n')
+
+    expect(text).toContain('Deposit')
+    const outstandingLine = lines.find((l) => l.includes('Outstanding'))
+    expect(outstandingLine).toBeDefined()
+    expect(outstandingLine).toContain('6,250.00')
+    expect(text).not.toContain('SIGNATURES')
+  })
+
+  it('มีมัดจำ + payments อื่นรวมกันครบยอด → remaining = grand - deposit - payments <= 0 → มีบล็อก SIGNATURES', () => {
+    const data = baseData({
+      grandTotal: 11250,
+      deposit: 5000,
+      payments: [{ payment: 1, amount: 6250 }]
+    })
+    const text = buildReceiptText(data)
+
+    expect(text).toContain('Deposit')
+    expect(text).toContain('SIGNATURES')
+  })
+
+  it('ไม่มีมัดจำ (ไม่ส่ง deposit) → ไม่แสดงบรรทัด Deposit เลย (พฤติกรรมเดิมไม่เปลี่ยน)', () => {
+    const data = baseData({
+      grandTotal: 11250,
+      payments: [{ payment: 1, amount: 11250 }]
+    })
+    const text = buildReceiptText(data)
+
+    expect(text).not.toContain('Deposit')
+  })
+})
+
 describe('buildReceiptText — รายการวัตถุดิบแทน Discount', () => {
   it('ไม่มีคำว่า Discount เหลือในบล็อกรายการสินค้า แม้ item มี discountPercent > 0', () => {
     const data = baseData({

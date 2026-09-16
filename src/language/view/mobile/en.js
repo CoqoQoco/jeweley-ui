@@ -767,6 +767,7 @@ export const receipt = {
   freight: 'Freight',
   vat: 'VAT',
   grandTotal: 'Grand Total',
+  depositApplied: 'Deposit Applied',
   paidBy: 'Paid By',
   paid: 'Paid',
   remaining: 'Remaining',

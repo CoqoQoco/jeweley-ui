@@ -116,7 +116,26 @@
                   >
                     <i class="bi bi-clock mr-1"></i>แสดงรอยืนยัน
                   </button> -->
+                  <ButtonGeneric
+                    v-if="hasShortItems"
+                    variant="outline"
+                    icon="bi-arrow-repeat"
+                    :label="$t('view.sale.saleOrder.btnAdjustToAvailable')"
+                    @click="adjustToAvailable"
+                  />
                 </div>
+              </div>
+
+              <!-- แจ้งเตือนรายการที่จำนวนเกินพร้อมขาย -->
+              <div v-if="hasShortItems" class="alert alert-danger mb-3">
+                <div class="font-weight-bold mb-1">
+                  <i class="bi bi-exclamation-triangle-fill mr-1"></i>{{ $t('view.sale.saleOrder.shortageWarningTitle') }}
+                </div>
+                <ul class="mb-0 pl-3">
+                  <li v-for="item in shortSelectedItems" :key="item.lineKey">
+                    {{ $t('view.sale.saleOrder.shortageWarningLine', { stockNumber: item.stockNumber, origin: item.stockNumberOrigin || item.stockNumber, shortage: rowShortage(item) }) }}
+                  </li>
+                </ul>
               </div>
 
               <!-- Stock Items Table -->
@@ -130,6 +149,7 @@
                 class="p-datatable-sm"
                 :scrollable="true"
                 responsiveLayout="scroll"
+                :rowClass="getRowClass"
               >
                 <Column :exportable="false" style="width: 50px" :header="$t('view.sale.saleOrder.selectCol')">
                   <template #body="slotProps">
@@ -266,6 +286,17 @@
                   </template>
                 </Column>
 
+                <Column field="available" :header="$t('view.sale.saleOrder.qtyAvailableCol')" style="width: 110px">
+                  <template #body="slotProps">
+                    <div class="text-center" :class="{ 'text-danger font-weight-bold': isRowShort(slotProps.data) }">
+                      {{ rowAvailable(slotProps.data) }}
+                      <small v-if="isRowShort(slotProps.data)" class="d-block text-danger">
+                        {{ $t('view.sale.saleOrder.qtyShortage', { k: rowShortage(slotProps.data) }) }}
+                      </small>
+                    </div>
+                  </template>
+                </Column>
+
                 <Column
                   :header="$t('view.sale.saleOrder.totalPrice') + ' (' + (saleOrderData.currencyUnit || 'THB') + ')'"
                   style="width: 140px"
@@ -334,7 +365,7 @@
               class="btn btn-green mr-2"
               type="button"
               @click="confirmSelectedItems"
-              :disabled="selectedItemsCount === 0"
+              :disabled="selectedItemsCount === 0 || hasShortItems || isSubmitting || isSaving"
             >
               <i class="bi bi-check-square mr-1"></i>
               {{ $t('view.sale.saleOrder.confirmSale') }}
@@ -359,10 +390,13 @@ import DataTable from 'primevue/datatable'
 // eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
-import { success, warning } from '@/services/alert/sweetAlerts.js'
+import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
+import { success, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
+import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -374,6 +408,7 @@ export default {
     DataTable,
     Column,
     CheckboxGeneric,
+    ButtonGeneric,
     imagePreview
   },
 
@@ -389,15 +424,23 @@ export default {
     stockItems: {
       type: Array,
       default: () => []
+    },
+    // true ระหว่าง parent กำลัง Upsert SO (เช่นหลังกด "ปรับจำนวนเท่าที่มี") — ต้องกันกดยืนยันซ้อนจนกว่าจะ save เสร็จ
+    isSaving: {
+      type: Boolean,
+      default: false
     }
   },
 
-  emits: ['close-modal', 'items-confirmed', 'save-draft'],
+  emits: ['close-modal', 'items-confirmed', 'save-draft', 'adjust-qty'],
 
   data() {
     return {
       selectedItems: [],
-      type: 'STOCK-PRODUCT'
+      type: 'STOCK-PRODUCT',
+      productStore: usrStockProductApiStore(),
+      availabilityMap: {},
+      isSubmitting: false
     }
   },
 
@@ -431,6 +474,26 @@ export default {
       return this.stockItems.filter((item) => item.isConfirm).length
     },
 
+    // U3: silver lot อาจเลือกหลายบรรทัดเลขเดียวกัน — เทียบผลรวม qty ที่ "เลือก" ต่อ stockNumber กับ available
+    selectedQtyByStockNumber() {
+      const map = {}
+      this.stockItems.forEach((item) => {
+        if (!this.selectedItemsSet.has(item.lineKey)) return
+        map[item.stockNumber] = (map[item.stockNumber] || 0) + (Number(item.qty) || 0)
+      })
+      return map
+    },
+
+    shortSelectedItems() {
+      return this.stockItems.filter(
+        (item) => this.selectedItemsSet.has(item.lineKey) && this.isRowShort(item)
+      )
+    },
+
+    hasShortItems() {
+      return this.shortSelectedItems.length > 0
+    },
+
     totalSelectedAmount() {
       const selectedStockItems = this.stockItems.filter((item) =>
         this.selectedItems.includes(item.lineKey)
@@ -460,8 +523,101 @@ export default {
   },
 
   methods: {
-    loadInitialData() {
+    async loadInitialData() {
       this.selectedItems = []
+      await this.loadAvailability()
+    },
+
+    // U3: เช็ค availability สดจาก API ทุกครั้งที่เปิด modal (และก่อนกดยืนยันอีกครั้ง กันของถูกขายไปแล้วระหว่างเปิดจออยู่)
+    async loadAvailability() {
+      const stockNumbers = [
+        ...new Set(this.filteredStockItems.map((item) => item.stockNumber).filter(Boolean))
+      ]
+
+      if (stockNumbers.length === 0) {
+        this.availabilityMap = {}
+        return
+      }
+
+      const list = await this.productStore.fetchStockAvailability(stockNumbers)
+      const map = {}
+      list.forEach((row) => {
+        map[row.stockNumber] = row.qtyAvailable
+      })
+      this.availabilityMap = map
+    },
+
+    rowAvailable(item) {
+      if (Object.prototype.hasOwnProperty.call(this.availabilityMap, item.stockNumber)) {
+        return Number(this.availabilityMap[item.stockNumber]) || 0
+      }
+      return getPieceQtyAvailable(item)
+    },
+
+    rowShortage(item) {
+      const sumQty = this.selectedQtyByStockNumber[item.stockNumber] || 0
+      const shortage = sumQty - this.rowAvailable(item)
+      return shortage > 0 ? shortage : 0
+    },
+
+    isRowShort(item) {
+      return this.rowShortage(item) > 0
+    },
+
+    getRowClass(data) {
+      return { 'row-short': this.selectedItemsSet.has(data.lineKey) && this.isRowShort(data) }
+    },
+
+    // ปุ่ม "ปรับจำนวนเท่าที่มี" — ปรับ qty ของบรรทัดที่ขาดให้เหลือเท่า available แล้วยกเลิกเลือกบรรทัดที่ available = 0
+    adjustToAvailable() {
+      const shortItems = this.shortSelectedItems
+      if (shortItems.length === 0) return
+
+      const example = shortItems[0]
+      const exampleNewQty = Math.max(0, Math.floor(this.rowAvailable(example)))
+
+      confirmSubmit(
+        this.$t('view.sale.saleOrder.confirm.adjustToAvailableMessage', {
+          count: shortItems.length,
+          stockNumber: example.stockNumberOrigin || example.stockNumber,
+          oldQty: example.qty,
+          newQty: exampleNewQty
+        }),
+        this.$t('view.sale.saleOrder.confirm.adjustToAvailableTitle'),
+        (result) => {
+          if (!result.isConfirmed) return
+          this.applyAdjustToAvailable()
+        },
+        { confirmText: this.$t('common.btn.confirm'), cancelText: this.$t('common.btn.cancel') },
+        'warning'
+      )
+    },
+
+    // P2-1.3: ส่วนที่ขาดต้องเพิ่มเป็นรายการรอผลิต/รอแปลงเสมอ (shortage) — parent (onAdjustQty) เป็นคนสร้างบรรทัดจริง
+    applyAdjustToAvailable() {
+      const updates = []
+
+      this.shortSelectedItems.forEach((item) => {
+        const available = this.rowAvailable(item)
+        const originalQty = Number(item.qty) || 0
+
+        if (available >= 1) {
+          const flooredAvailable = Math.floor(available)
+          updates.push({
+            lineKey: item.lineKey,
+            qty: flooredAvailable,
+            shortage: originalQty - flooredAvailable
+          })
+        } else {
+          updates.push({ lineKey: item.lineKey, qty: 0, shortage: originalQty, remove: true })
+          const idx = this.selectedItems.indexOf(item.lineKey)
+          if (idx > -1) this.selectedItems.splice(idx, 1)
+        }
+      })
+
+      if (updates.length > 0) {
+        this.$emit('adjust-qty', updates)
+      }
     },
 
     toggleSelectAll(value) {
@@ -560,52 +716,70 @@ export default {
     },
 
     async confirmSelectedItems() {
+      // U4: กันกดยืนยันซ้ำระหว่างรอ API — รวมถึงระหว่าง parent กำลัง Upsert SO อยู่ (เช่นหลังกด "ปรับจำนวนเท่าที่มี")
+      // กัน race: Upsert ของ adjust-qty ที่ยังค้างอยู่มาทับ Upsert ของ confirm ทีหลัง
+      if (this.isSubmitting || this.isSaving) return
+
       if (this.selectedItemsCount === 0) {
         warning(this.$t('view.sale.saleOrder.validation.selectAtLeastOne'))
         return
       }
 
-      // Get selected items data
-      const selectedStockItems = this.stockItems.filter((item) =>
-        this.selectedItems.includes(item.lineKey)
-      )
+      this.isSubmitting = true
 
-      // Prepare data for API
-      const confirmData = {
-        soNumber: this.saleOrderData.number,
-        stockItems: selectedStockItems.map((item) => ({
-          id: item.id,
-          lineKey: item.lineKey,
-          stockNumber: item.stockNumber,
-          productNumber: item.productNumber,
-          qty: item.qty,
-          appraisalPrice: item.appraisalPrice,
-          discount: item.discountPercent,
-          isConfirm: true,
-          confirmedAt: new Date().toISOString()
-        }))
-      }
+      try {
+        // U3: เช็ค availability อีกครั้งก่อนยืนยันจริง เผื่อของถูกขายไปหลังเปิดจอ
+        await this.loadAvailability()
+        if (this.hasShortItems) {
+          warning(this.$t('view.sale.saleOrder.warn.stillShortBeforeSubmit'))
+          return
+        }
 
-      // Call API to confirm items
-      const saleOrderStore = usrSaleOrderApiStore()
-      const response = await saleOrderStore.confirmStockItems(confirmData)
+        // Get selected items data
+        const selectedStockItems = this.stockItems.filter((item) =>
+          this.selectedItems.includes(item.lineKey)
+        )
 
-      if (response && response.success) {
-        // Emit event to parent to refresh data FIRST
-        this.$emit('items-confirmed', {
-          confirmedItems: selectedStockItems,
-          totalConfirmed: this.selectedItemsCount
-        })
+        // Prepare data for API
+        const confirmData = {
+          soNumber: this.saleOrderData.number,
+          stockItems: selectedStockItems.map((item) => ({
+            id: item.id,
+            lineKey: item.lineKey,
+            stockNumber: item.stockNumber,
+            productNumber: item.productNumber,
+            qty: item.qty,
+            appraisalPrice: item.appraisalPrice,
+            discount: item.discountPercent,
+            isConfirm: true,
+            confirmedAt: new Date().toISOString()
+          }))
+        }
 
-        // Show success message
-        success(this.$t('view.sale.saleOrder.success.confirmSale'), this.$t('view.sale.saleOrder.success.confirmSaleMessage', { count: this.selectedItemsCount }))
+        // Call API to confirm items
+        const saleOrderStore = usrSaleOrderApiStore()
+        const response = await saleOrderStore.confirmStockItems(confirmData)
 
-        this.closeModal()
+        if (response && response.success) {
+          // Emit event to parent to refresh data FIRST
+          this.$emit('items-confirmed', {
+            confirmedItems: selectedStockItems,
+            totalConfirmed: this.selectedItemsCount
+          })
+
+          // Show success message
+          success(this.$t('view.sale.saleOrder.success.confirmSale'), this.$t('view.sale.saleOrder.success.confirmSaleMessage', { count: this.selectedItemsCount }))
+
+          this.closeModal()
+        }
+      } finally {
+        this.isSubmitting = false
       }
     },
 
     closeModal() {
       this.selectedItems = []
+      this.availabilityMap = {}
       this.$emit('close-modal')
     }
   }
@@ -651,6 +825,11 @@ export default {
 // ใช้ spinner ที่มีอยู่แล้วในระบบ
 .text-main {
   color: var(--base-font-color) !important;
+}
+
+// แถวที่เลือกแล้วจำนวนเกินพร้อมขาย
+:deep(tr.row-short > td) {
+  background-color: var(--status-cancelled-bg) !important;
 }
 
 // Summary styles เหมือนกับหน้า sale-order-view

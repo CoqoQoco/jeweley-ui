@@ -68,6 +68,12 @@ export class InvoicePdfBuilder {
     this.grandTotalRaw = totals.grandTotalRaw
     this.grandTotalRounded = totals.grandTotalRounded
     this.roundingAdjustment = totals.roundingAdjustment
+
+    // D6: มัดจำที่หักตอนออก invoice (SO deposit) + เงินที่รับชำระเพิ่มเติมแล้ว — หักออกจากยอดสุทธิ
+    // (ตามแบบ invoice-summary-builder.js) แสดงเป็นบรรทัดเดียวหลัง GRAND TOTAL เพื่อไม่ให้เกินงบความสูงหน้า
+    this.deposit = Number(saleOrderData.deposit) || 0
+    this.amountPaid = (Number(saleOrderData.amountPaid) || 0) + this.deposit
+    this.netPayable = this.grandTotalRounded - this.amountPaid
   }
 
   // เมธอดใหม่สำหรับเตรียมข้อมูล PDF ซึ่งจะโหลดโลโก้ก่อน
@@ -810,6 +816,30 @@ export class InvoicePdfBuilder {
         alignment: 'right'
       }
     ])
+
+    // D6: หักมัดจำ/เงินที่รับชำระแล้ว — แถวเดียวหลัง GRAND TOTAL แสดงยอดคงเหลือที่ต้องชำระจริง
+    // แสดงเฉพาะเมื่อมีมัดจำ/เงินที่รับชำระแล้วเท่านั้น (เหมือนแถว SPECIAL DISCOUNT ฯลฯ ด้านบน)
+    if (this.amountPaid > 0) {
+      const label = this.deposit > 0 && this.amountPaid > this.deposit
+        ? 'LESS: DEPOSIT/PAID'
+        : this.deposit > 0
+          ? 'LESS: DEPOSIT'
+          : 'LESS: PAID'
+
+      body.push([
+        {
+          text: '',
+          style: 'summaryLabel',
+          alignment: 'right',
+          colSpan: 7,
+          border: [true, false, false, false]
+        },
+        {}, {}, {}, {}, {}, {},
+        { text: label, style: 'totalSummaryLabelColored', alignment: 'right', colSpan: 2 },
+        {},
+        { text: this.roundNoDecimal(this.netPayable), style: 'totalSummaryLabelColored', alignment: 'right' }
+      ])
+    }
 
     return body
   }

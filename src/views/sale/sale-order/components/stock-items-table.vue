@@ -125,6 +125,7 @@
                 class="btn btn-sm btn-danger ml-2"
                 type="button"
                 :title="$t('view.sale.saleOrder.cancelConfirmTitle')"
+                :disabled="isUnconfirming"
                 @click="$emit('cancel-confirmation', slotProps.data)"
               >
                 <span class="bi bi-arrow-counterclockwise"></span>
@@ -148,6 +149,15 @@
                 @click="$emit('move-item', { item: slotProps.data, direction: 'down' })"
               >
                 <span class="bi bi-arrow-down"></span>
+              </button>
+              <button
+                v-if="!isViewMode"
+                class="btn btn-sm btn-dark ml-2"
+                type="button"
+                :title="$t('view.sale.saleOrder.copyToProductionBtn')"
+                @click="$emit('copy-item', slotProps.data)"
+              >
+                <span class="bi bi-files"></span>
               </button>
             </div>
           </template>
@@ -197,6 +207,9 @@
               <small v-if="slotProps.data.message" class="text-main">{{
                 `${slotProps.data.message}`
               }}</small>
+              <small v-if="slotProps.data.sourceCopyLineKey" class="text-main">
+                {{ $t('view.sale.saleOrder.filledFromCopyHint') }}
+              </small>
             </div>
           </template>
         </Column>
@@ -443,26 +456,42 @@
           </template>
         </Column>
 
-        <Column field="qty" :header="$t('common.field.quantity')" style="width: 80px"
+        <Column field="qty" :header="$t('common.field.quantity')" style="width: 110px"
           :frozen="!!frozenCols['qty']"
           :alignFrozen="frozenCols['qty'] || undefined"
         >
           <template #body="slotProps">
-            <div class="qty-container">
-              <input
+            <div class="qty-cell">
+              <div class="qty-container">
+                <input
+                  v-if="!slotProps.data.isConfirm && !slotProps.data.invoice"
+                  v-model.number="slotProps.data.qty"
+                  type="number"
+                  class="form-control text-right bg-input input-bg"
+                  min="0"
+                  :max="qtyMaxFor(slotProps.data)"
+                  step="1"
+                  @input="onQtyInput(slotProps.data)"
+                  @blur="onQtyBlur(slotProps.data, $event)"
+                  style="background-color: #b5dad4; width: 100%"
+                />
+                <span v-else class="confirmed-text text-right">
+                  {{ slotProps.data.qty || 0 }}
+                </span>
+              </div>
+              <small
                 v-if="!slotProps.data.isConfirm && !slotProps.data.invoice"
-                v-model.number="slotProps.data.qty"
-                type="number"
-                class="form-control text-right bg-input input-bg"
-                min="0"
-                :max="qtyMaxFor(slotProps.data)"
-                step="1"
-                @blur="onQtyBlur(slotProps.data, $event)"
-                style="background-color: #b5dad4; width: 100%"
-              />
-              <span v-else class="confirmed-text text-right">
-                {{ slotProps.data.qty || 0 }}
-              </span>
+                class="qty-hint"
+                :class="{ 'qty-hint-danger': isRowShort(slotProps.data) }"
+              >
+                <template v-if="rowAvailable(slotProps.data) <= 0">{{ $t('view.sale.saleOrder.qtySoldOut') }}</template>
+                <template v-else>
+                  {{ $t('view.sale.saleOrder.qtyAvailableHint', { n: rowAvailable(slotProps.data) }) }}
+                  <template v-if="isRowShort(slotProps.data)">
+                    · {{ $t('view.sale.saleOrder.qtyShortage', { k: rowShortage(slotProps.data) }) }}
+                  </template>
+                </template>
+              </small>
             </div>
           </template>
         </Column>
@@ -607,6 +636,45 @@
               <template #footer>
                 <div class="text-center">
                   <span></span>
+                </div>
+              </template>
+            </Column>
+          </Row>
+          <!-- รายการรอผลิต/รอแปลง — แถวรวม stock กับ copy ให้เห็นสาย stock + copy = ยอดรวมสินค้าทั้งใบ ก่อนลงไปหักส่วนลด/VAT -->
+          <Row v-if="copyItemsCount > 0">
+            <Column :colspan="18">
+              <template #footer>
+                <div class="text-right type-container">
+                  <span>{{ $t('view.sale.saleOrder.copySubtotalRow', { n: copyItemsCount }) }}</span>
+                </div>
+              </template>
+            </Column>
+            <Column
+              :frozen="isTotalFrozenRight"
+              :alignFrozen="isTotalFrozenRight ? 'right' : undefined"
+            >
+              <template #footer>
+                <div class="text-right type-container">
+                  <span>{{ formatDocMoney(copySubTotal) }}</span>
+                </div>
+              </template>
+            </Column>
+          </Row>
+          <Row v-if="copyItemsCount > 0">
+            <Column :colspan="18">
+              <template #footer>
+                <div class="text-right type-container">
+                  <span class="font-weight-bold">{{ $t('view.sale.saleOrder.docSubtotalRow') }}</span>
+                </div>
+              </template>
+            </Column>
+            <Column
+              :frozen="isTotalFrozenRight"
+              :alignFrozen="isTotalFrozenRight ? 'right' : undefined"
+            >
+              <template #footer>
+                <div class="text-right type-container">
+                  <span class="font-weight-bold">{{ formatDocMoney(docSubTotal) }}</span>
                 </div>
               </template>
             </Column>
@@ -870,13 +938,29 @@ export default {
       type: Number,
       default: 0
     },
+    copyItemsCount: {
+      type: Number,
+      default: 0
+    },
+    copySubTotal: {
+      type: Number,
+      default: 0
+    },
+    docSubTotal: {
+      type: Number,
+      default: 0
+    },
     isViewMode: {
+      type: Boolean,
+      default: false
+    },
+    isUnconfirming: {
       type: Boolean,
       default: false
     }
   },
 
-  emits: ['delete-item', 'edit-item', 'cancel-confirmation', 'move-item', 'blur-price', 'blur-qty', 'blur-description', 'update:special-discount', 'update:special-addition', 'update:freight', 'update:vat-percent'],
+  emits: ['delete-item', 'edit-item', 'copy-item', 'cancel-confirmation', 'move-item', 'blur-price', 'blur-qty', 'blur-description', 'update:special-discount', 'update:special-addition', 'update:freight', 'update:vat-percent'],
 
   data() {
     return {
@@ -896,6 +980,16 @@ export default {
 
     confirmedPendingItems() {
       return this.stockItems.filter((item) => item.isConfirm && !item.invoice)
+    },
+
+    // U2: silver lot อาจสแกนเลขเดียวกันหลายบรรทัด — เทียบผลรวม qty ของบรรทัดที่ยังไม่ confirm/invoice ต่อ stockNumber กับ available
+    unconfirmedQtyByStockNumber() {
+      const map = {}
+      this.stockItems.forEach((item) => {
+        if (item.isConfirm || item.invoice || !item.stockNumber) return
+        map[item.stockNumber] = (map[item.stockNumber] || 0) + (Number(item.qty) || 0)
+      })
+      return map
     },
 
     columnFreezeList() {
@@ -971,6 +1065,30 @@ export default {
     // silver lot: qty ต่อบรรทัดห้ามเกิน qtyAvailable ของ piece (ทองยัง max 1 เหมือนเดิม)
     qtyMaxFor(item) {
       return getPieceQtyAvailable(item)
+    },
+
+    rowAvailable(item) {
+      return getPieceQtyAvailable(item)
+    },
+
+    // ขาดเท่าไหร่ = ผลรวม qty ของทุกบรรทัดที่เลขสินค้าเดียวกัน (ที่ยังไม่ confirm/invoice) ลบ available
+    rowShortage(item) {
+      const sumQty = this.unconfirmedQtyByStockNumber[item.stockNumber] ?? (Number(item.qty) || 0)
+      const shortage = sumQty - this.rowAvailable(item)
+      return shortage > 0 ? shortage : 0
+    },
+
+    isRowShort(item) {
+      return this.rowShortage(item) > 0
+    },
+
+    // กันพิมพ์เกิน available ระหว่างพิมพ์ (ไม่ใช่แค่ blur) — ยกเว้น available = 0 ที่ยังไม่บังคับเป็น 0 (แสดง "หมด" แทน)
+    onQtyInput(item) {
+      const max = this.qtyMaxFor(item)
+      const qty = Number(item.qty) || 0
+      if (max > 0 && qty > max) {
+        item.qty = max
+      }
     },
 
     onQtyBlur(item, event) {
@@ -1206,6 +1324,25 @@ export default {
   justify-content: flex-end;
   align-items: center;
   margin-right: 5px;
+}
+
+.qty-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.qty-hint {
+  font-size: var(--fs-sm);
+  color: var(--base-sub-color);
+  margin-right: 5px;
+  margin-top: var(--sp-xs);
+  text-align: right;
+}
+
+.qty-hint-danger {
+  color: var(--base-red);
+  font-weight: 600;
 }
 
 .type-container {

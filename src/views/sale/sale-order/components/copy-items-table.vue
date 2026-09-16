@@ -10,7 +10,7 @@
       <!-- eslint-disable-next-line no-restricted-imports -->
       <DataTable
         :value="copyItems"
-        dataKey="productNumber"
+        dataKey="lineKey"
         :scrollable="true"
         scrollHeight="10000000px"
         class="p-datatable-sm"
@@ -51,6 +51,7 @@
           <template #body="slotProps">
             <div class="d-flex justify-content-center align-items-center">
               <button
+                v-if="!isViewMode"
                 class="btn btn-sm btn-red"
                 type="button"
                 :title="$t('common.btn.delete')"
@@ -59,12 +60,22 @@
                 <span class="bi bi-trash"></span>
               </button>
               <button
+                v-if="!isViewMode"
                 class="btn btn-sm btn-main ml-2"
                 type="button"
                 :title="$t('common.btn.edit')"
                 @click="$emit('edit-item', slotProps.data)"
               >
                 <span class="bi bi-brush"></span>
+              </button>
+              <button
+                v-if="!isViewMode && !isFullyFilled(slotProps.data)"
+                class="btn btn-sm btn-green ml-2"
+                type="button"
+                :title="$t('view.sale.saleOrder.fillFromStockBtn')"
+                @click="$emit('fill-from-stock', slotProps.data)"
+              >
+                <span class="bi bi-box-arrow-in-down"></span>
               </button>
             </div>
           </template>
@@ -73,7 +84,12 @@
         <Column field="image" header="" style="width: 50px">
           <template #body="slotProps">
             <div class="image-container">
-              <div v-if="slotProps.data.imagePath">
+              <img
+                v-if="slotProps.data.imageBase64"
+                :src="slotProps.data.imageBase64"
+                class="copy-img-thumb"
+              />
+              <div v-else-if="slotProps.data.imagePath">
                 <imagePreview
                   :imageName="slotProps.data.imagePath"
                   :path="slotProps.data.imagePath"
@@ -87,8 +103,25 @@
         </Column>
 
         <Column field="stockNumber" :header="$t('view.sale.saleOrder.productionNumber')" style="min-width: 150px">
-          <template #body>
-            <span class="text-muted font-italic">{{ $t('view.sale.saleOrder.needsProduction') }}</span>
+          <template #body="slotProps">
+            <div class="d-flex flex-column">
+              <span class="text-muted font-italic">{{ $t('view.sale.saleOrder.needsProduction') }}</span>
+              <small v-if="slotProps.data.sourceStockNumber" class="text-main">
+                {{ $t('view.sale.saleOrder.copyFromSource', { stockNumber: slotProps.data.sourceStockNumber }) }}
+              </small>
+              <small v-if="hasOrderedQty(slotProps.data)" class="text-main">
+                {{
+                  $t('view.sale.saleOrder.copyLineProgress', {
+                    ordered: slotProps.data.orderedQty,
+                    filled: filledQtyFor(slotProps.data),
+                    qty: slotProps.data.qty || 0
+                  })
+                }}
+              </small>
+              <span v-if="isFullyFilled(slotProps.data)" class="badge badge-success mt-1">
+                {{ $t('view.sale.saleOrder.fullyFilledBadge') }}
+              </span>
+            </div>
           </template>
         </Column>
 
@@ -96,7 +129,7 @@
           <template #body="slotProps">
             <div>
               <input
-                v-if="!slotProps.data.isConfirm && !slotProps.data.invoice"
+                v-if="!isViewMode"
                 v-model="slotProps.data.productNumber"
                 type="text"
                 class="form-control bg-input input-bg"
@@ -113,7 +146,7 @@
         <Column field="description" :header="$t('view.sale.saleOrder.description')" style="min-width: 200px">
           <template #body="slotProps">
             <input
-              v-if="!slotProps.data.isConfirm && !slotProps.data.invoice"
+              v-if="!isViewMode"
               v-model="slotProps.data.description"
               type="text"
               class="form-control bg-input input-bg"
@@ -200,7 +233,7 @@
           <template #body="slotProps">
             <div class="qty-container">
               <input
-                v-if="!slotProps.data.isConfirm && !slotProps.data.invoice"
+                v-if="!isViewMode"
                 v-model.number="slotProps.data.appraisalPrice"
                 type="number"
                 class="form-control text-right bg-input input-bg"
@@ -220,7 +253,7 @@
           <template #body="slotProps">
             <div class="qty-container">
               <input
-                v-if="!slotProps.data.isConfirm && !slotProps.data.invoice"
+                v-if="!isViewMode"
                 v-model.number="slotProps.data.discountPercent"
                 type="number"
                 class="form-control text-right bg-input input-bg"
@@ -277,6 +310,7 @@
           <template #body="slotProps">
             <div class="qty-container">
               <input
+                v-if="!isViewMode"
                 v-model.number="slotProps.data.qty"
                 type="number"
                 class="form-control text-right bg-input input-bg"
@@ -285,6 +319,9 @@
                 @blur="$emit('blur-qty', { item: slotProps.data, stockNumber: slotProps.data.stockNumber, field: 'qty', event: $event })"
                 style="background-color: #b5dad4; width: 100%"
               />
+              <span v-else class="confirmed-text text-right">
+                {{ slotProps.data.qty || 0 }}
+              </span>
             </div>
           </template>
         </Column>
@@ -437,10 +474,19 @@ export default {
     formSaleOrder: {
       type: Object,
       default: () => ({})
+    },
+    isViewMode: {
+      type: Boolean,
+      default: false
+    },
+    // lineKey ของ copyItem → qty รวมของบรรทัดสินค้าจริงที่เติมมาจากบรรทัดนั้น (sourceCopyLineKey ตรงกัน)
+    filledQtyByCopyLineKey: {
+      type: Object,
+      default: () => ({})
     }
   },
 
-  emits: ['delete-item', 'edit-item', 'blur-price', 'blur-qty', 'blur-description'],
+  emits: ['delete-item', 'edit-item', 'blur-price', 'blur-qty', 'blur-description', 'fill-from-stock'],
 
   computed: {
     activeRowItems() {
@@ -458,6 +504,18 @@ export default {
 
     formatDocMoney(value) {
       return formatDocumentMoney(value)
+    },
+
+    hasOrderedQty(item) {
+      return item.orderedQty !== undefined && item.orderedQty !== null
+    },
+
+    filledQtyFor(item) {
+      return this.filledQtyByCopyLineKey[item.lineKey] || 0
+    },
+
+    isFullyFilled(item) {
+      return (Number(item.qty) || 0) <= 0
     },
 
     getAppraisalPrice(item) {
@@ -733,6 +791,13 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.copy-img-thumb {
+  width: 25px;
+  height: 25px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
 }
 
 /* Confirmed text styling */

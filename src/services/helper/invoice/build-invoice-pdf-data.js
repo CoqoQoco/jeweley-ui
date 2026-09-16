@@ -1,7 +1,8 @@
 // สร้าง context/pdf-data สำหรับ "ใบกำกับสินค้า A4" — ใช้ร่วมกันระหว่างหน้า invoice-detail (web/mobile)
 // และหน้า POS มือถือตอนขายสำเร็จ ห้ามก๊อปโค้ด logic นี้ซ้ำที่อื่น
 
-// ย้ายมาจาก loadInvoiceData() ใน views/mobile/sale/invoice-detail-view.vue แบบตรงตัว — ห้ามปรับ logic
+// ย้ายมาจาก loadInvoiceData() ใน views/mobile/sale/invoice-detail-view.vue แบบตรงตัว
+// P4-3: แก้ step 4-5 ให้ scope ด้วย invoice === invoiceNumber ก่อนเสมอ (เดิม match stockNumber ตรงๆ ปนข้าม invoice ได้)
 export async function loadInvoiceContext(invoiceNumber, { invoiceStore, saleOrderStore }) {
   // 1. Get Invoice data
   const invoiceResponse = await invoiceStore.fetchGet({
@@ -51,24 +52,33 @@ export async function loadInvoiceContext(invoiceNumber, { invoiceStore, saleOrde
     stockItems = parsedData.filter((item) => item.stockNumber != null)
   }
 
-  // 4. Filter: only items that are in confirmedItems
-  const confirmedItems = invoiceResponse.confirmedItems || []
-  const invoiceItems = stockItems.filter((item) => {
-    return confirmedItems.some((ci) => ci.stockNumber === item.stockNumber)
-  })
+  // 4. เฉพาะบรรทัดที่เป็นของ invoice นี้จริงๆ (invoice === invoiceNumber) ก่อนเสมอ — กันสองบรรทัดเลขสินค้าเดียวกัน
+  // ที่ confirm ให้คนละใบแจ้งหนี้ปนกัน (ห้าม match ด้วย stockNumber ตรงๆ ข้าม invoice)
+  const stockConfirmPool = (soResponse.stockConfirm || []).filter(
+    (ci) => ci.invoice === invoiceResponse.invoiceNumber
+  )
 
-  // 5. Map stockConfirm → set id, appraisalPrice, qty, discountPercent, isConfirm, isInvoice
-  const stockConfirm = soResponse.stockConfirm || []
-  invoiceItems.forEach((item) => {
-    const confirmed = stockConfirm.find((c) => c.stockNumber === item.stockNumber)
-    if (confirmed) {
-      item.id = confirmed.id
-      item.appraisalPrice = confirmed.priceOrigin
-      item.qty = confirmed.qty
-      item.discountPercent = confirmed.discount
-      item.isConfirm = true
-      item.isInvoice = true
+  // 5. จับคู่ SO JSON line กับ stockConfirmPool แบบ "ใช้แล้วตัดออก" (lineKey ก่อน แล้ว fallback stockNumber)
+  // set id, appraisalPrice, qty, discountPercent, isConfirm, isInvoice — เก็บเฉพาะ line ที่จับคู่ได้จริง
+  const invoiceItems = stockItems.filter((item) => {
+    let matchIndex = stockConfirmPool.findIndex(
+      (ci) => ci.lineKey && item.lineKey && ci.lineKey === item.lineKey
+    )
+    if (matchIndex === -1) {
+      matchIndex = stockConfirmPool.findIndex(
+        (ci) => !ci.lineKey && ci.stockNumber === item.stockNumber
+      )
     }
+    if (matchIndex === -1) return false
+
+    const [confirmed] = stockConfirmPool.splice(matchIndex, 1)
+    item.id = confirmed.id
+    item.appraisalPrice = confirmed.priceOrigin
+    item.qty = confirmed.qty
+    item.discountPercent = confirmed.discount
+    item.isConfirm = true
+    item.isInvoice = true
+    return true
   })
 
   return { invoiceData, soData: soResponse, invoiceItems }
@@ -85,7 +95,12 @@ export function toInvoicePdfData({ invoiceData, invoiceItems }) {
       freightAndInsurance: invoiceData.freightAndInsurance || 0,
       vatPercent: invoiceData.vatPercent || 0,
       salePerson: invoiceData.salePerson || null,
-      saleSupport: invoiceData.saleSupport || null
+      saleSupport: invoiceData.saleSupport || null,
+      // D6: มัดจำที่หักตอนออก invoice + เงินที่รับชำระเพิ่มเติมแล้ว — ให้ InvoicePdfBuilder หักออกจากยอดสุทธิ
+      deposit: invoiceData.deposit || 0,
+      amountPaid: Array.isArray(invoiceData.payments)
+        ? invoiceData.payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
+        : 0
     },
     customer: {
       name: invoiceData.customerName,

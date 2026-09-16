@@ -80,6 +80,35 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
       }
     },
 
+    // ตรวจ qtyAvailable สดจากคลัง ณ ตอนนี้ (ใช้ใน SO refresh + modal pre-check ก่อนยืนยัน/ออก invoice)
+    // chunk คำขอที่ 500 stockNumbers/ครั้ง ตาม API contract ของ StockProduct/Availability
+    async fetchStockAvailability(stockNumbers, { skipLoading = true, skipError = true } = {}) {
+      const numbers = [...new Set((stockNumbers || []).filter(Boolean))]
+      if (numbers.length === 0) return []
+
+      const CHUNK_SIZE = 500
+      const chunks = []
+      for (let i = 0; i < numbers.length; i += CHUNK_SIZE) {
+        chunks.push(numbers.slice(i, i + CHUNK_SIZE))
+      }
+
+      try {
+        const results = await Promise.all(
+          chunks.map((chunk) =>
+            api.jewelry.post(
+              'StockProduct/Availability',
+              { stockNumbers: chunk },
+              { skipLoading, skipError }
+            )
+          )
+        )
+        return results.flatMap((res) => (Array.isArray(res) ? res : []))
+      } catch (error) {
+        console.error('Error fetching stock availability:', error)
+        return []
+      }
+    },
+
     async fetchDataSearchReceiptExport({ sort, formValue, title }) {
       try {
         this.dataSearchExport = {}

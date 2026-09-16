@@ -252,9 +252,12 @@ export class ReceiptTextBuilder {
       ? toNumber(this.data.paidAmount)
       : this.payments.reduce((sum, p) => sum + toNumber(p?.amount), 0)
 
+    // D6: มัดจำที่หักจากใบสั่งขาย (SO deposit) — หักออกจากยอดคงเหลือด้วย ไม่ใช่แค่เงินที่จ่ายหน้างาน (payments)
+    this.deposit = toNumber(this.data.deposit)
+
     this.remainingAmount = this.isProvided(this.data.remainingAmount)
       ? toNumber(this.data.remainingAmount)
-      : this.grandTotal - this.paidAmount
+      : this.grandTotal - this.paidAmount - this.deposit
   }
 
   isProvided(value) {
@@ -359,6 +362,11 @@ export class ReceiptTextBuilder {
 
   buildPaymentLines() {
     const lines = []
+
+    // D6: มัดจำที่หักจากใบสั่งขาย — แสดงก่อนรายการชำระหน้างาน (ถ้ามี)
+    if (this.deposit > 0) {
+      lines.push(summaryLine('Deposit', formatMoney(this.deposit)))
+    }
 
     this.payments.forEach((p) => {
       lines.push(lineLR(paymentLabel(p), formatMoney(p?.amount)))

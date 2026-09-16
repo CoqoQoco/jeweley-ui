@@ -360,6 +360,8 @@
       :modelStock="modelEditStock"
       :currencyUnit="customer.currencyUnit"
       :currencyRate="customer.currencyMultiplier"
+      :mode="modelEditStock.stockNumber ? 'stock' : 'copy'"
+      :markup="customer.markup"
       @closeModal="onCloseEditStockModal"
     />
 
@@ -451,6 +453,8 @@ import { getBreakdownSetting } from '@/services/helper/breakdown-setting-store.j
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs'
 import { formatDocCurrency } from '@/services/utils/decimal.js'
 import { computeDocumentTotals, convertedUnitPrice } from '@/services/utils/money.js'
+import { buildCopyItem } from '@/services/utils/copy-item.js'
+import { compressCopyItemImage } from '@/services/helper/file/compress-image.js'
 import { warning, success, error } from '@/services/alert/sweetAlerts.js'
 import { storage } from '@/services/storage.js'
 import dayjs from 'dayjs'
@@ -988,31 +992,8 @@ export default {
       this.editStockIndex = null
     },
     copyItem(item) {
-      // Deep copy the item
-      const newItem = JSON.parse(JSON.stringify(item))
-
-      // Reset identifiers to make it a true copy
-      newItem.stockNumber = null
-      newItem.stockNumberOrigin = null
-
-      // Generate unique ID for the copied item to prevent reference issues
-      newItem._copyId = Date.now() + Math.random()
-
-      // Ensure materials array is a new instance
-      if (newItem.materials && Array.isArray(newItem.materials)) {
-        newItem.materials = newItem.materials.map((material) => ({ ...material }))
-      }
-
-      // Ensure priceTransactions array is a new instance
-      if (newItem.priceTransactions && Array.isArray(newItem.priceTransactions)) {
-        newItem.priceTransactions = newItem.priceTransactions.map((transaction) => ({
-          ...transaction
-        }))
-      }
-
-      // Reset any computed/calculated prices to ensure independent calculation
-      newItem.appraisalPrice = newItem.priceOrigin || newItem.price || 0
-
+      // หน้าใบเสนอราคายังคง reset ราคาประเมินกลับเป็นราคาตั้งต้นเหมือนเดิม (resetAppraisal)
+      const newItem = buildCopyItem(item, { resetAppraisal: true })
       this.customer.quotationItems.push(newItem)
     },
 
@@ -1022,16 +1003,20 @@ export default {
       this.$refs.copyImageInput.click()
     },
 
-    onCopyImageChange(event) {
+    async onCopyImageChange(event) {
       const file = event.target.files[0]
       if (!file || !this.copyUploadTarget) return
+
+      // บีบอัดก่อนเสมอ (สูงสุด 800px, ~150KB) — เก็บเป็น imageBase64 ตรงๆ ใน JSON ของใบเสนอราคา
+      // ไม่บีบอัดจะทำให้ JSON เอกสารบวมมาก (พบจริงถึง 1.8MB ต่อใบ)
+      const compressedFile = await compressCopyItemImage(file)
 
       const reader = new FileReader()
       reader.onload = (e) => {
         this.copyUploadTarget.imageBase64 = e.target.result
         this.copyUploadTarget = null
       }
-      reader.readAsDataURL(file)
+      reader.readAsDataURL(compressedFile)
     },
 
     onOpenCostVersionPicker() {

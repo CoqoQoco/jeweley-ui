@@ -767,6 +767,7 @@ export const receipt = {
   freight: 'ค่าขนส่ง',
   vat: 'ภาษีมูลค่าเพิ่ม',
   grandTotal: 'รวมสุทธิ',
+  depositApplied: 'หักมัดจำ',
   paidBy: 'ชำระโดย',
   paid: 'รับเงิน',
   remaining: 'คงเหลือ',

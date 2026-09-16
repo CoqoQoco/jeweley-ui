@@ -620,9 +620,23 @@
                   <div class="title-text-lg mb-3">{{ $t('view.sale.saleOrder.paymentInfo') }}</div>
 
                   <div class="row">
-                    <!-- ราคามัดจำ -->
+                    <!-- ราคามัดจำ / หักมัดจำจากใบสั่งขาย -->
                     <div class="col-md-3">
-                      <div class="form-group">
+                      <div class="form-group" v-if="hasDepositBalance">
+                        <label class="title-text">{{ $t('view.sale.saleOrder.depositApplyLabel') }}</label>
+                        <InputTextGeneric
+                          type="number"
+                          :min="0"
+                          :max="maxDepositApply"
+                          step="0.01"
+                          :modelValue="depositApplyAmount"
+                          @update:modelValue="onDepositApplyInput"
+                        />
+                        <small class="text-muted">{{
+                          $t('view.sale.saleOrder.depositBalanceHint', { balance: formatPriceWithCurrency(soDepositBalance) })
+                        }}</small>
+                      </div>
+                      <div class="form-group" v-else>
                         <label class="title-text">{{ $t('view.sale.saleOrder.depositPrice') }}</label>
                         <input
                           v-model.number="depositAmount"
@@ -682,7 +696,7 @@
                       <div class="form-group">
                         <label class="title-text">{{ $t('view.sale.saleOrder.remainingBalance') }}</label>
                         <div class="form-control bg-light font-weight-bold text-primary">
-                          {{ formatPriceWithCurrency(grandTotal - (depositAmount || 0)) }}
+                          {{ formatPriceWithCurrency(grandTotal - effectiveDepositAmount) }}
                         </div>
                       </div>
                     </div>
@@ -730,7 +744,7 @@
                 class="btn btn-green mr-2"
                 type="button"
                 @click="generateInvoice"
-                :disabled="selectedItemsCount === 0"
+                :disabled="selectedItemsCount === 0 || isSubmitting"
               >
                 <i class="bi bi-file-earmark-pdf mr-1"></i>
                 {{ $t('view.sale.saleOrderList.createInvoice') }}
@@ -762,8 +776,10 @@ import Row from 'primevue/row'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { useSaleChannelApiStore } from '@/stores/modules/api/sale/sale-channel-store.js'
+import { usrSaleOrderDepositApiStore } from '@/stores/modules/api/sale/sale-order-deposit-store.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { getPaymentApiName } from '@/constants/payment-methods.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
@@ -781,7 +797,8 @@ export default {
     Row,
     DropdownGeneric,
     CheckboxGeneric,
-    imagePreview
+    imagePreview,
+    InputTextGeneric
   },
 
   props: {
@@ -806,17 +823,23 @@ export default {
       selectedItems: [],
       invoiceStore: useInvoiceApiStore(),
       saleChannelStore: useSaleChannelApiStore(),
+      depositStore: usrSaleOrderDepositApiStore(),
       // Additional invoice fields
       specialDiscount: 0, // ส่วนลดพิเศษ
       specialAddition: 0, // ส่วนเพิ่มพิเศษ
       freightAndInsurance: 0, // ค่าขนส่งและประกันภัย
       vatPercent: 0, // VAT เป็นเปอร์เซ็นต์
-      depositAmount: 0, // ราคามัดจำ
+      depositAmount: 0, // ราคามัดจำ (เคสไม่มีมัดจำ SO ค้างอยู่)
+      // D5: มัดจำคงเหลือของ SO — เมื่อมี ให้หักจากมัดจำ SO แทนกรอกใหม่
+      soDepositBalance: 0,
+      depositApplyAmount: 0,
+      depositApplyTouched: false,
       paymentMethod: 'cash', // วิธีการชำระเงิน
       paymentDays: 0, // ระยะเวลาการชำระเงิน (วัน)
       dkInvoiceNumber: null,
       saleChannelCode: null,
-      saleChannelList: []
+      saleChannelList: [],
+      isSubmitting: false
     }
   },
 
@@ -929,6 +952,20 @@ export default {
     // ยอดรวมสุดท้ายรวม VAT — ปัดครึ่งขึ้นเป็นจำนวนเต็มเสมอ ให้ตรงกับยอดที่พิมพ์บนใบแจ้งหนี้
     grandTotal() {
       return this.documentTotals.grandTotalRounded
+    },
+
+    // D5: SO มีมัดจำคงเหลือ → ใช้ช่อง "หักมัดจำ" แทนช่องกรอกมัดจำอิสระ
+    hasDepositBalance() {
+      return this.soDepositBalance > 0
+    },
+
+    maxDepositApply() {
+      return Math.max(0, Math.min(this.soDepositBalance, this.grandTotal))
+    },
+
+    // ยอดมัดจำที่ใช้จริงในการคำนวณ/ส่ง API — สลับตามว่า SO มีมัดจำคงเหลือให้หักหรือไม่
+    effectiveDepositAmount() {
+      return this.hasDepositBalance ? this.depositApplyAmount || 0 : this.depositAmount || 0
     }
   },
 
@@ -940,6 +977,17 @@ export default {
         }
       },
       immediate: true
+    },
+
+    // prefill "หักมัดจำ" ให้เท่า max ใหม่เสมอตราบใดที่ผู้ใช้ยังไม่ได้แก้ค่าเอง (ตามที่เลือกรายการเปลี่ยน)
+    // ถ้าผู้ใช้แก้เองแล้ว แค่หรี่ลงเมื่อ max ใหม่ต่ำกว่าค่าที่พิมพ์ไว้ (กันเกิน max)
+    maxDepositApply(newMax) {
+      if (!this.hasDepositBalance) return
+      if (!this.depositApplyTouched) {
+        this.depositApplyAmount = newMax
+      } else if (this.depositApplyAmount > newMax) {
+        this.depositApplyAmount = newMax
+      }
     }
   },
 
@@ -952,6 +1000,8 @@ export default {
       this.specialAddition = Number(this.saleOrderData.specialAddition) || 0
       this.freightAndInsurance = Number(this.saleOrderData.freight) || 0
       this.vatPercent = Number(this.saleOrderData.vatPercent) || 0
+      this.depositAmount = 0
+      this.depositApplyTouched = false
 
       this.saleChannelList = await this.saleChannelStore.fetchActiveList({ skipLoading: true })
 
@@ -961,6 +1011,28 @@ export default {
         const currentChannel = await this.saleChannelStore.fetchCurrent({ skipLoading: true })
         this.saleChannelCode = currentChannel ? currentChannel.code : null
       }
+
+      await this.loadDepositBalance()
+    },
+
+    // D5: ดึงมัดจำคงเหลือของ SO นี้ — เมื่อมี ให้เปลี่ยนช่องกรอกมัดจำเป็น "หักมัดจำ"
+    async loadDepositBalance() {
+      const soNumber = this.saleOrderData.number || this.saleOrderData.soNumber
+      if (!soNumber) {
+        this.soDepositBalance = 0
+        this.depositApplyAmount = 0
+        return
+      }
+
+      const res = await this.depositStore.fetchList({ soNumber })
+      this.soDepositBalance = res?.balance || 0
+      this.depositApplyAmount = this.soDepositBalance > 0 ? this.maxDepositApply : 0
+    },
+
+    onDepositApplyInput(val) {
+      this.depositApplyTouched = true
+      const num = Number(val) || 0
+      this.depositApplyAmount = Math.min(Math.max(num, 0), this.maxDepositApply)
     },
 
     toggleSelectAll(value) {
@@ -1219,6 +1291,9 @@ export default {
     // Helper method to get payment ID from payment terms value
 
     async generateInvoice() {
+      // U4: กันกดออก invoice ซ้ำระหว่างรอ API
+      if (this.isSubmitting) return
+
       if (this.selectedItemsCount === 0) {
         warning(this.$t('view.sale.saleOrder.validation.selectAtLeastOne'))
         return
@@ -1234,9 +1309,29 @@ export default {
         return
       }
 
+      this.isSubmitting = true
+
+      try {
+        await this.submitInvoice()
+      } finally {
+        this.isSubmitting = false
+      }
+    },
+
+    async submitInvoice() {
       const selectedStockItems = this.stockItems.filter((item) =>
         this.selectedItems.includes(item.id)
       )
+
+      // P4-3: line-aware invoicing — ส่ง saleOrderProductId ก็ต่อเมื่อ "ทุกบรรทัด" มี id (แถวที่ confirm แล้วจาก SO Get)
+      // เท่านั้น (backend ปฏิเสธ mixed request) ถ้าไม่ครบทุกบรรทัด กลับไปใช้พฤติกรรมเดิม (match ด้วย stockNumber)
+      const allHaveSaleOrderProductId =
+        selectedStockItems.length > 0 && selectedStockItems.every((item) => item.id !== undefined && item.id !== null)
+      if (!allHaveSaleOrderProductId) {
+        console.warn(
+          '[invoice-modal] Some selected items are missing saleOrderProductId — falling back to stockNumber-only Invoice/Create (no saleOrderProductId sent).'
+        )
+      }
 
       // Prepare invoice data for API
       const invoiceRequest = {
@@ -1254,7 +1349,9 @@ export default {
           currencyRate: this.saleOrderData.currencyRate || 1.0,
 
           deliveryDate: this.saleOrderData.expectedDeliveryDate || this.saleOrderData.deliveryDate,
-          deposit: this.depositAmount || 0,
+          deposit: this.effectiveDepositAmount,
+          // D5: มี SO deposit balance ให้หัก → ส่ง depositApplyAmount คู่กับ deposit เสมอ (ค่าเดียวกัน)
+          ...(this.hasDepositBalance ? { depositApplyAmount: this.effectiveDepositAmount } : {}),
           saleChannelCode: this.saleChannelCode || null,
 
           specialDiscount: this.specialDiscount || 0, // ส่วนลดพิเศษ
@@ -1281,6 +1378,7 @@ export default {
             stockNumber: item.stockNumber,
             stockNumberOrigin: item.stockNumberOrigin || item.stockNumber,
             id: item.id,
+            ...(allHaveSaleOrderProductId ? { saleOrderProductId: item.id } : {}),
             priceOrigin: item.appraisalPrice || item.price || 0,
             currencyUnit: this.saleOrderData.currencyUnit || 'THB',
             currencyRate: this.saleOrderData.currencyRate || 1.0,
@@ -1321,6 +1419,9 @@ export default {
       this.freightAndInsurance = 0
       this.vatPercent = 0
       this.depositAmount = 0
+      this.soDepositBalance = 0
+      this.depositApplyAmount = 0
+      this.depositApplyTouched = false
       this.paymentMethod = 'cash'
       this.paymentDays = 0
       this.dkInvoiceNumber = null

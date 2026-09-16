@@ -153,9 +153,12 @@ export class Receipt80mmBuilder {
       ? toNumber(this.data.paidAmount)
       : this.payments.reduce((sum, p) => sum + toNumber(p?.amount), 0)
 
+    // D6: มัดจำที่หักจากใบสั่งขาย (SO deposit) — หักออกจากยอดคงเหลือด้วย ไม่ใช่แค่เงินที่จ่ายหน้างาน (payments)
+    this.deposit = toNumber(this.data.deposit)
+
     this.remainingAmount = this.isProvided(this.data.remainingAmount)
       ? toNumber(this.data.remainingAmount)
-      : this.grandTotal - this.paidAmount
+      : this.grandTotal - this.paidAmount - this.deposit
   }
 
   isProvided(value) {
@@ -286,6 +289,11 @@ export class Receipt80mmBuilder {
 
   getPaymentContent() {
     const rows = []
+
+    // D6: มัดจำที่หักจากใบสั่งขาย — แสดงก่อนรายการชำระหน้างาน (ถ้ามี)
+    if (this.deposit > 0) {
+      rows.push(kvRow(t('depositApplied'), formatMoney(this.deposit), { bold: true }))
+    }
 
     if (this.payments.length) {
       rows.push({ text: `${t('paidBy')}:`, fontSize: 9, bold: true, margin: [0, 2, 0, 1] })
@@ -421,6 +429,9 @@ export class Receipt80mmBuilder {
 
   estimatePaymentHeight() {
     let height = 0
+    if (this.deposit > 0) {
+      height += 2 + lineHeight(9) // deposit-applied row, margin [0,1,0,1] (default kvRow margin)
+    }
     if (this.payments.length) {
       height += 3 + lineHeight(9) // "ชำระโดย:" margin [0,2,0,1]
       height += this.payments.length * (2 + lineHeight(8)) // แต่ละ payment margin [0,1,0,1]
