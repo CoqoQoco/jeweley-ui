@@ -21,6 +21,7 @@ import settingLang from './view/setting/en.js'
 import reportProductionLang from './view/report-production/en.js'
 import ticketLang from './view/ticket/en.js'
 import announcementLang from './view/announcement/en.js'
+import goldPriceLang from './view/gold-price/en.js'
 import notificationLang from './view/notification/en.js'
 import graphLang from './view/graph/en.js'
 import downloadsLang from './view/downloads/en.js'
@@ -233,6 +234,7 @@ export default {
     },
     ticket: { ...ticketLang },
     announcement: { ...announcementLang },
+    goldPrice: { ...goldPriceLang },
     notification: { ...notificationLang },
     graph: { ...graphLang },
     downloads: { ...downloadsLang },

@@ -21,6 +21,7 @@ import settingLang from './view/setting/th.js'
 import reportProductionLang from './view/report-production/th.js'
 import ticketLang from './view/ticket/th.js'
 import announcementLang from './view/announcement/th.js'
+import goldPriceLang from './view/gold-price/th.js'
 import notificationLang from './view/notification/th.js'
 import graphLang from './view/graph/th.js'
 import downloadsLang from './view/downloads/th.js'
@@ -233,6 +234,7 @@ export default {
     },
     ticket: { ...ticketLang },
     announcement: { ...announcementLang },
+    goldPrice: { ...goldPriceLang },
     notification: { ...notificationLang },
     graph: { ...graphLang },
     downloads: { ...downloadsLang },

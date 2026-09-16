@@ -56,7 +56,7 @@ export default {
     widgetProps() {
       return {
         'quick-actions': { flags: this.quickActionsFlags },
-        'announcement-feed': {
+        'home-feed-tabs': {
           items: this.homeDashboardStore.announcementFeed.data,
           total: this.homeDashboardStore.announcementFeed.total,
           canManage: this.canManageAnnouncement
@@ -66,7 +66,7 @@ export default {
 
     widgetListeners() {
       return {
-        'announcement-feed': {
+        'home-feed-tabs': {
           'load-more': this.loadMoreAnnouncements
         }
       }

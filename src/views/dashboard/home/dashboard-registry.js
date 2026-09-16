@@ -12,6 +12,12 @@
 // stock-summary, customer-production-status, favorite-reports) ยังอยู่ครบใน home/components/
 // เผื่อเอากลับมาใช้
 //
+// 2026-09-16: สลับ announcement-feed → home-feed-tabs (order 10 เท่าเดิม, permissions: []
+// เท่าเดิม) — ห่อ 2 แท็บ: "📢 ข่าวประกาศ" (default, เนื้อหาเดิมของ announcement-feed ไม่แก้ไฟล์นั้น)
+// กับ "🪙 ราคาทองวันนี้" (gold-price-panel.vue ใหม่) แท็บทองใช้ store gold-price-store.js แยก
+// ต่างหาก โหลดแบบ lazy ตอนเปิดแท็บครั้งแรกเท่านั้น — ไม่ได้อยู่ใน home-dashboard-store.js
+// loadDashboard() orchestrator เพราะไม่ต้องรอ permission gate (permissions: [] เหมือนข่าว)
+//
 // ⚠️ เพิ่ม/แก้ widget = ต้องแก้ครบ 3 จุด ไม่งั้น widget โผล่แต่ไม่มีข้อมูล
 //    หรือยิง API ทั้งที่ผู้ใช้ไม่มีสิทธิ์:
 //      1) ไฟล์นี้                          — key + permissions + order
@@ -21,10 +27,10 @@
 
 import GreetingBar from './components/greeting-bar.vue'
 import QuickActions from './components/quick-actions.vue'
-import AnnouncementFeed from './components/announcement-feed.vue'
+import HomeFeedTabs from './components/home-feed-tabs.vue'
 
 export const DASHBOARD_WIDGETS = [
   { key: 'greeting-bar', component: GreetingBar, permissions: [], order: 0 },
   { key: 'quick-actions', component: QuickActions, permissions: [], order: 5 },
-  { key: 'announcement-feed', component: AnnouncementFeed, permissions: [], order: 10 }
+  { key: 'home-feed-tabs', component: HomeFeedTabs, permissions: [], order: 10 }
 ]
