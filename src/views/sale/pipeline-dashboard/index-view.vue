@@ -1,111 +1,127 @@
 <template>
   <div class="app-container">
-    <searchView v-model:modelForm="form" @search="onSearchFilter" @clear="onClearFilter" />
-    <summaryView />
-    <div class="pipeline-chart-grid">
-      <div class="pipeline-chart-grid-left">
-        <funnelChartView />
-      </div>
-      <div class="pipeline-chart-grid-right">
-        <monthlyChartView />
-        <topCustomersView />
-      </div>
-    </div>
-    <p class="pipeline-caveat">
-      <i class="bi bi-info-circle"></i>
-      {{ $t('view.sale.pipelineDashboard.caveat') }}
-    </p>
+    <DashboardHeaderGeneric
+      :title="$t('view.sale.pipelineDashboard.title')"
+      :subtitle="$t('view.sale.pipelineDashboard.subtitle')"
+      icon="bi-cash-coin"
+      @refresh="onRefresh"
+    />
+
+    <searchView class="mb-2" :modelForm="filter" @search="onSearchFilter" @clear="onClearFilter" />
+
+    <summaryView :filter="filter" />
+
+    <productGroupView :filter="filter" />
   </div>
 </template>
 
 <script>
-import { useSaleReportApiStore } from '@/stores/modules/api/sale/sale-report-api.js'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
+
+import DashboardHeaderGeneric from '@/components/generic/DashboardHeaderGeneric.vue'
 
 import searchView from './components/search-view.vue'
 import summaryView from './components/summary-view.vue'
-import funnelChartView from './components/funnel-chart-view.vue'
-import monthlyChartView from './components/monthly-chart-view.vue'
-import topCustomersView from './components/top-customers-view.vue'
+import productGroupView from './components/product-group-view.vue'
 
-const interfaceForm = {
-  start: null,
-  end: null
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
+const THAI_TIMEZONE = 'Asia/Bangkok'
+
+// ช่วงวันที่ default — ต้นเดือนปัจจุบันถึงวันนี้ ยึดเวลาไทยเสมอ (ไม่ใช่ timezone เครื่อง)
+const buildDefaultDateRange = () => {
+  const now = dayjs().tz(THAI_TIMEZONE)
+  return {
+    start: now.startOf('month').toDate(),
+    end: now.endOf('day').toDate()
+  }
 }
+
+const buildDefaultFilter = () => ({
+  ...buildDefaultDateRange(),
+  saleChannelCodes: [],
+  customerCode: null,
+  customerName: null
+})
 
 export default {
   name: 'SalePipelineDashboardIndexView',
 
   components: {
+    DashboardHeaderGeneric,
     searchView,
     summaryView,
-    funnelChartView,
-    monthlyChartView,
-    topCustomersView
-  },
-
-  setup() {
-    const saleReportStore = useSaleReportApiStore()
-    return { saleReportStore }
+    productGroupView
   },
 
   data() {
     return {
-      form: { ...interfaceForm },
-      search: { ...interfaceForm }
+      filter: buildDefaultFilter(),
+      isApplyingRouteQuery: false
     }
   },
 
   watch: {
-    search: {
-      handler(val) {
-        this.saleReportStore.fetchPipelineSummary(val)
+    filter: {
+      handler() {
+        this.syncStateToQuery()
       },
-      deep: true,
-      immediate: true
+      deep: true
     }
   },
 
   methods: {
-    onSearchFilter(data) {
-      this.search = { ...data }
+    applyQueryToState(query) {
+      this.isApplyingRouteQuery = true
+
+      const defaultRange = buildDefaultDateRange()
+      this.filter = {
+        start: query.start ? new Date(query.start) : defaultRange.start,
+        end: query.end ? new Date(query.end) : defaultRange.end,
+        saleChannelCodes: query.channel ? String(query.channel).split(',').filter(Boolean) : [],
+        customerCode: query.customer || null,
+        customerName: query.customerName || null
+      }
+
+      this.$nextTick(() => {
+        this.isApplyingRouteQuery = false
+      })
+    },
+
+    syncStateToQuery() {
+      if (this.isApplyingRouteQuery) return
+
+      const query = {}
+      if (this.filter.start) query.start = dayjs(this.filter.start).format('YYYY-MM-DD')
+      if (this.filter.end) query.end = dayjs(this.filter.end).format('YYYY-MM-DD')
+      if (this.filter.saleChannelCodes && this.filter.saleChannelCodes.length) query.channel = this.filter.saleChannelCodes.join(',')
+      if (this.filter.customerCode) query.customer = this.filter.customerCode
+      if (this.filter.customerName) query.customerName = this.filter.customerName
+
+      this.$router.replace({ query }).catch(() => {})
+    },
+
+    onSearchFilter(formData) {
+      this.filter = { ...formData }
     },
 
     onClearFilter() {
-      this.form = { ...interfaceForm }
-      this.search = { ...interfaceForm }
+      this.filter = buildDefaultFilter()
+    },
+
+    onRefresh() {
+      // ยิงใหม่ด้วยค่า filter เดิม — ทุก child component watch `filter` แบบ deep อยู่แล้ว
+      this.filter = { ...this.filter }
     }
+  },
+
+  created() {
+    this.applyQueryToState(this.$route.query)
   }
 }
 </script>
 
-<style lang="scss" scoped>
-.pipeline-chart-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--sp-lg);
-  align-items: start;
-  margin-bottom: var(--sp-lg);
-}
-
-.pipeline-chart-grid-right {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-lg);
-}
-
-.pipeline-caveat {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-xs);
-  margin: 0;
-  color: var(--base-sub-color);
-  font-size: var(--fs-sm);
-  font-style: italic;
-}
-
-@media (max-width: 1024px) {
-  .pipeline-chart-grid {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
+<style lang="scss" scoped></style>

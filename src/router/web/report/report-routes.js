@@ -458,8 +458,8 @@ const routes = [
         component: SalePipelineDashboard,
         meta: {
           Displayname: {
-            en: 'Sales Pipeline',
-            th: 'ภาพรวมงานขาย'
+            en: 'Sales Overview',
+            th: 'ภาพรวมยอดขาย'
           },
           minorShow: true,
           permissions: [PERMISSIONS.SALE_VIEW]

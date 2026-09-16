@@ -1,6 +1,7 @@
 <template>
   <Modal
-    v-model="isShowModal"
+    :modelValue="isShowModal"
+    @update:modelValue="onModalVisibilityChange"
     :click-out="clickToClose"
     :max-width="width"
     teleportTarget="#modal-container"
@@ -88,6 +89,16 @@ export default {
   methods: {
     closeModal() {
       this.$emit('closeModal')
+    },
+    // click-out ของ vue-neat-modal (คลิกนอก .vue-neat-modal) ปิด modal ผ่าน update:modelValue โดยไม่ผ่านปุ่ม ✕
+    // ถ้าใช้ v-model เฉยๆ isShowModal ภายในจะถูกปิดเองแต่ไม่ emit closeModal กลับไป parent
+    // ทำให้ flag ของ parent (เช่น isShowDetail) ค้างเป็น true เปิด modal ซ้ำไม่ได้อีก
+    // เงื่อนไข this.showModal กันไม่ให้ emit ซ้ำตอน parent สั่งปิดเองอยู่แล้ว
+    onModalVisibilityChange(value) {
+      this.isShowModal = value
+      if (!value && this.showModal) {
+        this.$emit('closeModal')
+      }
     }
   },
   created() {

@@ -37,13 +37,16 @@
                     <label class="form-label required">
                       <i class="bi bi-currency-exchange mr-1"></i>{{ $t('view.sale.invoiceDetail.amount') }} ({{ invoiceData.currencyUnit || 'THB' }})
                     </label>
-                    <InputTextGeneric
-                      v-model="paymentData.amount"
-                      type="number"
-                      placeholder="0.00"
-                      :step="0.01"
-                      :min="0"
-                    />
+                    <div class="amount-input-group">
+                      <InputTextGeneric
+                        v-model="paymentData.amount"
+                        type="number"
+                        placeholder="0.00"
+                        :step="0.01"
+                        :min="0"
+                      />
+                      <span class="amount-input-group__suffix">{{ invoiceData.currencyUnit || 'THB' }}</span>
+                    </div>
                     <small class="form-text text-muted">
                       {{ $t('view.sale.invoiceDetail.remaining') }}: {{ formatNumber(remainingAmount) }}
                       {{ invoiceData.currencyUnit || 'THB' }}
@@ -195,6 +198,7 @@ import UploadImage from '@/components/prime-vue/UploadImage.vue'
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import { warning } from '@/services/alert/sweetAlerts.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { useMasterBankStore } from '@/stores/modules/api/master/master-bank-store.js'
 import { compressImage } from '@/services/utils/image-compress.js'
 import { PAYMENT_METHODS, getPaymentApiName } from '@/constants/payment-methods.js'
@@ -394,6 +398,25 @@ export default {
         return
       }
 
+      const amount = Number(this.paymentData.amount)
+      if (amount > this.remainingAmount) {
+        const unit = this.invoiceData.currencyUnit || 'THB'
+        confirmThenSubmit(
+          this.$t('view.sale.invoiceDetail.confirmOverpayMsg', {
+            amount: this.formatNumber(amount),
+            outstanding: this.formatNumber(this.remainingAmount),
+            unit
+          }),
+          this.$t('view.sale.invoiceDetail.confirmOverpayTitle'),
+          () => this.emitSavePayment()
+        )
+        return
+      }
+
+      this.emitSavePayment()
+    },
+
+    emitSavePayment() {
       const normalizedDate = new Date(this.paymentData.paymentDate)
       normalizedDate.setHours(0, 0, 0, 0)
 
@@ -423,6 +446,25 @@ export default {
 
 .payment-record-container {
   // Component-specific styles only
+}
+
+.amount-input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  :deep(.form-control) {
+    padding-right: calc(var(--sp-2xl) + 24px);
+  }
+
+  &__suffix {
+    position: absolute;
+    right: var(--sp-md);
+    font-weight: 700;
+    color: var(--base-font-color);
+    font-size: var(--fs-sm);
+    pointer-events: none;
+  }
 }
 
 .info-icon {

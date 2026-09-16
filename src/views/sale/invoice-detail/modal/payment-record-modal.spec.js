@@ -6,9 +6,12 @@ import PaymentRecordModal from './payment-record-modal.vue'
 vi.mock('@/services/alert/sweetAlerts.js', () => {
   const warning = vi.fn()
   const success = vi.fn()
-  const swAlert = { warning, success }
-  return { default: swAlert, warning, success }
+  const confirmSubmit = vi.fn((msg, title, cb) => cb({ isConfirmed: true }))
+  const swAlert = { warning, success, confirmSubmit }
+  return { default: swAlert, warning, success, confirmSubmit }
 })
+
+import { confirmSubmit } from '@/services/alert/sweetAlerts.js'
 
 const mockFetchBankList = vi.fn().mockResolvedValue([{ code: 'KBANK', nameTh: 'กสิกรไทย' }])
 vi.mock('@/stores/modules/api/master/master-bank-store.js', () => ({
@@ -24,7 +27,7 @@ vi.mock('@/components/modal/modal-view.vue', () => ({
   }
 }))
 
-function createWrapper(tMock) {
+function createWrapper(tMock, propsOverride) {
   const pinia = createPinia()
   return shallowMount(PaymentRecordModal, {
     global: {
@@ -36,7 +39,8 @@ function createWrapper(tMock) {
     props: {
       isShowModal: true,
       invoiceData: { invoiceNumber: 'INV-0001', grandTotal: 1000, currencyUnit: 'THB' },
-      paidAmount: 0
+      paidAmount: 0,
+      ...propsOverride
     }
   })
 }
@@ -78,6 +82,54 @@ describe('PaymentRecordModal', () => {
       expect(enResult).toBe('เงินสด (Cash)')
       expect(thResult).toBe(enResult)
       expect(thResult.startsWith('view.')).toBe(false)
+    })
+  })
+
+  describe('ยืนยันก่อนบันทึกเมื่อยอดเงินเกินยอดคงค้าง', () => {
+    it('จำนวนเงินเกินยอดคงค้าง → confirmThenSubmit ถูกเรียกด้วย title confirmOverpayTitle แล้ว emit save-payment', async () => {
+      const wrapper = createWrapper(null, { grandTotalRounded: 1000 })
+      await flushPromises()
+
+      wrapper.vm.paymentData.amount = 1500
+      wrapper.vm.paymentData.paymentMethod = 'cash'
+      await wrapper.vm.$nextTick()
+
+      await wrapper.vm.onSavePayment()
+
+      expect(confirmSubmit).toHaveBeenCalledTimes(1)
+      expect(confirmSubmit.mock.calls[0][1]).toBe('view.sale.invoiceDetail.confirmOverpayTitle')
+      expect(wrapper.emitted('save-payment')).toBeTruthy()
+      expect(wrapper.emitted('save-payment')[0][0].amount).toBe(1500)
+    })
+
+    it('กดยกเลิกในกล่องยืนยัน → ไม่ emit save-payment', async () => {
+      confirmSubmit.mockImplementationOnce(() => {})
+
+      const wrapper = createWrapper(null, { grandTotalRounded: 1000 })
+      await flushPromises()
+
+      wrapper.vm.paymentData.amount = 1500
+      wrapper.vm.paymentData.paymentMethod = 'cash'
+      await wrapper.vm.$nextTick()
+
+      await wrapper.vm.onSavePayment()
+
+      expect(confirmSubmit).toHaveBeenCalledTimes(1)
+      expect(wrapper.emitted('save-payment')).toBeFalsy()
+    })
+
+    it('จำนวนเงินไม่เกินยอดคงค้าง → ไม่เรียก confirmThenSubmit', async () => {
+      const wrapper = createWrapper(null, { grandTotalRounded: 1000 })
+      await flushPromises()
+
+      wrapper.vm.paymentData.amount = 500
+      wrapper.vm.paymentData.paymentMethod = 'cash'
+      await wrapper.vm.$nextTick()
+
+      await wrapper.vm.onSavePayment()
+
+      expect(confirmSubmit).not.toHaveBeenCalled()
+      expect(wrapper.emitted('save-payment')).toBeTruthy()
     })
   })
 })
