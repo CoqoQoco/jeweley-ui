@@ -551,6 +551,13 @@ export const saleOrder = {
   fullyFilledBadge: 'ครบแล้ว',
   copyLineProgress: 'สั่ง {ordered} · เติมแล้ว {filled} · ค้าง {qty}',
   filledFromCopyHint: 'เติมจากรายการรอผลิต',
+  createConvertBtn: 'สร้างใบแปลงสินค้า',
+  pendingConvertNotice: 'มีชิ้นที่แปลงเสร็จรอเติม {count} รายการ',
+  pendingConvertFillBtn: 'เติมของ',
+  pendingConvertPickLineTitle: 'เลือกบรรทัดที่จะเติม',
+  pendingConvertPickLineLabel: 'บรรทัดรอผลิต/รอแปลง',
+  pendingConvertColProduct: 'เลขที่ผลิตใหม่',
+  pendingConvertColCompleteDate: 'วันที่แปลงเสร็จ',
   soSummary: 'สรุปใบสั่งขาย',
   invoicedItems: 'สินค้ามี Invoice',
   confirmedItemsTitle: 'สินค้ายืนยันแล้ว',
@@ -606,7 +613,8 @@ export const saleOrder = {
     cancelConfirmTitle: 'ยกเลิกการยืนยันสำเร็จ',
     cancelConfirm: 'ยกเลิกการยืนยันสินค้า {stockNumber} แล้ว',
     deleteSO: 'ลบใบสั่งขายสำเร็จ',
-    fillFromStock: 'เติมสินค้า {stockNumber} เข้ารายการแล้ว'
+    fillFromStock: 'เติมสินค้า {stockNumber} เข้ารายการแล้ว',
+    convertCreated: 'สร้างใบแปลงสินค้าเลขที่ {running} สำเร็จ'
   },
   warn: {
     incompleteCustomer: 'ข้อมูลลูกค้าไม่ครบ',
@@ -623,6 +631,7 @@ export const saleOrder = {
     discountRange: 'เปอร์เซ็นต์ส่วนลดต้องอยู่ระหว่าง 0 ถึง 100',
     noItemsForExcel: 'ไม่มีสินค้าสำหรับสร้าง Excel',
     saveCustomerFirst: 'กรุณาเลือกลูกค้าก่อนบันทึก',
+    saveSoBeforeConvert: 'กรุณาบันทึกใบสั่งขายก่อนสร้างใบแปลงสินค้า',
     stockNotFound: 'ไม่พบสินค้าเลขนี้ในคลังครับ',
     stockLookupFailed: 'ดึงข้อมูลสินค้าไม่สำเร็จ (ERROR {status}) กรุณาแจ้งผู้พัฒนาครับ',
     stockSold: 'สินค้า {stockNumber} ถูกขายไปแล้วครับ',
@@ -645,7 +654,9 @@ export const saleOrder = {
     stockSoldAddCopyTitle: 'สินค้าหมด',
     stockSoldAddCopyMessage: 'สินค้า {stockNumber} หมดแล้วครับ ต้องการเพิ่มเป็นรายการรอผลิต/รอแปลงไหมครับ?',
     fillProductMismatchTitle: 'แบบไม่ตรงกับรายการที่สั่ง',
-    fillProductMismatchMessage: 'แบบไม่ตรงกับรายการที่สั่ง ยืนยันเติมไหม?'
+    fillProductMismatchMessage: 'แบบไม่ตรงกับรายการที่สั่ง ยืนยันเติมไหม?',
+    openConvertTitle: 'เปิดดูใบแปลงสินค้า',
+    openConvertMessage: 'ต้องการเปิดดูใบแปลงสินค้าเลขที่ {running} เลยหรือไม่?'
   }
 }
 

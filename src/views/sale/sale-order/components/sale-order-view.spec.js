@@ -32,6 +32,19 @@ vi.mock('@/stores/modules/api/user/user-store.js', () => ({
   useUserApiStore: vi.fn(() => ({ fetchDataList: mockFetchDataList }))
 }))
 
+// P5-4: loadSaleOrderData() เรียก loadPendingConversions() ต่อท้ายเสมอ — mock กัน network call จริงระหว่างเทสต์
+const mockPendingForSaleOrder = vi.fn().mockResolvedValue([])
+vi.mock('@/stores/modules/api/stock/stock-convert-store.js', () => ({
+  useStockConvertApiStore: vi.fn(() => ({
+    pendingForSaleOrder: mockPendingForSaleOrder,
+    create: vi.fn(),
+    get: vi.fn(),
+    complete: vi.fn(),
+    cancel: vi.fn(),
+    list: vi.fn()
+  }))
+}))
+
 function makeItem(stockNumber, { isConfirm = false, invoice = null } = {}) {
   return {
     stockNumber,

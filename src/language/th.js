@@ -333,6 +333,7 @@ export default {
       gemMovementAnalysis: { ...stock.gemMovementAnalysis },
       materialValuationReport: { ...stock.materialValuationReport },
       stockBalanceSummary: { ...stock.stockBalanceSummary },
+      convert: { ...stock.convert },
       gold: { ...stock.gold },
       gem: {
         ...stock.gem,

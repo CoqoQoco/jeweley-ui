@@ -351,6 +351,9 @@
     />
 
 
+    <!-- P5-4: แจ้งเตือนใบแปลงสินค้าที่แปลงเสร็จแล้ว รอเติมเข้าบรรทัดรอผลิต/รอแปลง -->
+    <PendingConvertNotice :items="pendingConversions" @fill="onFillPendingConversion" />
+
     <!-- Copy Items Table (without Stock ID - requires production) -->
     <CopyItemsTable
       :copyItems="copyItems"
@@ -363,6 +366,7 @@
       @blur-qty="onBlurCopyQty($event.item, $event.stockNumber, $event.field)"
       @blur-description="onBlurDescription($event.item, $event.stockNumber, $event.field)"
       @fill-from-stock="onOpenFillFromStockModal($event)"
+      @create-convert="onCreateConvertForCopyLine($event)"
     />
 
     <!-- Order Summary -->
@@ -613,8 +617,24 @@
     :isShow="isShow.fillFromStockModal"
     :copyItem="fillFromStockCopyItem"
     :usedQtyByStockNumber="unconfirmedQtyByStockNumber"
+    :initialStockNumber="fillFromStockInitialStockNumber"
     @closeModal="onCloseFillFromStockModal"
     @confirm="onFillCopyLineFromStock"
+  />
+
+  <!-- P5-4: เลือกชิ้นต้นทางเพื่อสร้างใบแปลงสินค้าจากบรรทัดรอผลิต/รอแปลง -->
+  <sourcePickerModal
+    :isShow="isShow.sourcePickerModal"
+    @closeModal="isShow.sourcePickerModal = false"
+    @confirm="onSourcePickerConfirm"
+  />
+
+  <!-- P5-4: เลือกบรรทัดรอผลิต/รอแปลงที่จะเติม เมื่อ soLineKey ของใบแปลงไม่ตรงกับบรรทัดใดแล้ว (บรรทัดถูกลบไปก่อน) -->
+  <PickCopyLineModal
+    :isShow="isShow.pickCopyLineModal"
+    :copyItems="copyItems"
+    @closeModal="isShow.pickCopyLineModal = false"
+    @confirm="onPickCopyLineConfirm"
   />
 </template>
 
@@ -647,10 +667,14 @@ import { SaleOrderExcelBuilder } from '@/services/helper/excel/sale-order/sale-o
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { useUserApiStore } from '@/stores/modules/api/user/user-store.js'
+import { useStockConvertApiStore } from '@/stores/modules/api/stock/stock-convert-store.js'
 import StockItemsTable from './stock-items-table.vue'
 import CopyItemsTable from './copy-items-table.vue'
 import OrderSummarySection from './order-summary-section.vue'
 import FillFromStockModal from '../modal/fill-from-stock-modal.vue'
+import PendingConvertNotice from './pending-convert-notice.vue'
+import PickCopyLineModal from '../modal/pick-copy-line-modal.vue'
+import sourcePickerModal from '@/views/stock/convert/components/source-picker-modal.vue'
 
 const SALE_ROLE_ID = 6 // tbm_user_role: 6 = Sale
 
@@ -695,14 +719,18 @@ export default {
     CopyItemsTable,
     OrderSummarySection,
     CheckboxGeneric,
-    FillFromStockModal
+    FillFromStockModal,
+    PendingConvertNotice,
+    PickCopyLineModal,
+    sourcePickerModal
   },
 
   setup() {
     const productStore = usrStockProductApiStore()
     const saleOrderStore = usrSaleOrderApiStore()
     const userApiStore = useUserApiStore()
-    return { saleOrderStore, productStore, userApiStore }
+    const stockConvertStore = useStockConvertApiStore()
+    return { saleOrderStore, productStore, userApiStore, stockConvertStore }
   },
 
   emits: ['update:modelForm', 'update:modelQuotation', 'update:modelSaleOrder'],
@@ -762,9 +790,15 @@ export default {
         invoiceModal: false,
         confirmStockModal: false,
         confirmAndInvoiceModal: false,
-        fillFromStockModal: false
+        fillFromStockModal: false,
+        sourcePickerModal: false,
+        pickCopyLineModal: false
       },
       fillFromStockCopyItem: {},
+      fillFromStockInitialStockNumber: '',
+      pendingConversions: [],
+      createConvertCopyItem: null,
+      pendingConvertTarget: null,
       modelEditStock: {},
       editStockLineKey: null,
       editStockMode: 'stock',
@@ -1306,6 +1340,7 @@ export default {
       })
 
       this.refreshStockAvailability()
+      this.loadPendingConversions()
     },
 
     async getSaleOrderData(soNumber) {
@@ -1686,14 +1721,17 @@ export default {
     },
 
     // P4-1: เปิด modal เติมของจากคลังให้กับรายการรอผลิต/รอแปลง (copyItem) ที่เลือก
-    onOpenFillFromStockModal(copyItem) {
+    // P5-4: initialStockNumber (optional) — มาจากใบแปลงสินค้าที่เสร็จแล้ว กรอก+ค้นหาให้อัตโนมัติ
+    onOpenFillFromStockModal(copyItem, initialStockNumber = '') {
       this.fillFromStockCopyItem = copyItem
+      this.fillFromStockInitialStockNumber = initialStockNumber || ''
       this.isShow.fillFromStockModal = true
     },
 
     onCloseFillFromStockModal() {
       this.isShow.fillFromStockModal = false
       this.fillFromStockCopyItem = {}
+      this.fillFromStockInitialStockNumber = ''
     },
 
     // P4-1: บันทึกบรรทัดสินค้าจริงใหม่ (เติมมาจากคลัง) + ลด qty ของ copyItem เดิม แล้ว save ผ่าน path เดิม (เหมือน onAdjustQty)
@@ -1720,12 +1758,82 @@ export default {
       this.onCloseFillFromStockModal()
 
       await this.fetchSaveSaleOrder()
+      await this.loadPendingConversions()
 
       success(
         this.$t('view.sale.saleOrder.success.fillFromStock', {
           stockNumber: newLine.stockNumberOrigin || newLine.stockNumber
         })
       )
+    },
+
+    // P5-4: ใบแปลงสินค้าที่แปลงเสร็จแล้วของใบสั่งขายนี้ ที่ยังไม่ถูกเติมเข้าบรรทัดไหน
+    async loadPendingConversions() {
+      if (!this.formSaleOrder.number) {
+        this.pendingConversions = []
+        return
+      }
+      const res = await this.stockConvertStore.pendingForSaleOrder(this.formSaleOrder.number)
+      this.pendingConversions = Array.isArray(res) ? res : []
+    },
+
+    // P5-4: กดปุ่ม "สร้างใบแปลงสินค้า" จากบรรทัดรอผลิต/รอแปลง — เปิดตัวเลือกชิ้นต้นทาง
+    onCreateConvertForCopyLine(copyItem) {
+      if (!this.formSaleOrder.number) {
+        warning(this.$t('view.sale.saleOrder.warn.saveSoBeforeConvert'))
+        return
+      }
+      this.createConvertCopyItem = copyItem
+      this.isShow.sourcePickerModal = true
+    },
+
+    async onSourcePickerConfirm(items) {
+      const stockNumbers = (items || []).map((it) => it.stockNumber).filter(Boolean)
+      const copyItem = this.createConvertCopyItem
+      this.createConvertCopyItem = null
+
+      const res = await this.stockConvertStore.create({
+        soNumber: this.formSaleOrder.number,
+        soLineKey: copyItem?.lineKey || null,
+        sourceStockNumbers: stockNumbers,
+        remark: null
+      })
+
+      if (res && res.running) {
+        success(
+          this.$t('view.sale.saleOrder.success.convertCreated', { running: res.running }),
+          this.$t('view.sale.saleOrder.success.confirmTitle'),
+          () => {
+            confirmSubmit(
+              this.$t('view.sale.saleOrder.confirm.openConvertMessage', { running: res.running }),
+              this.$t('view.sale.saleOrder.confirm.openConvertTitle'),
+              () => this.$router.push({ name: 'stock-convert-detail', params: { running: res.running } }),
+              { confirmText: this.$t('common.btn.confirm'), cancelText: this.$t('common.btn.cancel') },
+              'question'
+            )
+          }
+        )
+      }
+    },
+
+    // P5-4: กดปุ่ม "เติมของ" จากแถบแจ้งเตือนใบแปลงที่เสร็จแล้ว — จับคู่ soLineKey กับบรรทัดรอผลิต/รอแปลงเดิม
+    // ถ้าบรรทัดนั้นถูกลบไปแล้ว ให้ผู้ใช้เลือกบรรทัดอื่นแทน
+    onFillPendingConversion(pending) {
+      const matched = this.copyItems.find((c) => c.lineKey === pending.soLineKey)
+      if (matched) {
+        this.onOpenFillFromStockModal(matched, pending.resultStockNumber)
+        return
+      }
+      this.pendingConvertTarget = pending
+      this.isShow.pickCopyLineModal = true
+    },
+
+    onPickCopyLineConfirm(copyItem) {
+      this.isShow.pickCopyLineModal = false
+      const pending = this.pendingConvertTarget
+      this.pendingConvertTarget = null
+      if (!pending) return
+      this.onOpenFillFromStockModal(copyItem, pending.resultStockNumber)
     },
 
     // ============================================

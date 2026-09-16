@@ -104,6 +104,11 @@ export default {
     usedQtyByStockNumber: {
       type: Object,
       default: () => ({})
+    },
+    // P5-4: เลขที่ผลิตที่รู้อยู่แล้ว (มาจากใบแปลงสินค้าที่เสร็จแล้ว) — เมื่อส่งมา จะกรอกและค้นหาให้อัตโนมัติตอนเปิด modal
+    initialStockNumber: {
+      type: String,
+      default: ''
     }
   },
 
@@ -144,10 +149,14 @@ export default {
 
   methods: {
     resetState() {
-      this.stockNumber = ''
+      this.stockNumber = this.initialStockNumber || ''
       this.previewData = null
       this.freshQtyAvailable = 0
       this.pickedQty = 1
+
+      if (this.stockNumber) {
+        this.$nextTick(() => this.onSearch())
+      }
     },
 
     onPickedQtyChange(value) {

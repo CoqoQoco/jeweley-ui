@@ -122,6 +122,22 @@
               <span class="detail-label">{{ $t('view.stock.product.tagPriceMultiplierLabel') }}</span>
               <span class="detail-value">× {{ formatDecimal(item.tagPriceMultiplier ?? 1, 2) }}</span>
             </div>
+            <div v-if="item.convertedFrom" class="detail-field detail-field--full">
+              <span class="detail-label">{{ $t('view.stock.convert.convertedFromLabel') }}</span>
+              <span class="detail-value">
+                <a href="#" class="detail-link" @click.prevent="goToConvert(item.convertedFrom.running)">
+                  {{ convertedFromText(item.convertedFrom) }}
+                </a>
+              </span>
+            </div>
+            <div v-if="item.convertedTo" class="detail-field detail-field--full">
+              <span class="detail-label">{{ $t('view.stock.convert.convertedToLabel') }}</span>
+              <span class="detail-value">
+                <a href="#" class="detail-link" @click.prevent="goToConvert(item.convertedTo.running)">
+                  {{ convertedToText(item.convertedTo) }}
+                </a>
+              </span>
+            </div>
             <div class="detail-field detail-field--full">
               <span class="detail-label">{{ $t('common.field.remark') }}</span>
               <span class="detail-value">{{ item.remark || '—' }}</span>
@@ -333,6 +349,23 @@ export default {
       }
     },
 
+    // P5-5: convertedFrom/convertedTo มาจาก StockProduct/Get — ลิงก์ไปใบแปลงสินค้าที่เกี่ยวข้อง
+    // convertedFrom = ชิ้นนี้เป็นผลลัพธ์ของใบแปลง — แสดงเลขที่ผลิตต้นทาง (มีได้หลายเลข)
+    convertedFromText(link) {
+      const sources = (link.sourceStockNumbers || []).join(', ') || '-'
+      return `${sources} (${link.running || '-'})`
+    },
+
+    // convertedTo = ชิ้นนี้เป็นต้นทางที่ถูกใช้ไปแล้ว — แสดงเลขที่ผลิตใหม่ (มีได้แค่เลขเดียว)
+    convertedToText(link) {
+      return `${link.resultStockNumber || '-'} (${link.running || '-'})`
+    },
+
+    goToConvert(running) {
+      if (!running) return
+      this.$router.push({ name: 'stock-convert-detail', params: { running } })
+    },
+
     onCloseModal(action) {
       this.isShow = { ...interfaceShow }
       if (action === 'fetch') {
@@ -404,6 +437,12 @@ export default {
     font-weight: 700;
     color: var(--base-font-color);
   }
+}
+
+.detail-link {
+  font-weight: 700;
+  color: var(--base-font-color);
+  text-decoration: underline;
 }
 
 .status-chip {

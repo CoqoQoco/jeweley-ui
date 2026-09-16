@@ -551,6 +551,13 @@ export const saleOrder = {
   fullyFilledBadge: 'Fully Filled',
   copyLineProgress: 'Ordered {ordered} · Filled {filled} · Remaining {qty}',
   filledFromCopyHint: 'Filled from a pending production line',
+  createConvertBtn: 'Create Stock Convert',
+  pendingConvertNotice: '{count} converted item(s) ready to fill',
+  pendingConvertFillBtn: 'Fill',
+  pendingConvertPickLineTitle: 'Select Line to Fill',
+  pendingConvertPickLineLabel: 'Pending Production/Conversion Line',
+  pendingConvertColProduct: 'New Stock Number',
+  pendingConvertColCompleteDate: 'Converted Date',
   soSummary: 'Sale Order Summary',
   invoicedItems: 'Invoiced Items',
   confirmedItemsTitle: 'Confirmed Items',
@@ -606,7 +613,8 @@ export const saleOrder = {
     cancelConfirmTitle: 'Confirmation Cancelled',
     cancelConfirm: 'Cancelled confirmation for item {stockNumber}',
     deleteSO: 'Sale order deleted successfully',
-    fillFromStock: 'Filled item {stockNumber} into the order'
+    fillFromStock: 'Filled item {stockNumber} into the order',
+    convertCreated: 'Created stock convert document {running} successfully'
   },
   warn: {
     incompleteCustomer: 'Incomplete customer info',
@@ -623,6 +631,7 @@ export const saleOrder = {
     discountRange: 'Discount percentage must be between 0 and 100',
     noItemsForExcel: 'No items available to generate Excel',
     saveCustomerFirst: 'Please select a customer before saving',
+    saveSoBeforeConvert: 'Please save the sale order before creating a stock convert document',
     stockNotFound: 'Item not found in stock',
     stockLookupFailed: 'Failed to load product (ERROR {status}). Please contact the developer.',
     stockSold: 'Item {stockNumber} has already been sold',
@@ -645,7 +654,9 @@ export const saleOrder = {
     stockSoldAddCopyTitle: 'Out of stock',
     stockSoldAddCopyMessage: 'Item {stockNumber} is out of stock. Add it as a pending production/conversion line?',
     fillProductMismatchTitle: 'Product does not match the ordered item',
-    fillProductMismatchMessage: 'The scanned product does not match the ordered item. Confirm to fill anyway?'
+    fillProductMismatchMessage: 'The scanned product does not match the ordered item. Confirm to fill anyway?',
+    openConvertTitle: 'Open Stock Convert Document',
+    openConvertMessage: 'Do you want to open stock convert document {running} now?'
   }
 }
 

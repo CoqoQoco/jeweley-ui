@@ -77,6 +77,15 @@
               >
                 <span class="bi bi-box-arrow-in-down"></span>
               </button>
+              <button
+                v-if="!isViewMode && canConvert"
+                class="btn btn-sm btn-outline-main ml-2"
+                type="button"
+                :title="$t('view.sale.saleOrder.createConvertBtn')"
+                @click="$emit('create-convert', slotProps.data)"
+              >
+                <span class="bi bi-arrow-repeat"></span>
+              </button>
             </div>
           </template>
         </Column>
@@ -452,6 +461,9 @@ import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import { convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
+import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
+import { PermissionService } from '@/services/permission/permission.js'
+import { PERMISSIONS } from '@/services/permission/config.js'
 
 export default {
   name: 'CopyItemsTable',
@@ -465,6 +477,11 @@ export default {
   },
 
   mixins: [activeRowHighlight],
+
+  setup() {
+    const authStore = useAuthStore()
+    return { authStore }
+  },
 
   props: {
     copyItems: {
@@ -486,7 +503,7 @@ export default {
     }
   },
 
-  emits: ['delete-item', 'edit-item', 'blur-price', 'blur-qty', 'blur-description', 'fill-from-stock'],
+  emits: ['delete-item', 'edit-item', 'blur-price', 'blur-qty', 'blur-description', 'fill-from-stock', 'create-convert'],
 
   computed: {
     activeRowItems() {
@@ -495,6 +512,11 @@ export default {
 
     copyItemsTotalAmount() {
       return this.getSumTotalConvertedPrice(this.copyItems) + (this.formSaleOrder.copyFreight || 0)
+    },
+
+    canConvert() {
+      const permissionService = new PermissionService(this.authStore.getUser, this.authStore.permissions)
+      return permissionService.hasPermission(PERMISSIONS.STOCK_CONVERT)
     }
   },
 

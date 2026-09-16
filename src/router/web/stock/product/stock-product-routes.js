@@ -6,6 +6,9 @@ const Detail = () => import('@/views/stock/product/detail/index-view.vue')
 const StockLocationList = () => import('@/views/stock/location/index-view.vue')
 const StockMoveLocation = () => import('@/views/stock/move-location/index-view.vue')
 
+const StockConvertList = () => import('@/views/stock/convert/index-view.vue')
+const StockConvertDetail = () => import('@/views/stock/convert/detail-view.vue')
+
 const GRProductionList = () =>
   import('@/views/receipt-stock/product/production-receipt-list/index-view.vue')
 const GRProduction = () => import('@/views/receipt-stock/product/new-gr-production/index-view.vue')
@@ -181,6 +184,46 @@ const routes = [
           },
           minorShow: true,
           permissions: [PERMISSIONS.STOCK_PRODUCT]
+        }
+      },
+
+      {
+        path: '/stock-convert-list',
+        name: 'stock-convert-list',
+        component: StockConvertList,
+        meta: {
+          Displayname: {
+            en: 'Stock Convert',
+            th: 'ใบแปลงสินค้า'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_CONVERT]
+        }
+      },
+      {
+        path: '/stock-convert-create',
+        name: 'stock-convert-create',
+        component: StockConvertDetail,
+        meta: {
+          Displayname: {
+            en: 'Create Stock Convert',
+            th: 'สร้างใบแปลงสินค้า'
+          },
+          minorShow: false,
+          permissions: [PERMISSIONS.STOCK_CONVERT]
+        }
+      },
+      {
+        path: '/stock-convert-detail/:running',
+        name: 'stock-convert-detail',
+        component: StockConvertDetail,
+        meta: {
+          Displayname: {
+            en: 'Stock Convert Detail',
+            th: 'รายละเอียดใบแปลงสินค้า'
+          },
+          minorShow: false,
+          permissions: [PERMISSIONS.STOCK_CONVERT]
         }
       },
 
