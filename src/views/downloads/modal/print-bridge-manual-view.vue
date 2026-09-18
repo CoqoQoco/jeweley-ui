@@ -74,7 +74,50 @@
               <li class="step-desc">{{ $t('view.downloads.manual.trouble3') }}</li>
               <li class="step-desc">{{ $t('view.downloads.manual.trouble4') }}</li>
               <li class="step-desc">{{ $t('view.downloads.manual.trouble5') }}</li>
+              <li class="step-desc">{{ $t('view.downloads.manual.trouble6') }}</li>
             </ul>
+          </div>
+        </div>
+
+        <h6 class="section-heading mt-4">{{ $t('view.downloads.manual.sectionBarcode') }}</h6>
+
+        <div class="item-card">
+          <div class="item-card-header">
+            <span class="step-number">1</span>
+            <span class="step-title">{{ $t('view.downloads.manual.barcodeStep1Title') }}</span>
+          </div>
+          <div class="item-card-body">
+            <p class="step-desc">{{ $t('view.downloads.manual.barcodeStep1Desc') }}</p>
+          </div>
+        </div>
+
+        <div class="item-card">
+          <div class="item-card-header">
+            <span class="step-number">2</span>
+            <span class="step-title">{{ $t('view.downloads.manual.barcodeStep2Title') }}</span>
+          </div>
+          <div class="item-card-body">
+            <p class="step-desc">{{ $t('view.downloads.manual.barcodeStep2Desc') }}</p>
+          </div>
+        </div>
+
+        <div class="item-card">
+          <div class="item-card-header">
+            <span class="step-number">3</span>
+            <span class="step-title">{{ $t('view.downloads.manual.barcodeStep3Title') }}</span>
+          </div>
+          <div class="item-card-body">
+            <p class="step-desc">{{ $t('view.downloads.manual.barcodeStep3Desc') }}</p>
+          </div>
+        </div>
+
+        <div class="item-card">
+          <div class="item-card-header">
+            <span class="step-number">4</span>
+            <span class="step-title">{{ $t('view.downloads.manual.barcodeStep4Title') }}</span>
+          </div>
+          <div class="item-card-body">
+            <p class="step-desc">{{ $t('view.downloads.manual.barcodeStep4Desc') }}</p>
           </div>
         </div>
       </div>

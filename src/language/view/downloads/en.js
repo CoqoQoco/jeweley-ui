@@ -23,6 +23,16 @@ export default {
     trouble2: 'Cannot print / printer not found → Verify the printer name in appsettings.json matches the name shown in Windows.',
     trouble3: 'Browser shows a certificate warning → Close the program and reopen it; the certificate will be reinstalled automatically.',
     trouble4: 'The printer dropdown is empty with no names to choose → Usually caused by opening the web page before starting the program. Click "Reload list" next to the printer dropdown (no need to press F5), or click the ▼ button to see the list / type the printer name manually (check the exact name in Windows Devices and Printers).',
-    trouble5: 'The web page shows "Cannot connect to the print program" even though https://localhost:9443/health returns ok → Caused by newer browsers blocking the web page from calling a local program. Use program version v1.2 or later, and if the browser shows a prompt in the address bar asking for permission to access devices/local network, click "Allow" and reload the page. (Check the program version at https://localhost:9443/config, see the version value — from v1.2 onward, the program console prints a new line every time the web page calls it; if you click a button on the web page and the console stays silent, the request never reached the machine.)'
+    trouble5: 'The web page shows "Cannot connect to the print program" even though https://localhost:9443/health returns ok → Caused by newer browsers blocking the web page from calling a local program. Use program version v1.2 or later, and if the browser shows a prompt in the address bar asking for permission to access devices/local network, click "Allow" and reload the page. (Check the program version at https://localhost:9443/config, see the version value — from v1.2 onward, the program console prints a new line every time the web page calls it; if you click a button on the web page and the console stays silent, the request never reached the machine.)',
+    trouble6: 'The barcode label prints as literal text ^XA^FO... filling the whole label → That printer queue is using the wrong driver. Create a new queue using the Generic / Text Only driver instead.',
+    sectionBarcode: 'C) Install Barcode Printer (Zebra GT800)',
+    barcodeStep1Title: 'Plug in the USB cable and wait for Windows to install the driver',
+    barcodeStep1Desc: 'Connect the Zebra GT800 printer to the computer via USB cable and wait for Windows to finish installing the device first.',
+    barcodeStep2Title: 'Create a new printer queue using the Generic / Text Only driver',
+    barcodeStep2Desc: 'Create an additional printer queue, selecting Generic / Text Only as the driver, and name it e.g. GT800 RAW — this is the name you will select on the web page. Do not use the normal ZDesigner driver mode, as it strips out the ZPL commands, causing the label to print as literal text like ^XA^FO248... filling the whole label, or nothing prints at all.',
+    barcodeStep3Title: 'Go to the barcode printer settings page on the web',
+    barcodeStep3Desc: 'Go to menu Settings → Barcode Printer Settings (/setting/barcode-printer) and select the queue name you created in step 2.',
+    barcodeStep4Title: 'Print a test label',
+    barcodeStep4Desc: 'Click the "Print Test Label" button — one label should print out and the barcode should scan successfully. If this works, the installation is complete.'
   }
 }

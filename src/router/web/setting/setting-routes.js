@@ -114,6 +114,19 @@ const routes = [
         }
       },
       {
+        path: '/setting/barcode-printer',
+        name: 'barcode-printer-setting',
+        component: () => import('@/views/setting/barcode-printer/index-view.vue'),
+        meta: {
+          Displayname: {
+            en: 'Barcode Printer',
+            th: 'ตั้งค่าเครื่องพิมพ์บาร์โค้ด'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.USER_DEV, PERMISSIONS.SETTING_PRINT_LAYOUT]
+        }
+      },
+      {
         path: '/setting/breakdown',
         name: 'breakdown-setting',
         component: () => import('@/views/setting/breakdown/index-view.vue'),

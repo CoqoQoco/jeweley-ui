@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
-import api from '@/axios/axios-helper.js'
+import { printZpl } from '@/services/api/print-bridge-service.js'
+import { fetchPrinterList } from '@/services/api/printer-config-service.js'
+import { getBarcodePrinterConfig, getBarcodePrinterName } from '@/services/api/barcode-printer-config.js'
 
 export const zebraPrinterApi = defineStore('zebraPrinter', {
   state: () => ({}),
@@ -7,105 +9,136 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
   getters: {},
 
   actions: {
-    async fetchZebraPrinterStatus({ skipLoading }) {
-      try {
-        return await api.zebraPrinter.getStatus({ skipLoading: skipLoading, skipError: true })
-      } catch (error) {
-        console.error('Error fetching zebra printer status:', error)
+    // ตรวจสถานะเครื่องพิมพ์บาร์โค้ดที่ตั้งไว้ ผ่าน DK Print Bridge (ไม่ใช่ Zebra Print Service เดิมแล้ว)
+    async fetchBarcodePrinterStatus() {
+      const result = await fetchPrinterList()
+
+      if (result.status !== 'ok') {
+        return {
+          status: 'bridge-error',
+          printerName: '',
+          printers: [],
+          detail: { bridgeStatus: result.status, message: result.detail }
+        }
       }
+
+      const savedName = getBarcodePrinterName()
+      if (!savedName) {
+        return { status: 'no-printer', printerName: '', printers: result.printers, detail: null }
+      }
+
+      const found = result.printers.some((p) => p.name === savedName)
+      if (!found) {
+        return { status: 'printer-not-found', printerName: savedName, printers: result.printers, detail: null }
+      }
+
+      return { status: 'success', printerName: savedName, printers: result.printers, detail: null }
     },
 
-    // async fetchZebraPrint({ formValue, skipLoading }) {
-    //   try {
-    //     //create zebra code
-    //     const zpl = this.generateZPLs(formValue)
-    //     return await api.zebraPrinter.printZPL(zpl, { skipLoading: skipLoading })
-    //   } catch (error) {
-    //     console.error('Error fetching zebra printer status:', error)
-    //   }
-    // },
+    async fetchZebraPrint({ formValue }) {
+      const config = getBarcodePrinterConfig()
 
-    async fetchZebraPrint({ formValue, skipLoading }) {
-      try {
-        const printCount = formValue.print || 1
+      if (!config.printerName) {
+        return {
+          status: 'error',
+          message: 'ยังไม่ได้ตั้งค่าเครื่องพิมพ์บาร์โค้ด กรุณาไปตั้งค่าที่หน้าตั้งค่าเครื่องพิมพ์บาร์โค้ดก่อนพิมพ์ครับ'
+        }
+      }
 
-        // เลือก ZPL template ตาม barcodeType
-        const zpl = formValue.barcodeType === 'original'
-          ? this.generateZPLs(formValue)
-          : this.generateZPLVertical(formValue)
+      const printCount = formValue.print || 1
 
-        // สร้างฟังก์ชันสำหรับ delay
-        const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+      // เลือก ZPL template ตาม barcodeType
+      const zpl = formValue.barcodeType === 'original'
+        ? this.generateZPLs(formValue, config.dpiScale)
+        : this.generateZPLVertical(formValue, config.dpiScale)
 
-        // วนลูปพิมพ์ทีละชิ้นตามลำดับ โดยใช้ ZPL เดิม
-        for (let i = 0; i < printCount; i++) {
-          try {
-            // ยิง API ด้วย ZPL ที่สร้างครั้งเดียว
-            const result = await api.zebraPrinter.printZPL(zpl, { skipLoading: skipLoading })
+      const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-            // ตรวจสอบผลลัพธ์
-            if (result.status !== 'success') {
-              console.error(`การพิมพ์ชิ้นที่ ${i + 1} ล้มเหลว: ${result.message}`)
-              return result // หยุดและส่งคืนข้อผิดพลาด
-            }
-
-            console.log(`พิมพ์ชิ้นที่ ${i + 1}/${printCount} สำเร็จ`)
-
-            // ถ้ายังไม่ใช่ชิ้นสุดท้าย ให้รอ 1 วินาที
-            if (i < printCount - 1) {
-              await delay(1000) // รอ 1 วินาที
-            }
-          } catch (innerError) {
-            console.error(`เกิดข้อผิดพลาดในการพิมพ์ชิ้นที่ ${i + 1}:`, innerError)
-            return {
-              status: 'error',
-              message: `เกิดข้อผิดพลาดในการพิมพ์ชิ้นที่ ${i + 1}`,
-              error: innerError
-            }
+      // วนลูปพิมพ์ทีละชิ้นตามลำดับ โดยใช้ ZPL เดิม
+      for (let i = 0; i < printCount; i++) {
+        try {
+          await printZpl({ printerName: config.printerName, zpl })
+        } catch (err) {
+          return {
+            status: 'error',
+            message: `เกิดข้อผิดพลาดในการพิมพ์ชิ้นที่ ${i + 1}: ${err.message || ''}`
           }
         }
 
-        console.log(`พิมพ์ทั้งหมด ${printCount} ชิ้นเสร็จสิ้น`)
-        return {
-          status: 'success',
-          message: `พิมพ์ทั้งหมด ${printCount} ชิ้นเสร็จสิ้น`
-        }
-      } catch (error) {
-        console.error('เกิดข้อผิดพลาดในการพิมพ์:', error)
-        return {
-          status: 'error',
-          message: 'เกิดข้อผิดพลาดในการพิมพ์',
-          error: error
+        // ถ้ายังไม่ใช่ชิ้นสุดท้าย ให้รอตามระยะที่ตั้งค่าไว้ก่อนยิงพิมพ์ต่อ
+        if (i < printCount - 1) {
+          await delay(config.copyDelayMs)
         }
       }
-    },
-    async fetchZebraPrints({ formValue, skipLoading }) {
-      try {
-        // เลือก ZPL template ตาม barcodeType ของแต่ละ item
-        const zpl = formValue.map((form) =>
-          form.barcodeType === 'original'
-            ? this.generateZPLs(form)
-            : this.generateZPLVertical(form)
-        )
 
-        console.log('ZPL:', zpl)
-        return await api.zebraPrinter.printsZPL(zpl, { skipLoading: skipLoading })
-      } catch (error) {
-        console.error('Print from forms error:', error)
-        return {
-          status: 'error',
-          message: 'เกิดข้อผิดพลาดในการสร้างและพิมพ์ฉลาก'
-        }
+      return {
+        status: 'success',
+        message: `พิมพ์ทั้งหมด ${printCount} ชิ้นเสร็จสิ้น`
       }
     },
 
-    generateZPLs(formValue) {
+    async fetchZebraPrints({ formValue }) {
+      const config = getBarcodePrinterConfig()
+
+      if (!config.printerName) {
+        return {
+          status: 'error',
+          message: 'ยังไม่ได้ตั้งค่าเครื่องพิมพ์บาร์โค้ด กรุณาไปตั้งค่าที่หน้าตั้งค่าเครื่องพิมพ์บาร์โค้ดก่อนพิมพ์ครับ'
+        }
+      }
+
+      // เลือก ZPL template ตาม barcodeType ของแต่ละ item
+      const zpls = formValue.map((form) =>
+        form.barcodeType === 'original'
+          ? this.generateZPLs(form, config.dpiScale)
+          : this.generateZPLVertical(form, config.dpiScale)
+      )
+
+      const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+      let successCount = 0
+      let failedCount = 0
+
+      // ของเดิมยิง endpoint prints ก้อนเดียว ตอนนี้ bridge มีแค่ /print/raw จึงต้องวนยิงทีละใบ
+      for (let i = 0; i < zpls.length; i++) {
+        try {
+          await printZpl({ printerName: config.printerName, zpl: zpls[i] })
+          successCount++
+        } catch (err) {
+          failedCount++
+        }
+
+        if (i < zpls.length - 1) {
+          await delay(config.copyDelayMs)
+        }
+      }
+
+      const total = zpls.length
+      const summary = { total, success: successCount, failed: failedCount }
+
+      if (failedCount === 0) {
+        return { status: 'success', message: `พิมพ์ทั้งหมด ${total} รายการสำเร็จ`, summary }
+      }
+      if (successCount === 0) {
+        return { status: 'error', message: 'พิมพ์ไม่สำเร็จทั้งหมด', summary }
+      }
+      return {
+        status: 'partial',
+        message: `พิมพ์สำเร็จบางส่วน: สำเร็จ ${successCount} รายการ, ล้มเหลว ${failedCount} รายการ`,
+        summary
+      }
+    },
+
+    generateZPLs(formValue, dpiScale = 1) {
+      // template เขียนพิกัดไว้ที่หัวพิมพ์ 203 dpi — คูณ scale เพื่อรองรับหัวพิมพ์ dpi อื่น (dpiScale = 1 ต้องได้ผลลัพธ์เดิมเป๊ะ)
+      const s = (n) => Math.round(n * dpiScale)
+
       // เริ่มต้น ZPL
-      let zpl = '^XA^LL200^MD25^LT40^XZ'
+      let zpl = `^XA^LL${s(200)}^MD25^LT40^XZ`
       zpl += '^XA'
 
       // บาร์โค้ด
-      zpl += `^FO248,35^BY1,3.0:1,25^BCN,Y,N,N^FD${formValue.stockNumber || ''}^FS`
+      zpl += `^FO${s(248)},${s(35)}^BY${s(1)},3.0:1,${s(25)}^BCN,Y,N,N^FD${formValue.stockNumber || ''}^FS`
 
       // เลขที่ผลิต - ราคาขาย (เมื่อมีค่า)
       const salePriceText =
@@ -115,23 +148,23 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
             )
           : ''
       const stockNumberLine = [formValue.stockNumber, salePriceText].filter(Boolean).join(' - ')
-      zpl += `^FO248,65^A0N,20,18^FD${stockNumberLine}^FS`
+      zpl += `^FO${s(248)},${s(65)}^A0N,${s(20)},${s(18)}^FD${stockNumberLine}^FS`
 
       // gold and size
-      zpl += `^FO250,090^A0N,14,16,B^FD${formValue.gold || ''} ${formValue.size || ''}^FS`
+      zpl += `^FO${s(250)},${s(90)}^A0N,${s(14)},${s(16)},B^FD${formValue.gold || ''} ${formValue.size || ''}^FS`
 
       // made in
-      zpl += `^FO025,050^A0N,15,15,B^FD${formValue.madeIn || ''}^FS`
+      zpl += `^FO${s(25)},${s(50)}^A0N,${s(15)},${s(15)},B^FD${formValue.madeIn || ''}^FS`
 
       // gold type
-      zpl += `^FO420,045^A0N,14,16,B^FD${formValue.goldType || ''}^FS`
+      zpl += `^FO${s(420)},${s(45)}^A0N,${s(14)},${s(16)},B^FD${formValue.goldType || ''}^FS`
 
       // รายการอัญมณี
       if (Array.isArray(formValue.gems)) {
         let yPos = 15
         formValue.gems.forEach((gem) => {
           if (gem) {
-            zpl += `^F450,${yPos}^A0N,14,16,B^FD${gem}^FS`
+            zpl += `^F${s(450)},${s(yPos)}^A0N,${s(14)},${s(16)},B^FD${gem}^FS`
             yPos += 15
           }
         })
@@ -140,31 +173,31 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
       // จบ ZPL
       zpl += '^XZ'
 
-      console.log('ZPL:', zpl)
-
       return zpl
     },
 
-    generateZPLVertical(formValue) {
+    generateZPLVertical(formValue, dpiScale = 1) {
+      const s = (n) => Math.round(n * dpiScale)
+
       // ใช้ label ขนาดเดิม เพิ่ม price row จึงสูงขึ้นเล็กน้อย
       const hasPrice = formValue.price != null && formValue.price > 0
       const labelHeight = hasPrice ? 220 : 200
 
-      let zpl = `^XA^LL${labelHeight}^MD25^LT40^XZ`
+      let zpl = `^XA^LL${s(labelHeight)}^MD25^LT40^XZ`
       zpl += '^XA'
 
       // made in (ซ้าย เหมือน horizontal)
-      zpl += `^FO025,050^A0N,15,15,B^FD${formValue.madeIn || ''}^FS`
+      zpl += `^FO${s(25)},${s(50)}^A0N,${s(15)},${s(15)},B^FD${formValue.madeIn || ''}^FS`
 
       // productNameEn แทน mold (ไม่มี goldType ข้างๆ)
-      zpl += `^FO252,10^A0N,20,18^FD${formValue.productNameEn || ''}^FS`
+      zpl += `^FO${s(252)},${s(10)}^A0N,${s(20)},${s(18)}^FD${formValue.productNameEn || ''}^FS`
 
       // gold + size เหนือ barcode
       const sizeText = formValue.size ? ` #${formValue.size}` : ''
-      zpl += `^FO250,030^A0N,14,16,B^FD${formValue.gold || ''}${sizeText}^FS`
+      zpl += `^FO${s(250)},${s(30)}^A0N,${s(14)},${s(16)},B^FD${formValue.gold || ''}${sizeText}^FS`
 
       // barcode (ไม่มี stockNumber ใต้)
-      zpl += `^FO248,048^BY1,3.0:1,25^BCN,Y,N,N^FD${formValue.stockNumber || ''}^FS`
+      zpl += `^FO${s(248)},${s(48)}^BY${s(1)},3.0:1,${s(25)}^BCN,Y,N,N^FD${formValue.stockNumber || ''}^FS`
 
       // productNumber - price ไม่รวม gold
       const priceText = hasPrice
@@ -172,7 +205,7 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
         : ''
       const priceLine = [formValue.productNumber, priceText].filter(Boolean).join(' - ')
       if (priceLine) {
-        zpl += `^FO250,100^A0N,14,16,B^FD${priceLine}^FS`
+        zpl += `^FO${s(250)},${s(100)}^A0N,${s(14)},${s(16)},B^FD${priceLine}^FS`
       }
 
       // gems (ขวา เหมือน horizontal)
@@ -180,15 +213,13 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
         let yPos = 15
         formValue.gems.forEach((gem) => {
           if (gem) {
-            zpl += `^FO450,${yPos}^A0N,14,16,B^FD${gem}^FS`
+            zpl += `^FO${s(450)},${s(yPos)}^A0N,${s(14)},${s(16)},B^FD${gem}^FS`
             yPos += 15
           }
         })
       }
 
       zpl += '^XZ'
-
-      console.log('ZPL Vertical:', zpl)
 
       return zpl
     }

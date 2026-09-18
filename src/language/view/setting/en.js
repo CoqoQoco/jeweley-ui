@@ -67,6 +67,35 @@ export default {
       deleteSuccess: 'Term removed from history successfully'
     }
   },
+  barcodePrinter: {
+    pageTitle: 'Barcode Printer Settings',
+    pageDescription: 'Configure the barcode label printer (ZPL) printed via DK Print Bridge — the same bridge used for bill/VAT/receipt printing',
+    configSectionTitle: 'Printer Settings',
+    configSectionDescription: 'Select the printer and adjust the values used to print barcode labels',
+    printerNameLabel: 'Printer Name',
+    dpiLabel: 'Printer Resolution (DPI)',
+    dpiOption203: '203 dpi',
+    dpiOption300: '300 dpi',
+    dpiHint: 'Current labels are designed for 203 dpi — if the printer is 300 dpi, the system will scale the coordinates automatically',
+    copyDelayLabel: 'Delay between labels (ms)',
+    copyDelayHint: 'Delay before printing the next label when printing multiple copies at once',
+    statusSectionTitle: 'Printer Status',
+    statusSectionDescription: 'Check the connection status to DK Print Bridge and the configured printer',
+    status: {
+      readyTitle: 'Ready to use',
+      readyDetail: 'Found {count} printer(s) on this device',
+      noPrinterDetail: 'Please select a printer from the list above, then click save'
+    },
+    testSectionTitle: 'Print Test Label',
+    testSectionDescription: 'Print a test label through the same real path used on the stock page',
+    test: {
+      stockNumberLabel: 'Stock Number',
+      printCountLabel: 'Print Count',
+      printSuccess: 'Test label printed successfully'
+    },
+    saveSuccess: 'Barcode printer settings saved successfully',
+    resetSuccess: 'Reset to default successfully'
+  },
   account: {
     cancelAccount: 'Cancel Account',
     register: 'Register Account',

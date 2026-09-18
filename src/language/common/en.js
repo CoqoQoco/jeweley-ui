@@ -92,6 +92,9 @@ export default {
     statusEmpty: 'Print bridge is running but no printers were found on Windows — check Devices and Printers',
     savedNotFound: 'Saved printer "{name}" was not found on this device — please select again',
     manualHint: 'You can type the printer name manually — check the exact name in Windows Devices and Printers',
-    clear: 'Clear'
+    clear: 'Clear',
+    noPrinterSet: 'Barcode printer is not set up yet',
+    goToSetting: 'Go to barcode printer settings',
+    printFailedTitle: 'Print failed'
   }
 }

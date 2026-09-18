@@ -67,6 +67,35 @@ export default {
       deleteSuccess: 'ลบคำออกจากประวัติสำเร็จ'
     }
   },
+  barcodePrinter: {
+    pageTitle: 'ตั้งค่าเครื่องพิมพ์บาร์โค้ด',
+    pageDescription: 'ตั้งค่าเครื่องพิมพ์ฉลากบาร์โค้ด (ZPL) ที่พิมพ์ผ่าน DK Print Bridge — เครื่องเดียวกับที่พิมพ์บิล/VAT/ใบเสร็จ',
+    configSectionTitle: 'ตั้งค่าเครื่องพิมพ์',
+    configSectionDescription: 'เลือกเครื่องพิมพ์และปรับค่าที่ใช้พิมพ์ฉลากบาร์โค้ด',
+    printerNameLabel: 'ชื่อเครื่องพิมพ์',
+    dpiLabel: 'ความละเอียดเครื่องพิมพ์ (DPI)',
+    dpiOption203: '203 dpi',
+    dpiOption300: '300 dpi',
+    dpiHint: 'ฉลากปัจจุบันออกแบบไว้ที่ 203 dpi — ถ้าเครื่องพิมพ์เป็น 300 dpi ระบบจะขยายพิกัดให้อัตโนมัติครับ',
+    copyDelayLabel: 'ระยะหน่วงระหว่างฉลาก (มิลลิวินาที)',
+    copyDelayHint: 'ระยะเวลาหน่วงก่อนพิมพ์ฉลากดวงถัดไป เมื่อพิมพ์หลายดวงต่อครั้ง',
+    statusSectionTitle: 'สถานะเครื่องพิมพ์',
+    statusSectionDescription: 'ตรวจสถานะการเชื่อมต่อกับ DK Print Bridge และเครื่องพิมพ์ที่ตั้งค่าไว้',
+    status: {
+      readyTitle: 'พร้อมใช้งาน',
+      readyDetail: 'พบเครื่องพิมพ์ทั้งหมด {count} เครื่องบนเครื่องนี้',
+      noPrinterDetail: 'กรุณาเลือกเครื่องพิมพ์จากรายชื่อด้านบน แล้วกดบันทึกครับ'
+    },
+    testSectionTitle: 'พิมพ์ฉลากทดสอบ',
+    testSectionDescription: 'พิมพ์ฉลากทดสอบผ่านเส้นทางจริงที่ใช้พิมพ์ในหน้าคลังสินค้า',
+    test: {
+      stockNumberLabel: 'เลขที่ผลิต',
+      printCountLabel: 'จำนวนดวง',
+      printSuccess: 'พิมพ์ฉลากทดสอบสำเร็จครับ'
+    },
+    saveSuccess: 'บันทึกการตั้งค่าเครื่องพิมพ์บาร์โค้ดสำเร็จครับ',
+    resetSuccess: 'รีเซ็ตเป็นค่าเริ่มต้นสำเร็จครับ'
+  },
   account: {
     cancelAccount: 'ยกเลิกบัญชี',
     register: 'ลงทะเบียนบัญชี',

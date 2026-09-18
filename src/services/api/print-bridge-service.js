@@ -54,6 +54,15 @@ export async function printRaw(payload) {
   return data
 }
 
+// ฉลากบาร์โค้ด (ZPL) — printerName ต้องส่งเสมอ เพราะถ้าไม่ส่ง bridge จะ fallback ไปที่ DefaultPrinterName
+// ซึ่งตอนนี้คือเครื่องพิมพ์บิล (EPSON LQ-310) ทำให้ฉลากไปออกผิดเครื่อง
+export async function printZpl({ printerName, zpl }) {
+  if (!printerName) {
+    throw new Error('ยังไม่ได้ตั้งค่าเครื่องพิมพ์บาร์โค้ด กรุณาไปตั้งค่าที่หน้าตั้งค่าเครื่องพิมพ์บาร์โค้ดก่อนพิมพ์ครับ')
+  }
+  return await printRaw({ printerName, text: zpl })
+}
+
 // ภาพ+โลโก้ (CPCL) — ใช้ text ชุดเดียวกับ printRaw แต่ bridge วาดเป็นภาพทั้งใบก่อนส่งพิมพ์
 export async function printImage(payload) {
   const res = await fetch(`${BRIDGE_BASE}/print/image`, {

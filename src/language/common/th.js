@@ -92,6 +92,9 @@ export default {
     statusEmpty: 'โปรแกรมพิมพ์ทำงานอยู่ แต่ไม่พบเครื่องพิมพ์ที่ติดตั้งใน Windows — ตรวจที่ Devices and Printers',
     savedNotFound: 'เครื่องพิมพ์ที่บันทึกไว้ "{name}" ไม่มีในเครื่องนี้ — กรุณาเลือกใหม่',
     manualHint: 'พิมพ์ชื่อเครื่องพิมพ์เองได้ — ดูชื่อจริงที่ Devices and Printers ของ Windows',
-    clear: 'ล้างค่า'
+    clear: 'ล้างค่า',
+    noPrinterSet: 'ยังไม่ได้ตั้งค่าเครื่องพิมพ์บาร์โค้ด',
+    goToSetting: 'ไปตั้งค่าเครื่องพิมพ์บาร์โค้ด',
+    printFailedTitle: 'พิมพ์ไม่สำเร็จ'
   }
 }

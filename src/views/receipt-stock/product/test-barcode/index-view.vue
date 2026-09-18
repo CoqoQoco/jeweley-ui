@@ -20,7 +20,9 @@
 </template>
 
 <script>
-import api from '@/axios/axios-helper.js'
+import { printZpl } from '@/services/api/print-bridge-service.js'
+import { fetchPrinterList } from '@/services/api/printer-config-service.js'
+import { getBarcodePrinterConfig } from '@/services/api/barcode-printer-config.js'
 //import swAlert from '@/services/alert/sweetAlerts.js'
 
 export default {
@@ -43,19 +45,18 @@ export default {
     async handlePrint() {
       try {
         const zplData = this.generateZPL()
-        await api.zebraPrinter.printZPL(zplData)
-      } catch (error) {
-        console.log(error)
+        const { printerName } = getBarcodePrinterConfig()
+        await printZpl({ printerName, zpl: zplData })
+      } catch (err) {
+        console.log(err)
       }
     },
 
     async checkServiceStatus() {
       try {
-        const res = await api.zebraPrinter.getStatus()
-        console.log(res)
-        //swAlert.success('', res)
+        const res = await fetchPrinterList()
         this.form.barcode = JSON.stringify(res)
-      } catch (error) {
+      } catch (err) {
         //swAlert.error('', 'ไม่สามารถเชื่อมต่อเครื่องพิมพ์ได้')
       }
     }

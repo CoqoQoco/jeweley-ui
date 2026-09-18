@@ -65,22 +65,29 @@
                   <div
                     class="status-light"
                     :class="{
-                      'status-red': checkPrinterService === 'error',
-                      'status-green': checkPrinterService === 'success',
-                      'status-yellow': checkPrinterService === 'unknown'
+                      'status-green': isPrinterReady,
+                      'status-yellow': isPrinterChecking,
+                      'status-red': !isPrinterReady && !isPrinterChecking
                     }"
                     @click="checkPrinterStatus"
                   ></div>
                   <span
                     class="status-text"
                     :class="{
-                      'text-red': checkPrinterService === 'error',
-                      'text-green': checkPrinterService === 'success',
-                      'text-yellow': checkPrinterService === 'unknown'
+                      'text-green': isPrinterReady,
+                      'text-yellow': isPrinterChecking,
+                      'text-red': !isPrinterReady && !isPrinterChecking
                     }"
-                    >{{ getPrinterServiceStatus(checkPrinterService) }}</span
+                    >{{ printerStatusText }}</span
                   >
                 </div>
+                <router-link
+                  v-if="showPrinterSettingLink"
+                  to="/setting/barcode-printer"
+                  class="printer-setting-link"
+                >
+                  {{ $t('common.printer.goToSetting') }}
+                </router-link>
               </div>
             </div>
 
@@ -101,7 +108,7 @@
               </div>
               <button
                 class="btn btn-sm btn-main"
-                :disabled="checkPrinterService !== 'success'"
+                :disabled="!isPrinterReady"
                 @click="onPrintBarcode"
               >
                 <span class="bi bi-upc-scan"></span>
@@ -143,6 +150,7 @@ import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { buildBarcodeModel } from '@/services/helper/barcode/barcode-model.js'
 import { getPieceQty } from '@/services/utils/stock-piece-qty.js'
+import { error } from '@/services/alert/sweetAlerts.js'
 
 export default {
   components: {
@@ -226,13 +234,47 @@ export default {
     // ล็อตเงินมี qty ได้มากกว่า 30 — max ต้องไม่ต่ำกว่าจำนวนของล็อตนี้
     maxPrintCount() {
       return Math.max(30, getPieceQty(this.stock))
+    },
+
+    isPrinterReady() {
+      return this.printerCheck.status === 'success'
+    },
+
+    isPrinterChecking() {
+      return this.printerCheck.status === 'unknown'
+    },
+
+    showPrinterSettingLink() {
+      return this.printerCheck.status === 'no-printer' || this.printerCheck.status === 'printer-not-found'
+    },
+
+    printerStatusText() {
+      switch (this.printerCheck.status) {
+        case 'success':
+          return `${this.$t('view.stock.product.printerReady')} · ${this.printerCheck.printerName}`
+        case 'no-printer':
+          return this.$t('common.printer.noPrinterSet')
+        case 'printer-not-found':
+          return this.$t('common.printer.savedNotFound', { name: this.printerCheck.printerName })
+        case 'bridge-error':
+          return this.bridgeErrorText
+        default:
+          return this.$t('view.stock.product.printerChecking')
+      }
+    },
+
+    bridgeErrorText() {
+      const bridgeStatus = this.printerCheck.detail?.bridgeStatus
+      if (bridgeStatus === 'blocked') return this.$t('common.printer.statusBlocked')
+      if (bridgeStatus === 'empty') return this.$t('common.printer.statusEmpty')
+      return this.$t('common.printer.statusUnreachableTitle')
     }
   },
 
   data() {
     return {
       isShowModal: false,
-      checkPrinterService: 'unknown',
+      printerCheck: { status: 'unknown', printerName: '', printers: [], detail: null },
       selectedType: 'original',
 
       stock: {},
@@ -245,18 +287,12 @@ export default {
       this.stock = {}
       this.barcode = { ...interfaceBarcode }
       this.selectedType = 'original'
-      this.checkPrinterService = 'unknown'
+      this.printerCheck = { status: 'unknown', printerName: '', printers: [], detail: null }
     },
 
     closeModal() {
       this.$emit('closeModal')
       this.onClear()
-    },
-
-    getPrinterServiceStatus(check) {
-      if (check === 'error') return this.$t('view.stock.product.printerError')
-      if (check === 'success') return this.$t('view.stock.product.printerReady')
-      return this.$t('view.stock.product.printerChecking')
     },
 
     validateInput() {
@@ -269,13 +305,8 @@ export default {
     },
 
     async checkPrinterStatus() {
-      this.checkPrinterService = 'unknown'
-      const res = await this.zebraPrinter.fetchZebraPrinterStatus({ skipLoading: true })
-      if (res && res.status === 'success') {
-        this.checkPrinterService = res.service.status === 'running' ? 'success' : 'error'
-      } else {
-        this.checkPrinterService = 'error'
-      }
+      this.printerCheck = { status: 'unknown', printerName: '', printers: [], detail: null }
+      this.printerCheck = await this.zebraPrinter.fetchBarcodePrinterStatus()
     },
 
     async onPrintBarcode() {
@@ -284,7 +315,10 @@ export default {
         price: this.previewPrice,
         barcodeType: this.selectedType
       }
-      await this.zebraPrinter.fetchZebraPrint({ formValue: zplData, skipLoading: true })
+      const res = await this.zebraPrinter.fetchZebraPrint({ formValue: zplData, skipLoading: true })
+      if (res?.status !== 'success') {
+        error(res?.message || this.$t('common.printer.printFailedTitle'), this.$t('common.printer.printFailedTitle'))
+      }
     }
   }
 }
@@ -337,6 +371,14 @@ input {
 .printer-status-indicator {
   display: flex;
   align-items: center;
+  gap: var(--sp-sm);
+}
+
+.printer-setting-link {
+  font-size: 13px;
+  color: var(--base-green);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .status-container {

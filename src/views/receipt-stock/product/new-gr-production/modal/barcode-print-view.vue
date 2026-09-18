@@ -54,28 +54,32 @@
 
                   <div class="printer-status-indicator">
                     <div class="status-container">
-                      <!-- <div class="mr-2 title-text">
-                        <span class="bi bi-gear-wide"></span>
-                      </div> -->
                       <div
                         class="status-light"
                         :class="{
-                          'status-red': checkPrinterService === 'error',
-                          'status-green': checkPrinterService === 'success',
-                          'status-yellow': checkPrinterService === 'unknown'
+                          'status-green': isPrinterReady,
+                          'status-yellow': isPrinterChecking,
+                          'status-red': !isPrinterReady && !isPrinterChecking
                         }"
                         @click="checkPrinterStatus"
                       ></div>
                       <span
                         class="status-text"
                         :class="{
-                          'text-red': checkPrinterService === 'error',
-                          'text-green': checkPrinterService === 'success',
-                          'text-yellow': checkPrinterService === 'unknown'
+                          'text-green': isPrinterReady,
+                          'text-yellow': isPrinterChecking,
+                          'text-red': !isPrinterReady && !isPrinterChecking
                         }"
-                        >{{ getPrinterServiceStatus(checkPrinterService) }}</span
+                        >{{ printerStatusText }}</span
                       >
                     </div>
+                    <router-link
+                      v-if="showPrinterSettingLink"
+                      to="/setting/barcode-printer"
+                      class="printer-setting-link"
+                    >
+                      {{ $t('common.printer.goToSetting') }}
+                    </router-link>
                   </div>
                 </div>
 
@@ -87,11 +91,11 @@
                   <button
                     :class="[
                       'btn btn-sm  ml-2',
-                      checkItemSelectedLength() === 0 || checkPrinterService !== 'success'
+                      checkItemSelectedLength() === 0 || !isPrinterReady
                         ? 'btn-secondary'
                         : 'btn-main'
                     ]"
-                    :disabled="checkItemSelectedLength() === 0 || checkPrinterService !== 'success'"
+                    :disabled="checkItemSelectedLength() === 0 || !isPrinterReady"
                     @click="onPrintBarcode"
                   >
                     <span class="bi bi-upc-scan"></span>
@@ -111,6 +115,7 @@ import { defineAsyncComponent } from 'vue'
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
+import { error } from '@/services/alert/sweetAlerts.js'
 
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
@@ -167,14 +172,13 @@ export default {
   data() {
     return {
       isShowModal: false,
-      checkPrinterService: 'unknown',
+      printerCheck: { status: 'unknown', printerName: '', printers: [], detail: null },
       selectedType: 'original',
 
       stock: this.modelStock,
       selectedItems: [],
       itemsToPreSelect: [],
-      selectionType: 'single',
-      columns: []
+      selectionType: 'single'
     }
   },
 
@@ -212,6 +216,40 @@ export default {
           minWidth: '150px'
         }
       ]
+    },
+
+    isPrinterReady() {
+      return this.printerCheck.status === 'success'
+    },
+
+    isPrinterChecking() {
+      return this.printerCheck.status === 'unknown'
+    },
+
+    showPrinterSettingLink() {
+      return this.printerCheck.status === 'no-printer' || this.printerCheck.status === 'printer-not-found'
+    },
+
+    printerStatusText() {
+      switch (this.printerCheck.status) {
+        case 'success':
+          return `${this.$t('view.stock.product.printerReady')} · ${this.printerCheck.printerName}`
+        case 'no-printer':
+          return this.$t('common.printer.noPrinterSet')
+        case 'printer-not-found':
+          return this.$t('common.printer.savedNotFound', { name: this.printerCheck.printerName })
+        case 'bridge-error':
+          return this.bridgeErrorText
+        default:
+          return this.$t('view.stock.product.printerChecking')
+      }
+    },
+
+    bridgeErrorText() {
+      const bridgeStatus = this.printerCheck.detail?.bridgeStatus
+      if (bridgeStatus === 'blocked') return this.$t('common.printer.statusBlocked')
+      if (bridgeStatus === 'empty') return this.$t('common.printer.statusEmpty')
+      return this.$t('common.printer.statusUnreachableTitle')
     }
   },
 
@@ -221,7 +259,7 @@ export default {
       this.selectedItems = []
       this.itemsToPreSelect = []
       this.selectedType = 'original'
-      this.checkPrinterService = 'unknown'
+      this.printerCheck = { status: 'unknown', printerName: '', printers: [], detail: null }
     },
 
     closeModal() {
@@ -242,29 +280,9 @@ export default {
       return 0
     },
 
-    getPrinterServiceStatus(check) {
-      if (check === 'error') return this.$t('view.stock.product.printerError')
-      if (check === 'success') return this.$t('view.stock.product.printerReady')
-      return this.$t('view.stock.product.printerChecking')
-    },
-
     async checkPrinterStatus() {
-      this.checkPrinterService = 'unknown'
-
-      const res = await this.zebraPrinter.fetchZebraPrinterStatus({ skipLoading: true })
-      console.log('res', res)
-
-      if (res && res.status === 'success') {
-        if (res.service.status === 'running') {
-          this.checkPrinterService = 'success'
-        } else {
-          this.checkPrinterService = 'error'
-        }
-      } else {
-        this.checkPrinterService = 'error'
-      }
-
-      console.log('checkPrinterService', this.checkPrinterService)
+      this.printerCheck = { status: 'unknown', printerName: '', printers: [], detail: null }
+      this.printerCheck = await this.zebraPrinter.fetchBarcodePrinterStatus()
     },
 
     async onPrintBarcode() {
@@ -305,14 +323,15 @@ export default {
         return barcodeData
       })
 
-      console.log('zplData', zplData)
-
       const res = await this.zebraPrinter.fetchZebraPrints({
         formValue: zplData,
         skipLoading: true
       })
 
-      console.log('res', res)
+      if (res?.status !== 'success') {
+        error(res?.message || this.$t('common.printer.printFailedTitle'), this.$t('common.printer.printFailedTitle'))
+      }
+
       this.closeModal()
     }
   },
@@ -357,7 +376,15 @@ export default {
 .printer-status-indicator {
   display: flex;
   align-items: center;
+  gap: var(--sp-sm);
   //margin: 10px 0;
+}
+
+.printer-setting-link {
+  font-size: 13px;
+  color: var(--base-green);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .status-container {
