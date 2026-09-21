@@ -419,7 +419,6 @@ export default {
   padding: var(--sp-md) var(--sp-lg);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
-  border-left: 4px solid var(--color-border);
   background: var(--color-card-bg);
 
   > .bi {
@@ -430,25 +429,31 @@ export default {
   }
 
   &--green {
-    border-left-color: var(--base-green);
-
     > .bi {
+      color: var(--base-green);
+    }
+
+    .status-box-title {
       color: var(--base-green);
     }
   }
 
   &--warning {
-    border-left-color: var(--base-warning);
-
     > .bi {
+      color: var(--base-warning);
+    }
+
+    .status-box-title {
       color: var(--base-warning);
     }
   }
 
   &--red {
-    border-left-color: var(--base-red);
-
     > .bi {
+      color: var(--base-red);
+    }
+
+    .status-box-title {
       color: var(--base-red);
     }
   }

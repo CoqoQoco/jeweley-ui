@@ -212,9 +212,7 @@ export default {
       }
     },
     sale: { ...saleLang },
-    setting: {
-      companyInfo: { ...settingLang.companyInfo }
-    },
+    setting: { ...settingLang },
     mobile: {
       nav: { ...mobileLang.nav },
       sale: { ...mobileLang.sale },
