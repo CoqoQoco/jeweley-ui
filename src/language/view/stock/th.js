@@ -97,6 +97,7 @@ export default {
     printerError: 'เครื่องพิมพ์ไม่พร้อมใช้งาน',
     printerReady: 'เครื่องพิมพ์พร้อมใช้งาน',
     printerChecking: 'กำลังตรวจสอบสถานะเครื่องพิมพ์...',
+    costMissingWarning: 'สินค้านี้ยังไม่มีข้อมูลต้นทุน แท็บราคาจะพิมพ์โดยไม่มีราคาครับ',
     salePrice: 'ราคาขาย',
     storageLocation: 'คลังจัดเก็บ',
     slocBalanceTitle: 'ยอดรวม SKU ตาม Storage Location',

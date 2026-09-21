@@ -5,7 +5,6 @@
       <div class="left-tab">
         <div class="d-flex">
           <span class="goldType-box">{{ madeIn }}</span>
-          <span class="goldType-box ml-1">{{ madeInText }}</span>
         </div>
       </div>
 
@@ -29,8 +28,8 @@
             </div>
           </div>
           <div class="right-box">
-            <div v-if="gems.length > 0">
-              <div v-for="(item, index) in gems" :key="index">
+            <div v-if="displayGems.length > 0">
+              <div v-for="(item, index) in displayGems" :key="index">
                 <div class="gem-box">
                   <span class="text-left">{{ item }}</span>
                 </div>
@@ -45,6 +44,9 @@
 
 <script>
 import JsBarcode from 'jsbarcode'
+
+import { formatGemText } from '@/services/helper/barcode/barcode-zpl.js'
+import { PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
 
 export default {
   name: 'BarcodeVerticalTag',
@@ -86,9 +88,9 @@ export default {
       type: String,
       default: 'MADE IN THAILAND'
     },
-    madeInText: {
+    profile: {
       type: String,
-      default: ''
+      default: PRINTER_PROFILES.LEGACY
     },
     barcodeOptions: {
       type: Object,
@@ -100,6 +102,17 @@ export default {
         margin: 2,
         background: '#ffffff'
       })
+    }
+  },
+
+  computed: {
+    isGt800() {
+      return this.profile === PRINTER_PROFILES.GT800
+    },
+
+    displayGems() {
+      if (!this.isGt800) return this.gems
+      return (this.gems || []).map(formatGemText)
     }
   },
 

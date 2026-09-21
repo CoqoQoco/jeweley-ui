@@ -5,7 +5,6 @@
       <div class="left-tab">
         <div class="d-flex">
           <span class="goldType-box">{{ madeIn }}</span>
-          <span class="goldType-box ml-1">{{ madeInText }}</span>
         </div>
       </div>
 
@@ -18,17 +17,17 @@
               <div class="barcode-wrapper">
                 <svg ref="barcodeElement"></svg>
               </div>
-              <div class="goldType-box">{{ goldType }}</div>
+              <div v-if="!isGt800" class="goldType-box">{{ goldType }}</div>
             </div>
             <div class="mold-box">{{ stockNumberLine }}</div>
             <div class="d-flex justify-content-start">
-              <div class="gold-box">{{ gold }}</div>
+              <div class="gold-box">{{ goldText }}</div>
               <div class="gold-box ml-1">{{ size }}</div>
             </div>
           </div>
           <div class="right-box">
-            <div v-if="gems.length > 0">
-              <div v-for="(item, index) in gems" :key="index">
+            <div v-if="displayGems.length > 0">
+              <div v-for="(item, index) in displayGems" :key="index">
                 <div class="gem-box">
                   <span class="text-left">{{ item }}</span>
                 </div>
@@ -44,6 +43,9 @@
 <script>
 import JsBarcode from 'jsbarcode'
 
+import { formatGemText } from '@/services/helper/barcode/barcode-zpl.js'
+import { PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
+
 export default {
   name: 'BarcodeTag',
 
@@ -54,10 +56,6 @@ export default {
     },
     madeIn: {
       type: String
-    },
-    madeInText: {
-      type: String,
-      default: '55123649977'
     },
     stockNumber: {
       type: String,
@@ -86,6 +84,10 @@ export default {
     salePrice: {
       type: Number,
       default: null
+    },
+    profile: {
+      type: String,
+      default: PRINTER_PROFILES.LEGACY
     },
     barcodeOptions: {
       type: Object,
@@ -118,6 +120,22 @@ export default {
             )
           : ''
       return [this.stockNumber, priceText].filter(Boolean).join(' - ')
+    },
+
+    isGt800() {
+      return this.profile === PRINTER_PROFILES.GT800
+    },
+
+    goldText() {
+      if (this.isGt800 && this.goldType) {
+        return [this.goldType, this.gold].filter(Boolean).join('  ')
+      }
+      return this.gold
+    },
+
+    displayGems() {
+      if (!this.isGt800) return this.gems
+      return (this.gems || []).map(formatGemText)
     }
   },
 

@@ -3,13 +3,13 @@
     v-if="selectedType === 'original'"
     :type="type"
     :madeIn="barcode.madeIn"
-    :madeInText="barcode.madeInText"
     :stockNumber="labelCode"
     :gold="barcode.gold"
     :gems="barcode.gems"
     :size="barcode.size"
     :goldType="barcode.goldType"
     :salePrice="barcode.salePrice"
+    :profile="profile"
   />
   <barcodeVerticalDemo
     v-else
@@ -22,7 +22,7 @@
     :price="price"
     :gems="barcode.gems"
     :madeIn="barcode.madeIn"
-    :madeInText="barcode.madeInText"
+    :profile="profile"
   />
 </template>
 
@@ -30,6 +30,7 @@
 import { defineAsyncComponent } from 'vue'
 
 import { resolveLabelCode } from '@/services/helper/barcode/barcode-zpl.js'
+import { getBarcodeProfile } from '@/services/api/barcode-printer-config.js'
 
 const barcodeDemo = defineAsyncComponent(() =>
   import('@/components/custom/barcode-demo/barcode-demo-view.vue')
@@ -69,6 +70,11 @@ export default {
     // ตัวอย่างต้องแสดงเลขเดียวกับที่จะพิมพ์จริง (เลขที่ผลิตเก่าก่อน ไม่งั้นเลขใหม่)
     labelCode() {
       return resolveLabelCode(this.barcode)
+    },
+
+    // ตัวอย่างต้องตรงกับ profile เครื่องพิมพ์ที่ตั้งไว้ (legacy/gt800) ให้ตรงกับที่จะพิมพ์จริง
+    profile() {
+      return getBarcodeProfile()
     }
   }
 }

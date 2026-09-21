@@ -97,6 +97,7 @@ export default {
     printerError: 'Printer not ready',
     printerReady: 'Printer ready',
     printerChecking: 'Checking printer status...',
+    costMissingWarning: 'This product has no cost data yet — the price tab will print without a price.',
     salePrice: 'Sale Price',
     storageLocation: 'Storage Location',
     slocBalanceTitle: 'SKU Total by Storage Location',

@@ -41,6 +41,13 @@
           </div>
         </div>
 
+        <div v-if="showCostMissingWarning" class="pl-4 pr-4 pt-2">
+          <div class="cost-missing-warning">
+            <span class="bi bi-exclamation-triangle mr-1"></span>
+            <span>{{ $t('view.stock.product.costMissingWarning') }}</span>
+          </div>
+        </div>
+
         <div class="pl-4 pt-2">
           <span class="title-text">{{ $t('view.stock.product.previewLabel') }}</span>
         </div>
@@ -193,6 +200,8 @@ export default {
         if (!val || !val.stockNumber) return
 
         this.stock = { ...val }
+        this.costLoaded = false
+        this.hasCostData = false
 
         this.barcode = {
           ...buildBarcodeModel(val),
@@ -205,12 +214,14 @@ export default {
         // fetch price แยก API เพื่อไม่ให้ list ช้า
         if (val.stockNumber) {
           const costRes = await this.productStore.fetchGetStockCostDetail(val.stockNumber, { skipLoading: true })
-          if (costRes?.length > 0) {
+          this.hasCostData = costRes?.length > 0
+          if (this.hasCostData) {
             this.barcode.price = costRes
               .filter((x) => x.nameGroup !== 'Gold')
               .reduce((sum, x) => sum + (x.totalPrice ?? 0), 0)
             this.barcode.originPrice = costRes.reduce((sum, x) => sum + (x.totalPrice ?? 0), 0)
           }
+          this.costLoaded = true
         }
       },
       immediate: true
@@ -274,6 +285,11 @@ export default {
       if (bridgeStatus === 'blocked') return this.$t('common.printer.statusBlocked')
       if (bridgeStatus === 'empty') return this.$t('common.printer.statusEmpty')
       return this.$t('common.printer.statusUnreachableTitle')
+    },
+
+    // โหลดต้นทุนเสร็จแล้วแต่ไม่มีข้อมูล + แท็บราคา (ไม่ใช่ original) → เตือนว่าจะพิมพ์โดยไม่มีราคา
+    showCostMissingWarning() {
+      return this.costLoaded && !this.hasCostData && this.selectedType !== 'original'
     }
   },
 
@@ -284,7 +300,9 @@ export default {
       selectedType: 'original',
 
       stock: {},
-      barcode: { ...interfaceBarcode }
+      barcode: { ...interfaceBarcode },
+      costLoaded: false,
+      hasCostData: false
     }
   },
 
@@ -294,6 +312,8 @@ export default {
       this.barcode = { ...interfaceBarcode }
       this.selectedType = 'original'
       this.printerCheck = { status: 'unknown', printerName: '', printers: [], detail: null }
+      this.costLoaded = false
+      this.hasCostData = false
     },
 
     closeModal() {
@@ -335,6 +355,18 @@ export default {
 @import '@/assets/scss/responsive-style/web';
 
 .card { background: #ffffff !important; }
+
+.cost-missing-warning {
+  padding: var(--sp-sm) var(--sp-md);
+  border-radius: var(--radius-sm);
+  background: var(--status-open-bg);
+  color: var(--base-font-color);
+  font-size: var(--fs-sm);
+
+  .bi {
+    color: var(--status-open);
+  }
+}
 
 .print-count-input {
   width: 50px;
