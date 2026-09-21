@@ -113,6 +113,22 @@
           @click="onConfirm"
         />
         <ButtonGeneric
+          v-if="showCreateInvoice"
+          variant="green"
+          icon="bi-receipt"
+          :label="$t('view.sale.materialSale.createInvoiceBtn')"
+          class="ml-2"
+          @click="isShowCreateInvoiceModal = true"
+        />
+        <ButtonGeneric
+          v-if="showViewInvoice"
+          variant="outline"
+          icon="bi-receipt-cutoff"
+          :label="$t('view.sale.materialSale.viewInvoiceBtn')"
+          class="ml-2"
+          @click="onViewInvoice"
+        />
+        <ButtonGeneric
           v-if="showCancel"
           variant="red"
           icon="bi-x-circle"
@@ -120,6 +136,10 @@
           class="ml-2"
           @click="onOpenCancel"
         />
+        <span v-if="isConfirmed && hasInvoice" class="invoice-block-hint ml-2">
+          <i class="bi bi-info-circle mr-1"></i>
+          {{ $t('view.sale.materialSale.hasInvoiceCancelHint', { invoiceNumber: detail.invoiceNumber }) }}
+        </span>
         <ButtonGeneric
           v-if="showPrintPdf"
           variant="outline"
@@ -153,6 +173,13 @@
       @select="onPickerSelect"
     />
 
+    <createInvoiceModal
+      :showModal="isShowCreateInvoiceModal"
+      :detail="detail"
+      @closeModal="isShowCreateInvoiceModal = false"
+      @created="onCreateInvoiceSuccess"
+    />
+
     <modal :showModal="isShowCancelModal" @closeModal="isShowCancelModal = false" width="500px" :isShowActionPart="true">
       <template #title>
         <span class="title-text-lg px-3 pt-3 d-block">{{ $t('view.sale.materialSale.cancelReasonTitle') }}</span>
@@ -180,11 +207,14 @@
 // External dependencies
 import { defineAsyncComponent } from 'vue'
 import { useMaterialSaleApiStore } from '@/stores/modules/api/sale/material-sale-store.js'
+import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
-import { roundDecimal } from '@/services/utils/decimal.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { MaterialSalePdfBuilder } from '@/services/helper/pdf/material-sale/material-sale-pdf-builder.js'
+import { materialPriceExclVat, computeMaterialTotals } from '@/services/helper/material-sale/material-sale-money.js'
+import { PermissionService } from '@/services/permission/permission.js'
+import { PERMISSIONS } from '@/services/permission/config.js'
 
 // Local components
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
@@ -197,6 +227,7 @@ import gemSearchSection from './components/gem-search-section.vue'
 import itemsSection from './components/items-section.vue'
 import customerSearchModal from './modal/customer-search-modal.vue'
 import gemPickerModal from './modal/gem-picker-modal.vue'
+import createInvoiceModal from './modal/create-invoice-modal.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
@@ -229,12 +260,14 @@ export default {
     gemSearchSection,
     itemsSection,
     customerSearchModal,
-    gemPickerModal
+    gemPickerModal,
+    createInvoiceModal
   },
 
   setup() {
     const materialSaleStore = useMaterialSaleApiStore()
-    return { materialSaleStore }
+    const authStore = useAuthStore()
+    return { materialSaleStore, authStore }
   },
 
   data() {
@@ -246,6 +279,7 @@ export default {
       isShowCustomerSearch: false,
       isShowGemPicker: false,
       isShowCancelModal: false,
+      isShowCreateInvoiceModal: false,
       cancelReasonText: ''
     }
   },
@@ -295,8 +329,9 @@ export default {
       if (!this.isEditable) return this.items
 
       return this.items.map((it) => {
-        const priceExclVat = roundDecimal(Number(it.priceInclVat || 0) / 1.07)
-        const amount = roundDecimal(priceExclVat * (Number(it.qtyWeight) || 0))
+        // ราคาก่อน VAT/จำนวนเงินดิบ ไม่ปัดเศษระหว่างทาง — ปัดแค่ตอนแสดงผล (formatNumber ใน items-section.vue)
+        const priceExclVat = materialPriceExclVat(it.priceInclVat, this.vatPercent)
+        const amount = priceExclVat * (Number(it.qtyWeight) || 0)
         return { ...it, priceExclVat, amount }
       })
     },
@@ -305,23 +340,27 @@ export default {
       return this.isEditable ? this.vatPercent : this.detail?.vatPercent ?? 7
     },
 
+    materialTotals() {
+      return computeMaterialTotals(this.items, this.vatPercent)
+    },
+
     subTotal() {
       if (this.isEditable) {
-        return roundDecimal(this.displayItems.reduce((sum, it) => sum + (Number(it.amount) || 0), 0))
+        return this.materialTotals.subTotal
       }
       return Number(this.detail?.subTotal || 0)
     },
 
     vatAmount() {
       if (this.isEditable) {
-        return roundDecimal((this.subTotal * (Number(this.vatPercent) || 0)) / 100)
+        return this.materialTotals.vatAmount
       }
       return Number(this.detail?.vatAmount || 0)
     },
 
     grandTotal() {
       if (this.isEditable) {
-        return roundDecimal(this.subTotal + this.vatAmount)
+        return this.materialTotals.grandTotalRounded
       }
       return Number(this.detail?.grandTotal || 0)
     },
@@ -342,8 +381,24 @@ export default {
       return this.hasRunning
     },
 
+    hasInvoice() {
+      return !!this.detail?.invoiceNumber
+    },
+
+    permissionService() {
+      return new PermissionService(this.authStore.getUser, this.authStore.permissions)
+    },
+
+    showCreateInvoice() {
+      return this.isConfirmed && !this.hasInvoice && this.permissionService.hasPermission(PERMISSIONS.SALE_CREATE)
+    },
+
+    showViewInvoice() {
+      return this.hasInvoice
+    },
+
     showCancel() {
-      return this.isConfirmed
+      return this.isConfirmed && !this.hasInvoice
     },
 
     validationMessages() {
@@ -563,6 +618,21 @@ export default {
       const builder = new MaterialSalePdfBuilder(res)
       await builder.preparePDF()
       builder.generatePDF().open()
+    },
+
+    onViewInvoice() {
+      if (!this.detail?.invoiceNumber) return
+      const route = this.$router.resolve({
+        path: '/invoice-detail',
+        query: { invoiceNumber: this.detail.invoiceNumber }
+      })
+      window.open(route.href, '_blank', 'noopener')
+    },
+
+    async onCreateInvoiceSuccess(invoiceNumber) {
+      this.isShowCreateInvoiceModal = false
+      success(this.$t('view.sale.materialSale.createInvoiceSuccess', { invoiceNumber }))
+      await this.loadData(this.form.running)
     }
   }
 }
@@ -622,5 +692,12 @@ export default {
 .action-bar-right {
   display: flex;
   align-items: center;
+}
+
+.invoice-block-hint {
+  display: inline-flex;
+  align-items: center;
+  color: var(--base-sub-color);
+  font-size: var(--fs-sm);
 }
 </style>

@@ -132,7 +132,11 @@ export default {
     },
 
     invoiceSearchFormValue() {
-      const formValue = { createBy: this.scope === 'mine' ? this.currentUsername : null }
+      // มือถือแสดงเฉพาะใบแจ้งหนี้สินค้าเสมอ — วัตถุดิบ (MATERIAL) ดูได้บนเว็บเท่านั้น (ไม่มี route รองรับบนมือถือ)
+      const formValue = {
+        createBy: this.scope === 'mine' ? this.currentUsername : null,
+        invoiceType: 'PRODUCT'
+      }
       if (this.searchValue) {
         if (this.searchField === 'number') {
           formValue.invoiceNumber = this.searchValue

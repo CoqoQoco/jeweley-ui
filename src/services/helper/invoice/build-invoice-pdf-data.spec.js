@@ -59,3 +59,32 @@ describe('loadInvoiceContext — P4-3 สองบรรทัดเลขสิ
     expect(invoiceItems[0].qty).toBe(2)
   })
 })
+
+describe('loadInvoiceContext — MATERIAL short-circuit (ไม่มี SO product ผูกอยู่)', () => {
+  it('invoiceType MATERIAL → คืน { invoiceResponse, invoiceItems: [], isMaterial: true } โดยไม่เรียก SaleOrder/Get', async () => {
+    let saleOrderGetCalled = false
+    const invoiceStore = {
+      fetchGet: async () => ({
+        invoiceNumber: 'INVM260921001',
+        invoiceType: 'MATERIAL',
+        soNumber: 'SM260921-RUN-001',
+        materialSaleDocumentNo: 'SM260921001',
+        vat: 7
+      })
+    }
+    const saleOrderStore = {
+      fetchGet: async () => {
+        saleOrderGetCalled = true
+        throw new Error('SaleOrder/Get ไม่ควรถูกเรียกสำหรับ MATERIAL invoice')
+      }
+    }
+
+    const context = await loadInvoiceContext('INVM260921001', { invoiceStore, saleOrderStore })
+
+    expect(saleOrderGetCalled).toBe(false)
+    expect(context.isMaterial).toBe(true)
+    expect(context.invoiceItems).toEqual([])
+    expect(context.invoiceResponse.invoiceNumber).toBe('INVM260921001')
+    expect(context.invoiceResponse.materialSaleDocumentNo).toBe('SM260921001')
+  })
+})

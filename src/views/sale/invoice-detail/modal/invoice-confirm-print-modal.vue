@@ -114,14 +114,14 @@
               />
             </div>
 
-            <div v-if="paperSize === 'a4'" class="form-group mb-3">
+            <div v-if="paperSize === 'a4' && !isMaterial" class="form-group mb-3">
               <CheckboxGeneric
                 v-model="printData.showCifLabel"
                 :label="$t('view.sale.invoiceDetail.showCifLabel')"
               />
             </div>
 
-            <div v-if="paperSize === 'a4'" class="form-group mb-3">
+            <div v-if="paperSize === 'a4' && !isMaterial" class="form-group mb-3">
               <CheckboxGeneric
                 v-model="printData.showSeller"
                 :label="$t('view.sale.invoiceDetail.showSeller')"
@@ -135,7 +135,7 @@
               />
             </div>
 
-            <div class="form-group mb-3">
+            <div v-if="!isMaterial" class="form-group mb-3">
               <CheckboxGeneric
                 v-model="printData.showDecimals"
                 :label="$t('common.field.showDecimals')"
@@ -528,6 +528,7 @@ import { fetchPrinterList, PRINT_BRIDGE_BASE_URL } from '@/services/api/printer-
 import { getBillLayout } from '@/services/helper/print/bill-layout-store.js'
 import { getVatLayout } from '@/services/helper/print/vat-layout-store.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
+import { isMaterialInvoice } from '@/constants/invoice-types.js'
 
 const VAT_PRINTER_STORAGE_KEY = 'print-bridge-printer-vat'
 const BILL_PRINTER_STORAGE_KEY = 'print-bridge-printer-bill'
@@ -633,19 +634,26 @@ export default {
   },
 
   computed: {
+    // MATERIAL: ไม่มี A4 standard/bill กระดาษต่อเนื่อง/summary เท่านั้น (D5 ในแผน)
+    isMaterial() {
+      return isMaterialInvoice(this.invoiceData)
+    },
+
     templateOptions() {
-      return [
+      const options = [
         { value: 'standard', label: this.$t('view.sale.invoiceDetail.templateStandard') },
         { value: 'summary', label: this.$t('view.sale.invoiceDetail.templateSummary') }
       ]
+      return this.isMaterial ? options.filter((o) => o.value === 'summary') : options
     },
 
     paperSizeOptions() {
-      return [
+      const options = [
         { value: 'a4', label: this.$t('view.sale.invoiceDetail.paperA4') },
         { value: 'bill', label: this.$t('view.sale.invoiceDetail.paperBill') },
         { value: 'vat-bridge', label: this.$t('view.sale.invoiceDetail.paperTax') }
       ]
+      return this.isMaterial ? options.filter((o) => o.value !== 'bill') : options
     },
 
     unitPriceModeOptions() {
@@ -888,10 +896,17 @@ export default {
         showCifLabel: true,
         showSeller: true,
         hideCompanyHeader: false,
-        showDecimals,
+        showDecimals: this.isMaterial ? true : showDecimals,
         itemsPerPage: 10
       }
-      this.invoiceTemplate = 'standard'
+
+      if (this.isMaterial) {
+        // MATERIAL: ไม่มีตัวเลือกกระดาษต่อเนื่อง 'bill' และ template อื่นนอกจาก summary
+        if (this.paperSize === 'bill') this.paperSize = 'vat-bridge'
+        this.invoiceTemplate = 'summary'
+      } else {
+        this.invoiceTemplate = 'standard'
+      }
     },
 
     onShowDecimalsChange(val) {
@@ -930,10 +945,10 @@ export default {
         invoiceNumber: this.printData.invoiceNumber.trim(),
         invoiceDate: normalizedDate,
         sellerName: this.printData.sellerName ? this.printData.sellerName.trim() : '',
-        showCifLabel: this.paperSize === 'a4' ? this.printData.showCifLabel : false,
-        showSeller: this.paperSize === 'a4' ? this.printData.showSeller : false,
+        showCifLabel: this.paperSize === 'a4' && !this.isMaterial ? this.printData.showCifLabel : false,
+        showSeller: this.paperSize === 'a4' && !this.isMaterial ? this.printData.showSeller : false,
         hideCompanyHeader: this.paperSize === 'a4' ? this.printData.hideCompanyHeader : false,
-        showDecimals: this.printData.showDecimals,
+        showDecimals: this.isMaterial ? true : this.printData.showDecimals,
         itemsPerPage: Number(this.printData.itemsPerPage) || 10,
         invoiceTemplate: this.invoiceTemplate,
         paperSize: this.paperSize,

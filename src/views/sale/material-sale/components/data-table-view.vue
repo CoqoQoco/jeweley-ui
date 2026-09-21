@@ -32,6 +32,13 @@
         </span>
       </template>
 
+      <template #invoiceNumberTemplate="{ data }">
+        <a v-if="data.invoiceNumber" href="#" class="invoice-link" @click.prevent="onOpenInvoice(data.invoiceNumber)">
+          {{ data.invoiceNumber }}
+        </a>
+        <span v-else>-</span>
+      </template>
+
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
           <ButtonGeneric variant="green" icon="bi-eye" :title="$t('common.btn.view')" @click="$emit('view', data)" />
@@ -104,6 +111,7 @@ export default {
         { field: 'totalWeight', header: this.$t('view.sale.materialSale.colTotalWeight'), minWidth: '130px', align: 'right', sortable: false },
         { field: 'grandTotal', header: this.$t('view.sale.materialSale.colGrandTotal'), minWidth: '130px', align: 'right', sortable: true },
         { field: 'status', header: this.$t('view.sale.materialSale.colStatus'), minWidth: '120px', sortable: false },
+        { field: 'invoiceNumber', header: this.$t('view.sale.materialSale.colInvoiceNumber'), minWidth: '150px', sortable: false },
         { field: 'action', header: this.$t('view.sale.materialSale.colAction'), minWidth: '140px', sortable: false }
       ]
     }
@@ -128,6 +136,14 @@ export default {
       if (status === 100) return 'green'
       if (status === 500) return 'red'
       return 'gray'
+    },
+
+    onOpenInvoice(invoiceNumber) {
+      const route = this.$router.resolve({
+        path: '/invoice-detail',
+        query: { invoiceNumber }
+      })
+      window.open(route.href, '_blank', 'noopener')
     }
   }
 }
@@ -135,6 +151,16 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-data-table';
+
+.invoice-link {
+  color: var(--base-green);
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
 
 .status-pill {
   display: inline-block;

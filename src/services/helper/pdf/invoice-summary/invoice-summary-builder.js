@@ -5,7 +5,7 @@ import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/service
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
 import { COMPANY_INFO, COMPANY_TAX_ID, COMPANY_BANK, loadCompanyInfo } from '@/config/company-info.js'
 import { PDF_COLORS, PDF_STYLES, PDF_FONT } from '../shared/pdf-theme.js'
-import { formatPrice } from '../shared/pdf-format.js'
+import { formatPrice, formatQtyText } from '../shared/pdf-format.js'
 import { loadCompanyLogo, prepareItemImages } from '../shared/pdf-images.js'
 import {
   setTableCell,
@@ -151,7 +151,7 @@ export class InvoiceSummaryPdfBuilder {
         buildMaterialTable(item.materials, 'Gold'),
         buildMaterialTable(item.materials, 'Diamond'),
         buildMaterialTable(item.materials, 'Gem'),
-        setTableCellRight(qty ? qty.toString() : '0'),
+        setTableCellRight(formatQtyText(qty)),
         setTableCellRight(formatPrice(Number(convertedPrice))),
         setTableCellRight(this._fmt(amount))
       ])
@@ -199,7 +199,10 @@ export class InvoiceSummaryPdfBuilder {
       meta: [
         { label: 'Date of Issue:', value: dayjs(self.invoiceDate).locale('en').format('MMM DD, YYYY') },
         { label: 'Invoice No.:', value: self.invoiceNo },
-        { label: 'SO No.:', value: self.saleOrderData.soNumber || self.saleOrderData.number || '' }
+        {
+          label: self.saleOrderData.refLabel || 'SO No.:',
+          value: self.saleOrderData.refNumber || self.saleOrderData.soNumber || self.saleOrderData.number || ''
+        }
       ],
       billTo: {
         name: self.customer.name || '',

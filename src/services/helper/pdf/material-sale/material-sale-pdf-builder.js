@@ -199,7 +199,7 @@ export class MaterialSalePdfBuilder {
       logoBase64: self.logoBase64,
       companyName: self.company?.info?.name || COMPANY_INFO.name,
       companyTaxId: self.company?.taxId || COMPANY_TAX_ID,
-      title: 'INVOICE',
+      title: 'SALE ORDER',
       meta: [
         { label: 'Date of Issue:', value: dayjs(d.documentDate).locale('en').format('MMM DD, YYYY') },
         { label: 'Document No.:', value: d.documentNo || '' }

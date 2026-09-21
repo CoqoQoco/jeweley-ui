@@ -24,6 +24,12 @@ export const useInvoiceApiStore = defineStore('invoice', {
         throw error
       }
     },
+    async fetchCreateFromMaterialSale({ formValue }) {
+      const param = {
+        ...formValue
+      }
+      return await api.jewelry.post('Invoice/CreateFromMaterialSale', param, { skipLoading: false })
+    },
     async fetchGet({ formValue }) {
       try {
         this.dataSearch = {}
@@ -60,7 +66,8 @@ export const useInvoiceApiStore = defineStore('invoice', {
           overdueOnly: formValue.overdueOnly || false,
           ownerUsername: formValue.ownerUsername || null,
           salePerson: formValue.salePerson || null,
-          saleSupport: formValue.saleSupport || null
+          saleSupport: formValue.saleSupport || null,
+          invoiceType: formValue.invoiceType || null
         }
 
         const request = {

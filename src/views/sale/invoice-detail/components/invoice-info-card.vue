@@ -3,6 +3,7 @@
     <div class="card-header">
       <h6 class="mb-0">
         <i class="bi bi-file-earmark-text mr-2"></i>{{ $t('view.sale.invoiceDetail.invoiceAndCustomer') }}
+        <span v-if="isMaterial" class="badge badge-material ml-2">{{ $t('view.sale.invoiceDetail.materialBadge') }}</span>
       </h6>
     </div>
     <div class="card-body">
@@ -22,8 +23,18 @@
           </div>
           <div class="col-md-3">
             <div class="info-item">
-              <label class="info-label">{{ $t('view.sale.invoiceDetail.soNumber') }}</label>
-              <p class="info-value">{{ invoiceData.soNumber || '-' }}</p>
+              <label class="info-label">
+                {{ isMaterial ? $t('view.sale.invoiceDetail.materialSaleNumberLabel') : $t('view.sale.invoiceDetail.soNumber') }}
+              </label>
+              <p class="info-value">
+                <router-link
+                  v-if="isMaterial && invoiceData.materialSaleRunning"
+                  :to="{ name: 'sale-material-sale-detail', params: { running: invoiceData.materialSaleRunning } }"
+                >
+                  {{ invoiceData.materialSaleDocumentNo || '-' }}
+                </router-link>
+                <template v-else>{{ isMaterial ? (invoiceData.materialSaleDocumentNo || '-') : (invoiceData.soNumber || '-') }}</template>
+              </p>
             </div>
           </div>
           <div class="col-md-3">
@@ -81,7 +92,7 @@
               <p class="info-value">{{ invoiceData.saleSupport || '-' }}</p>
             </div>
           </div>
-          <div class="col-md-6 d-flex align-items-end justify-content-end">
+          <div v-if="!isMaterial" class="col-md-6 d-flex align-items-end justify-content-end">
             <ButtonGeneric
               variant="outline"
               icon="bi-pencil"
@@ -152,6 +163,10 @@ export default {
     invoiceData: {
       type: Object,
       default: () => ({})
+    },
+    isMaterial: {
+      type: Boolean,
+      default: false
     }
   },
 
@@ -202,6 +217,15 @@ export default {
   padding: 1rem;
   font-weight: 300;
   color: white;
+}
+
+.badge-material {
+  background: var(--status-open-bg);
+  color: var(--base-warning);
+  font-size: var(--fs-sm);
+  padding: var(--sp-xs) var(--sp-sm);
+  border-radius: var(--radius-sm);
+  vertical-align: middle;
 }
 
 .card-body {

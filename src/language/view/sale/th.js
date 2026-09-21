@@ -30,7 +30,10 @@ export const invoice = {
   paymentStatusUnpaid: 'ค้างชำระ',
   overdueOnlyLabel: 'เฉพาะที่เลยกำหนด',
   optionInvoiceCount: '{count} ใบ',
-  optionItemCount: '{count} ชิ้น'
+  optionItemCount: '{count} ชิ้น',
+  invoiceTypeLabel: 'ประเภทใบแจ้งหนี้',
+  invoiceTypeProduct: 'สินค้า',
+  invoiceTypeMaterial: 'วัตถุดิบ'
 }
 
 export const invoiceDetail = {
@@ -55,6 +58,7 @@ export const invoiceDetail = {
   summaryTitle: 'ใบสรุปตามประเภทสินค้า',
   cancelInvoiceOnly: 'ยกเลิก Invoice',
   cancelInvoiceOnlyHint: 'คืนสินค้าเข้าคลัง แต่ยังยืนยันค้างไว้ใน SO',
+  cancelMaterialInvoiceHint: 'ไม่คืนสต็อกวัตถุดิบ (ตัดตอนยืนยันใบสั่งขายวัตถุดิบแล้ว) ออกใบแจ้งหนี้ใหม่จากใบสั่งขายวัตถุดิบเดิมได้อีกครั้งหลังยกเลิก',
   cancelInvoiceUnconfirm: 'ยกเลิก Invoice + ปลดยืนยันสินค้า',
   cancelInvoiceUnconfirmHint: 'ปลดยืนยันสินค้าของใบนี้ออกจาก SO ด้วย',
   goBack: 'ย้อนกลับ',
@@ -185,6 +189,16 @@ export const invoiceDetail = {
     creditTerm: 'เครดิต (Credit Term)'
   },
   soNumber: 'เลขที่ SO',
+  materialSaleNumberLabel: 'เลขที่ใบสั่งขาย (วัตถุดิบ)',
+  materialBadge: 'วัตถุดิบ',
+  materialItemsTitle: 'รายการวัตถุดิบ',
+  materialColCode: 'รหัสวัตถุดิบ',
+  materialColDescription: 'รายการ',
+  materialColQtyPiece: 'จำนวนเม็ด',
+  materialColQtyWeight: 'น้ำหนัก (กะรัต)',
+  materialColPriceInclVat: 'ราคารวม VAT',
+  materialColPriceExclVat: 'ราคาก่อน VAT',
+  materialColAmount: 'จำนวนเงิน',
   deliveryDateLabel: 'วันกำหนดส่ง',
   currencyLabel: 'สกุลเงิน',
   customerTel: 'เบอร์โทร',
@@ -249,6 +263,7 @@ export const invoiceDetail = {
   },
   confirm: {
     cancelInvoice: 'การยกเลิก Invoice นี้จะคืนสินค้าเข้าคลัง แต่สินค้ายังยืนยันค้างอยู่ใน Sale Order เหมือนเดิม',
+    cancelMaterialInvoice: 'การยกเลิกใบแจ้งหนี้นี้จะไม่คืนสต็อกวัตถุดิบเข้าคลัง (ตัดสต็อกไปแล้วตอนยืนยันใบสั่งขายวัตถุดิบ) และสามารถออกใบแจ้งหนี้ใหม่จากใบสั่งขายวัตถุดิบเดิมได้อีกครั้งหลังยกเลิก',
     cancelInvoiceTitle: 'คุณต้องการยกเลิก Invoice นี้หรือไม่?',
     cancelInvoiceUnconfirmTitle: 'ยกเลิก Invoice และปลดยืนยันสินค้าใน SO?',
     cancelInvoiceUnconfirm: 'ยกเลิก {invoiceNumber} และปลดยืนยันสินค้า {count} รายการออกจาก {soNumber}',
@@ -1879,6 +1894,7 @@ export const materialSale = {
   colTotalWeight: 'น้ำหนักรวม (ct)',
   colGrandTotal: 'ยอดรวม',
   colStatus: 'สถานะ',
+  colInvoiceNumber: 'เลขที่ใบแจ้งหนี้',
   colAction: 'จัดการ',
   statusDraft: 'ร่าง',
   statusConfirmed: 'ยืนยันแล้ว',
@@ -1944,6 +1960,10 @@ export const materialSale = {
   cancelReasonRequired: 'กรุณาระบุเหตุผลการยกเลิก',
   cancelReasonTitle: 'ยืนยันการยกเลิกใบขาย',
 
+  createInvoiceBtn: 'ออกใบแจ้งหนี้',
+  viewInvoiceBtn: 'ดูใบแจ้งหนี้',
+  hasInvoiceCancelHint: 'มีใบแจ้งหนี้ {invoiceNumber} แล้ว ต้องยกเลิกใบแจ้งหนี้ก่อนจึงจะยกเลิกใบสั่งขายนี้ได้',
+
   confirmSaveTitle: 'ยืนยันการบันทึกร่าง',
   confirmConfirmTitle: 'ยืนยันการขายและตัดสต็อก',
   confirmConfirmMsg: 'ระบบจะตัดสต็อกพลอยตามรายการในใบขายนี้ ไม่สามารถแก้ไขได้อีกหลังยืนยัน',
@@ -1955,6 +1975,7 @@ export const materialSale = {
   cancelSuccess: 'ยกเลิกใบขายวัตถุดิบสำเร็จ',
   deleteSuccess: 'ลบใบขายวัตถุดิบสำเร็จ',
   generateDocumentNoSuccess: 'สร้างเลขที่ใบขายใหม่แล้ว',
+  createInvoiceSuccess: 'ออกใบแจ้งหนี้ {invoiceNumber} สำเร็จ',
 
   validation: {
     documentDateRequired: 'กรุณาระบุวันที่เอกสาร',
@@ -1996,6 +2017,17 @@ export const materialSale = {
     colTel: 'เบอร์โทร',
     colTaxId: 'เลขผู้เสียภาษี',
     noResult: 'ไม่พบข้อมูลลูกค้า'
+  },
+
+  pieceUnit: 'เม็ด',
+
+  createInvoiceModal: {
+    title: 'ออกใบแจ้งหนี้',
+    documentNo: 'เลขที่ใบขาย',
+    customerName: 'ลูกค้า',
+    grandTotal: 'ยอดรวมสุทธิ',
+    submitBtn: 'ยืนยันออกใบแจ้งหนี้',
+    confirmTitle: 'ยืนยันการออกใบแจ้งหนี้จากใบขายวัตถุดิบนี้'
   },
 
   pdf: {

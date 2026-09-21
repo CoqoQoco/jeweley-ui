@@ -148,6 +148,19 @@
         />
       </div>
 
+      <div>
+        <span class="title-text">{{ $t('view.sale.invoice.invoiceTypeLabel') }}</span>
+        <DropdownGeneric
+          v-model="form.invoiceType"
+          :options="invoiceTypeOptions"
+          optionLabel="name"
+          optionValue="value"
+          :placeholder="$t('view.sale.invoice.filterAll')"
+          :showClear="true"
+          class="w-100"
+        />
+      </div>
+
       <div class="date-range-field">
         <span class="title-text">{{ $t('view.sale.invoice.createDate') }}</span>
         <DateRangeGeneric
@@ -190,6 +203,7 @@
 <script>
 import { useSaleChannelApiStore } from '@/stores/modules/api/sale/sale-channel-store.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
+import { INVOICE_TYPES } from '@/constants/invoice-types.js'
 
 import SearchBarGeneric from '@/components/generic/SearchBarGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
@@ -253,6 +267,13 @@ export default {
         { value: 'paid', name: this.$t('view.sale.invoice.paymentStatusPaid') },
         { value: 'partial', name: this.$t('view.sale.invoice.paymentStatusPartial') },
         { value: 'unpaid', name: this.$t('view.sale.invoice.paymentStatusUnpaid') }
+      ]
+    },
+
+    invoiceTypeOptions() {
+      return [
+        { value: INVOICE_TYPES.PRODUCT, name: this.$t('view.sale.invoice.invoiceTypeProduct') },
+        { value: INVOICE_TYPES.MATERIAL, name: this.$t('view.sale.invoice.invoiceTypeMaterial') }
       ]
     },
 

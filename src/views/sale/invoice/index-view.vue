@@ -27,7 +27,8 @@ const interfaceForm = {
   saleChannelCode: null,
   paymentStatus: null,
   overdueOnly: false,
-  ownerUsername: null
+  ownerUsername: null,
+  invoiceType: null
 }
 
 export default {

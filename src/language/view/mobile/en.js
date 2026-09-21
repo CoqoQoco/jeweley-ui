@@ -610,6 +610,8 @@ export const sale = {
   invoiceEmptyTitle: 'Not Found',
   invoiceEmptySubtitle: 'Unable to load Invoice data',
   invoiceRetryBtn: 'Try Again',
+  invoiceMaterialNoticeTitle: 'Material Invoice',
+  invoiceMaterialNotice: 'This is a material invoice — view its details on the web app.',
   invoiceSuccessPdf: 'Invoice PDF',
   invoiceSuccessPdfMsg: 'PDF created successfully',
   invoiceCancelConfirmMsg: 'The system will cancel both invoice {invoiceNumber} and sale order {soNumber}',

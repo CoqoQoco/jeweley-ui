@@ -31,6 +31,12 @@
         </div>
       </template>
 
+      <template #invoiceTypeTemplate="{ data }">
+        <div class="status-container">
+          <span :class="getInvoiceTypeBadgeClass(data)">{{ getInvoiceTypeLabel(data) }}</span>
+        </div>
+      </template>
+
       <template #createDateTemplate="{ data }">
         <div>
           {{ formatDateTime(data.createDate) }}
@@ -107,6 +113,7 @@ import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import { formatNumber, isForeignCurrency } from '@/services/utils/decimal.js'
 import { getPaymentStatus } from '@/services/utils/payment-status.js'
+import { isMaterialInvoice } from '@/constants/invoice-types.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
@@ -160,6 +167,13 @@ export default {
           header: this.$t('view.sale.invoice.invoiceNumber'),
           sortable: true,
           minWidth: '150px'
+        },
+        {
+          field: 'invoiceType',
+          header: this.$t('view.sale.invoice.invoiceTypeLabel'),
+          sortable: false,
+          minWidth: '110px',
+          template: 'invoiceTypeTemplate'
         },
         {
           field: 'customerCode',
@@ -313,6 +327,16 @@ export default {
       return data.currencyUnit || 'THB'
     },
 
+    getInvoiceTypeLabel(data) {
+      return isMaterialInvoice(data)
+        ? this.$t('view.sale.invoice.invoiceTypeMaterial')
+        : this.$t('view.sale.invoice.invoiceTypeProduct')
+    },
+
+    getInvoiceTypeBadgeClass(data) {
+      return isMaterialInvoice(data) ? 'badge badge-invoice-type-material' : 'badge badge-invoice-type-product'
+    },
+
     isForeignCurrencyUnit(data) {
       return isForeignCurrency(this.getCurrencyUnit(data))
     },
@@ -434,6 +458,18 @@ export default {
   background-color: transparent;
   border: 1px solid var(--base-font-color);
   color: var(--base-font-color);
+}
+
+.badge-invoice-type-product {
+  background-color: transparent;
+  border: 1px solid var(--base-green);
+  color: var(--base-green);
+}
+
+.badge-invoice-type-material {
+  background-color: transparent;
+  border: 1px solid var(--base-warning);
+  color: var(--base-warning);
 }
 
 .badge-payment-paid {

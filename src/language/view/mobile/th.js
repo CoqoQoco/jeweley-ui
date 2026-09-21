@@ -610,6 +610,8 @@ export const sale = {
   invoiceEmptyTitle: 'ไม่พบข้อมูล',
   invoiceEmptySubtitle: 'ไม่สามารถโหลดข้อมูล Invoice ได้',
   invoiceRetryBtn: 'ลองอีกครั้ง',
+  invoiceMaterialNoticeTitle: 'ใบแจ้งหนี้วัตถุดิบ',
+  invoiceMaterialNotice: 'ใบแจ้งหนี้วัตถุดิบ ดูรายละเอียดได้บนเว็บ',
   invoiceSuccessPdf: 'Invoice PDF',
   invoiceSuccessPdfMsg: 'สร้าง PDF สำเร็จ',
   invoiceCancelConfirmMsg: 'ระบบจะยกเลิกทั้งใบแจ้งหนี้ {invoiceNumber} และใบสั่งขาย {soNumber}',

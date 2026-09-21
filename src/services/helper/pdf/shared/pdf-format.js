@@ -17,6 +17,16 @@ export function formatPrice(price) {
   })
 }
 
+// จำนวนที่พิมพ์บนใบกำกับ/ใบสรุป — จำนวนเต็มคงพฤติกรรมเดิม (ไม่มีทศนิยม) ส่วนจำนวนที่มีเศษ
+// (เช่น น้ำหนักวัตถุดิบเป็นกะรัต) พิมพ์ 2-3 ตำแหน่งไม่ให้ปัดเศษหาย (16.2 กะรัตต้องไม่พิมพ์เป็น "16")
+export function formatQtyText(qty) {
+  const num = Number(qty) || 0
+  if (Number.isInteger(num)) {
+    return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+  }
+  return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 3 })
+}
+
 export function numberToWords(num) {
   const units = [
     '',

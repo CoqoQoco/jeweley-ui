@@ -15,6 +15,7 @@
           @click="restoreOriginalView"
         />
         <ButtonGeneric
+          v-if="!isMaterial"
           variant="outline"
           icon="bi-plus-circle"
           :label="$t('view.sale.invoiceDetail.addVersion')"
@@ -27,11 +28,13 @@
           @click="reprintPDF"
         />
         <ActionMenuGeneric
+          v-if="!isMaterial"
           :label="$t('view.sale.invoiceDetail.menuOtherDocs')"
           icon="bi-file-earmark-text"
           :items="otherDocMenuItems"
         />
         <ActionMenuGeneric
+          v-if="!isMaterial"
           :label="$t('view.sale.invoiceDetail.menuExcel')"
           icon="bi-file-earmark-excel"
           :items="excelMenuItems"
@@ -55,23 +58,30 @@
       <!-- Invoice and Customer Information -->
       <invoice-info-card
         :invoiceData="invoiceData"
+        :isMaterial="isMaterial"
         class="mb-3"
         @edit-sale-team="showSaleTeamModal = true"
       />
 
       <!-- Invoice Items -->
       <invoice-items-table
+        v-if="!isMaterial"
         :invoiceItems="invoiceItems"
         :invoiceData="invoiceData"
         :formSaleOrder="formSaleOrder"
         class="mb-3"
       />
+      <material-invoice-items-table
+        v-else
+        :items="invoiceItems"
+        class="mb-3"
+      />
 
 
       <!-- Payment and Financial Summary with Version List -->
-      <div class="form-content-payment-container">
-        <!-- Invoice Version List (3/12) -->
-        <div class="">
+      <div class="form-content-payment-container" :class="{ 'form-content-payment-container--full': isMaterial }">
+        <!-- Invoice Version List (3/12) — ไม่มีสำหรับ MATERIAL (ไม่มี concept version) -->
+        <div v-if="!isMaterial" class="">
           <div class="card-container mb-3">
             <div class="card-header">
               <h6 class="mb-0"><i class="bi bi-clock-history mr-2"></i>{{ $t('view.sale.invoiceDetail.invoiceVersions') }}</h6>
@@ -307,6 +317,9 @@ import dayjs from 'dayjs'
 import { formatDocCurrency } from '@/services/utils/decimal.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import { ensureLineKey } from '@/services/utils/line-key.js'
+import { isMaterialInvoice } from '@/constants/invoice-types.js'
+import { toMaterialInvoiceItems } from '@/services/helper/invoice/material-invoice-items.js'
+import MaterialInvoiceItemsTable from './components/material-invoice-items-table.vue'
 
 export default {
   name: 'InvoiceDetailView',
@@ -325,6 +338,7 @@ export default {
     SaleTeamEditModal,
     InvoiceInfoCard,
     InvoiceItemsTable,
+    MaterialInvoiceItemsTable,
     PaymentSection,
     MoneySummaryCard,
     PageHeaderGeneric,
@@ -374,6 +388,10 @@ export default {
   },
 
   computed: {
+    isMaterial() {
+      return isMaterialInvoice(this.invoiceData)
+    },
+
     // ยอดรวม F.O.B. ของใบแจ้งหนี้ — ต้องคิดจากตัวกลาง computeDocumentTotals เพื่อให้เกณฑ์การปัดตรงกับใบ PDF (half-up)
     documentTotals() {
       return computeDocumentTotals({
@@ -428,6 +446,7 @@ export default {
 
     canPrintGuarantee() {
       return (
+        !this.isMaterial &&
         !!this.invoiceData &&
         this.invoiceItems.length > 0 &&
         this.remainingBalance <= 0 &&
@@ -437,6 +456,7 @@ export default {
 
     canPrintCertificate() {
       return (
+        !this.isMaterial &&
         !!this.invoiceData &&
         this.invoiceItems.length > 0 &&
         this.remainingBalance <= 0 &&
@@ -497,6 +517,29 @@ export default {
     },
 
     moreMenuItems() {
+      // MATERIAL: ยกเลิกได้ทางเดียวคือ Invoice/Delete ธรรมดา (CancelWithSaleOrder/CancelAndUnconfirm ปฏิเสธ MATERIAL ที่ backend)
+      // ไม่คืนสต็อกวัตถุดิบ (ตัดตอนยืนยันใบสั่งขายวัตถุดิบไปแล้ว) — ไม่มีเมนู "ยกเลิก + ปลดยืนยันสินค้า"
+      if (this.isMaterial) {
+        return [
+          {
+            key: 'cancel-group',
+            label: this.$t('view.sale.invoiceDetail.menuCancelGroup'),
+            items: [
+              { separator: true },
+              {
+                key: 'cancel-invoice',
+                icon: 'bi-x-circle',
+                danger: true,
+                disabled: this.isCancelingInvoice,
+                label: this.$t('view.sale.invoiceDetail.cancelInvoiceOnly'),
+                hint: this.$t('view.sale.invoiceDetail.cancelMaterialInvoiceHint'),
+                command: this.confirmReverseInvoice
+              }
+            ]
+          }
+        ]
+      }
+
       return [
         {
           key: 'cancel-group',
@@ -568,6 +611,34 @@ export default {
       const invoiceResponse = await this.invoiceStore.fetchGet({
         formValue: { invoiceNumber: invoiceNumber }
       })
+
+      // MATERIAL: ไม่มี SO product ผูกอยู่ — ประกอบ invoiceData/invoiceItems จาก materialItems โดยตรง
+      // ห้ามเรียก SaleOrder/Get ต่อ (invoiceResponse.soNumber เป็น running ของ SM ไม่ใช่ SO → ยิง error เปล่าๆ)
+      if (isMaterialInvoice(invoiceResponse)) {
+        this.invoiceData = {
+          ...invoiceResponse,
+          vatPercent: invoiceResponse.vat || 0
+        }
+
+        if (this.invoiceData.salePerson) {
+          this.sellerName = this.invoiceData.salePerson
+        }
+
+        this.invoiceItems = toMaterialInvoiceItems(invoiceResponse.materialItems, {
+          vatPercent: invoiceResponse.vat,
+          pieceLabel: this.$t('view.sale.materialSale.pieceUnit')
+        })
+
+        this.formSaleOrder = {
+          currencyUnit: this.invoiceData.currencyUnit || 'THB',
+          currencyRate: this.invoiceData.currencyRate || 1
+        }
+
+        this.originalInvoiceData = { ...this.invoiceData }
+        this.originalInvoiceItems = [...this.invoiceItems]
+        this.versionList = []
+        return
+      }
 
       const saleOrderData = await this.getSaleOrderData(invoiceResponse.soNumber)
       if (saleOrderData) {
@@ -1335,8 +1406,12 @@ export default {
       event.target.style.display = 'none'
     },
     confirmReverseInvoice() {
+      const message = this.isMaterial
+        ? this.$t('view.sale.invoiceDetail.confirm.cancelMaterialInvoice')
+        : this.$t('view.sale.invoiceDetail.confirm.cancelInvoice')
+
       confirmThenSubmit(
-        this.$t('view.sale.invoiceDetail.confirm.cancelInvoice'),
+        message,
         this.$t('view.sale.invoiceDetail.confirm.cancelInvoiceTitle'),
         () => {
           this.showDeleteReasonModal = true
@@ -1481,7 +1556,9 @@ export default {
             amountPaid: Array.isArray(this.invoiceData.payments)
               ? this.invoiceData.payments.reduce((s, p) => s + (Number(p.amount) || 0), 0)
               : 0,
-            vatPercent: this.invoiceData.vatPercent !== undefined ? this.invoiceData.vatPercent : this.invoiceData.vat
+            vatPercent: this.invoiceData.vatPercent !== undefined ? this.invoiceData.vatPercent : this.invoiceData.vat,
+            // MATERIAL: หัวใบอ้างอิงเลขที่ใบสั่งขายวัตถุดิบ (document no. ที่ user เห็น ไม่ใช่ running) แทน SO No.
+            ...(this.isMaterial ? { refLabel: 'Ref. No.:', refNumber: this.invoiceData.materialSaleDocumentNo } : {})
           },
           customer: {
             name: this.invoiceData.customerName,
@@ -1503,7 +1580,7 @@ export default {
           invoiceDate: formattedDate,
           download: true,
           open: false,
-          showCifLabel: printData.showCifLabel !== undefined ? printData.showCifLabel : true,
+          showCifLabel: this.isMaterial ? false : (printData.showCifLabel !== undefined ? printData.showCifLabel : true),
           hideCompanyHeader: printData.hideCompanyHeader || false,
           showDecimals: printData.showDecimals,
           itemsPerPage: Number(printData.itemsPerPage) || 10
@@ -1599,7 +1676,9 @@ export default {
           amountPaid: Array.isArray(this.invoiceData.payments)
             ? this.invoiceData.payments.reduce((s, p) => s + (Number(p.amount) || 0), 0)
             : 0,
-          vatPercent: this.invoiceData.vatPercent !== undefined ? this.invoiceData.vatPercent : this.invoiceData.vat
+          vatPercent: this.invoiceData.vatPercent !== undefined ? this.invoiceData.vatPercent : this.invoiceData.vat,
+          // MATERIAL: หัวใบอ้างอิงเลขที่ใบสั่งขายวัตถุดิบ (document no. ที่ user เห็น ไม่ใช่ running) แทน SO No.
+          ...(this.isMaterial ? { refLabel: 'Ref. No.:', refNumber: this.invoiceData.materialSaleDocumentNo } : {})
         },
         customer: {
           name: this.invoiceData.customerName,
@@ -1622,7 +1701,7 @@ export default {
         download: false,
         open: false,
         preview: true,
-        showCifLabel: printData.showCifLabel !== undefined ? printData.showCifLabel : true,
+        showCifLabel: this.isMaterial ? false : (printData.showCifLabel !== undefined ? printData.showCifLabel : true),
         hideCompanyHeader: printData.hideCompanyHeader || false,
         showDecimals: printData.showDecimals,
         itemsPerPage: Number(printData.itemsPerPage) || 10
@@ -1977,5 +2056,9 @@ export default {
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
   }
+}
+
+.form-content-payment-container--full {
+  grid-template-columns: 1fr;
 }
 </style>

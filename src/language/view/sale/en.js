@@ -30,7 +30,10 @@ export const invoice = {
   paymentStatusUnpaid: 'Unpaid',
   overdueOnlyLabel: 'Overdue Only',
   optionInvoiceCount: '{count} invoice(s)',
-  optionItemCount: '{count} item(s)'
+  optionItemCount: '{count} item(s)',
+  invoiceTypeLabel: 'Invoice Type',
+  invoiceTypeProduct: 'Product',
+  invoiceTypeMaterial: 'Material'
 }
 
 export const invoiceDetail = {
@@ -55,6 +58,7 @@ export const invoiceDetail = {
   summaryTitle: 'SUMMARY BY PRODUCT TYPE',
   cancelInvoiceOnly: 'Cancel invoice',
   cancelInvoiceOnlyHint: 'Returns items to stock but keeps them confirmed on the SO',
+  cancelMaterialInvoiceHint: 'Does not return material stock (already deducted when the material sale order was confirmed) — a new invoice can be issued from the same material sale order after cancelling',
   cancelInvoiceUnconfirm: 'Cancel invoice + unconfirm items',
   cancelInvoiceUnconfirmHint: "Also removes this invoice's items from the SO",
   goBack: 'Back',
@@ -185,6 +189,16 @@ export const invoiceDetail = {
     creditTerm: 'Credit Term'
   },
   soNumber: 'SO Number',
+  materialSaleNumberLabel: 'Material Sale Order No.',
+  materialBadge: 'Material',
+  materialItemsTitle: 'Material Items',
+  materialColCode: 'Material Code',
+  materialColDescription: 'Description',
+  materialColQtyPiece: 'Qty (pcs)',
+  materialColQtyWeight: 'Weight (ct)',
+  materialColPriceInclVat: 'Price Incl. VAT',
+  materialColPriceExclVat: 'Price Excl. VAT',
+  materialColAmount: 'Amount',
   deliveryDateLabel: 'Delivery Date',
   currencyLabel: 'Currency',
   customerTel: 'Phone',
@@ -249,6 +263,7 @@ export const invoiceDetail = {
   },
   confirm: {
     cancelInvoice: 'Cancelling this Invoice will return items to stock, but they will remain confirmed on the Sale Order',
+    cancelMaterialInvoice: 'Cancelling this invoice will not return material stock (already deducted when the material sale order was confirmed) — a new invoice can be issued from the same material sale order after cancelling',
     cancelInvoiceTitle: 'Do you want to cancel this Invoice?',
     cancelInvoiceUnconfirmTitle: 'Cancel invoice and unconfirm SO items?',
     cancelInvoiceUnconfirm: 'Cancel {invoiceNumber} and unconfirm {count} item(s) from {soNumber}',
@@ -1886,6 +1901,7 @@ export const materialSale = {
   colTotalWeight: 'Total Weight (ct)',
   colGrandTotal: 'Grand Total',
   colStatus: 'Status',
+  colInvoiceNumber: 'Invoice No.',
   colAction: 'Action',
   statusDraft: 'Draft',
   statusConfirmed: 'Confirmed',
@@ -1951,6 +1967,10 @@ export const materialSale = {
   cancelReasonRequired: 'Please enter the cancel reason',
   cancelReasonTitle: 'Confirm Cancel Document',
 
+  createInvoiceBtn: 'Create Invoice',
+  viewInvoiceBtn: 'View Invoice',
+  hasInvoiceCancelHint: 'Invoice {invoiceNumber} already exists. Cancel the invoice first before you can cancel this sale order.',
+
   confirmSaveTitle: 'Confirm Save Draft',
   confirmConfirmTitle: 'Confirm Sale and Cut Stock',
   confirmConfirmMsg: 'The system will deduct gem stock according to this document. It cannot be edited after confirming.',
@@ -1962,6 +1982,7 @@ export const materialSale = {
   cancelSuccess: 'Material sale cancelled successfully',
   deleteSuccess: 'Material sale deleted successfully',
   generateDocumentNoSuccess: 'New document number generated',
+  createInvoiceSuccess: 'Invoice {invoiceNumber} created successfully',
 
   validation: {
     documentDateRequired: 'Please specify the document date',
@@ -2003,6 +2024,17 @@ export const materialSale = {
     colTel: 'Tel',
     colTaxId: 'Tax ID',
     noResult: 'No customer found'
+  },
+
+  pieceUnit: 'pcs',
+
+  createInvoiceModal: {
+    title: 'Create Invoice',
+    documentNo: 'Document No.',
+    customerName: 'Customer',
+    grandTotal: 'Grand Total',
+    submitBtn: 'Confirm Create Invoice',
+    confirmTitle: 'Confirm creating an invoice from this material sale order'
   },
 
   pdf: {

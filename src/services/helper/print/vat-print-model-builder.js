@@ -1,4 +1,6 @@
 import { convertAmountToThaiText } from '@/services/utils/thai-baht-text.js'
+import { roundHalfUp } from '@/services/utils/money.js'
+import { formatQtyText } from '@/services/helper/pdf/shared/pdf-format.js'
 
 const MM_TO_INCH = 1 / 25.4
 const RIGHT_ALIGN_WIDTH = 0.9
@@ -122,7 +124,7 @@ export function buildVatPrintModel(invoice, layout, options = {}) {
       left(String(itemNo), L.xItemNo, y, ifs)
       left(item.productNameEN || '', L.xItemDesc, y, ifs)
 
-      right(n0(item.qty), L.xItemQty, y, ifs)
+      right(formatQtyText(item.qty), L.xItemQty, y, ifs)
       right(money(item.appraisalPrice), L.xItemPrice, y, ifs)
 
       const lineAmount = Number(item.appraisalPrice) * (1 - Number(item.discountPercent) / 100) / currencyRate * Number(item.qty)
@@ -133,10 +135,15 @@ export function buildVatPrintModel(invoice, layout, options = {}) {
     }
 
     if (currentPage === totalPages - 1) {
-      right(money(totalBeforeVat), L.xSubtotal, L.ySubtotal, hfs)
-      right(money(vatAmount), L.xVat, L.yVat, hfs)
-      right(money(totalAmount), L.xTotal, L.yTotal, hfs)
-      const bahtText = convertAmountToThaiText(totalAmount)
+      // ปัดครั้งเดียวตรงนี้ (roundHalfUp) ก่อนพิมพ์ — กัน toLocaleString/Math.round ปัดผิดทิศที่ค่า .xx5 พอดี
+      const totalBeforeVatRounded = roundHalfUp(totalBeforeVat, 2)
+      const vatAmountRounded = roundHalfUp(vatAmount, 2)
+      const totalAmountRounded = roundHalfUp(totalAmount, 2)
+
+      right(money(totalBeforeVatRounded), L.xSubtotal, L.ySubtotal, hfs)
+      right(money(vatAmountRounded), L.xVat, L.yVat, hfs)
+      right(money(totalAmountRounded), L.xTotal, L.yTotal, hfs)
+      const bahtText = convertAmountToThaiText(totalAmountRounded)
       left(bahtText, L.xAmountText, L.yAmountText, hfs)
     }
 

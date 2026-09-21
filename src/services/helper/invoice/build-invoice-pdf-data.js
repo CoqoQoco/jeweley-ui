@@ -1,5 +1,6 @@
 // สร้าง context/pdf-data สำหรับ "ใบกำกับสินค้า A4" — ใช้ร่วมกันระหว่างหน้า invoice-detail (web/mobile)
 // และหน้า POS มือถือตอนขายสำเร็จ ห้ามก๊อปโค้ด logic นี้ซ้ำที่อื่น
+import { isMaterialInvoice } from '@/constants/invoice-types.js'
 
 // ย้ายมาจาก loadInvoiceData() ใน views/mobile/sale/invoice-detail-view.vue แบบตรงตัว
 // P4-3: แก้ step 4-5 ให้ scope ด้วย invoice === invoiceNumber ก่อนเสมอ (เดิม match stockNumber ตรงๆ ปนข้าม invoice ได้)
@@ -10,6 +11,12 @@ export async function loadInvoiceContext(invoiceNumber, { invoiceStore, saleOrde
   })
 
   if (!invoiceResponse) return null
+
+  // MATERIAL: ไม่มี SO product ผูกอยู่ (soNumber เป็น running ของ SM) — เรียก SaleOrder/Get ต่อจะพัง (axios error เปล่าๆ)
+  // คืน shape ต่างจากปกติ (invoiceResponse แทน invoiceData) เพื่อบังคับให้ผู้เรียกเช็ค isMaterial ก่อนใช้เสมอ
+  if (isMaterialInvoice(invoiceResponse)) {
+    return { invoiceResponse, invoiceItems: [], isMaterial: true }
+  }
 
   // 2. Get Sale Order data (for items + stockConfirm)
   const soResponse = await saleOrderStore.fetchGet({

@@ -8,6 +8,19 @@
       </div>
     </div>
 
+    <!-- MATERIAL invoice: ไม่มี route/UI รองรับบนมือถือ ให้ดูรายละเอียดบนเว็บแทน -->
+    <div v-else-if="isMaterialInvoice" class="mobile-container mobile-mt-2">
+      <div class="mobile-empty-state">
+        <i class="bi bi-info-circle"></i>
+        <div class="empty-title">{{ $t('view.mobile.sale.invoiceMaterialNoticeTitle') }}</div>
+        <div class="empty-subtitle">{{ $t('view.mobile.sale.invoiceMaterialNotice') }}</div>
+        <button class="mobile-btn mobile-btn-outline mobile-mt-2" @click="$router.back()">
+          <i class="bi bi-arrow-left"></i>
+          {{ $t('view.mobile.sale.invoiceBackBtn') }}
+        </button>
+      </div>
+    </div>
+
     <!-- Invoice Detail Content -->
     <div v-else-if="invoiceData" class="mobile-container mobile-mt-1">
       <!-- Invoice Info Card -->
@@ -331,6 +344,7 @@ export default {
     return {
       invoiceData: null,
       invoiceItems: [],
+      isMaterialInvoice: false,
       isLoading: true,
       // Print form
       showPrintForm: false,
@@ -479,6 +493,7 @@ export default {
       try {
         this.invoiceData = null
         this.invoiceItems = []
+        this.isMaterialInvoice = false
 
         const context = await loadInvoiceContext(this.invoiceNumber, {
           invoiceStore: this.invoiceStore,
@@ -486,6 +501,11 @@ export default {
         })
 
         if (!context) return
+
+        if (context.isMaterial) {
+          this.isMaterialInvoice = true
+          return
+        }
 
         this.invoiceData = context.invoiceData
         this.invoiceItems = context.invoiceItems
