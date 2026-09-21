@@ -46,13 +46,8 @@ export default {
     pageDesc: 'สแกนหรือกรอกรหัสสินค้า เพื่อเปิดหน้าโชว์สินค้าให้ลูกค้าดู',
     inputPlaceholder: 'สแกนหรือกรอกรหัสสินค้า',
     cameraBtn: 'สแกนกล้อง',
-    closeCameraBtn: 'ปิดกล้อง',
     scanningHint: 'จ่อกล้องไปที่บาร์โค้ด/QR โค้ดสินค้า',
     warnEnterCode: 'กรุณากรอกรหัสสินค้า',
-    warnNotFound: 'ไม่พบสินค้า กรุณาตรวจสอบรหัส',
-    cameraErrorNotSupported: 'อุปกรณ์นี้ไม่รองรับการเปิดกล้อง',
-    cameraErrorPermission: 'กรุณาอนุญาตให้เข้าถึงกล้อง',
-    cameraErrorNotFound: 'ไม่พบกล้องในอุปกรณ์นี้',
-    cameraErrorGeneric: 'ไม่สามารถเปิดกล้องได้ กรุณาลองใหม่อีกครั้ง'
+    warnNotFound: 'ไม่พบสินค้า กรุณาตรวจสอบรหัส'
   }
 }

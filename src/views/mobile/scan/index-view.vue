@@ -1,153 +1,108 @@
 <template>
   <div class="mobile-scan-view">
     <div class="mobile-container">
-      <!-- <h2 class="mobile-title">สแกน QR / Barcode</h2> -->
-
-      <!-- Step 1: Select Scan Type -->
-      <div v-if="!selectedScanType" class="scan-type-selection">
-        <p class="selection-description">{{ $t('view.mobile.scan.selectTypeTitle') }}</p>
-
-        <div class="scan-type-grid">
-          <div
-            v-for="type in scanTypes"
-            :key="type.id"
-            class="scan-type-card"
-            @click="selectScanType(type)"
-          >
-            <div class="scan-type-icon">
-              <i :class="type.icon"></i>
-            </div>
-            <div class="scan-type-label">{{ $t(type.labelKey) }}</div>
-            <div v-if="type.descriptionKey" class="scan-type-description">{{ $t(type.descriptionKey) }}</div>
-          </div>
-        </div>
+      <div class="scan-bar-row">
+        <InputTextGeneric
+          :modelValue="scanInput"
+          icon="bi-upc-scan"
+          :placeholder="$t('view.mobile.scan.scanPlaceholder')"
+          @update:modelValue="onManualInput"
+          @keyup.enter="handleManualSearch"
+        />
+        <ButtonGeneric
+          variant="green"
+          icon="bi-search"
+          :title="$t('common.btn.search')"
+          :loading="isSearching"
+          :disabled="isSearching"
+          @click="handleManualSearch"
+        />
+        <ButtonGeneric
+          variant="outline"
+          icon="bi-camera"
+          :title="$t('view.mobile.scan.cameraBtn')"
+          @click="showCamera = true"
+        />
       </div>
 
-      <!-- Step 2: Scanner & Results -->
-      <div v-else class="scan-interface">
-        <!-- Header with back button -->
-        <div class="scan-header">
-          <button class="mobile-btn-icon" @click="resetScan">
-            <i class="bi bi-arrow-left"></i>
-          </button>
-          <div class="scan-header-title">
-            <i :class="selectedScanType.icon"></i>
-            <span>{{ $t(selectedScanType.labelKey) }}</span>
-          </div>
-        </div>
+      <div v-if="!scannedProduct" class="mobile-empty-state mobile-mt-3">
+        <i class="bi bi-upc-scan"></i>
+        <div class="empty-title">{{ $t('view.mobile.scan.emptyTitle') }}</div>
+        <div class="empty-subtitle">{{ $t('view.mobile.scan.emptySubtitle') }}</div>
+      </div>
 
-        <!-- Scanner Section -->
-        <div v-if="!scannedProduct" class="scanner-section">
-          <!-- Search Field Selector -->
-          <div class="search-field-selector">
-            <label class="field-selector-label">{{ $t('view.mobile.scan.searchBy') }}</label>
-            <div class="field-selector-options">
-              <button
-                v-for="option in searchFieldOptions"
-                :key="option.value"
-                class="field-option-btn"
-                :class="{ active: searchField === option.value }"
-                @click="searchField = option.value"
-              >
-                <i :class="option.icon"></i>
-                {{ $t(option.labelKey) }}
-              </button>
-            </div>
+      <div v-else class="product-section mobile-mt-3">
+        <ProductDetailCard :product="scannedProduct" :priceTransactions="scannedProduct.priceTransactions" :imageType="imageType" />
+
+        <!-- Action Zone (Placeholder for future features) -->
+        <div class="action-zone mobile-mt-3">
+          <div class="action-zone-header">
+            <i class="bi bi-lightning-charge"></i>
+            <span>{{ $t('view.mobile.scan.actionZoneTitle') }}</span>
           </div>
 
-          <!-- QR/Barcode Scanner -->
-          <QrScanner @scan="handleScan" />
-
-          <!-- Divider -->
-          <div class="scanner-divider">
-            <span>{{ $t('view.mobile.scan.orDivider') }}</span>
-          </div>
-
-          <!-- Manual Input -->
-          <div class="manual-input-section">
-            <input
-              v-model="manualInput"
-              type="text"
-              class="form-control"
-              :placeholder="searchFieldPlaceholder"
-              @input="onManualInput"
-              @keyup.enter="handleManualSearch"
+          <div class="action-buttons">
+            <ButtonGeneric
+              v-if="scannedProduct.priceTransactions && scannedProduct.priceTransactions.length > 0"
+              variant="main"
+              icon="bi-file-earmark-plus"
+              :label="$t('view.mobile.scan.createCostPlanBtn')"
+              @click="handleCreateCostPlan"
             />
-            <button class="mobile-btn mobile-btn-primary mobile-mt-2" @click="handleManualSearch">
-              <i class="bi bi-search"></i>
-              {{ $t('view.mobile.scan.searchBtn') }}
-            </button>
-          </div>
-        </div>
 
-        <!-- Product Detail Section -->
-        <div v-if="scannedProduct" class="product-section">
-          <ProductDetailCard :product="scannedProduct" :priceTransactions="scannedProduct.priceTransactions" :imageType="imageType" />
-
-          <!-- Action Zone (Placeholder for future features) -->
-          <div class="action-zone mobile-mt-3">
-            <div class="action-zone-header">
-              <i class="bi bi-lightning-charge"></i>
-              <span>{{ $t('view.mobile.scan.actionZoneTitle') }}</span>
-            </div>
-
-            <div class="action-buttons">
-              <!-- Cost Plan Button -->
-              <button
-                v-if="scannedProduct.priceTransactions && scannedProduct.priceTransactions.length > 0"
-                class="mobile-btn mobile-btn-primary"
-                @click="handleCreateCostPlan"
-              >
-                <i class="bi bi-file-earmark-plus"></i>
-                {{ $t('view.mobile.scan.createCostPlanBtn') }}
-              </button>
-
-              <!-- Future actions will be added here -->
-              <button class="mobile-btn mobile-btn-outline" disabled>
-                <i class="bi bi-box-seam"></i>
-                {{ $t('view.mobile.scan.updateStockBtn') }}
-              </button>
-              <button class="mobile-btn mobile-btn-outline" disabled>
-                <i class="bi bi-printer"></i>
-                {{ $t('view.mobile.scan.printLabelBtn') }}
-              </button>
-              <button class="mobile-btn mobile-btn-outline" disabled>
-                <i class="bi bi-geo-alt"></i>
-                {{ $t('view.mobile.scan.changeLocationBtn') }}
-              </button>
-            </div>
-
-            <p class="action-note">
-              <i class="bi bi-info-circle"></i>
-              {{ $t('view.mobile.scan.futureFeaturesNote') }}
-            </p>
+            <ButtonGeneric
+              variant="outline"
+              icon="bi-box-seam"
+              :label="$t('view.mobile.scan.updateStockBtn')"
+              :block="true"
+              :disabled="true"
+            />
+            <ButtonGeneric
+              variant="outline"
+              icon="bi-printer"
+              :label="$t('view.mobile.scan.printLabelBtn')"
+              :block="true"
+              :disabled="true"
+            />
+            <ButtonGeneric
+              variant="outline"
+              icon="bi-geo-alt"
+              :label="$t('view.mobile.scan.changeLocationBtn')"
+              :block="true"
+              :disabled="true"
+            />
           </div>
 
-          <!-- Scan Again Button -->
-          <div class="mobile-mt-3">
-            <button class="mobile-btn mobile-btn-secondary mobile-btn-block" @click="resetProduct">
-              <i class="bi bi-arrow-repeat"></i>
-              {{ $t('view.mobile.scan.scanAgainBtn') }}
-            </button>
-          </div>
+          <p class="action-note">
+            <i class="bi bi-info-circle"></i>
+            {{ $t('view.mobile.scan.futureFeaturesNote') }}
+          </p>
         </div>
       </div>
     </div>
+
+    <CameraScanGeneric :visible="showCamera" @detect="onCameraDetect" @close="showCamera = false" />
   </div>
 </template>
 
 <script>
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { warning, error, success } from '@/services/alert/sweetAlerts.js'
+import { fetchStockProduct } from '@/services/utils/stock-scan.js'
+
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import CameraScanGeneric from '@/components/generic/CameraScanGeneric.vue'
 import ProductDetailCard from './components/product-detail-card.vue'
-import QrScanner from './components/qr-scanner.vue'
 
 export default {
   name: 'MobileScanView',
 
   components: {
-    ProductDetailCard,
-    QrScanner
+    InputTextGeneric,
+    ButtonGeneric,
+    CameraScanGeneric,
+    ProductDetailCard
   },
 
   setup() {
@@ -157,113 +112,59 @@ export default {
 
   data() {
     return {
-      selectedScanType: null,
-      manualInput: '',
+      scanInput: '',
       scannedProduct: null,
       imageType: 'STOCK-PRODUCT',
-      searchField: 'stockNumber',
-      searchFieldOptions: [
-        { value: 'stockNumber', labelKey: 'view.mobile.scan.fieldNewCode', icon: 'bi bi-upc-scan' },
-        { value: 'stockNumberOrigin', labelKey: 'view.mobile.scan.fieldOldCode', icon: 'bi bi-tag' }
-      ],
-
-      // Scan types configuration
-      scanTypes: [
-        {
-          id: 'stock-product',
-          labelKey: 'view.mobile.scan.scanStockLabel',
-          descriptionKey: 'view.mobile.scan.scanStockDesc',
-          icon: 'bi bi-gem',
-          apiMethod: 'fetchDataGet'
-        }
-        // Future scan types can be added here:
-        // {
-        //   id: 'production',
-        //   label: 'สแกนแผนผลิต',
-        //   description: 'สแกนแผนการผลิต',
-        //   icon: 'bi bi-gear-fill',
-        //   apiMethod: 'fetchProductionPlan'
-        // },
-        // {
-        //   id: 'mold',
-        //   label: 'สแกนแม่พิมพ์',
-        //   description: 'สแกนข้อมูลแม่พิมพ์',
-        //   icon: 'bi bi-box',
-        //   apiMethod: 'fetchMold'
-        // }
-      ]
-    }
-  },
-
-  computed: {
-    searchFieldPlaceholder() {
-      return this.searchField === 'stockNumber'
-        ? this.$t('view.mobile.scan.placeholderNewCode')
-        : this.$t('view.mobile.scan.placeholderOldCode')
+      showCamera: false,
+      isSearching: false
     }
   },
 
   methods: {
-    selectScanType(type) {
-      this.selectedScanType = type
-    },
-
-    resetScan() {
-      this.selectedScanType = null
-      this.manualInput = ''
-      this.scannedProduct = null
-    },
-
-    resetProduct() {
-      this.manualInput = ''
-      this.scannedProduct = null
-    },
-
     // uppercase อย่างเดียว ไม่เติมขีดแล้ว เพราะเลขใหม่ไม่มีขีด และ backend หาเจอทั้งแบบมี/ไม่มีขีด
-    onManualInput() {
-      this.manualInput = this.manualInput.toUpperCase()
+    onManualInput(value) {
+      this.scanInput = value.toUpperCase()
     },
 
     async handleManualSearch() {
-      if (!this.manualInput || !this.manualInput.trim()) {
+      if (!this.scanInput || !this.scanInput.trim()) {
         warning(this.$t('view.mobile.scan.warnEnterCode'))
         return
       }
 
-      await this.searchProduct(this.manualInput.trim())
+      await this.searchProduct(this.scanInput.trim())
     },
 
-    async handleScan(decodedText) {
-      // Called by QR/Barcode scanner component
-      if (!decodedText) return
-
-      // Show scanned value in input
-      this.manualInput = decodedText
-
-      // Search product
-      await this.searchProduct(decodedText)
+    onCameraDetect(code) {
+      this.showCamera = false
+      this.searchProduct(String(code).toUpperCase().trim())
     },
 
-    async searchProduct(searchValue) {
-      if (this.selectedScanType.id === 'stock-product') {
-        await this.searchStockProduct(searchValue)
-      }
-      // Future scan types will be handled here
+    // ลองรหัสเก่า (stockNumberOrigin) ก่อนเสมอ — user สแกนป้ายรหัสเก่าเป็นหลักที่หน้างาน
+    // ไม่เจอค่อยลองรหัสใหม่ (stockNumber) อัตโนมัติ — ผู้ใช้ไม่ต้องเลือกเอง
+    async findProduct(code) {
+      const byOriginCode = await fetchStockProduct(this.productStore, { stockNumberOrigin: code })
+      if (byOriginCode.status !== 'not-found') return byOriginCode
+
+      return await fetchStockProduct(this.productStore, { stockNumber: code })
     },
 
-    async searchStockProduct(searchValue) {
-      const formValue = {
-        [this.searchField]: searchValue
-      }
+    async searchProduct(code) {
+      if (this.isSearching) return
+      this.isSearching = true
 
-      const response = await this.productStore.fetchDataGet({ formValue })
+      const { data, status, httpStatus } = await this.findProduct(code)
 
-      if (response) {
-        this.scannedProduct = response
-      } else {
+      if (status === 'ok') {
+        this.scannedProduct = data
+        this.scanInput = ''
+      } else if (status === 'not-found') {
         error(this.$t('view.mobile.scan.errorProductNotFound'), this.$t('view.mobile.scan.errorCheckCode'))
-        this.scannedProduct = null
+      } else {
+        error(this.$t('view.mobile.scan.errorLookupFailed', { status: httpStatus || 'Network' }))
       }
+
+      this.isSearching = false
     },
 
     async handleCreateCostPlan() {
@@ -287,193 +188,17 @@ export default {
 .mobile-scan-view {
   min-height: 100vh;
   background: #f5f5f5;
-  //padding-bottom: 80px;
+  padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
 }
 
-// Scan Type Selection
-.scan-type-selection {
-  .selection-description {
-    font-size: 0.95rem;
-    color: #666;
-    margin-bottom: 16px;
-    text-align: center;
-  }
-}
-
-.scan-type-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-}
-
-.scan-type-card {
-  background: var(--color-card-bg);
-  border-radius: var(--radius-lg);
-  padding: var(--sp-xl);
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 2px solid transparent;
-
-  &:active {
-    transform: scale(0.98);
-    border-color: var(--base-font-color);
-  }
-
-  .scan-type-icon {
-    width: 60px;
-    height: 60px;
-    margin: 0 auto var(--sp-md);
-    background: linear-gradient(135deg, var(--base-font-color) 0%, var(--base-font-sub-color) 100%);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    i {
-      font-size: 1.8rem;
-      color: white;
-    }
-  }
-
-  .scan-type-label {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: var(--sp-xs);
-  }
-
-  .scan-type-description {
-    font-size: 0.85rem;
-    color: #666;
-  }
-}
-
-// Scan Interface
-.scan-interface {
-  .scan-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    //margin-bottom: 16px;
-    //padding: 12px;
-    background: white;
-    //border-radius: 12px;
-    //box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-
-    .mobile-btn-icon {
-      flex-shrink: 0;
-    }
-
-    .scan-header-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--base-font-color);
-
-      i {
-        font-size: 1.2rem;
-      }
-    }
-  }
-}
-
-// Search Field Selector
-.search-field-selector {
-  background: var(--color-card-bg);
-  border-radius: var(--radius-lg);
-  padding: var(--sp-lg);
-  margin-bottom: var(--sp-md);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-
-  .field-selector-label {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: #666;
-    margin-bottom: 10px;
-    display: block;
-  }
-
-  .field-selector-options {
-    display: flex;
-    gap: var(--sp-sm);
-  }
-
-  .field-option-btn {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 10px var(--sp-md);
-    border-radius: var(--radius-md);
-    border: 1.5px solid var(--color-border);
-    background: var(--color-card-bg);
-    color: #666;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    i {
-      font-size: 1rem;
-    }
-
-    &:active {
-      transform: scale(0.98);
-    }
-
-    &.active {
-      border-color: var(--base-font-color);
-      background: rgba(146, 19, 19, 0.05);
-      color: var(--base-font-color);
-      font-weight: 600;
-    }
-  }
-}
-
-// Scanner Section
-.scanner-section {
-  margin-bottom: var(--sp-lg);
-}
-
-.scanner-divider {
+.scan-bar-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin: var(--sp-xl) 0;
-  position: relative;
+  gap: var(--sp-sm);
 
-  &::before,
-  &::after {
-    content: '';
+  > :first-child {
     flex: 1;
-    height: 1px;
-    background: var(--color-border);
   }
-
-  span {
-    padding: 0 var(--sp-lg);
-    color: #999;
-    font-size: 0.9rem;
-  }
-}
-
-.manual-input-section {
-  max-width: 300px;
-  margin: 0 auto;
-
-  input {
-    text-align: center;
-  }
-}
-
-// Product Section
-.product-section {
-  // Product detail card styles are in the component
 }
 
 // Action Zone
@@ -502,17 +227,6 @@ export default {
     flex-direction: column;
     gap: var(--sp-sm);
     margin-bottom: var(--sp-md);
-
-    button {
-      display: flex;
-      align-items: center;
-      gap: var(--sp-sm);
-      justify-content: center;
-
-      i {
-        font-size: 1.1rem;
-      }
-    }
   }
 
   .action-note {

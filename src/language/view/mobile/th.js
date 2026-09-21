@@ -168,26 +168,20 @@ export const pos = {
 }
 
 export const scan = {
-  selectTypeTitle: 'เลือกประเภทที่ต้องการสแกน',
-  searchBy: 'ค้นหาด้วย',
-  orDivider: 'หรือ',
-  searchBtn: 'ค้นหา',
+  scanPlaceholder: 'กรอกหรือสแกนรหัสสินค้า (รหัสใหม่หรือรหัสเก่าก็ได้)',
+  cameraBtn: 'สแกนกล้อง',
+  emptyTitle: 'สแกนหรือกรอกรหัสสินค้า',
+  emptySubtitle: 'เพื่อดูรายละเอียดสินค้า',
   actionZoneTitle: 'การดำเนินการ',
   createCostPlanBtn: 'ออกแผนตีราคา',
   updateStockBtn: 'อัพเดทสต็อก',
   printLabelBtn: 'พิมพ์ป้าย',
   changeLocationBtn: 'เปลี่ยนที่จัดเก็บ',
   futureFeaturesNote: 'ฟีเจอร์การดำเนินการบางส่วนจะพัฒนาในอนาคต',
-  scanAgainBtn: 'สแกนอีกครั้ง',
-  fieldNewCode: 'รหัสสินค้าใหม่',
-  fieldOldCode: 'รหัสสินค้าเก่า',
-  scanStockLabel: 'สแกนสินค้า',
-  scanStockDesc: 'สแกนสต็อกสินค้าสำเร็จรูป',
-  placeholderNewCode: 'กรอกรหัสสินค้าใหม่ (Stock Number)',
-  placeholderOldCode: 'กรอกรหัสสินค้าเก่า (Origin)',
   warnEnterCode: 'กรุณากรอกเลขที่ผลิตหรือรหัสสินค้า',
   errorProductNotFound: 'ไม่พบข้อมูลสินค้า',
   errorCheckCode: 'กรุณาตรวจสอบเลขที่ผลิตหรือรหัสสินค้า',
+  errorLookupFailed: 'ค้นหาสินค้าไม่สำเร็จ (HTTP {status}) กรุณาลองใหม่อีกครั้ง',
   successCreateCostPlan: 'เลขที่แผนตีราคา: {planNumber}',
   successCreateCostPlanTitle: 'ออกแผนตีราคาสำเร็จ',
 
@@ -214,18 +208,7 @@ export const scan = {
   productDiamondUnit: 'กะรัต',
   productGem: 'พลอย:',
   productGemUnit: 'กะรัต',
-  productRemark: 'หมายเหตุ:',
-
-  // simple-scanner
-  simpleScannerTitle: 'ถ่ายรูป QR Code หรือ Barcode',
-  simpleScannerCaptureBtn: 'ถ่ายรูป',
-  simpleScannerOrDivider: 'หรือเลือกรูปจากแกลเลอรี่',
-  simpleScannerGalleryBtn: 'เลือกรูปจากแกลเลอรี่',
-  simpleScannerSelectedLabel: 'รูปที่เลือก:',
-  simpleScannerRemoveBtn: 'ลบรูป',
-  simpleScannerReadingText: 'กำลังอ่าน QR Code...',
-  simpleScannerErrNoQr: 'ไม่พบ QR Code หรือ Barcode ในรูป',
-  simpleScannerErrReadFail: 'ไม่สามารถอ่านรูปภาพได้'
+  productRemark: 'หมายเหตุ:'
 }
 
 export const dashboard = {

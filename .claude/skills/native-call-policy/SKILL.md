@@ -38,6 +38,7 @@ description: ตารางกฎ "ห้ามเรียกตรงๆ → 
 | `<svg>` + JsBarcode เขียนเอง | `BarcodeGeneric` (หรือ `BarcodeButtonGeneric` สำหรับปุ่ม+modal) | `@/components/generic/BarcodeGeneric.vue` |
 | `<i class="bi ...">` ผูก `@click` เอง (ไอคอนกดได้) | `ButtonGeneric variant="plain"` | `@/components/generic/ButtonGeneric.vue` — เหตุผล: `<i>` ไม่ focusable กด Tab/Enter ไม่ได้ |
 | segmented toggle เขียนเอง (`role="tablist"` + ปุ่มมือ) | `ToggleGroupGeneric` | `@/components/generic/ToggleGroupGeneric.vue` |
+| html5-qrcode camera เขียนเอง | `CameraScanGeneric` | `@/components/generic/CameraScanGeneric.vue` |
 
 ---
 

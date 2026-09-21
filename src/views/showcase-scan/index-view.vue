@@ -31,7 +31,12 @@
       </div>
     </div>
 
-    <showcase-camera-scan :visible="showCamera" @detect="onCameraDetect" @close="showCamera = false" />
+    <CameraScanGeneric
+      :visible="showCamera"
+      :hint="$t('view.public.scan.scanningHint')"
+      @detect="onCameraDetect"
+      @close="showCamera = false"
+    />
   </div>
 </template>
 
@@ -42,7 +47,7 @@ import { warning } from '@/services/alert/sweetAlerts.js'
 import PageHeaderGeneric from '@/components/generic/PageHeaderGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
-import ShowcaseCameraScan from './components/showcase-camera-scan.vue'
+import CameraScanGeneric from '@/components/generic/CameraScanGeneric.vue'
 
 export default {
   name: 'ShowcaseScan',
@@ -51,7 +56,7 @@ export default {
     PageHeaderGeneric,
     InputTextGeneric,
     ButtonGeneric,
-    ShowcaseCameraScan
+    CameraScanGeneric
   },
 
   setup() {

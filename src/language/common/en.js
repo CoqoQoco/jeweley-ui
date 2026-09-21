@@ -80,6 +80,17 @@ export default {
   alert: {
     invalidData: 'Invalid Data'
   },
+  scan: {
+    title: 'Scan Product Code',
+    hint: 'Point at the product code label',
+    torch: 'Torch',
+    close: 'Close camera',
+    cameraErrorTitle: 'Cannot open camera',
+    cameraErrorPermission: 'Please allow camera access in your browser settings',
+    cameraErrorNotFound: 'No camera found on this device',
+    cameraErrorNotSupported: 'This browser does not support camera access — please use HTTPS',
+    cameraErrorGeneric: 'Unable to open camera — please try again'
+  },
   printer: {
     reload: 'Reload printer list',
     selectPlaceholder: 'Select or type printer name',

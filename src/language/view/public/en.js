@@ -46,13 +46,8 @@ export default {
     pageDesc: 'Scan or type a product code to open the customer showcase page',
     inputPlaceholder: 'Scan or enter product code',
     cameraBtn: 'Scan camera',
-    closeCameraBtn: 'Close camera',
     scanningHint: 'Point the camera at the barcode/QR code',
     warnEnterCode: 'Please enter a product code',
-    warnNotFound: 'Product not found. Please check the code.',
-    cameraErrorNotSupported: 'This device does not support camera access',
-    cameraErrorPermission: 'Please allow camera access',
-    cameraErrorNotFound: 'No camera found on this device',
-    cameraErrorGeneric: 'Unable to open camera. Please try again.'
+    warnNotFound: 'Product not found. Please check the code.'
   }
 }

@@ -168,26 +168,20 @@ export const pos = {
 }
 
 export const scan = {
-  selectTypeTitle: 'Select scan type',
-  searchBy: 'Search by',
-  orDivider: 'or',
-  searchBtn: 'Search',
+  scanPlaceholder: 'Enter or scan product code (new or old code)',
+  cameraBtn: 'Scan with camera',
+  emptyTitle: 'Scan or enter a product code',
+  emptySubtitle: 'to view product details',
   actionZoneTitle: 'Actions',
   createCostPlanBtn: 'Create Cost Plan',
   updateStockBtn: 'Update Stock',
   printLabelBtn: 'Print Label',
   changeLocationBtn: 'Change Location',
   futureFeaturesNote: 'Some action features will be developed in the future',
-  scanAgainBtn: 'Scan Again',
-  fieldNewCode: 'New Stock Code',
-  fieldOldCode: 'Old Stock Code',
-  scanStockLabel: 'Scan Stock',
-  scanStockDesc: 'Scan finished goods stock',
-  placeholderNewCode: 'Enter new stock number (Stock Number)',
-  placeholderOldCode: 'Enter old stock code (Origin)',
   warnEnterCode: 'Please enter production number or stock code',
   errorProductNotFound: 'Product not found',
   errorCheckCode: 'Please check the production number or stock code',
+  errorLookupFailed: 'Product lookup failed (HTTP {status}). Please try again.',
   successCreateCostPlan: 'Cost Plan No.: {planNumber}',
   successCreateCostPlanTitle: 'Cost plan created successfully',
 
@@ -214,18 +208,7 @@ export const scan = {
   productDiamondUnit: 'carats',
   productGem: 'Gem:',
   productGemUnit: 'carats',
-  productRemark: 'Remark:',
-
-  // simple-scanner
-  simpleScannerTitle: 'Take a photo of QR Code or Barcode',
-  simpleScannerCaptureBtn: 'Take Photo',
-  simpleScannerOrDivider: 'or select from gallery',
-  simpleScannerGalleryBtn: 'Select from Gallery',
-  simpleScannerSelectedLabel: 'Selected image:',
-  simpleScannerRemoveBtn: 'Remove Image',
-  simpleScannerReadingText: 'Reading QR Code...',
-  simpleScannerErrNoQr: 'No QR Code or Barcode found in image',
-  simpleScannerErrReadFail: 'Unable to read image'
+  productRemark: 'Remark:'
 }
 
 export const dashboard = {

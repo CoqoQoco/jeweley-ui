@@ -80,6 +80,17 @@ export default {
   alert: {
     invalidData: 'ข้อมูลไม่ถูกต้อง'
   },
+  scan: {
+    title: 'สแกนรหัสสินค้า',
+    hint: 'เล็งไปที่ป้ายรหัสสินค้า',
+    torch: 'ไฟฉาย',
+    close: 'ปิดกล้อง',
+    cameraErrorTitle: 'เปิดกล้องไม่ได้',
+    cameraErrorPermission: 'กรุณาอนุญาตให้เว็บใช้กล้องในตั้งค่าเบราว์เซอร์',
+    cameraErrorNotFound: 'ไม่พบกล้องบนอุปกรณ์นี้',
+    cameraErrorNotSupported: 'เบราว์เซอร์นี้ไม่รองรับการใช้กล้อง กรุณาใช้ผ่าน HTTPS',
+    cameraErrorGeneric: 'เปิดกล้องไม่ได้ กรุณาลองใหม่อีกครั้ง'
+  },
   printer: {
     reload: 'โหลดรายชื่อใหม่',
     selectPlaceholder: 'เลือกหรือพิมพ์ชื่อเครื่องพิมพ์',
