@@ -15,6 +15,17 @@
       headerStyle="filled"
     >
       <div class="form-row">
+        <FormFieldGeneric :label="$t('view.setting.barcodePrinter.profileLabel')">
+          <RadioGroupGeneric
+            v-model="form.profile"
+            :options="profileOptions"
+            optionLabel="label"
+            optionValue="value"
+          />
+        </FormFieldGeneric>
+      </div>
+
+      <div class="form-row">
         <FormFieldGeneric :label="$t('view.setting.barcodePrinter.printerNameLabel')">
           <div class="printer-select-row">
             <AutoCompleteGeneric
@@ -25,6 +36,7 @@
               :placeholder="$t('common.printer.selectPlaceholder')"
               :forceSelection="false"
               :dropdown="true"
+              :disabled="isLegacyProfile"
               class="printer-ac"
               @update:modelValue="onPrinterChange"
             />
@@ -32,16 +44,21 @@
               variant="outline"
               icon="bi-arrow-clockwise"
               :label="$t('common.printer.reload')"
+              :disabled="isLegacyProfile"
               @click="loadPrinters"
             />
             <ButtonGeneric
               variant="outline"
               icon="bi-x-lg"
               :title="$t('common.printer.clear')"
+              :disabled="isLegacyProfile"
               @click="onClearPrinter"
             />
           </div>
-          <small v-if="printerOptions.length === 0" class="field-hint">
+          <small v-if="isLegacyProfile" class="field-hint">
+            {{ $t('view.setting.barcodePrinter.legacyFieldsHint') }}
+          </small>
+          <small v-else-if="printerOptions.length === 0" class="field-hint">
             {{ $t('common.printer.manualHint') }}
           </small>
         </FormFieldGeneric>
@@ -55,11 +72,12 @@
             optionLabel="label"
             optionValue="value"
             :inline="true"
+            :disabled="isLegacyProfile"
           />
           <small class="field-hint">{{ $t('view.setting.barcodePrinter.dpiHint') }}</small>
         </FormFieldGeneric>
         <FormFieldGeneric :label="$t('view.setting.barcodePrinter.copyDelayLabel')">
-          <InputTextGeneric type="number" step="50" :min="0" v-model.number="form.copyDelayMs" />
+          <InputTextGeneric type="number" step="50" :min="0" v-model.number="form.copyDelayMs" :disabled="isLegacyProfile" />
           <small class="field-hint">{{ $t('view.setting.barcodePrinter.copyDelayHint') }}</small>
         </FormFieldGeneric>
       </div>
@@ -78,23 +96,33 @@
         <div class="status-box-body">
           <div class="status-box-title">{{ statusTitle }}</div>
 
-          <div v-if="bridgeCheck.status === 'success'" class="status-box-detail">
-            {{ $t('view.setting.barcodePrinter.status.readyDetail', { count: bridgeCheck.printers.length }) }}
+          <div v-if="bridgeCheck.profile === 'legacy'" class="status-box-detail">
+            {{
+              bridgeCheck.status === 'success'
+                ? $t('view.setting.barcodePrinter.status.legacyReadyDetail')
+                : $t('view.setting.barcodePrinter.status.legacyServiceErrorDetail')
+            }}
           </div>
 
-          <div v-else-if="bridgeCheck.status === 'no-printer'" class="status-box-detail">
-            {{ $t('view.setting.barcodePrinter.status.noPrinterDetail') }}
-          </div>
+          <template v-else>
+            <div v-if="bridgeCheck.status === 'success'" class="status-box-detail">
+              {{ $t('view.setting.barcodePrinter.status.readyDetail', { count: bridgeCheck.printers.length }) }}
+            </div>
 
-          <ul v-else-if="isUnreachable" class="status-box-list">
-            <li>{{ $t('common.printer.statusUnreachableStep1') }}</li>
-            <li>
-              {{ $t('common.printer.statusUnreachableStep2Prefix') }}
-              <a :href="printerHealthUrl" target="_blank" rel="noopener">{{ printerHealthUrl }}</a>
-              {{ $t('common.printer.statusUnreachableStep2Suffix') }}
-            </li>
-            <li>{{ $t('common.printer.statusUnreachableStep3') }}</li>
-          </ul>
+            <div v-else-if="bridgeCheck.status === 'no-printer'" class="status-box-detail">
+              {{ $t('view.setting.barcodePrinter.status.noPrinterDetail') }}
+            </div>
+
+            <ul v-else-if="isUnreachable" class="status-box-list">
+              <li>{{ $t('common.printer.statusUnreachableStep1') }}</li>
+              <li>
+                {{ $t('common.printer.statusUnreachableStep2Prefix') }}
+                <a :href="printerHealthUrl" target="_blank" rel="noopener">{{ printerHealthUrl }}</a>
+                {{ $t('common.printer.statusUnreachableStep2Suffix') }}
+              </li>
+              <li>{{ $t('common.printer.statusUnreachableStep3') }}</li>
+            </ul>
+          </template>
         </div>
       </div>
     </SectionCardGeneric>
@@ -147,8 +175,11 @@ import {
   setBarcodeDpi,
   getCopyDelayMs,
   setCopyDelayMs,
+  getBarcodeProfile,
+  setBarcodeProfile,
   DEFAULT_BARCODE_DPI,
-  DEFAULT_COPY_DELAY_MS
+  DEFAULT_COPY_DELAY_MS,
+  PRINTER_PROFILES
 } from '@/services/api/barcode-printer-config.js'
 import { success, error } from '@/services/alert/sweetAlerts.js'
 
@@ -183,6 +214,7 @@ export default {
   data() {
     return {
       form: {
+        profile: getBarcodeProfile(),
         printerName: getBarcodePrinterName(),
         dpi: getBarcodeDpi(),
         copyDelayMs: getCopyDelayMs()
@@ -197,6 +229,17 @@ export default {
   },
 
   computed: {
+    profileOptions() {
+      return [
+        { value: PRINTER_PROFILES.LEGACY, label: this.$t('view.setting.barcodePrinter.profileLegacyLabel') },
+        { value: PRINTER_PROFILES.GT800, label: this.$t('view.setting.barcodePrinter.profileGt800Label') }
+      ]
+    },
+
+    isLegacyProfile() {
+      return this.form.profile === PRINTER_PROFILES.LEGACY
+    },
+
     dpiOptions() {
       return [
         { value: 203, label: this.$t('view.setting.barcodePrinter.dpiOption203') },
@@ -209,6 +252,9 @@ export default {
     },
 
     statusVariant() {
+      if (this.bridgeCheck.profile === 'legacy') {
+        return this.bridgeCheck.status === 'success' ? 'green' : 'red'
+      }
       if (this.bridgeCheck.status === 'success') return 'green'
       if (this.bridgeCheck.status === 'bridge-error') return 'red'
       return 'warning'
@@ -234,6 +280,12 @@ export default {
     },
 
     statusTitle() {
+      if (this.bridgeCheck.profile === 'legacy') {
+        return this.bridgeCheck.status === 'success'
+          ? this.$t('view.setting.barcodePrinter.status.readyTitle')
+          : this.$t('common.printer.legacyServiceError')
+      }
+
       switch (this.bridgeCheck.status) {
         case 'success':
           return this.$t('view.setting.barcodePrinter.status.readyTitle')
@@ -277,15 +329,18 @@ export default {
       this.form.printerName = ''
     },
 
-    onSave() {
+    async onSave() {
+      setBarcodeProfile(this.form.profile)
       setBarcodePrinterName(this.form.printerName)
       setBarcodeDpi(this.form.dpi)
       setCopyDelayMs(this.form.copyDelayMs)
       success(this.$t('view.setting.barcodePrinter.saveSuccess'))
+      await this.checkBridgeStatus()
     },
 
     onResetDefault() {
       this.form = {
+        profile: PRINTER_PROFILES.LEGACY,
         printerName: '',
         dpi: DEFAULT_BARCODE_DPI,
         copyDelayMs: DEFAULT_COPY_DELAY_MS

@@ -1,136 +1,227 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
+
+vi.mock('@/axios/axios-helper.js', () => ({
+  default: {
+    zebraPrinter: {
+      printZPL: vi.fn(),
+      printsZPL: vi.fn(),
+      getStatus: vi.fn()
+    }
+  }
+}))
+
+vi.mock('@/services/api/print-bridge-service.js', () => ({
+  printZpl: vi.fn()
+}))
+
+vi.mock('@/services/api/printer-config-service.js', () => ({
+  fetchPrinterList: vi.fn()
+}))
+
+import api from '@/axios/axios-helper.js'
+import { printZpl } from '@/services/api/print-bridge-service.js'
+import { fetchPrinterList } from '@/services/api/printer-config-service.js'
+import { setBarcodeProfile, setBarcodePrinterName, setCopyDelayMs, PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
 import { zebraPrinterApi } from './zebra-store.js'
 
-// สำเนาฟังก์ชันเดิมก่อน refactor (ไม่มี dpiScale) ไว้เทียบผลลัพธ์ตรงๆ — กันฉลากเพี้ยนตอนย้ายไป DK Print Bridge
-function originalGenerateZPLs(formValue) {
-  let zpl = '^XA^LL200^MD25^LT40^XZ'
-  zpl += '^XA'
-
-  zpl += `^FO248,35^BY1,3.0:1,25^BCN,Y,N,N^FD${formValue.stockNumber || ''}^FS`
-
-  const salePriceText =
-    formValue.salePrice != null && formValue.salePrice > 0
-      ? new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
-          formValue.salePrice
-        )
-      : ''
-  const stockNumberLine = [formValue.stockNumber, salePriceText].filter(Boolean).join(' - ')
-  zpl += `^FO248,65^A0N,20,18^FD${stockNumberLine}^FS`
-
-  zpl += `^FO250,090^A0N,14,16,B^FD${formValue.gold || ''} ${formValue.size || ''}^FS`
-
-  zpl += `^FO025,050^A0N,15,15,B^FD${formValue.madeIn || ''}^FS`
-
-  zpl += `^FO420,045^A0N,14,16,B^FD${formValue.goldType || ''}^FS`
-
-  if (Array.isArray(formValue.gems)) {
-    let yPos = 15
-    formValue.gems.forEach((gem) => {
-      if (gem) {
-        zpl += `^F450,${yPos}^A0N,14,16,B^FD${gem}^FS`
-        yPos += 15
-      }
-    })
-  }
-
-  zpl += '^XZ'
-
-  return zpl
-}
-
-function originalGenerateZPLVertical(formValue) {
-  const hasPrice = formValue.price != null && formValue.price > 0
-  const labelHeight = hasPrice ? 220 : 200
-
-  let zpl = `^XA^LL${labelHeight}^MD25^LT40^XZ`
-  zpl += '^XA'
-
-  zpl += `^FO025,050^A0N,15,15,B^FD${formValue.madeIn || ''}^FS`
-
-  zpl += `^FO252,10^A0N,20,18^FD${formValue.productNameEn || ''}^FS`
-
-  const sizeText = formValue.size ? ` #${formValue.size}` : ''
-  zpl += `^FO250,030^A0N,14,16,B^FD${formValue.gold || ''}${sizeText}^FS`
-
-  zpl += `^FO248,048^BY1,3.0:1,25^BCN,Y,N,N^FD${formValue.stockNumber || ''}^FS`
-
-  const priceText = hasPrice
-    ? new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(formValue.price)
-    : ''
-  const priceLine = [formValue.productNumber, priceText].filter(Boolean).join(' - ')
-  if (priceLine) {
-    zpl += `^FO250,100^A0N,14,16,B^FD${priceLine}^FS`
-  }
-
-  if (Array.isArray(formValue.gems)) {
-    let yPos = 15
-    formValue.gems.forEach((gem) => {
-      if (gem) {
-        zpl += `^FO450,${yPos}^A0N,14,16,B^FD${gem}^FS`
-        yPos += 15
-      }
-    })
-  }
-
-  zpl += '^XZ'
-
-  return zpl
-}
-
-// ของเดิมบางจุดเขียนเลขนำศูนย์ (^FO250,090 / ^FO025,050) — ZPL ตีความเท่ากับไม่มีเลขนำศูนย์ จึง normalize ก่อนเทียบ
-function normalizeZpl(str) {
-  return str.replace(/\^FO(\d+),(\d+)/g, (_, x, y) => `^FO${Number(x)},${Number(y)}`)
-}
-
-describe('zebraPrinterApi generateZPLs/generateZPLVertical ที่ dpiScale = 1 ต้องเหมือนของเดิมเป๊ะ', () => {
+describe('zebraPrinterApi — เลือก template ตาม profile + ส่งงานตาม profile + เช็คสถานะ', () => {
   beforeEach(() => {
+    localStorage.clear()
     setActivePinia(createPinia())
+    api.zebraPrinter.printZPL.mockReset()
+    api.zebraPrinter.printsZPL.mockReset()
+    api.zebraPrinter.getStatus.mockReset()
+    printZpl.mockReset()
+    fetchPrinterList.mockReset()
+    setCopyDelayMs(0)
   })
 
-  const baseForm = {
-    stockNumber: 'RG-1234-001',
-    salePrice: 12345.5,
-    gold: 'PG',
-    size: '55',
-    madeIn: 'MADE IN THAILAND',
-    goldType: '18K',
-    gems: ['D-1.00', 'R-0.50', '']
-  }
+  describe('profile legacy — พิมพ์ผ่าน Zebra Print Service (api.zebraPrinter)', () => {
+    beforeEach(() => {
+      setBarcodeProfile(PRINTER_PROFILES.LEGACY)
+    })
 
-  it('generateZPLs: dpiScale=1 เทียบเท่าฟังก์ชันเดิม', () => {
-    const store = zebraPrinterApi()
-    const actual = store.generateZPLs(baseForm, 1)
-    const expected = originalGenerateZPLs(baseForm)
-    expect(normalizeZpl(actual)).toBe(normalizeZpl(expected))
+    it('fetchZebraPrint เรียก api.zebraPrinter.printZPL ไม่เรียก bridge printZpl', async () => {
+      api.zebraPrinter.printZPL.mockResolvedValue({ status: 'success' })
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchZebraPrint({
+        formValue: { stockNumber: 'RG-001', barcodeType: 'original', print: 1 }
+      })
+
+      expect(api.zebraPrinter.printZPL).toHaveBeenCalledTimes(1)
+      expect(printZpl).not.toHaveBeenCalled()
+      expect(res.status).toBe('success')
+    })
+
+    it('fetchZebraPrint: printZPL ตอบ error → คืน error ทันทีไม่พิมพ์ต่อ', async () => {
+      api.zebraPrinter.printZPL.mockResolvedValue({ status: 'error', message: 'เครื่องพิมพ์ไม่ทำงาน' })
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchZebraPrint({
+        formValue: { stockNumber: 'RG-001', barcodeType: 'original', print: 3 }
+      })
+
+      expect(api.zebraPrinter.printZPL).toHaveBeenCalledTimes(1)
+      expect(res.status).toBe('error')
+    })
+
+    it('fetchZebraPrints เรียก api.zebraPrinter.printsZPL ก้อนเดียว', async () => {
+      api.zebraPrinter.printsZPL.mockResolvedValue({
+        status: 'success',
+        message: 'พิมพ์ทั้งหมด 2 รายการสำเร็จ',
+        summary: { total: 2, success: 2, failed: 0 }
+      })
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchZebraPrints({
+        formValue: [
+          { stockNumber: 'A-001', barcodeType: 'original' },
+          { stockNumber: 'B-002', barcodeType: 'cost-no-gold' }
+        ]
+      })
+
+      expect(api.zebraPrinter.printsZPL).toHaveBeenCalledTimes(1)
+      expect(printZpl).not.toHaveBeenCalled()
+      expect(res.status).toBe('success')
+      expect(res.summary).toEqual({ total: 2, success: 2, failed: 0 })
+    })
   })
 
-  it('generateZPLs: ไม่ระบุ dpiScale (default) ต้องเหมือนกับระบุ 1', () => {
-    const store = zebraPrinterApi()
-    expect(store.generateZPLs(baseForm)).toBe(store.generateZPLs(baseForm, 1))
+  describe('profile gt800 — พิมพ์ผ่าน DK Print Bridge (printZpl)', () => {
+    beforeEach(() => {
+      setBarcodeProfile(PRINTER_PROFILES.GT800)
+    })
+
+    it('ยังไม่ได้ตั้งชื่อเครื่องพิมพ์ → error ไม่เรียก printZpl', async () => {
+      setBarcodePrinterName('')
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchZebraPrint({
+        formValue: { stockNumber: 'RG-001', barcodeType: 'original', print: 1 }
+      })
+
+      expect(printZpl).not.toHaveBeenCalled()
+      expect(res.status).toBe('error')
+    })
+
+    it('fetchZebraPrint เรียก printZpl ด้วยชื่อเครื่องพิมพ์ที่ตั้งไว้', async () => {
+      setBarcodePrinterName('GT800 RAW')
+      printZpl.mockResolvedValue({ success: true })
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchZebraPrint({
+        formValue: { stockNumber: 'RG-001', barcodeType: 'original', print: 1 }
+      })
+
+      expect(printZpl).toHaveBeenCalledTimes(1)
+      expect(printZpl).toHaveBeenCalledWith({ printerName: 'GT800 RAW', zpl: expect.any(String) })
+      expect(api.zebraPrinter.printZPL).not.toHaveBeenCalled()
+      expect(res.status).toBe('success')
+    })
+
+    it('fetchZebraPrints เรียก printZpl ทีละรายการ', async () => {
+      setBarcodePrinterName('GT800 RAW')
+      printZpl.mockResolvedValue({ success: true })
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchZebraPrints({
+        formValue: [
+          { stockNumber: 'A-001', barcodeType: 'original' },
+          { stockNumber: 'B-002', barcodeType: 'x' }
+        ]
+      })
+
+      expect(printZpl).toHaveBeenCalledTimes(2)
+      expect(api.zebraPrinter.printsZPL).not.toHaveBeenCalled()
+      expect(res.status).toBe('success')
+      expect(res.summary).toEqual({ total: 2, success: 2, failed: 0 })
+    })
+
+    it('fetchZebraPrints: บางรายการพิมพ์ไม่สำเร็จ → status partial', async () => {
+      setBarcodePrinterName('GT800 RAW')
+      printZpl.mockResolvedValueOnce({ success: true }).mockRejectedValueOnce(new Error('printer offline'))
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchZebraPrints({
+        formValue: [
+          { stockNumber: 'A-001', barcodeType: 'original' },
+          { stockNumber: 'B-002', barcodeType: 'x' }
+        ]
+      })
+
+      expect(res.status).toBe('partial')
+      expect(res.summary).toEqual({ total: 2, success: 1, failed: 1 })
+    })
   })
 
-  it('generateZPLVertical: dpiScale=1 เทียบเท่าฟังก์ชันเดิม (ไม่มีราคา)', () => {
-    const store = zebraPrinterApi()
-    const form = { ...baseForm, productNameEn: 'Ring Test', productNumber: 'PN-001' }
-    const actual = store.generateZPLVertical(form, 1)
-    const expected = originalGenerateZPLVertical(form)
-    expect(normalizeZpl(actual)).toBe(normalizeZpl(expected))
-  })
+  describe('fetchBarcodePrinterStatus', () => {
+    it('legacy: service running → success', async () => {
+      setBarcodeProfile(PRINTER_PROFILES.LEGACY)
+      api.zebraPrinter.getStatus.mockResolvedValue({ service: { status: 'running' }, printer: {} })
 
-  it('generateZPLVertical: dpiScale=1 เทียบเท่าฟังก์ชันเดิม (มีราคา → label สูงขึ้น)', () => {
-    const store = zebraPrinterApi()
-    const form = { ...baseForm, productNameEn: 'Ring Test', productNumber: 'PN-001', price: 9999.99 }
-    const actual = store.generateZPLVertical(form, 1)
-    const expected = originalGenerateZPLVertical(form)
-    expect(normalizeZpl(actual)).toBe(normalizeZpl(expected))
-  })
+      const store = zebraPrinterApi()
+      const res = await store.fetchBarcodePrinterStatus()
 
-  it('generateZPLs: dpiScale อื่น (300dpi) ต้อง scale พิกัดตามสัดส่วนจริง', () => {
-    const store = zebraPrinterApi()
-    const scale = 300 / 203
-    const zpl = store.generateZPLs(baseForm, scale)
-    expect(zpl).toContain(`^LL${Math.round(200 * scale)}`)
-    expect(zpl).toContain(`^FO${Math.round(248 * scale)},${Math.round(35 * scale)}`)
+      expect(res.profile).toBe('legacy')
+      expect(res.status).toBe('success')
+      expect(fetchPrinterList).not.toHaveBeenCalled()
+    })
+
+    it('legacy: service ไม่ได้ running → service-error', async () => {
+      setBarcodeProfile(PRINTER_PROFILES.LEGACY)
+      api.zebraPrinter.getStatus.mockResolvedValue({ service: { status: 'stopped' } })
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchBarcodePrinterStatus()
+
+      expect(res.status).toBe('service-error')
+    })
+
+    it('gt800: bridge ok + ตั้งชื่อไว้แล้ว และเจอในรายชื่อ → success', async () => {
+      setBarcodeProfile(PRINTER_PROFILES.GT800)
+      setBarcodePrinterName('GT800 RAW')
+      fetchPrinterList.mockResolvedValue({ status: 'ok', printers: [{ name: 'GT800 RAW', label: 'GT800 RAW' }], detail: '' })
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchBarcodePrinterStatus()
+
+      expect(res.profile).toBe('gt800')
+      expect(res.status).toBe('success')
+      expect(api.zebraPrinter.getStatus).not.toHaveBeenCalled()
+    })
+
+    it('gt800: bridge ไม่ตอบ → bridge-error', async () => {
+      setBarcodeProfile(PRINTER_PROFILES.GT800)
+      fetchPrinterList.mockResolvedValue({ status: 'unreachable', printers: [], detail: 'connect refused' })
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchBarcodePrinterStatus()
+
+      expect(res.status).toBe('bridge-error')
+    })
+
+    it('gt800: ยังไม่ได้ตั้งชื่อเครื่องพิมพ์ → no-printer', async () => {
+      setBarcodeProfile(PRINTER_PROFILES.GT800)
+      setBarcodePrinterName('')
+      fetchPrinterList.mockResolvedValue({ status: 'ok', printers: [{ name: 'X', label: 'X' }], detail: '' })
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchBarcodePrinterStatus()
+
+      expect(res.status).toBe('no-printer')
+    })
+
+    it('gt800: ตั้งชื่อไว้แต่หาไม่เจอในเครื่องนี้ → printer-not-found', async () => {
+      setBarcodeProfile(PRINTER_PROFILES.GT800)
+      setBarcodePrinterName('GT800 RAW')
+      fetchPrinterList.mockResolvedValue({ status: 'ok', printers: [{ name: 'OTHER', label: 'OTHER' }], detail: '' })
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchBarcodePrinterStatus()
+
+      expect(res.status).toBe('printer-not-found')
+    })
   })
 })

@@ -20,9 +20,10 @@
 </template>
 
 <script>
+import api from '@/axios/axios-helper.js'
 import { printZpl } from '@/services/api/print-bridge-service.js'
 import { fetchPrinterList } from '@/services/api/printer-config-service.js'
-import { getBarcodePrinterConfig } from '@/services/api/barcode-printer-config.js'
+import { getBarcodePrinterConfig, PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
 //import swAlert from '@/services/alert/sweetAlerts.js'
 
 export default {
@@ -45,8 +46,13 @@ export default {
     async handlePrint() {
       try {
         const zplData = this.generateZPL()
-        const { printerName } = getBarcodePrinterConfig()
-        await printZpl({ printerName, zpl: zplData })
+        const config = getBarcodePrinterConfig()
+
+        if (config.profile === PRINTER_PROFILES.LEGACY) {
+          await api.zebraPrinter.printZPL(zplData, { skipLoading: true })
+        } else {
+          await printZpl({ printerName: config.printerName, zpl: zplData })
+        }
       } catch (err) {
         console.log(err)
       }
@@ -54,8 +60,15 @@ export default {
 
     async checkServiceStatus() {
       try {
-        const res = await fetchPrinterList()
-        this.form.barcode = JSON.stringify(res)
+        const config = getBarcodePrinterConfig()
+
+        if (config.profile === PRINTER_PROFILES.LEGACY) {
+          const res = await api.zebraPrinter.getStatus({ skipLoading: true, skipError: true })
+          this.form.barcode = JSON.stringify(res)
+        } else {
+          const res = await fetchPrinterList()
+          this.form.barcode = JSON.stringify(res)
+        }
       } catch (err) {
         //swAlert.error('', 'ไม่สามารถเชื่อมต่อเครื่องพิมพ์ได้')
       }

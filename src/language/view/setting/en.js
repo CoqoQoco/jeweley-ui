@@ -69,9 +69,13 @@ export default {
   },
   barcodePrinter: {
     pageTitle: 'Barcode Printer Settings',
-    pageDescription: 'Configure the barcode label printer (ZPL) printed via DK Print Bridge — the same bridge used for bill/VAT/receipt printing',
+    pageDescription: 'Configure the barcode label printer (ZPL) — choose either the legacy printer (Zebra Print Service) or Zebra GT800 (DK Print Bridge)',
     configSectionTitle: 'Printer Settings',
-    configSectionDescription: 'Select the printer and adjust the values used to print barcode labels',
+    configSectionDescription: 'Select the printer model and adjust the values used to print barcode labels',
+    profileLabel: 'Printer Model',
+    profileLegacyLabel: 'Legacy printer (Zebra Print Service)',
+    profileGt800Label: 'Zebra GT800 (DK Print Bridge)',
+    legacyFieldsHint: 'The legacy printer prints directly through the Zebra Print Service program — no need to set printer name, resolution, or delay here',
     printerNameLabel: 'Printer Name',
     dpiLabel: 'Printer Resolution (DPI)',
     dpiOption203: '203 dpi',
@@ -84,7 +88,9 @@ export default {
     status: {
       readyTitle: 'Ready to use',
       readyDetail: 'Found {count} printer(s) on this device',
-      noPrinterDetail: 'Please select a printer from the list above, then click save'
+      noPrinterDetail: 'Please select a printer from the list above, then click save',
+      legacyReadyDetail: 'Zebra Print Service is running and ready to print',
+      legacyServiceErrorDetail: 'Please keep Zebra Print Service running on this computer before printing'
     },
     testSectionTitle: 'Print Test Label',
     testSectionDescription: 'Print a test label through the same real path used on the stock page',

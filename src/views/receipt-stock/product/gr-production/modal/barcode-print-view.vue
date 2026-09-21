@@ -165,6 +165,12 @@ export default {
     },
 
     printerStatusText() {
+      if (this.printerCheck.profile === 'legacy') {
+        return this.printerCheck.status === 'success'
+          ? this.$t('view.stock.product.printerReady')
+          : this.$t('common.printer.legacyServiceError')
+      }
+
       switch (this.printerCheck.status) {
         case 'success':
           return `${this.$t('view.stock.product.printerReady')} · ${this.printerCheck.printerName}`
@@ -277,6 +283,7 @@ export default {
           goldType: item.productionTypeSize,
           mold: item.mold,
           stockNumber: item.stockNumber,
+          stockNumberOrigin: item.stockNumberOrigin,
           size: item.size,
           gold: '',
           gems: [],

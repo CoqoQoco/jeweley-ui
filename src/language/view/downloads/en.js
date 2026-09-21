@@ -33,6 +33,12 @@ export default {
     barcodeStep3Title: 'Go to the barcode printer settings page on the web',
     barcodeStep3Desc: 'Go to menu Settings → Barcode Printer Settings (/setting/barcode-printer) and select the queue name you created in step 2.',
     barcodeStep4Title: 'Print a test label',
-    barcodeStep4Desc: 'Click the "Print Test Label" button — one label should print out and the barcode should scan successfully. If this works, the installation is complete.'
+    barcodeStep4Desc: 'Click the "Print Test Label" button — one label should print out and the barcode should scan successfully. If this works, the installation is complete.',
+    barcodeStep5Title: 'Align the sticker roll with the guide',
+    barcodeStep5Desc: 'Always align the sticker roll with the printer guide. If it is misaligned, the label will not print all the way to the tail.',
+    barcodeStep6Title: 'Press Feed after powering on or changing the roll',
+    barcodeStep6Desc: 'Press the Feed button on the printer once after powering it on or changing the sticker roll, otherwise the first label will print shifted.',
+    barcodeStep7Title: 'Select the printer model in settings',
+    barcodeStep7Desc: 'Go to the barcode printer settings page (/setting/barcode-printer) and select "Zebra GT800" before printing.'
   }
 }

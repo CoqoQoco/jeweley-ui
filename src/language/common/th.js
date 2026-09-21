@@ -106,6 +106,7 @@ export default {
     clear: 'ล้างค่า',
     noPrinterSet: 'ยังไม่ได้ตั้งค่าเครื่องพิมพ์บาร์โค้ด',
     goToSetting: 'ไปตั้งค่าเครื่องพิมพ์บาร์โค้ด',
-    printFailedTitle: 'พิมพ์ไม่สำเร็จ'
+    printFailedTitle: 'พิมพ์ไม่สำเร็จ',
+    legacyServiceError: 'เชื่อมต่อโปรแกรม Zebra Print Service ไม่ได้ — เปิดโปรแกรมค้างไว้ก่อนพิมพ์ครับ'
   }
 }

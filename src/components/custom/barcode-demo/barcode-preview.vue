@@ -4,7 +4,7 @@
     :type="type"
     :madeIn="barcode.madeIn"
     :madeInText="barcode.madeInText"
-    :stockNumber="barcode.stockNumber"
+    :stockNumber="labelCode"
     :gold="barcode.gold"
     :gems="barcode.gems"
     :size="barcode.size"
@@ -17,7 +17,7 @@
     :productNumber="barcode.productNumber"
     :gold="barcode.gold"
     :size="barcode.size"
-    :stockNumber="barcode.stockNumber"
+    :stockNumber="labelCode"
     :goldType="barcode.goldType"
     :price="price"
     :gems="barcode.gems"
@@ -28,6 +28,8 @@
 
 <script>
 import { defineAsyncComponent } from 'vue'
+
+import { resolveLabelCode } from '@/services/helper/barcode/barcode-zpl.js'
 
 const barcodeDemo = defineAsyncComponent(() =>
   import('@/components/custom/barcode-demo/barcode-demo-view.vue')
@@ -60,6 +62,13 @@ export default {
     type: {
       type: String,
       default: 'gem'
+    }
+  },
+
+  computed: {
+    // ตัวอย่างต้องแสดงเลขเดียวกับที่จะพิมพ์จริง (เลขที่ผลิตเก่าก่อน ไม่งั้นเลขใหม่)
+    labelCode() {
+      return resolveLabelCode(this.barcode)
     }
   }
 }

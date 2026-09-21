@@ -25,6 +25,7 @@ export function buildBarcodeModel(stock) {
     madeIn: 'MADE IN THAILAND',
     madeInText: 'XXXXXXXXXXX',
     stockNumber: stock?.stockNumber,
+    stockNumberOrigin: stock?.stockNumberOrigin,
     mold: stock?.mold,
     size: stock?.size,
     productNameEn: stock?.productNameEn || '',

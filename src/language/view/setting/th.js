@@ -69,9 +69,13 @@ export default {
   },
   barcodePrinter: {
     pageTitle: 'ตั้งค่าเครื่องพิมพ์บาร์โค้ด',
-    pageDescription: 'ตั้งค่าเครื่องพิมพ์ฉลากบาร์โค้ด (ZPL) ที่พิมพ์ผ่าน DK Print Bridge — เครื่องเดียวกับที่พิมพ์บิล/VAT/ใบเสร็จ',
+    pageDescription: 'ตั้งค่าเครื่องพิมพ์ฉลากบาร์โค้ด (ZPL) — เลือกได้ทั้งเครื่องเดิม (Zebra Print Service) และ Zebra GT800 (DK Print Bridge)',
     configSectionTitle: 'ตั้งค่าเครื่องพิมพ์',
-    configSectionDescription: 'เลือกเครื่องพิมพ์และปรับค่าที่ใช้พิมพ์ฉลากบาร์โค้ด',
+    configSectionDescription: 'เลือกรุ่นเครื่องพิมพ์และปรับค่าที่ใช้พิมพ์ฉลากบาร์โค้ด',
+    profileLabel: 'รุ่นเครื่องพิมพ์',
+    profileLegacyLabel: 'เครื่องเดิม (Zebra Print Service)',
+    profileGt800Label: 'Zebra GT800 (DK Print Bridge)',
+    legacyFieldsHint: 'เครื่องเดิมพิมพ์ผ่านโปรแกรม Zebra Print Service โดยตรง ไม่ต้องตั้งค่าชื่อเครื่องพิมพ์ ความละเอียด หรือระยะหน่วงเพิ่มเติมครับ',
     printerNameLabel: 'ชื่อเครื่องพิมพ์',
     dpiLabel: 'ความละเอียดเครื่องพิมพ์ (DPI)',
     dpiOption203: '203 dpi',
@@ -84,7 +88,9 @@ export default {
     status: {
       readyTitle: 'พร้อมใช้งาน',
       readyDetail: 'พบเครื่องพิมพ์ทั้งหมด {count} เครื่องบนเครื่องนี้',
-      noPrinterDetail: 'กรุณาเลือกเครื่องพิมพ์จากรายชื่อด้านบน แล้วกดบันทึกครับ'
+      noPrinterDetail: 'กรุณาเลือกเครื่องพิมพ์จากรายชื่อด้านบน แล้วกดบันทึกครับ',
+      legacyReadyDetail: 'โปรแกรม Zebra Print Service กำลังทำงานอยู่ พร้อมพิมพ์ครับ',
+      legacyServiceErrorDetail: 'เปิดโปรแกรม Zebra Print Service ที่เครื่องนี้ค้างไว้ก่อนพิมพ์ครับ'
     },
     testSectionTitle: 'พิมพ์ฉลากทดสอบ',
     testSectionDescription: 'พิมพ์ฉลากทดสอบผ่านเส้นทางจริงที่ใช้พิมพ์ในหน้าคลังสินค้า',

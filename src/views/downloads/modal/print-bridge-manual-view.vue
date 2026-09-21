@@ -120,6 +120,36 @@
             <p class="step-desc">{{ $t('view.downloads.manual.barcodeStep4Desc') }}</p>
           </div>
         </div>
+
+        <div class="item-card">
+          <div class="item-card-header">
+            <span class="step-number">5</span>
+            <span class="step-title">{{ $t('view.downloads.manual.barcodeStep5Title') }}</span>
+          </div>
+          <div class="item-card-body">
+            <p class="step-desc">{{ $t('view.downloads.manual.barcodeStep5Desc') }}</p>
+          </div>
+        </div>
+
+        <div class="item-card">
+          <div class="item-card-header">
+            <span class="step-number">6</span>
+            <span class="step-title">{{ $t('view.downloads.manual.barcodeStep6Title') }}</span>
+          </div>
+          <div class="item-card-body">
+            <p class="step-desc">{{ $t('view.downloads.manual.barcodeStep6Desc') }}</p>
+          </div>
+        </div>
+
+        <div class="item-card">
+          <div class="item-card-header">
+            <span class="step-number">7</span>
+            <span class="step-title">{{ $t('view.downloads.manual.barcodeStep7Title') }}</span>
+          </div>
+          <div class="item-card-body">
+            <p class="step-desc">{{ $t('view.downloads.manual.barcodeStep7Desc') }}</p>
+          </div>
+        </div>
       </div>
     </template>
   </modal>

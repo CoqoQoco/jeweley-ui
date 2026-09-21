@@ -106,6 +106,7 @@ export default {
     clear: 'Clear',
     noPrinterSet: 'Barcode printer is not set up yet',
     goToSetting: 'Go to barcode printer settings',
-    printFailedTitle: 'Print failed'
+    printFailedTitle: 'Print failed',
+    legacyServiceError: 'Cannot connect to Zebra Print Service — please keep the program running before printing'
   }
 }
