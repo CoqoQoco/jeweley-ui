@@ -335,7 +335,7 @@ export default {
     currentLocation: 'Current Location',
     movedBy: 'Moved By',
     placeholder: {
-      stockNumber: 'EX: DK-2502-00X'
+      stockNumber: 'EX: DK20H015'
     },
     colDate: 'Date-Time',
     colStockNumber: 'Production No.',

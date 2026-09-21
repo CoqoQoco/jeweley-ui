@@ -4,7 +4,7 @@ export const invoice = {
   searchTitle: 'ค้นหาใบแจ้งหนี้',
   invoiceNumber: 'เลขที่ Invoice',
   stockNumber: 'เลขที่ผลิต (ใหม่/เก่า)',
-  stockNumberPlaceholder: 'DK-9K-1XR-3643 หรือ 9K16478',
+  stockNumberPlaceholder: 'DK20H015 หรือ 9K16478',
   productNumber: 'รหัสสินค้า',
   moldNumber: 'Mold',
   customerName: 'ชื่อลูกค้า',
@@ -930,7 +930,7 @@ export const productionOrder = {
 
   // Placeholder
   placeholder: {
-    stockNumberExample: 'R08X50XXXL หรือ DK-2502-001'
+    stockNumberExample: 'R08X50XXXL หรือ DK20H015'
   },
 
   // Validation errors

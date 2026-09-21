@@ -4,7 +4,7 @@ export const invoice = {
   searchTitle: 'Search Invoices',
   invoiceNumber: 'Invoice No.',
   stockNumber: 'Production No. (New/Old)',
-  stockNumberPlaceholder: 'DK-9K-1XR-3643 or 9K16478',
+  stockNumberPlaceholder: 'DK20H015 or 9K16478',
   productNumber: 'Product Code',
   moldNumber: 'Mold',
   customerName: 'Customer Name',
@@ -937,7 +937,7 @@ export const productionOrder = {
 
   // Placeholder
   placeholder: {
-    stockNumberExample: 'R08X50XXXL or DK-2502-001'
+    stockNumberExample: 'R08X50XXXL or DK20H015'
   },
 
   // Validation errors

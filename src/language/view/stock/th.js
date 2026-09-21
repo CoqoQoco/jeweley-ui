@@ -335,7 +335,7 @@ export default {
     currentLocation: 'จัดเก็บ (คลังปัจจุบัน)',
     movedBy: 'ผู้ย้าย',
     placeholder: {
-      stockNumber: 'EX: DK-2502-00X'
+      stockNumber: 'EX: DK20H015'
     },
     colDate: 'วันที่-เวลา',
     colStockNumber: 'เลขที่ผลิต',
