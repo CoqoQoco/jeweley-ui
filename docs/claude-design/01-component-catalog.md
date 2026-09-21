@@ -48,7 +48,7 @@
 
 | Component | บทบาท | Props หลัก |
 |---|---|---|
-| **DataTableWithPaging** | **ตารางข้อมูลมาตรฐาน** (แทน `<table>` / PrimeVue DataTable) | `items`, `totalRecords`, `columns`, `perPage`, `paginator`, `dataKey`, `selectionMode`, `expandable`, `emptyMessage` · slot `{field}Template`, `#footer` · states: loading/empty/paginated |
+| **DataTableWithPaging** | **ตารางข้อมูลมาตรฐาน** (แทน `<table>` / PrimeVue DataTable) | `items`, `totalRecords`, `columns`, `perPage`, `paginator`, `dataKey`, `selectionMode`, `expandable`, `emptyMessage`, `reorderableColumns`, `showColumnSettings`, `columnPrefsKey`(จำลำดับ/ปักหมุดคอลัมน์ลง localStorage — รายละเอียดดู skill `generic-components`) · slot `{field}Template`, `#footer` · states: loading/empty/paginated |
 | **StepperStatus** | timeline สถานะขั้นตอนงาน | `eventsName`, `events`(array), `eventsIdActive`, `isNextStatus` |
 | **HorizontalBarChart** | กราฟแท่งแนวนอน (รายงาน) | `data`({report:[]}) |
 

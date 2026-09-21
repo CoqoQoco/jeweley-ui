@@ -450,6 +450,9 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 | `selectionType` | String | `'multiple'` | `'single'` หรือ `'multiple'` |
 | `expandable` | Boolean | `false` | เปิด row expand |
 | `emptyMessage` | String | `'ไม่พบข้อมูล'` | ข้อความเมื่อไม่มีข้อมูล |
+| `reorderableColumns` | Boolean | `false` | เปิดลาก drag คอลัมน์ (PrimeVue `reorderableColumns`) |
+| `showColumnSettings` | Boolean | `false` | แสดงปุ่ม ⚙ เปิด panel ปักหมุดคอลัมน์ซ้าย/ขวา (+ ปุ่มรีเซ็ตเมื่อมี `columnPrefsKey`) |
+| `columnPrefsKey` | String | `''` | ว่าง = พฤติกรรมเดิมทุกประการ (ไม่จำอะไร); ใส่ค่า → จำลำดับคอลัมน์ที่ลาก + การปักหมุดจาก panel ⚙ ลง `localStorage` — ดู "Column Order & Freeze Persistence" ด้านล่าง |
 
 ### Columns Definition
 
@@ -511,6 +514,31 @@ columns: [
 <table class="table table-bordered"><thead>...</thead></table>
 <DataTable :value="items">...</DataTable>
 ```
+
+### Column Order & Freeze Persistence (`columnPrefsKey`)
+
+จำลำดับคอลัมน์ (จากลาก `reorderableColumns`) + การปักหมุด (จาก panel ⚙ `showColumnSettings`) ลง `localStorage` ต่อหน้า:
+
+```vue
+<BaseDataTable
+  :items="items"
+  :columns="columns"
+  :totalRecords="total"
+  :reorderableColumns="true"
+  :showColumnSettings="true"
+  columnPrefsKey="invoice-list"
+/>
+```
+
+- Key เก็บ: `table-cols-${columnPrefsKey}-dk` รูปแบบ `{ order: [field...], frozen: { field: 'left'|'right'|null } }`
+- โหลดตอน mount, บันทึกทุกครั้งที่ลาก/ปักหมุด, panel ⚙ มีปุ่ม "รีเซ็ตคอลัมน์" ลบ key + remount ตาราง
+- helper แยกไว้ที่ `src/services/utils/column-prefs.js` (pure function, มี spec คู่กัน)
+- ตัวอย่างใช้จริง: `src/views/sale/invoice/components/data-table-view.vue`
+
+**กติกาสำคัญ**:
+- ❌ ห้ามใช้ `stateStorage`/`stateKey` ของ PrimeVue เอง — มัน restore `first`/`rows` ชนกับ `useDataTablePaging` mixin (ตารางโชว์หน้า 3 แต่ข้อมูลที่ fetch จริงเป็นหน้า 1)
+- index จาก event `column-reorder` ของ PrimeVue นับรวมคอลัมน์ expander/selection ที่ BaseDataTable แทรกเองด้วย ต้องหัก offset (ดู `computeReorderOffset` ใน `column-prefs.js`) ก่อน map กลับเข้า array field
+- ❌ ห้ามป้อนลำดับที่ได้จาก event กลับเข้า `:columns` ระหว่าง session — PrimeVue เก็บ `d_columnOrder` ของมันเองอยู่แล้ว ป้อนกลับจะสลับซ้อนกัน (ลำดับจาก localStorage ใช้ตอน mount ครั้งเดียวเท่านั้น)
 
 ---
 

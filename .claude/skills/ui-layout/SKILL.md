@@ -153,6 +153,33 @@ const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-ti
 - ❌ ห้ามมี header ซ้ำซ้อนนอก `filter-container-searchBar` (เช่นห้ามเอา `<h2>` page title มาซ้อนทับ pageTitle ของ search bar)
 - ❌ ห้าม set `isShowBtnClose="true"` กับ pageTitle ใน search bar — กดแล้วหายเลย ไม่มีปุ่มเปิดกลับ
 
+### Variant — ไม่มี Advanced Dialog (grid ตายตัว 2 บรรทัด)
+
+หน้าที่ field ค้นหาเยอะแต่ไม่อยากซ่อนไว้หลัง advanced dialog (ส่วนที่ 3 เป็น optional อยู่แล้ว — ดูด้านบน): ใช้ `SearchBarGeneric` ปกติแต่ override `.form-col-container` เป็น grid คอลัมน์ตายตัวตาม breakpoint แทน auto-fit เดิม เพื่อคุมจำนวนคอลัมน์ต่อบรรทัดให้แน่นอน (เช่น 5 คอลัมน์ × 2 บรรทัด)
+
+**Reference**: `src/views/sale/invoice/components/search-view.vue`
+
+```scss
+<style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-search-bar';
+@import '@/assets/scss/custom-style/standard-form.scss';
+
+:deep(.form-col-container) {
+  @media (min-width: 1400px) {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  @media (min-width: 1024px) and (max-width: 1399px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @media (max-width: 1023px) {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+```
+
+ฟิลด์รองที่ใช้น้อย (เช่น dropdown ผู้สร้างเอกสาร + checkbox ตัวกรองเสริม) วางใน slot `#actions-left` แทนการเปิด advanced dialog
+
 ### SCSS Classes (มีอยู่แล้ว — reuse เสมอ)
 
 อยู่ใน `src/assets/scss/custom-style/standard-search-bar.scss`:
