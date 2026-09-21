@@ -32,6 +32,7 @@
           </div>
           <div class="item-card-body">
             <p class="step-desc">{{ $t('view.production.goldLossTang.manualStep2Desc') }}</p>
+            <p class="step-desc">{{ $t('view.production.goldLossTang.manualCountInLossNote') }}</p>
             <img :src="imgCreate" :alt="$t('view.production.goldLossTang.manualImgCreate')" class="manual-img" />
           </div>
         </div>

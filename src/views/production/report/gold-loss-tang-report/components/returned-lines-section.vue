@@ -12,12 +12,14 @@
           <span class="row-weight row-weight--right">{{ fmt2(baseSum) }} {{ $t('view.production.goldLossTang.weightUnit') }}</span>
           <span class="row-action"></span>
           <span class="row-action"></span>
+          <span class="row-action"></span>
         </div>
 
         <div class="lines-row lines-row--header">
           <span class="row-label title-text">{{ $t('view.production.goldLossTang.lineName') }}</span>
           <span class="row-weight title-text">{{ $t('view.production.goldLossTang.lineWeight') }}</span>
           <span class="row-action title-text row-header-calc">{{ $t('view.production.goldLossTang.countInCalc') }}</span>
+          <span class="row-action title-text row-header-calc">{{ $t('view.production.goldLossTang.countInLoss') }}</span>
           <span class="row-action"></span>
         </div>
 
@@ -46,6 +48,11 @@
               :modelValue="line.countInCalc !== false"
               @update:modelValue="onUpdate(idx, 'countInCalc', $event)"
             />
+            <CheckboxGeneric
+              :modelValue="line.countInLoss === true"
+              :disabled="line.countInCalc === false"
+              @update:modelValue="onUpdateCountInLoss(idx, $event)"
+            />
             <ButtonGeneric
               variant="red"
               icon="bi-trash"
@@ -72,6 +79,7 @@
           <div class="lines-row lines-row--total">
             <span class="row-label title-text">{{ $t('view.production.goldLossTang.totalReturned') }}</span>
             <span class="row-weight row-weight--right total-value">{{ fmt2(total) }} {{ $t('view.production.goldLossTang.weightUnit') }}</span>
+            <span class="row-action"></span>
             <span class="row-action"></span>
             <span class="row-action"></span>
           </div>
@@ -131,11 +139,20 @@ export default {
     },
 
     onAdd() {
-      this.$emit('update:lines', [...this.lines, { name: '', weight: '', countInCalc: true }])
+      this.$emit('update:lines', [...this.lines, { name: '', weight: '', countInCalc: true, countInLoss: false }])
     },
 
     onRemove(idx) {
       const newLines = this.lines.filter((_, i) => i !== idx)
+      this.$emit('update:lines', newLines)
+    },
+
+    onUpdateCountInLoss(idx, val) {
+      const line = this.lines[idx]
+      if (!line) return
+      const current = line.countInLoss === true
+      if (current === val) return
+      const newLines = this.lines.map((l, i) => (i !== idx ? l : { ...l, countInLoss: val }))
       this.$emit('update:lines', newLines)
     },
 
@@ -172,7 +189,7 @@ export default {
 
 .lines-grid {
   display: grid;
-  grid-template-columns: 1fr 140px 44px 44px;
+  grid-template-columns: 1fr 140px 44px 44px 44px;
   gap: var(--sp-xs) var(--sp-sm);
   align-items: center;
 }

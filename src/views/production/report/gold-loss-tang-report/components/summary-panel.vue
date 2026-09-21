@@ -62,6 +62,10 @@
         <span class="calc-label">{{ $t('view.production.goldLossTang.rawLoss') }}</span>
         <span class="calc-value">{{ fmtSign2w(calc.net) }} {{ $t('view.production.goldLossTang.weightUnit') }}</span>
       </div>
+      <div class="calc-row calc-row--sub">
+        <span class="calc-label calc-label--sub">{{ $t('view.production.goldLossTang.lossBaseLabel') }}</span>
+        <span class="calc-value calc-value--sub">{{ fmt2(calc.lossBase) }} {{ $t('view.production.goldLossTang.weightUnit') }}</span>
+      </div>
       <div class="calc-row">
         <span class="calc-label">{{ $t('view.production.goldLossTang.limitLoss') }}</span>
         <span class="calc-value">{{ fmt2(calc.allowedLoss) }} {{ $t('view.production.goldLossTang.weightUnit') }}</span>
@@ -133,6 +137,7 @@ export default {
         returnedTotal: 0,
         rawLoss: 0,
         net: 0,
+        lossBase: 0,
         allowedLoss: 0,
         diffLoss: 0,
         money: 0
@@ -288,6 +293,18 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: var(--sp-xs) 0;
+
+  &--sub {
+    padding-top: 0;
+    padding-bottom: var(--sp-xs);
+  }
+}
+
+.calc-label--sub,
+.calc-value--sub {
+  font-weight: 400;
+  font-size: var(--fs-sm);
+  opacity: 0.8;
 }
 
 .calc-label {

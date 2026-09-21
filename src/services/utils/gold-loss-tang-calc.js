@@ -5,10 +5,12 @@
  *           Math.round(x * 1e2) / 1e2  = round half up to 2dp (ties toward +Infinity)
  * NOTE: backend (GoldLossTangSlipService) ต้องปัดแบบเดียวกัน (half-up) ให้ค่าตรงกัน
  *
- * allowedLoss uses jobReturnedSum (job returned only, excludes extra returned lines)
+ * allowedLoss uses lossBase = jobReturnedSum + Σ returnedLines ที่ countInCalc !== false
+ *   && countInLoss === true (งานที่ไม่มี Job เช่นงานซ่อม/งานส่ง ผู้ใช้ติ๊กเลือกเองว่าให้เข้าฐาน %Loss)
  * net = returnedTotal - issuedTotal  (negative when returned < issued)
  *
- * Verified: issuedTotal=131.42 (jobIssuedSum), jobReturnedSum=103.33, extraReturnedSum=26.37
+ * Verified: issuedTotal=131.42 (jobIssuedSum), jobReturnedSum=103.33, extraReturnedSum=26.37,
+ *   ไม่มีรายการคืนใดติ๊ก countInLoss → lossBase=103.33
  *   → returnedTotal=129.70, rawLoss=1.72, allowedLoss=round4(103.33×3/100)=3.0999,
  *     diffLoss=round4(3.0999-1.72)=1.3799, money=round2(1.3799)×40=1.38×40=55.20,
  *     net=129.70-131.42=-1.72
@@ -40,7 +42,7 @@ export function round2(value) {
  * @param {Array} returnedLines - additional returned lines [{name, weight}]
  * @param {number|string} lossPercent - allowed loss percentage
  * @param {number|string} pricePerGram - price per gram
- * @returns {{ issuedTotal, returnedTotal, rawLoss, net, allowedLoss, diffLoss, money }}
+ * @returns {{ issuedTotal, returnedTotal, rawLoss, net, lossBase, allowedLoss, diffLoss, money }}
  */
 export function calcGoldLossTang(selectedJobs, issuedLines, returnedLines, lossPercent, pricePerGram) {
   const jobsArray = Array.isArray(selectedJobs) ? selectedJobs : []
@@ -62,7 +64,13 @@ export function calcGoldLossTang(selectedJobs, issuedLines, returnedLines, lossP
 
   const net = returnedTotal - issuedTotal
 
-  const allowedLoss = round4(jobReturnedSum * lossPercentNum / 100)
+  const extraLossBaseSum = returnedArray.reduce(
+    (sum, l) => sum + (l.countInCalc !== false && l.countInLoss === true ? (parseFloat(l.weight) || 0) : 0),
+    0
+  )
+  const lossBase = jobReturnedSum + extraLossBaseSum
+
+  const allowedLoss = round4(lossBase * lossPercentNum / 100)
 
   const diffLoss = round4(allowedLoss - rawLoss)
 
@@ -73,6 +81,7 @@ export function calcGoldLossTang(selectedJobs, issuedLines, returnedLines, lossP
     returnedTotal,
     rawLoss,
     net,
+    lossBase,
     allowedLoss,
     diffLoss,
     money

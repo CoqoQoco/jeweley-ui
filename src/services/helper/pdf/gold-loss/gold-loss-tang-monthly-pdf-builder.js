@@ -198,7 +198,7 @@ export class GoldLossTangMonthlyPdfBuilder {
         if (extra.kind === 1) totalIssued += Number(extra.weight || 0)
         if (extra.kind === 2) totalReturned += Number(extra.weight || 0)
       }
-      const name = (extra.name || '') + (isCounted ? '' : ' (ไม่นำมาคิด)')
+      const name = (extra.name || '') + (isCounted ? '' : ' (ไม่นำมาคิด)') + (extra.kind === 2 && extra.countInLoss === true ? ' (คิด %Loss)' : '')
       return [
         { text: extra.documentNo || '' },
         { text: kindLabel },

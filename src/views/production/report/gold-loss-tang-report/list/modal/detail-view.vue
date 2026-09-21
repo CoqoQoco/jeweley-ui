@@ -90,6 +90,12 @@
               scrollHeight="200px"
               dataKey="_idx"
             >
+              <template #nameTemplate="{ data }">
+                <span>{{ data.name }}</span>
+                <span v-if="data.countInLoss" class="count-in-loss-badge">
+                  {{ $t('view.production.goldLossTang.countInLoss') }}
+                </span>
+              </template>
               <template #weightTemplate="{ data }">
                 <span>{{ fmt4(data.weight) }}</span>
               </template>
@@ -383,6 +389,19 @@ export default {
   background: var(--color-highlight-bg);
   color: var(--base-green);
   border: 1px solid var(--base-green);
+  border-radius: var(--radius-sm);
+  padding: 1px var(--sp-xs);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  margin-left: var(--sp-xs);
+}
+
+.count-in-loss-badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--color-highlight-bg);
+  color: var(--base-font-color);
+  border: 1px solid var(--base-font-color);
   border-radius: var(--radius-sm);
   padding: 1px var(--sp-xs);
   font-size: var(--fs-sm);

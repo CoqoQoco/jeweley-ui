@@ -381,7 +381,8 @@ export default {
         _id: `returned-${i}`,
         name: l.name || '',
         weight: l.weight != null ? String(l.weight) : '',
-        countInCalc: l.countInCalc !== false
+        countInCalc: l.countInCalc !== false,
+        countInLoss: l.countInLoss === true
       }))
 
       const slipItems = slip.items || []
@@ -440,11 +441,11 @@ export default {
 
       const issuedLinePayload = this.issuedLines
         .filter((l) => l.name || l.weight)
-        .map((l) => ({ name: l.name, weight: parseFloat(l.weight) || 0, countInCalc: l.countInCalc !== false }))
+        .map((l) => ({ name: l.name, weight: parseFloat(l.weight) || 0, countInCalc: l.countInCalc !== false, countInLoss: false }))
 
       const returnedLinePayload = this.returnedLines
         .filter((l) => l.name || l.weight)
-        .map((l) => ({ name: l.name, weight: parseFloat(l.weight) || 0, countInCalc: l.countInCalc !== false }))
+        .map((l) => ({ name: l.name, weight: parseFloat(l.weight) || 0, countInCalc: l.countInCalc !== false, countInLoss: l.countInLoss === true }))
 
       const payload = {
         workerCode: this.workerCode,

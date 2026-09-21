@@ -112,7 +112,7 @@ export class GoldLossTangPdfBuilder {
         weight: t.returnedWeight
       })),
       ...(s.returnedLines || []).map((l) => ({
-        name: l.name + (l.countInCalc === false ? ' (ไม่นำมาคิด)' : ''),
+        name: l.name + (l.countInCalc === false ? ' (ไม่นำมาคิด)' : '') + (l.countInLoss === true ? ' (คิด %Loss)' : ''),
         weight: l.weight
       }))
     ]
