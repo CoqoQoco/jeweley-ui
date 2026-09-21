@@ -8,6 +8,9 @@
       :perPage="take"
       :scrollHeight="'calc(100vh - 360px)'"
       :defaultSortMeta="[{ field: 'createDate', order: -1 }]"
+      :reorderableColumns="true"
+      :showColumnSettings="true"
+      columnPrefsKey="invoice-list"
       class="base-data-table"
       :rowClass="getRowClass"
       @page="handlePageChange"
@@ -84,6 +87,14 @@
 
       <template #saleChannelNameTemplate="{ data }">
         <div>{{ data.saleChannelName || '-' }}</div>
+      </template>
+
+      <template #salePersonTemplate="{ data }">
+        <div>{{ data.salePerson || '-' }}</div>
+      </template>
+
+      <template #saleSupportTemplate="{ data }">
+        <div>{{ data.saleSupport || '-' }}</div>
       </template>
     </BaseDataTable>
   </div>
@@ -253,6 +264,20 @@ export default {
           sortable: false,
           minWidth: '130px',
           template: 'saleChannelNameTemplate'
+        },
+        {
+          field: 'salePerson',
+          header: this.$t('view.sale.invoice.salePersonLabel'),
+          sortable: true,
+          minWidth: '130px',
+          template: 'salePersonTemplate'
+        },
+        {
+          field: 'saleSupport',
+          header: this.$t('view.sale.invoice.saleSupportLabel'),
+          sortable: true,
+          minWidth: '130px',
+          template: 'saleSupportTemplate'
         }
       ]
     }
@@ -267,10 +292,11 @@ export default {
   methods: {
     onView(data) {
       this.setActiveRow(data)
-      this.$router.push({
+      const route = this.$router.resolve({
         path: '/invoice-detail',
         query: { invoiceNumber: data.invoiceNumber }
       })
+      window.open(route.href, '_blank', 'noopener')
     },
 
     getStatusBadgeClass(status) {

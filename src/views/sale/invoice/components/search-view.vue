@@ -1,196 +1,215 @@
 <template>
-  <div class="filter-container-searchBar">
-    <pageTitle
-      :title="$t('view.sale.invoice.title')"
-      :description="$t('view.sale.invoice.pageDescription')"
-      :isShowBtnClose="false"
-    />
-
-    <form @submit.prevent="onSearch">
-      <div class="form-col-container">
-        <!-- invoice number -->
-        <div>
-          <span class="title-text">{{ $t('view.sale.invoice.invoiceNumber') }}</span>
-          <InputTextGeneric
-            v-model="form.invoiceNumber"
-            placeholder="EX: INV-2025-001"
-            :trim="true"
-          />
-        </div>
-
-        <!-- stock number -->
-        <div>
-          <span class="title-text">{{ $t('view.sale.invoice.stockNumber') }}</span>
-          <InputTextGeneric
-            v-model="form.stockNumber"
-            :placeholder="$t('view.sale.invoice.stockNumber')"
-            :trim="true"
-          />
-        </div>
-
-        <!-- product number -->
-        <div>
-          <span class="title-text">{{ $t('view.sale.invoice.productNumber') }}</span>
-          <InputTextGeneric
-            v-model="form.productNumber"
-            :placeholder="$t('view.sale.invoice.productNumber')"
-            :trim="true"
-          />
-        </div>
-
-        <!-- mold number -->
-        <div>
-          <span class="title-text">{{ $t('view.sale.invoice.moldNumber') }}</span>
-          <InputTextGeneric
-            v-model="form.moldNumber"
-            :placeholder="$t('view.sale.invoice.moldNumber')"
-            :trim="true"
-          />
-        </div>
-
-        <!-- sale channel -->
-        <div>
-          <span class="title-text">{{ $t('view.sale.invoice.saleChannelLabel') }}</span>
-          <DropdownGeneric
-            v-model="form.saleChannelCode"
-            :options="saleChannelOptions"
-            optionLabel="name"
-            optionValue="code"
-            :placeholder="$t('view.sale.invoice.filterAll')"
-            :showClear="true"
-            class="w-100"
-          />
-        </div>
-
-        <!-- payment status -->
-        <div>
-          <span class="title-text">{{ $t('view.sale.invoice.paymentStatusLabel') }}</span>
-          <DropdownGeneric
-            v-model="form.paymentStatus"
-            :options="paymentStatusOptions"
-            optionLabel="name"
-            optionValue="value"
-            :placeholder="$t('view.sale.invoice.filterAll')"
-            :showClear="true"
-            class="w-100"
-          />
-        </div>
+  <SearchBarGeneric
+    :title="$t('view.sale.invoice.searchTitle')"
+    :description="$t('view.sale.invoice.pageDescription')"
+    @search="onSearch"
+    @clear="onClear"
+  >
+    <template #fields>
+      <!-- row 1 -->
+      <div>
+        <span class="title-text">{{ $t('view.sale.invoice.invoiceNumber') }}</span>
+        <InputTextGeneric
+          v-model="form.invoiceNumber"
+          placeholder="EX: INV-2025-001"
+          :trim="true"
+        />
       </div>
 
-      <dialogView
-        :isShow="isShow.dialog"
-        @closeDialog="closeDialog"
-        @search="dialogSearch"
-        :txtHeader="$t('common.label.advancedSearch')"
-      >
-        <template #content>
-          <div class="form-col-container">
-            <!-- customer name -->
-            <div>
-              <span class="title-text">{{ $t('view.sale.invoice.customerName') }}</span>
-              <InputTextGeneric
-                v-model="form.customerName"
-                :placeholder="$t('view.sale.invoice.customerName')"
-                :trim="true"
-              />
-            </div>
-
-            <!-- owner username -->
-            <div>
-              <span class="title-text">{{ $t('view.sale.invoice.ownerUsernameLabel') }}</span>
-              <InputTextGeneric
-                v-model="form.ownerUsername"
-                :placeholder="$t('view.sale.invoice.ownerUsernameLabel')"
-                :trim="true"
-              />
-            </div>
-
-            <!-- overdue only -->
-            <div class="d-flex align-items-end">
-              <CheckboxGeneric
-                v-model="form.overdueOnly"
-                :label="$t('view.sale.invoice.overdueOnlyLabel')"
-              />
-            </div>
-          </div>
-
-          <div class="form-col-container mt-2">
-            <!-- create date -->
-            <div>
-              <span class="title-text">{{ $t('view.sale.invoice.createDate') }}</span>
-              <div class="flex-group">
-                <CalendarGeneric
-                  class="w-100"
-                  v-model="form.createDateStart"
-                  :max-date="form.createDateEnd"
-                  :showIcon="true"
-                  :manualInput="false"
-                  :placeholder="$t('common.label.startDate')"
-                  dateFormat="dd/mm/yy"
-                />
-                <div class="mx-2"><i class="bi bi-arrow-right"></i></div>
-                <CalendarGeneric
-                  class="w-100"
-                  v-model="form.createDateEnd"
-                  :min-date="form.createDateStart"
-                  :showIcon="true"
-                  :manualInput="false"
-                  :placeholder="$t('common.label.endDate')"
-                  dateFormat="dd/mm/yy"
-                />
-              </div>
-            </div>
-          </div>
-        </template>
-      </dialogView>
-
-      <div class="btn-submit-container">
-        <button class="btn btn-sm btn-main mr-2" type="submit" :title="$t('common.btn.search')">
-          <span><i class="bi bi-search"></i></span>
-        </button>
-        <button
-          class="btn btn-sm btn-sub-main mr-2"
-          type="button"
-          :title="$t('common.btn.more')"
-          @click="onShowDialog"
+      <div>
+        <span class="title-text">{{ $t('view.sale.invoice.customerName') }}</span>
+        <AutoCompleteGeneric
+          :modelValue="form.customerName"
+          apiEndpoint="SaleReport/InvoiceCustomerSuggest"
+          searchField="text"
+          optionLabel="customerName"
+          :take="20"
+          :forceSelection="false"
+          :placeholder="$t('view.sale.invoice.customerName')"
+          @update:modelValue="onCustomerInput"
+          @item-select="onCustomerSelect"
         >
-          <span><i class="bi bi-zoom-in"></i></span>
-        </button>
-        <button class="btn btn-sm btn-dark mr-2" type="button" @click="onClear" :title="$t('common.btn.clear')">
-          <span><i class="bi bi-x-circle"></i></span>
-        </button>
+          <template #option="{ option }">
+            <div>
+              {{ option.customerName }} · {{ option.customerCode }} ·
+              {{ $t('view.sale.invoice.optionInvoiceCount', { count: formatCount(option.invoiceCount) }) }}
+            </div>
+          </template>
+        </AutoCompleteGeneric>
       </div>
-    </form>
-  </div>
+
+      <div>
+        <span class="title-text">{{ $t('view.sale.invoice.stockNumber') }}</span>
+        <InputTextGeneric
+          v-model="form.stockNumber"
+          :placeholder="$t('view.sale.invoice.stockNumberPlaceholder')"
+          :trim="true"
+        />
+      </div>
+
+      <div>
+        <span class="title-text">{{ $t('view.sale.invoice.productNumber') }}</span>
+        <InputTextGeneric
+          v-model="form.productNumber"
+          :placeholder="$t('view.sale.invoice.productNumber')"
+          :trim="true"
+        />
+      </div>
+
+      <div>
+        <span class="title-text">{{ $t('view.sale.invoice.moldNumber') }}</span>
+        <AutoCompleteGeneric
+          :modelValue="form.moldNumber"
+          apiEndpoint="Invoice/MoldSuggest"
+          searchField="text"
+          optionLabel="moldDesign"
+          :take="20"
+          :forceSelection="false"
+          :placeholder="$t('view.sale.invoice.moldNumber')"
+          @update:modelValue="onMoldInput"
+          @item-select="onMoldSelect"
+        >
+          <template #option="{ option }">
+            <div>
+              {{ option.moldDesign }} ·
+              {{ $t('view.sale.invoice.optionInvoiceCount', { count: formatCount(option.invoiceCount) }) }} ·
+              {{ $t('view.sale.invoice.optionItemCount', { count: formatCount(option.itemCount) }) }}
+            </div>
+          </template>
+        </AutoCompleteGeneric>
+      </div>
+
+      <!-- row 2 -->
+      <div>
+        <span class="title-text">{{ $t('view.sale.invoice.salePersonLabel') }}</span>
+        <AutoCompleteGeneric
+          :modelValue="form.salePerson"
+          :useStaticList="true"
+          :staticOptions="salePersonOptions"
+          optionLabel="name"
+          :forceSelection="false"
+          :placeholder="$t('view.sale.invoice.salePersonLabel')"
+          @update:modelValue="onSalePersonInput"
+          @item-select="onSalePersonSelect"
+        >
+          <template #option="{ option }">
+            <div>
+              {{ option.name }} ·
+              {{ $t('view.sale.invoice.optionInvoiceCount', { count: formatCount(option.invoiceCount) }) }}
+            </div>
+          </template>
+        </AutoCompleteGeneric>
+      </div>
+
+      <div>
+        <span class="title-text">{{ $t('view.sale.invoice.saleSupportLabel') }}</span>
+        <AutoCompleteGeneric
+          :modelValue="form.saleSupport"
+          :useStaticList="true"
+          :staticOptions="saleSupportOptions"
+          optionLabel="name"
+          :forceSelection="false"
+          :placeholder="$t('view.sale.invoice.saleSupportLabel')"
+          @update:modelValue="onSaleSupportInput"
+          @item-select="onSaleSupportSelect"
+        >
+          <template #option="{ option }">
+            <div>
+              {{ option.name }} ·
+              {{ $t('view.sale.invoice.optionInvoiceCount', { count: formatCount(option.invoiceCount) }) }}
+            </div>
+          </template>
+        </AutoCompleteGeneric>
+      </div>
+
+      <div>
+        <span class="title-text">{{ $t('view.sale.invoice.saleChannelLabel') }}</span>
+        <DropdownGeneric
+          v-model="form.saleChannelCode"
+          :options="saleChannelOptions"
+          optionLabel="name"
+          optionValue="code"
+          :placeholder="$t('view.sale.invoice.filterAll')"
+          :showClear="true"
+          class="w-100"
+        />
+      </div>
+
+      <div>
+        <span class="title-text">{{ $t('view.sale.invoice.paymentStatusLabel') }}</span>
+        <DropdownGeneric
+          v-model="form.paymentStatus"
+          :options="paymentStatusOptions"
+          optionLabel="name"
+          optionValue="value"
+          :placeholder="$t('view.sale.invoice.filterAll')"
+          :showClear="true"
+          class="w-100"
+        />
+      </div>
+
+      <div class="date-range-field">
+        <span class="title-text">{{ $t('view.sale.invoice.createDate') }}</span>
+        <DateRangeGeneric
+          :startDate="form.createDateStart"
+          :endDate="form.createDateEnd"
+          :startPlaceholder="$t('common.label.startDate')"
+          :endPlaceholder="$t('common.label.endDate')"
+          @update:startDate="form.createDateStart = $event"
+          @update:endDate="form.createDateEnd = $event"
+        />
+      </div>
+    </template>
+
+    <template #actions-left>
+      <div class="owner-filter-group">
+        <span class="title-text">{{ $t('view.sale.invoice.ownerUsernameLabel') }}</span>
+        <DropdownGeneric
+          v-model="form.ownerUsername"
+          :options="ownerOptions"
+          optionLabel="name"
+          optionValue="name"
+          :placeholder="$t('view.sale.invoice.filterAll')"
+          :showClear="true"
+          class="owner-dropdown"
+        />
+        <CheckboxGeneric
+          v-model="form.overdueOnly"
+          :label="$t('view.sale.invoice.overdueOnlyLabel')"
+        />
+      </div>
+    </template>
+
+    <template #actions-right>
+      <ButtonGeneric variant="main" icon="bi-search" type="submit" :title="$t('common.btn.search')" />
+      <ButtonGeneric variant="dark" icon="bi-x-circle" class="ml-2" :title="$t('common.btn.clear')" @click="onClear" />
+    </template>
+  </SearchBarGeneric>
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
+import { useSaleChannelApiStore } from '@/stores/modules/api/sale/sale-channel-store.js'
+import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 
-// Local components
-import pageTitle from '@/components/custom/page-title.vue'
+import SearchBarGeneric from '@/components/generic/SearchBarGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
-import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
-import { useSaleChannelApiStore } from '@/stores/modules/api/sale/sale-channel-store.js'
-
-const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
-
-const interfaceIsShow = {
-  dialog: false
-}
+import DateRangeGeneric from '@/components/prime-vue/DateRangeGeneric.vue'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 
 export default {
   name: 'InvoiceListSearchView',
 
   components: {
-    pageTitle,
+    SearchBarGeneric,
     InputTextGeneric,
-    CalendarGeneric,
+    ButtonGeneric,
     DropdownGeneric,
     CheckboxGeneric,
-    dialogView
+    DateRangeGeneric,
+    AutoCompleteGeneric
   },
 
   emits: ['search', 'clear', 'update:modelForm'],
@@ -214,9 +233,10 @@ export default {
   data() {
     return {
       form: { ...this.modelForm },
-      isShow: { ...interfaceIsShow },
       saleChannelStore: useSaleChannelApiStore(),
-      saleChannelList: []
+      invoiceStore: useInvoiceApiStore(),
+      saleChannelList: [],
+      saleTeamData: { salePersons: [], saleSupports: [], owners: [] }
     }
   },
 
@@ -234,11 +254,19 @@ export default {
         { value: 'partial', name: this.$t('view.sale.invoice.paymentStatusPartial') },
         { value: 'unpaid', name: this.$t('view.sale.invoice.paymentStatusUnpaid') }
       ]
-    }
-  },
+    },
 
-  async mounted() {
-    this.saleChannelList = await this.saleChannelStore.fetchActiveList({ skipLoading: true })
+    salePersonOptions() {
+      return this.saleTeamData.salePersons || []
+    },
+
+    saleSupportOptions() {
+      return this.saleTeamData.saleSupports || []
+    },
+
+    ownerOptions() {
+      return this.saleTeamData.owners || []
+    }
   },
 
   methods: {
@@ -246,22 +274,79 @@ export default {
       this.$emit('search', this.form)
     },
 
-    dialogSearch() {
-      this.isShow.dialog = false
-      this.$emit('search', this.form)
-    },
-
     onClear() {
       this.$emit('clear')
     },
 
-    onShowDialog() {
-      this.isShow.dialog = true
+    formatCount(value) {
+      return new Intl.NumberFormat('th-TH').format(value || 0)
     },
 
-    closeDialog() {
-      this.isShow.dialog = false
+    // AutoCompleteGeneric เขียน object ลง v-model ตอนเลือกจากรายการ — ปล่อยผ่านตรงนี้ (typeof object)
+    // แล้วให้ @item-select ด้านล่างเป็นคนตั้งค่าจริง ส่วน string/null คือ user พิมพ์/ลบเอง
+    onCustomerInput(value) {
+      if (value && typeof value === 'object') return
+      this.form.customerCode = null
+      this.form.customerName = value || null
+    },
+
+    onCustomerSelect(event) {
+      const option = event.value
+      if (!option) return
+      this.form.customerCode = option.customerCode
+      this.form.customerName = option.customerName
+    },
+
+    onMoldInput(value) {
+      if (value && typeof value === 'object') return
+      this.form.moldNumber = value || null
+    },
+
+    onMoldSelect(event) {
+      const option = event.value
+      if (!option) return
+      this.form.moldNumber = String(option.moldDesign)
+    },
+
+    onSalePersonInput(value) {
+      if (value && typeof value === 'object') return
+      this.form.salePerson = value || null
+    },
+
+    onSalePersonSelect(event) {
+      const option = event.value
+      if (!option) return
+      this.form.salePerson = option.name
+    },
+
+    onSaleSupportInput(value) {
+      if (value && typeof value === 'object') return
+      this.form.saleSupport = value || null
+    },
+
+    onSaleSupportSelect(event) {
+      const option = event.value
+      if (!option) return
+      this.form.saleSupport = option.name
+    },
+
+    async loadSaleChannels() {
+      this.saleChannelList = await this.saleChannelStore.fetchActiveList({ skipLoading: true })
+    },
+
+    async loadSaleTeam() {
+      const res = await this.invoiceStore.fetchSaleTeamSuggest()
+      this.saleTeamData = {
+        salePersons: res?.salePersons || [],
+        saleSupports: res?.saleSupports || [],
+        owners: res?.owners || []
+      }
     }
+  },
+
+  mounted() {
+    this.loadSaleChannels()
+    this.loadSaleTeam()
   }
 }
 </script>
@@ -269,4 +354,39 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-search-bar';
 @import '@/assets/scss/custom-style/standard-form.scss';
+
+:deep(.form-col-container) {
+  @media (min-width: 1400px) {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  @media (min-width: 1024px) and (max-width: 1399px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: 1023px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1399px) {
+  :deep(.date-range-field) {
+    grid-column: span 2;
+  }
+}
+
+.owner-filter-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-md);
+
+  .title-text {
+    white-space: nowrap;
+  }
+
+  .owner-dropdown {
+    min-width: 200px;
+  }
+}
 </style>

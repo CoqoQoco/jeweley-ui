@@ -138,6 +138,19 @@ export const usrSaleOrderApiStore = defineStore('saleOrder', {
       return await api.jewelry.post('SaleOrder/ReplaceConfirmedStock', param, {
         skipLoading: false
       })
+    },
+
+    // แก้ผู้ขาย/ผู้ช่วยขายที่ SO นี้ แล้วเขียนค่าเดียวกันลงทุก invoice ของ SO (ส่ง null = ลบชื่อ) — ไม่แตะยอดเงิน
+    async fetchUpdateSaleTeam({ soNumber, salePerson, saleSupport }) {
+      const param = {
+        soNumber,
+        salePerson,
+        saleSupport
+      }
+
+      return await api.jewelry.post('SaleOrder/UpdateSaleTeam', param, {
+        skipLoading: false
+      })
     }
   }
 })

@@ -53,7 +53,11 @@
     <!-- Invoice Detail Content -->
     <div v-else-if="invoiceData && invoiceData.invoiceNumber">
       <!-- Invoice and Customer Information -->
-      <invoice-info-card :invoiceData="invoiceData" class="mb-3" />
+      <invoice-info-card
+        :invoiceData="invoiceData"
+        class="mb-3"
+        @edit-sale-team="showSaleTeamModal = true"
+      />
 
       <!-- Invoice Items -->
       <invoice-items-table
@@ -249,6 +253,16 @@
         @close-modal="showDeleteReasonModal = false"
         @confirm="onConfirmDeleteReason"
       />
+
+      <!-- Sale Team (SALE/SUPPORT) Edit Modal -->
+      <SaleTeamEditModal
+        :isShow="showSaleTeamModal"
+        :soNumber="invoiceData.soNumber"
+        :salePerson="invoiceData.salePerson"
+        :saleSupport="invoiceData.saleSupport"
+        @close="showSaleTeamModal = false"
+        @saved="handleSaleTeamSaved"
+      />
     </div>
   </div>
 </template>
@@ -264,6 +278,7 @@ import CertificatePrintModal from './modal/certificate-print-modal.vue'
 import ExcelExportConfirmModal from '@/components/modal/excel-export-confirm-modal.vue'
 import PaymentRecordModal from './modal/payment-record-modal.vue'
 import DeleteInvoiceReasonModal from './modal/delete-invoice-reason-modal.vue'
+import SaleTeamEditModal from './modal/sale-team-edit-modal.vue'
 import InvoiceInfoCard from './components/invoice-info-card.vue'
 import InvoiceItemsTable from './components/invoice-items-table.vue'
 import PaymentSection from './components/payment-section.vue'
@@ -307,6 +322,7 @@ export default {
     ExcelExportConfirmModal,
     PaymentRecordModal,
     DeleteInvoiceReasonModal,
+    SaleTeamEditModal,
     InvoiceInfoCard,
     InvoiceItemsTable,
     PaymentSection,
@@ -340,6 +356,7 @@ export default {
       showConfirmExcelModal: false,
       showPaymentModal: false,
       showDeleteReasonModal: false,
+      showSaleTeamModal: false,
       isShowPreviewModal: false,
       previewUrl: '',
       previewSource: 'invoice',
@@ -1765,6 +1782,21 @@ export default {
       success(this.$t('view.sale.invoiceDetail.success.deletePayment'), this.$t('view.sale.invoiceDetail.success.deletePaymentTitle'))
 
       await this.loadInvoiceData(this.invoiceData.invoiceNumber)
+    },
+
+    async handleSaleTeamSaved(res) {
+      this.showSaleTeamModal = false
+      await this.loadInvoiceData(this.invoiceData.invoiceNumber)
+
+      // ตั้ง sellerName ตรงนี้เฉพาะเส้นทางแก้ผู้ขายเท่านั้น (ไม่ใส่ใน loadInvoiceData เพราะถูกเรียกซ้ำ
+      // หลังบันทึก/ลบรับเงินด้วย — ถ้าใบไม่มี salePerson แล้วผู้ใช้เคยพิมพ์ชื่อ Seller เองตอนพิมพ์เอกสาร
+      // จะโดนรีเซ็ตทิ้งทั้งที่ไม่ได้ตั้งใจแก้ผู้ขาย) รวมกรณีลบชื่อออก (res.salePerson เป็น null) ต้อง fallback เป็น default
+      this.sellerName = res?.salePerson || this.getDefaultSellerName()
+
+      success(
+        this.$t('view.sale.invoiceDetail.saleTeamSaved', { count: res?.updatedInvoiceCount ?? 0 }),
+        this.$t('view.sale.invoiceDetail.editSaleTeamTitle')
+      )
     }
   }
 }

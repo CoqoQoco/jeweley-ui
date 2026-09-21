@@ -3,9 +3,10 @@ export const invoice = {
   pageDescription: 'แสดงรายการใบแจ้งหนี้ทั้งหมด พร้อมฟีเจอร์ค้นหาและกรองข้อมูล',
   searchTitle: 'ค้นหาใบแจ้งหนี้',
   invoiceNumber: 'เลขที่ Invoice',
-  stockNumber: 'เลข Stock',
-  productNumber: 'เลข Product',
-  moldNumber: 'เลข Mold',
+  stockNumber: 'เลขที่ผลิต (ใหม่/เก่า)',
+  stockNumberPlaceholder: 'DK-9K-1XR-3643 หรือ 9K16478',
+  productNumber: 'รหัสสินค้า',
+  moldNumber: 'Mold',
   customerName: 'ชื่อลูกค้า',
   createDate: 'วันที่สร้าง',
   createBy: 'ผู้สร้าง',
@@ -18,14 +19,18 @@ export const invoice = {
   paidAmountCol: 'ชำระแล้ว',
   outstandingAmountCol: 'คงเหลือ',
   overdueDaysLabel: 'เลยกำหนด',
-  ownerUsernameLabel: 'ผู้รับผิดชอบ',
+  ownerUsernameLabel: 'ผู้สร้างเอกสาร',
+  salePersonLabel: 'ผู้ขาย (SALE)',
+  saleSupportLabel: 'ผู้ช่วยขาย (SUPPORT)',
   saleChannelLabel: 'จุดขาย',
   filterAll: 'ทั้งหมด',
   paymentStatusLabel: 'สถานะชำระ',
   paymentStatusPaid: 'ชำระครบ',
   paymentStatusPartial: 'ชำระบางส่วน',
   paymentStatusUnpaid: 'ค้างชำระ',
-  overdueOnlyLabel: 'เฉพาะที่เลยกำหนด'
+  overdueOnlyLabel: 'เฉพาะที่เลยกำหนด',
+  optionInvoiceCount: '{count} ใบ',
+  optionItemCount: '{count} ชิ้น'
 }
 
 export const invoiceDetail = {
@@ -200,6 +205,10 @@ export const invoiceDetail = {
   deleteReasonTitle: 'เหตุผลการยกเลิก Invoice',
   deleteReasonLabel: 'เหตุผล',
   deleteReasonPlaceholder: 'ระบุเหตุผลที่ต้องการยกเลิก Invoice นี้',
+  editSaleTeamTitle: 'แก้ไขผู้ขาย / ผู้ช่วยขาย',
+  editSaleTeamBtn: 'แก้ไขผู้ขาย / ผู้ช่วยขาย',
+  saleTeamSyncNote: 'บันทึกที่ใบสั่งขาย {soNumber} และทุกใบแจ้งหนี้ของใบสั่งขายนี้ — ยอดเงินไม่เปลี่ยนครับ',
+  saleTeamSaved: 'บันทึกแล้ว อัปเดตใบแจ้งหนี้ {count} ใบครับ',
   validation: {
     invoiceNumberRequired: 'กรุณากรอก Invoice Number',
     invoiceDateRequired: 'กรุณาเลือก Invoice Date',

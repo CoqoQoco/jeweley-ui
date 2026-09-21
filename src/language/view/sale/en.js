@@ -3,9 +3,10 @@ export const invoice = {
   pageDescription: 'Display all invoice records with search and filter features',
   searchTitle: 'Search Invoices',
   invoiceNumber: 'Invoice No.',
-  stockNumber: 'Stock No.',
-  productNumber: 'Product No.',
-  moldNumber: 'Mold No.',
+  stockNumber: 'Production No. (New/Old)',
+  stockNumberPlaceholder: 'DK-9K-1XR-3643 or 9K16478',
+  productNumber: 'Product Code',
+  moldNumber: 'Mold',
   customerName: 'Customer Name',
   createDate: 'Create Date',
   createBy: 'Created By',
@@ -18,14 +19,18 @@ export const invoice = {
   paidAmountCol: 'Paid',
   outstandingAmountCol: 'Outstanding',
   overdueDaysLabel: 'Overdue (Days)',
-  ownerUsernameLabel: 'Owner',
+  ownerUsernameLabel: 'Created By',
+  salePersonLabel: 'Salesperson (SALE)',
+  saleSupportLabel: 'Sales Support (SUPPORT)',
   saleChannelLabel: 'Sale Channel',
   filterAll: 'All',
   paymentStatusLabel: 'Payment Status',
   paymentStatusPaid: 'Paid',
   paymentStatusPartial: 'Partial',
   paymentStatusUnpaid: 'Unpaid',
-  overdueOnlyLabel: 'Overdue Only'
+  overdueOnlyLabel: 'Overdue Only',
+  optionInvoiceCount: '{count} invoice(s)',
+  optionItemCount: '{count} item(s)'
 }
 
 export const invoiceDetail = {
@@ -200,6 +205,10 @@ export const invoiceDetail = {
   deleteReasonTitle: 'Reason for Cancelling Invoice',
   deleteReasonLabel: 'Reason',
   deleteReasonPlaceholder: 'Enter the reason for cancelling this invoice',
+  editSaleTeamTitle: 'Edit Salesperson / Support',
+  editSaleTeamBtn: 'Edit Salesperson / Support',
+  saleTeamSyncNote: 'This will be saved on sale order {soNumber} and every invoice under this sale order — amounts will not change',
+  saleTeamSaved: 'Saved. Updated {count} invoice(s).',
   validation: {
     invoiceNumberRequired: 'Please enter Invoice Number',
     invoiceDateRequired: 'Please select Invoice Date',

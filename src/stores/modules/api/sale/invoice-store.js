@@ -58,7 +58,9 @@ export const useInvoiceApiStore = defineStore('invoice', {
           saleChannelCode: formValue.saleChannelCode || null,
           paymentStatus: formValue.paymentStatus || null,
           overdueOnly: formValue.overdueOnly || false,
-          ownerUsername: formValue.ownerUsername || null
+          ownerUsername: formValue.ownerUsername || null,
+          salePerson: formValue.salePerson || null,
+          saleSupport: formValue.saleSupport || null
         }
 
         const request = {
@@ -129,6 +131,20 @@ export const useInvoiceApiStore = defineStore('invoice', {
       } catch (error) {
         console.error('Error cancelling invoice and unconfirming items:', error)
         throw error
+      }
+    },
+    // ผู้ขาย/ผู้ช่วยขาย/ผู้สร้างเอกสาร สำหรับ autocomplete/dropdown ในหน้า filter
+    // endpoint ใหม่ (จาก API team) — ยังไม่ขึ้นก็ให้หน้าใช้งานต่อได้ตามปกติ (list ว่าง) จึงจับ error แบบเงียบ
+    async fetchSaleTeamSuggest() {
+      try {
+        return await api.jewelry.post(
+          'Invoice/SaleTeamSuggest',
+          {},
+          { skipLoading: true, skipError: true }
+        )
+      } catch (error) {
+        console.error('Error fetching sale team suggest:', error)
+        return { salePersons: [], saleSupports: [], owners: [] }
       }
     },
     async fetchGenerateNumber() {

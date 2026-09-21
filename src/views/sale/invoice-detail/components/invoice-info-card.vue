@@ -68,6 +68,28 @@
           </div>
           <div class="col-md-3"></div>
         </div>
+        <div class="row mt-1">
+          <div class="col-md-3">
+            <div class="info-item">
+              <label class="info-label">{{ $t('view.sale.invoice.salePersonLabel') }}</label>
+              <p class="info-value">{{ invoiceData.salePerson || '-' }}</p>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="info-item">
+              <label class="info-label">{{ $t('view.sale.invoice.saleSupportLabel') }}</label>
+              <p class="info-value">{{ invoiceData.saleSupport || '-' }}</p>
+            </div>
+          </div>
+          <div class="col-md-6 d-flex align-items-end justify-content-end">
+            <ButtonGeneric
+              variant="outline"
+              icon="bi-pencil"
+              :title="$t('view.sale.invoiceDetail.editSaleTeamBtn')"
+              @click="$emit('edit-sale-team')"
+            />
+          </div>
+        </div>
       </div>
 
       <!-- Customer Information Section -->
@@ -117,8 +139,14 @@
 <script>
 import dayjs from 'dayjs'
 
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+
 export default {
   name: 'InvoiceInfoCard',
+
+  components: {
+    ButtonGeneric
+  },
 
   props: {
     invoiceData: {
@@ -126,6 +154,8 @@ export default {
       default: () => ({})
     }
   },
+
+  emits: ['edit-sale-team'],
 
   methods: {
     formatDate(date) {

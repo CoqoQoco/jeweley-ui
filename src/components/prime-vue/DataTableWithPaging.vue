@@ -27,10 +27,16 @@
               </div>
             </div>
           </div>
+          <div v-if="columnPrefsKey" class="col-settings-reset-wrapper">
+            <button class="col-settings-reset-btn" @click="resetColumnPrefs">
+              <i class="bi bi-arrow-counterclockwise"></i> รีเซ็ตคอลัมน์
+            </button>
+          </div>
         </div>
       </div>
     </div>
     <DataTable
+      :key="tableRenderKey"
       :value="items"
       :selection="itemsSelection"
       @update:selection="$emit('update:itemsSelection', $event)"
@@ -57,7 +63,7 @@
       :currentPageReportTemplate="computedPageReport"
       :reorderableColumns="reorderableColumns"
       v-model:multiSortMeta="internalSortMeta"
-      @column-reorder="$emit('column-reorder', $event)"
+      @column-reorder="handleColumnReorder"
       @row-click="$emit('row-click', $event)"
       v-bind="$attrs"
     >
@@ -228,6 +234,11 @@
                   </div>
                 </div>
               </div>
+              <div v-if="columnPrefsKey" class="col-settings-reset-wrapper">
+                <button class="col-settings-reset-btn" @click="resetColumnPrefs">
+                  <i class="bi bi-arrow-counterclockwise"></i> รีเซ็ตคอลัมน์
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -251,6 +262,13 @@ import RadioButton from 'primevue/radiobutton'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
+import { storage } from '@/services/storage.js'
+import {
+  buildColumnPrefsStorageKey,
+  applySavedColumnOrder,
+  computeReorderOffset,
+  reorderColumnFields
+} from '@/services/utils/column-prefs.js'
 
 export default {
   name: 'BaseDataTable',
@@ -367,6 +385,12 @@ export default {
       type: Array,
       default: () => []
       // Format: [{ field: 'createDate', order: -1 }]  order: 1=ASC, -1=DESC
+    },
+    // ว่าง (default) = ปิดการจำลำดับ/ปักหมุดคอลัมน์ — พฤติกรรมเดิมทุกประการ
+    // ใส่ค่า → เก็บ order/frozen ลง localStorage คีย์ table-cols-${columnPrefsKey}-dk
+    columnPrefsKey: {
+      type: String,
+      default: ''
     }
   },
 
@@ -382,9 +406,16 @@ export default {
   ],
 
   computed: {
+    // ลำดับคอลัมน์ที่โหลดจาก localStorage ตอน mount — คงที่ตลอด session (ดู comment บน handleColumnReorder)
+    // columnPrefsKey ว่าง → คืน this.columns เดิมเป๊ะๆ ไม่กระทบหน้าอื่นที่ใช้ BaseDataTable
+    orderedColumns() {
+      if (!this.columnPrefsKey) return this.columns
+      return applySavedColumnOrder(this.columns, this.localColumnOrder)
+    },
+
     computedColumns() {
-      if (!this.showColumnSettings) return this.columns
-      return this.columns.map(col => {
+      if (!this.showColumnSettings) return this.orderedColumns
+      return this.orderedColumns.map(col => {
         const override = this.localFrozenMap[col.field]
         if (override === undefined) {
           return col
@@ -449,7 +480,15 @@ export default {
       expandedRows: [],
       isSettingsOpen: false,
       localFrozenMap: {},
-      internalSortMeta: []
+      internalSortMeta: [],
+      // ลำดับ field ที่โหลดจาก localStorage ตอน mount — ป้อนให้ orderedColumns เท่านั้น ไม่แก้ระหว่าง session
+      localColumnOrder: [],
+      // ลำดับ field ปัจจุบัน "ที่ใช้อยู่จริง" ระหว่าง session (รวมผลลัพธ์ของทุก column-reorder ที่ผ่านมา)
+      // ใช้คำนวณ order ถัดไปตอน save เท่านั้น — ห้ามป้อนกลับเข้า :columns เพราะ PrimeVue เก็บลำดับของมันเอง
+      // ไว้ใน d_columnOrder อยู่แล้ว (ดู comment บน handleColumnReorder)
+      sessionColumnOrder: [],
+      // เปลี่ยนค่านี้เพื่อบังคับ remount <DataTable> — ใช้ตอนกดรีเซ็ตคอลัมน์ให้ PrimeVue ล้าง d_columnOrder เดิม
+      tableRenderKey: 0
     }
   },
 
@@ -644,6 +683,80 @@ export default {
       } else {
         this.localFrozenMap = { ...this.localFrozenMap, [field]: side }
       }
+
+      this.saveColumnPrefs()
+    },
+
+    // อ่าน { order, frozen } จาก localStorage ตอน mount เท่านั้น — ห่อ try/catch กัน private mode/quota
+    loadColumnPrefs() {
+      if (!this.columnPrefsKey) return
+
+      try {
+        const prefs = storage.getJSON(buildColumnPrefsStorageKey(this.columnPrefsKey), null)
+        if (prefs && Array.isArray(prefs.order)) {
+          this.localColumnOrder = [...prefs.order]
+        }
+        if (prefs && prefs.frozen && typeof prefs.frozen === 'object') {
+          this.localFrozenMap = { ...prefs.frozen }
+        }
+      } catch {
+        // อ่าน localStorage ไม่ได้ (private mode ฯลฯ) — ใช้ค่าเริ่มต้นเงียบๆ
+      }
+    },
+
+    saveColumnPrefs() {
+      if (!this.columnPrefsKey) return
+
+      try {
+        storage.setJSON(buildColumnPrefsStorageKey(this.columnPrefsKey), {
+          order: this.sessionColumnOrder,
+          frozen: this.localFrozenMap
+        })
+      } catch {
+        // เขียน localStorage ไม่ได้ — แค่ไม่จำค่าไว้ ไม่กระทบการใช้งานหน้าปัจจุบัน
+      }
+    },
+
+    // PrimeVue เก็บลำดับคอลัมน์ของมันเอง (d_columnOrder) ไว้ในตัวเองระหว่าง session อยู่แล้ว
+    // ห้ามป้อน sessionColumnOrder กลับเข้า :columns/orderedColumns ระหว่าง session เพราะจะสลับซ้อนกับของ PrimeVue
+    // ที่นี่แค่คำนวณลำดับล่าสุด "ที่ใช้อยู่จริง" แล้ว save ไว้ ผลจะไปแสดงจริงตอนโหลดหน้าใหม่ (ดู loadColumnPrefs)
+    handleColumnReorder(event) {
+      if (this.columnPrefsKey) {
+        const offset = computeReorderOffset({
+          expandable: this.expandable,
+          selectionMode: this.selectionMode
+        })
+        const nextOrder = reorderColumnFields(
+          this.sessionColumnOrder,
+          event.dragIndex,
+          event.dropIndex,
+          offset
+        )
+
+        if (nextOrder) {
+          this.sessionColumnOrder = nextOrder
+          this.saveColumnPrefs()
+        }
+      }
+
+      this.$emit('column-reorder', event)
+    },
+
+    resetColumnPrefs() {
+      if (!this.columnPrefsKey) return
+
+      try {
+        storage.removeItem(buildColumnPrefsStorageKey(this.columnPrefsKey))
+      } catch {
+        // ลบไม่ได้ก็ปล่อยผ่าน — เคลียร์ state ในหน่วยความจำต่อได้ตามปกติ
+      }
+
+      this.localColumnOrder = []
+      this.localFrozenMap = {}
+      this.sessionColumnOrder = this.columns.map((col) => col.field)
+      // บังคับ remount <DataTable> ให้ PrimeVue ทิ้ง d_columnOrder เดิมแล้วอ่านลำดับตั้งต้นใหม่
+      this.tableRenderKey++
+      this.isSettingsOpen = false
     },
 
     isColDefaultFrozen(field, side) {
@@ -674,6 +787,9 @@ export default {
   },
 
   mounted() {
+    this.loadColumnPrefs()
+    this.sessionColumnOrder = this.orderedColumns.map((col) => col.field)
+
     if (this.defaultSortMeta.length > 0) {
       this.internalSortMeta = [...this.defaultSortMeta]
       this.$nextTick(() => {
@@ -1089,6 +1205,33 @@ export default {
       background: var(--base-font-color);
       border-color: var(--base-font-color);
       color: #fff;
+    }
+  }
+
+  .col-settings-reset-wrapper {
+    padding: 6px 12px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  .col-settings-reset-btn {
+    width: 100%;
+    padding: 4px 8px;
+    font-size: 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: #fff;
+    color: var(--base-font-color);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.15s;
+
+    &:hover {
+      background: var(--base-font-color);
+      color: #fff;
+      border-color: var(--base-font-color);
     }
   }
 
