@@ -137,4 +137,53 @@ $radius-lg: 12px;
   --status-closed-bg: #f0f0f0;
   --status-cancelled: var(--base-red);
   --status-cancelled-bg: #ffecec;
+
+  // Public showcase (/p/:token) — palette scoped เฉพาะหน้าสาธารณะ (ลูกค้าสแกน QR ดู)
+  --showcase-bg: #fbf8f5;
+  --showcase-line: #eadfd8;
+  --showcase-line-soft: #f1e8e3;
+  --showcase-box-border: #e3d3cb;
+  --showcase-tile: #f5eee9;
+  --showcase-ink: #2a1a1a;
+  --showcase-text-soft: #5c4a44;
+  --showcase-muted: #7a6760;
+  --showcase-accent: #a4604f;
+  --showcase-toggle-off: #8c7a74;
+  --showcase-image-mask: rgba(0, 0, 0, 0.12);
+
+  // Public showcase — display typography (name/price, mobile + desktop)
+  --showcase-fs-name: 30px;
+  --showcase-fs-name-lg: 42px;
+  --showcase-fs-price: 36px;
+  --showcase-fs-price-lg: 44px;
+  --showcase-fs-row: 15px;
+  --showcase-fs-label: 13px;
+
+  // Public showcase — radius
+  --showcase-radius-sm: 14px;
+  --showcase-radius-md: 18px;
+  --showcase-radius-lg: 20px;
+
+  // Public showcase — sizing/spacing ที่ไม่ตรงกับ scale กลาง
+  --showcase-logo-w: 176px;
+  --showcase-logo-w-lg: 200px;
+  --showcase-footer-icon: 36px;
+  --showcase-container-w: 1120px;
+  --showcase-media-w: 560px;
+  --showcase-gap-lg: 64px;
+  --showcase-gap-sm: 10px;
+  --showcase-thumb-h: 64px;
+  --showcase-thumb-h-lg: 100px;
+  --showcase-price-box-w: 250px;
+  --showcase-price-box-w-lg: 300px;
+  --showcase-divider-w: 40px;
+  --showcase-btn-h: 52px;
+  --showcase-touch-min: 44px;
+  --showcase-header-pad-top: 28px;
+  --showcase-header-pad-top-lg: 32px;
+  --showcase-header-pad-bottom-lg: 26px;
+  --showcase-content-pad-top-lg: 48px;
+  --showcase-price-pad-bottom: 14px;
+  --showcase-spec-pad-top: 6px;
+  --showcase-spec-pad-bottom: 8px;
 }

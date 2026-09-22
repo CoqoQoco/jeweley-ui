@@ -1,34 +1,46 @@
 <template>
   <div class="showcase-header">
-    <img src="@/assets/duangkaew-logo.png" alt="Duangkaew Jewelry" class="showcase-logo" />
+    <div class="showcase-header-inner">
+      <div class="showcase-header-spacer" aria-hidden="true"></div>
 
-    <div class="lang-toggle">
-      <button
-        type="button"
-        class="lang-btn"
-        :class="{ 'lang-btn--active': locale === 'th' }"
-        @click="changeLocale('th')"
-      >
-        TH
-      </button>
-      <span class="lang-sep">|</span>
-      <button
-        type="button"
-        class="lang-btn"
-        :class="{ 'lang-btn--active': locale === 'en' }"
-        @click="changeLocale('en')"
-      >
-        EN
-      </button>
+      <img :src="logoSrc" alt="Duangkaew Jewelry" class="showcase-logo" />
+
+      <div class="lang-toggle">
+        <button
+          type="button"
+          class="lang-btn"
+          :class="{ 'lang-btn--active': locale === 'en' }"
+          @click="changeLocale('en')"
+        >
+          EN
+        </button>
+        <span class="lang-sep">|</span>
+        <button
+          type="button"
+          class="lang-btn"
+          :class="{ 'lang-btn--active': locale === 'th' }"
+          @click="changeLocale('th')"
+        >
+          TH
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { setLocale } from '@/plugins/i18n/config.js'
+import { applyLocale } from '@/plugins/i18n/config.js'
+
+import logoSrc from '@/assets/duangkaew-logo-trim.png'
 
 export default {
   name: 'ShowcaseHeader',
+
+  data() {
+    return {
+      logoSrc
+    }
+  },
 
   computed: {
     locale() {
@@ -37,15 +49,10 @@ export default {
   },
 
   methods: {
+    // ในหน่วยความจำเท่านั้น — ไม่เขียน storage เพื่อไม่ให้ทับภาษาระบบหลังบ้าน (ดู index-view.vue)
     changeLocale(lang) {
       if (lang === this.locale) return
-      // ลูกค้าอาจเปิดหน้านี้ในโหมด private/incognito — localStorage.setItem อาจ throw
-      // (storage service ห่อ localStorage ไว้แล้ว แต่ setLocale เรียกมันตรงๆ จึงกันพังไว้ชั้นนอกอีกที)
-      try {
-        setLocale(lang)
-      } catch {
-        // เปลี่ยนภาษาไม่สำเร็จ (จำค่าไว้ไม่ได้) — ปล่อยผ่าน ไม่ทำให้หน้าลูกค้าพัง
-      }
+      applyLocale(lang)
     }
   }
 }
@@ -53,19 +60,30 @@ export default {
 
 <style lang="scss" scoped>
 .showcase-header {
-  display: flex;
+  padding: var(--showcase-header-pad-top) var(--sp-lg) var(--sp-xl);
+  border-bottom: 1px solid var(--showcase-line);
+}
+
+.showcase-header-inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  padding: var(--sp-lg) var(--sp-xl);
+}
+
+.showcase-header-spacer {
+  grid-column: 1;
 }
 
 .showcase-logo {
-  height: 36px;
-  width: auto;
+  grid-column: 2;
+  width: var(--showcase-logo-w);
+  height: auto;
   object-fit: contain;
 }
 
 .lang-toggle {
+  grid-column: 3;
+  justify-self: end;
   display: flex;
   align-items: center;
   gap: var(--sp-xs);
@@ -74,10 +92,11 @@ export default {
 .lang-btn {
   border: none;
   background: none;
-  padding: var(--sp-xs) var(--sp-xs);
+  min-height: var(--showcase-touch-min);
+  padding: var(--sp-xs) var(--sp-sm);
   font-size: var(--fs-base);
   font-weight: 600;
-  color: var(--color-border);
+  color: var(--showcase-toggle-off);
   cursor: pointer;
 
   &--active {
@@ -86,6 +105,21 @@ export default {
 }
 
 .lang-sep {
-  color: var(--color-border);
+  color: var(--showcase-line);
+}
+
+@media (min-width: 900px) {
+  .showcase-header {
+    padding: var(--showcase-header-pad-top-lg) 0 var(--showcase-header-pad-bottom-lg);
+  }
+
+  .showcase-header-inner {
+    width: min(var(--showcase-container-w), calc(100% - 2 * var(--sp-2xl)));
+    margin: 0 auto;
+  }
+
+  .showcase-logo {
+    width: var(--showcase-logo-w-lg);
+  }
 }
 </style>

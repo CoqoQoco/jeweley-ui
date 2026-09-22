@@ -6,6 +6,8 @@ export default {
     codeNewLabel: 'รหัสใหม่',
     metalSectionTitle: 'ตัวเรือน',
     gemsSectionTitle: 'อัญมณี',
+    materialLabel: 'วัสดุ',
+    thumbAria: 'ดูรูปที่ {n}',
     weightLabel: 'น้ำหนัก',
     sizeLabel: 'ขนาด',
     earringStemSizeLabel: 'ขนาดก้านต่างหู',
@@ -31,7 +33,23 @@ export default {
     contactEmail: 'อีเมล',
     contactWebsite: 'เว็บไซต์',
     contactLine: 'Line',
-    contactPhone: 'โทรศัพท์'
+    contactPhone: 'โทรศัพท์',
+    productType: {
+      ring: 'แหวน',
+      pendant: 'จี้',
+      earrings: 'ต่างหู',
+      studEarrings: 'ต่างหูมีแป้น',
+      lockEarrings: 'ต่างหูล็อค',
+      hookEarrings: 'ต่างหูฮุก',
+      earringBacks: 'แป้นต่างหู',
+      necklace: 'สังวาลย์',
+      chain: 'สร้อย',
+      bracelet: 'สร้อยข้อมือ',
+      bangle: 'กำไล',
+      brooch: 'เข็มกลัด',
+      charm: 'ชาร์ม',
+      locket: 'กรอบพระ'
+    }
   },
   share: {
     dialogTitle: 'แสดงให้ลูกค้า',

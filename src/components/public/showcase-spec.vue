@@ -1,51 +1,42 @@
 <template>
   <div class="showcase-spec">
-    <div v-if="materialText" class="spec-section">
-      <div class="spec-section-title">{{ $t('view.public.showcase.metalSectionTitle') }}</div>
+    <template v-if="materialText">
+      <div class="spec-title">{{ $t('view.public.showcase.metalSectionTitle') }}</div>
       <div class="spec-row">
-        <i class="bi bi-gem"></i>
-        <span>{{ materialText }}</span>
+        <span class="spec-row-label">{{ $t('view.public.showcase.materialLabel') }}</span>
+        <span class="spec-row-value">{{ materialText }}</span>
       </div>
       <div v-if="metalWeight" class="spec-row">
-        <i class="bi bi-speedometer2"></i>
-        <span>{{ $t('view.public.showcase.weightLabel') }} {{ formatWeight(metalWeight) }} {{ metalUnitLabel }}</span>
+        <span class="spec-row-label">{{ $t('view.public.showcase.weightLabel') }}</span>
+        <span class="spec-row-value">{{ formatWeight(metalWeight) }} {{ metalUnitLabel }}</span>
       </div>
       <div v-if="size" class="spec-row">
-        <i class="bi bi-rulers"></i>
-        <span>{{ $t('view.public.showcase.sizeLabel') }} {{ size }}</span>
+        <span class="spec-row-label">{{ $t('view.public.showcase.sizeLabel') }}</span>
+        <span class="spec-row-value">{{ size }}</span>
       </div>
       <div v-if="earringStemSize" class="spec-row">
-        <i class="bi bi-rulers"></i>
-        <span>{{ $t('view.public.showcase.earringStemSizeLabel') }} {{ earringStemSize }}</span>
+        <span class="spec-row-label">{{ $t('view.public.showcase.earringStemSizeLabel') }}</span>
+        <span class="spec-row-value">{{ earringStemSize }}</span>
       </div>
-    </div>
+    </template>
 
-    <div v-if="gems && gems.length" class="spec-section">
-      <div class="spec-section-title">{{ $t('view.public.showcase.gemsSectionTitle') }}</div>
+    <template v-if="gems && gems.length">
+      <div class="spec-title" :class="{ 'spec-title--gap': materialText }">
+        {{ $t('view.public.showcase.gemsSectionTitle') }}
+      </div>
       <div v-for="(gem, index) in gems" :key="index" class="gem-row">
         <div class="gem-row-main">
-          <span class="gem-name">{{ gem.name }}</span>
-          <span class="gem-detail">
+          <span class="gem-row-name"><i class="bi bi-gem"></i>{{ gem.name }}</span>
+          <span class="gem-row-value">
             {{ gem.qty }} {{ $t('view.public.showcase.gemQtyUnit') }} ·
             {{ formatWeight(gem.weight) }} {{ gemUnitLabel(gem.weightUnit) }}
           </span>
         </div>
-        <div v-if="gem.origin" class="gem-origin">
+        <div v-if="gem.origin" class="gem-row-origin">
           {{ $t('view.public.showcase.originLabel') }}: {{ gem.origin }}
         </div>
       </div>
-    </div>
-
-    <div
-      v-if="isAvailable !== null && isAvailable !== undefined"
-      class="availability-badge"
-      :class="isAvailable ? 'is-available' : 'is-unavailable'"
-    >
-      {{ isAvailable ? $t('view.public.showcase.availableYes') : $t('view.public.showcase.availableNo') }}
-      <span v-if="isAvailable && availableQty > 1">
-        · {{ $t('view.public.showcase.availableCount', { qty: availableQty }) }}
-      </span>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -91,14 +82,6 @@ export default {
     gems: {
       type: Array,
       default: () => []
-    },
-    isAvailable: {
-      type: Boolean,
-      default: null
-    },
-    availableQty: {
-      type: Number,
-      default: null
     }
   },
 
@@ -121,8 +104,10 @@ export default {
     },
 
     metalUnitLabel() {
-      if (this.metalWeightUnit === 'g') return this.$t('view.public.showcase.metalWeightUnitGram')
-      return this.metalWeightUnit || ''
+      // API ส่งหน่วยพร้อมจุดท้าย (เช่น "g.") — ตัดจุดก่อนเทียบเสมอ
+      const unit = (this.metalWeightUnit || '').replace(/\.$/, '')
+      if (unit === 'g') return this.$t('view.public.showcase.metalWeightUnitGram')
+      return unit
     }
   },
 
@@ -133,8 +118,10 @@ export default {
     },
 
     gemUnitLabel(unit) {
-      if (unit === 'ct') return this.$t('view.public.showcase.gemWeightUnitCarat')
-      return unit || ''
+      // API ส่งหน่วยพร้อมจุดท้าย (เช่น "ct.") — ตัดจุดก่อนเทียบเสมอ
+      const clean = (unit || '').replace(/\.$/, '')
+      if (clean === 'ct') return this.$t('view.public.showcase.gemWeightUnitCarat')
+      return clean
     }
   }
 }
@@ -142,88 +129,79 @@ export default {
 
 <style lang="scss" scoped>
 .showcase-spec {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-xl);
+  background: var(--color-card-bg);
+  border: 1px solid var(--showcase-line);
+  border-radius: var(--showcase-radius-md);
+  padding: var(--showcase-spec-pad-top) var(--sp-xl) var(--showcase-spec-pad-bottom);
 }
 
-.spec-section-title {
-  font-size: var(--fs-sm);
-  font-weight: 700;
+.spec-title {
+  padding-top: var(--sp-md);
+  font-size: var(--showcase-fs-label);
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--base-font-color);
-  margin-bottom: var(--sp-md);
-  padding-bottom: var(--sp-sm);
-  border-bottom: 1px solid var(--color-border);
+
+  &--gap {
+    margin-top: var(--sp-sm);
+  }
 }
 
 .spec-row {
   display: flex;
-  align-items: center;
-  gap: var(--sp-sm);
-  font-size: var(--fs-lg);
-  color: var(--base-sub-color);
-  line-height: var(--lh-md);
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-md);
+  padding: var(--sp-md) 0;
+  border-top: 1px solid var(--showcase-line-soft);
+  font-size: var(--showcase-fs-row);
+}
 
-  + .spec-row {
-    margin-top: var(--sp-sm);
-  }
+.spec-row-label {
+  color: var(--showcase-muted);
+}
 
-  i {
-    color: var(--base-font-color);
-    font-size: var(--fs-base);
-    width: 20px;
-    text-align: center;
-    flex-shrink: 0;
-  }
+.spec-row-value {
+  color: var(--showcase-ink);
+  font-weight: 600;
+  text-align: right;
 }
 
 .gem-row {
-  + .gem-row {
-    margin-top: var(--sp-md);
-  }
+  padding: var(--sp-md) 0;
+  border-top: 1px solid var(--showcase-line-soft);
 }
 
 .gem-row-main {
   display: flex;
-  flex-wrap: wrap;
   align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-md);
+}
+
+.gem-row-name {
+  display: inline-flex;
+  align-items: center;
   gap: var(--sp-sm);
-}
-
-.gem-name {
-  font-size: var(--fs-lg);
+  font-size: var(--showcase-fs-row);
   font-weight: 600;
-  color: var(--base-sub-color);
+  color: var(--showcase-ink);
+
+  i {
+    color: var(--showcase-accent);
+  }
 }
 
-.gem-detail {
-  font-size: var(--fs-base);
-  color: var(--base-sub-color);
+.gem-row-value {
+  font-size: var(--showcase-fs-row);
+  color: var(--showcase-muted);
+  text-align: right;
 }
 
-.gem-origin {
-  font-size: var(--fs-sm);
-  color: var(--base-sub-color);
+.gem-row-origin {
   margin-top: var(--sp-xs);
-}
-
-.availability-badge {
-  align-self: flex-start;
-  padding: var(--sp-xs) var(--sp-lg);
-  border-radius: var(--radius-lg);
   font-size: var(--fs-sm);
-  font-weight: 700;
-
-  &.is-available {
-    background: var(--color-green-bg);
-    color: var(--base-green);
-  }
-
-  &.is-unavailable {
-    background: var(--color-highlight-bg);
-    color: var(--base-red);
-  }
+  color: var(--showcase-muted);
 }
 </style>

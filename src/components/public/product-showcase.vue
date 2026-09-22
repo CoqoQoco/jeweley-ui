@@ -1,59 +1,67 @@
 <template>
   <div class="product-showcase">
-    <div class="showcase-media">
-      <showcase-gallery :imagePath="product.imagePath" :alt="displayName" />
+    <div class="showcase-columns">
+      <div class="showcase-media">
+        <showcase-gallery :images="images" :alt="displayName" />
+      </div>
+
+      <div class="showcase-info">
+        <div class="showcase-title-block">
+          <div v-if="overlineText" class="showcase-overline">{{ overlineText }}</div>
+          <div class="showcase-name-main">{{ mainName }}</div>
+          <div v-if="subName" class="showcase-name-sub">{{ subName }}</div>
+        </div>
+
+        <div class="price-block">
+          <div class="price-box">
+            <div v-if="priceDisplay" class="price-box-price">{{ priceDisplay }}</div>
+            <div v-if="priceDisplay" class="price-box-divider"></div>
+            <div class="price-box-code">
+              <span>{{ $t('view.public.showcase.codeMainLabel') }}</span>
+              <span class="price-box-code-value">{{ mainCode }}</span>
+            </div>
+          </div>
+
+          <div
+            v-if="product.isAvailable !== null && product.isAvailable !== undefined"
+            class="availability-pill"
+            :class="product.isAvailable ? 'is-available' : 'is-unavailable'"
+          >
+            {{ product.isAvailable ? $t('view.public.showcase.availableYes') : $t('view.public.showcase.availableNo') }}
+            <span v-if="product.isAvailable && product.availableQty > 1">
+              · {{ $t('view.public.showcase.availableCount', { qty: product.availableQty }) }}
+            </span>
+          </div>
+        </div>
+
+        <showcase-spec
+          :metalKarat="product.metalKarat"
+          :metalColorCode="product.metalColorCode"
+          :metalWeight="product.metalWeight"
+          :metalWeightUnit="product.metalWeightUnit"
+          :size="product.size"
+          :earringStemSize="product.earringStemSize"
+          :gems="product.gems"
+        />
+
+        <div class="showcase-trust">
+          <div class="trust-tile">
+            <i class="bi bi-flag"></i>
+            <span>{{ $t('view.public.showcase.trustMadeInThailand') }}</span>
+          </div>
+          <div class="trust-tile">
+            <i class="bi bi-award"></i>
+            <span>{{ $t('view.public.showcase.trustHandcrafted') }}</span>
+          </div>
+        </div>
+
+        <showcase-contact :productName="displayName" />
+      </div>
     </div>
 
-    <div class="showcase-info">
-      <div class="showcase-name">
-        <div class="showcase-name-main">{{ mainName }}</div>
-        <div v-if="subName" class="showcase-name-sub">{{ subName }}</div>
-      </div>
-
-      <div class="showcase-codes">
-        <div class="code-main">
-          <span class="code-main-label">{{ $t('view.public.showcase.codeMainLabel') }}</span>
-          <span class="code-main-value">{{ mainCode }}</span>
-        </div>
-        <div v-if="showSecondaryCode" class="code-secondary">
-          <span class="code-secondary-label">{{ $t('view.public.showcase.codeNewLabel') }}</span>
-          <span class="code-secondary-value">{{ product.stockNumber }}</span>
-        </div>
-        <div v-if="product.productNumber" class="code-tertiary">{{ product.productNumber }}</div>
-      </div>
-
-      <div v-if="priceDisplay" class="showcase-price">{{ priceDisplay }}</div>
-
-      <div class="showcase-divider"></div>
-
-      <showcase-spec
-        :metalKarat="product.metalKarat"
-        :metalColorCode="product.metalColorCode"
-        :metalWeight="product.metalWeight"
-        :metalWeightUnit="product.metalWeightUnit"
-        :size="product.size"
-        :earringStemSize="product.earringStemSize"
-        :gems="product.gems"
-        :isAvailable="product.isAvailable"
-        :availableQty="product.availableQty"
-      />
-
-      <div class="showcase-divider"></div>
-
-      <div class="showcase-trust">
-        <div class="trust-row">
-          <i class="bi bi-flag"></i>
-          <span>{{ $t('view.public.showcase.trustMadeInThailand') }}</span>
-        </div>
-        <div class="trust-row">
-          <i class="bi bi-award"></i>
-          <span>{{ $t('view.public.showcase.trustHandcrafted') }}</span>
-        </div>
-      </div>
-
-      <showcase-contact :productName="displayName" />
-
-      <div class="showcase-footer">{{ $t('view.public.showcase.footerText') }}</div>
+    <div class="showcase-footer">
+      <img :src="footerIcon" alt="" class="showcase-footer-icon" />
+      <span>{{ $t('view.public.showcase.footerText') }}</span>
     </div>
 
     <div v-if="showScanNext" class="showcase-scan-next-bar">
@@ -70,11 +78,14 @@
 
 <script>
 import { useDeviceStore } from '@/stores/modules/device/device-store.js'
+import PUBLIC_PRODUCT_TYPE_I18N_KEY from '@/config/public-product-type-config.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import ShowcaseGallery from './showcase-gallery.vue'
 import ShowcaseSpec from './showcase-spec.vue'
 import ShowcaseContact from './showcase-contact.vue'
+
+import footerIcon from '@/assets/duangkaew-icon.png'
 
 export default {
   name: 'ProductShowcase',
@@ -102,6 +113,12 @@ export default {
     }
   },
 
+  data() {
+    return {
+      footerIcon
+    }
+  },
+
   computed: {
     displayName() {
       return this.product.productNameTh || this.product.productNameEn || this.mainCode
@@ -120,12 +137,31 @@ export default {
       return sub && sub !== this.mainName ? sub : ''
     },
 
-    mainCode() {
-      return this.product.stockNumberOrigin || this.product.stockNumber
+    // API ส่ง productTypeName เป็นภาษาไทยอย่างเดียว — แปลผ่าน config เมื่อรู้จัก,
+    // ถ้าไม่รู้จักให้แสดง raw text เฉพาะตอน locale=th (กันข้อความไทยโผล่หน้า EN)
+    overlineText() {
+      const raw = (this.product.productTypeName || '').trim()
+      if (!raw) return ''
+
+      const key = PUBLIC_PRODUCT_TYPE_I18N_KEY[raw]
+      if (key) return this.$t(`view.public.showcase.productType.${key}`)
+
+      return this.$i18n.locale === 'th' ? raw : ''
     },
 
-    showSecondaryCode() {
-      return !!this.product.stockNumberOrigin
+    // API ปัจจุบันส่งแค่ imagePath เดียว — รองรับ images[] ล่วงหน้าสำหรับตอนอัปโหลดหลายรูป
+    images() {
+      const list =
+        Array.isArray(this.product.images) && this.product.images.length
+          ? this.product.images
+          : this.product.imagePath
+            ? [this.product.imagePath]
+            : []
+      return list.slice(0, 4)
+    },
+
+    mainCode() {
+      return this.product.stockNumberOrigin || this.product.stockNumber
     },
 
     priceDisplay() {
@@ -160,7 +196,11 @@ export default {
 
 <style lang="scss" scoped>
 .product-showcase {
-  padding: 0 var(--sp-xl) calc(var(--sp-xl) * 2);
+  padding-bottom: calc(var(--sp-xl) * 2);
+}
+
+.showcase-columns {
+  padding: var(--sp-xl) var(--sp-lg) 0;
   max-width: 560px;
   margin: 0 auto;
 }
@@ -175,102 +215,135 @@ export default {
   gap: var(--sp-xl);
 }
 
-.showcase-name {
+.showcase-title-block {
   text-align: center;
 }
 
+.showcase-overline {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--showcase-accent);
+  margin-bottom: var(--sp-xs);
+}
+
 .showcase-name-main {
-  font-size: calc(var(--fs-xl) * 1.3);
-  font-weight: 700;
-  color: var(--base-sub-color);
+  font-family: 'Taviraj', serif;
+  font-weight: 500;
+  font-size: var(--showcase-fs-name);
+  color: var(--showcase-ink);
   line-height: var(--lh-md);
 }
 
 .showcase-name-sub {
   margin-top: var(--sp-xs);
   font-size: var(--fs-base);
-  color: var(--base-sub-color);
+  color: var(--showcase-muted);
 }
 
-.showcase-codes {
-  text-align: center;
-}
-
-.code-main {
+.price-block {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--sp-xs);
+  gap: var(--sp-sm);
 }
 
-.code-main-label {
-  font-size: var(--fs-sm);
-  color: var(--color-border);
-  letter-spacing: 0.04em;
+.price-box {
+  min-width: var(--showcase-price-box-w);
+  padding: var(--sp-lg) var(--sp-2xl) var(--showcase-price-pad-bottom);
+  border: 1px solid var(--showcase-box-border);
+  border-radius: var(--showcase-radius-sm);
+  background: var(--color-card-bg);
+  text-align: center;
 }
 
-.code-main-value {
-  font-family: 'Courier New', Courier, monospace;
-  font-size: var(--fs-xl);
-  font-weight: 700;
+.price-box-price {
+  font-family: 'Taviraj', serif;
+  font-weight: 600;
+  font-size: var(--showcase-fs-price);
   color: var(--base-font-color);
-  letter-spacing: 0.04em;
 }
 
-.code-secondary {
-  margin-top: var(--sp-xs);
+.price-box-divider {
+  width: var(--showcase-divider-w);
+  height: 1px;
+  background: var(--showcase-line);
+  margin: var(--sp-sm) auto;
+}
+
+.price-box-code {
   display: flex;
+  align-items: baseline;
   justify-content: center;
   gap: var(--sp-xs);
+  font-size: var(--showcase-fs-label);
+  color: var(--showcase-muted);
+}
+
+.price-box-code-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  color: var(--showcase-ink);
+}
+
+.availability-pill {
+  padding: var(--sp-xs) var(--sp-lg);
+  border-radius: var(--radius-lg);
   font-size: var(--fs-sm);
-  color: var(--base-sub-color);
-}
-
-.code-secondary-value {
-  font-family: 'Courier New', Courier, monospace;
-}
-
-.code-tertiary {
-  margin-top: var(--sp-xs);
-  font-size: var(--fs-sm);
-  color: var(--base-sub-color);
-}
-
-.showcase-price {
-  text-align: center;
-  font-size: calc(var(--fs-xl) * 1.6);
   font-weight: 700;
-  color: var(--base-font-color);
-}
 
-.showcase-divider {
-  height: 1px;
-  background: var(--color-border);
+  &.is-available {
+    background: var(--color-green-bg);
+    color: var(--base-green);
+  }
+
+  &.is-unavailable {
+    background: var(--color-highlight-bg);
+    color: var(--base-red);
+  }
 }
 
 .showcase-trust {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--sp-sm);
 }
 
-.trust-row {
+.trust-tile {
   display: flex;
   align-items: center;
   gap: var(--sp-sm);
-  font-size: var(--fs-sm);
-  color: var(--base-sub-color);
+  padding: var(--sp-md);
+  border-radius: var(--showcase-radius-sm);
+  background: var(--showcase-tile);
+  font-size: var(--showcase-fs-label);
+  color: var(--showcase-text-soft);
 
   i {
-    color: var(--base-green);
+    color: var(--base-font-color);
+    font-size: var(--fs-lg);
+    flex-shrink: 0;
   }
 }
 
 .showcase-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-sm);
+  margin-top: calc(var(--sp-xl) * 2);
+  padding: var(--sp-lg) var(--sp-xl) 0;
+  border-top: 1px solid var(--showcase-line);
   text-align: center;
   font-size: var(--fs-sm);
-  color: var(--base-sub-color);
-  padding-top: var(--sp-lg);
+  color: var(--showcase-muted);
+}
+
+.showcase-footer-icon {
+  width: var(--showcase-footer-icon);
+  height: var(--showcase-footer-icon);
+  object-fit: contain;
 }
 
 .showcase-scan-next-bar {
@@ -286,25 +359,55 @@ export default {
 }
 
 @media (min-width: 900px) {
-  .product-showcase {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--sp-2xl);
-    max-width: 1100px;
-    padding: 0 var(--sp-2xl) calc(var(--sp-xl) * 2);
+  .showcase-columns {
+    display: grid;
+    grid-template-columns: var(--showcase-media-w) minmax(0, 1fr);
+    gap: var(--showcase-gap-lg);
+    max-width: none;
+    width: min(var(--showcase-container-w), calc(100% - 2 * var(--sp-2xl)));
+    margin: 0 auto;
+    padding: var(--showcase-content-pad-top-lg) 0 0;
   }
 
   .showcase-media {
-    flex: 0 0 560px;
-    max-width: 560px;
     margin-bottom: 0;
     position: sticky;
     top: var(--sp-xl);
   }
 
-  .showcase-info {
-    flex: 1;
-    min-width: 0;
+  .showcase-title-block {
+    text-align: left;
+  }
+
+  .price-block {
+    align-items: flex-start;
+  }
+
+  .price-box {
+    min-width: var(--showcase-price-box-w-lg);
+    text-align: left;
+  }
+
+  .price-box-divider {
+    margin: var(--sp-sm) 0;
+  }
+
+  .price-box-code {
+    justify-content: flex-start;
+    font-size: var(--fs-base);
+  }
+
+  .showcase-name-main {
+    font-size: var(--showcase-fs-name-lg);
+  }
+
+  .price-box-price {
+    font-size: var(--showcase-fs-price-lg);
+  }
+
+  .showcase-footer {
+    flex-direction: row;
+    justify-content: center;
   }
 }
 </style>

@@ -1,22 +1,28 @@
 <template>
   <div class="showcase-contact">
     <ButtonGeneric
-      variant="outline"
+      variant="main"
       icon="bi-share"
       :label="shareLabel"
       block
+      class="showcase-contact-share"
       @click="onShare"
     />
 
     <div class="contact-channels">
-      <ButtonGeneric
+      <a
         v-for="channel in channels"
         :key="channel.key"
-        variant="outline"
-        :icon="channel.icon"
+        :href="channel.url"
+        target="_blank"
+        rel="noopener"
+        class="contact-channel"
+        :aria-label="$t(channel.labelKey)"
         :title="$t(channel.labelKey)"
-        @click="onOpenChannel(channel.url)"
-      />
+      >
+        <i :class="['bi', channel.icon]"></i>
+        <span class="contact-channel-label">{{ $t(channel.labelKey) }}</span>
+      </a>
     </div>
   </div>
 </template>
@@ -59,10 +65,6 @@ export default {
   },
 
   methods: {
-    onOpenChannel(url) {
-      window.open(url, '_blank', 'noopener')
-    },
-
     async onShare() {
       const shareUrl = window.location.href
 
@@ -96,13 +98,60 @@ export default {
   gap: var(--sp-md);
 }
 
+.showcase-contact-share {
+  height: var(--showcase-btn-h);
+}
+
 .contact-channels {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: var(--sp-sm);
+}
 
-  :deep(.btn) {
-    width: 100%;
+.contact-channel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-xs);
+  padding: var(--sp-sm);
+  border: 1px solid var(--showcase-box-border);
+  border-radius: var(--showcase-radius-sm);
+  background: var(--color-card-bg);
+  color: inherit;
+  text-decoration: none;
+
+  i {
+    color: var(--base-font-color);
+    font-size: var(--fs-lg);
+  }
+}
+
+.contact-channel-label {
+  font-size: var(--fs-sm);
+  color: var(--showcase-text-soft);
+}
+
+@media (min-width: 900px) {
+  .showcase-contact {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) repeat(4, var(--showcase-btn-h));
+    align-items: stretch;
+    gap: var(--showcase-gap-sm);
+  }
+
+  .contact-channels {
+    display: contents;
+  }
+
+  .contact-channel {
+    width: var(--showcase-btn-h);
+    height: var(--showcase-btn-h);
+    padding: 0;
+  }
+
+  .contact-channel-label {
+    display: none;
   }
 }
 </style>

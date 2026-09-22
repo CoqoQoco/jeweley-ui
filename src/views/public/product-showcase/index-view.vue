@@ -21,7 +21,16 @@
 </template>
 
 <script>
+import '@fontsource/taviraj/500.css'
+import '@fontsource/taviraj/600.css'
+import '@fontsource/ibm-plex-sans-thai/400.css'
+import '@fontsource/ibm-plex-sans-thai/500.css'
+import '@fontsource/ibm-plex-sans-thai/600.css'
+import '@fontsource/ibm-plex-mono/600.css'
+
 import { usePublicProductApiStore } from '@/stores/modules/api/public/public-product-api.js'
+import { applyLocale } from '@/plugins/i18n/config.js'
+import { storage } from '@/services/storage.js'
 
 import ShowcaseHeader from '@/components/public/showcase-header.vue'
 import ShowcaseContact from '@/components/public/showcase-contact.vue'
@@ -68,6 +77,9 @@ export default {
   },
 
   async created() {
+    // หน้าลูกค้าเปิดเป็น EN เสมอ — ตั้งก่อน render ครั้งแรก ไม่เขียนทับภาษาระบบหลังบ้าน (คืนค่าตอน beforeUnmount)
+    applyLocale('en')
+
     const token = this.$route.params.token
     const data = await this.publicProductStore.fetchPublicProduct(token)
 
@@ -75,6 +87,11 @@ export default {
     this.loading = false
 
     if (this.pageTitle) document.title = this.pageTitle
+  },
+
+  beforeUnmount() {
+    // staff ออกจากหน้านี้ (เช่นกด "สแกนชิ้นถัดไป") — คืน locale ของระบบหลังบ้านให้ถูกต้อง
+    applyLocale(storage.getItem('lang', 'th'))
   }
 }
 </script>
@@ -82,7 +99,8 @@ export default {
 <style lang="scss" scoped>
 .public-showcase-page {
   min-height: 100vh;
-  background: var(--color-card-bg);
+  background: var(--showcase-bg);
+  font-family: 'IBM Plex Sans Thai', sans-serif;
 }
 
 .showcase-skeleton {
@@ -95,7 +113,7 @@ export default {
 }
 
 .skeleton-box {
-  background: var(--color-highlight-bg);
+  background: var(--showcase-tile);
   border-radius: var(--radius-lg);
   animation: showcase-skeleton-pulse 1.4s ease-in-out infinite;
 }
@@ -139,7 +157,7 @@ export default {
 
   i {
     font-size: 3rem;
-    color: var(--color-border);
+    color: var(--showcase-box-border);
     margin-bottom: var(--sp-lg);
   }
 }
@@ -147,13 +165,13 @@ export default {
 .not-found-title {
   font-size: var(--fs-xl);
   font-weight: 700;
-  color: var(--base-sub-color);
+  color: var(--showcase-ink);
   margin-bottom: var(--sp-sm);
 }
 
 .not-found-desc {
   font-size: var(--fs-base);
-  color: var(--base-sub-color);
+  color: var(--showcase-muted);
   margin-bottom: calc(var(--sp-xl) * 1.5);
 }
 

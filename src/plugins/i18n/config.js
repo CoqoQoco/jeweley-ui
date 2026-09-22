@@ -19,11 +19,16 @@ const i18n = createI18n({
   globalInjection: true // ประกาศให้สามารถใช้แบบ Global ได้ $t ใน File ที่เป็น Vue2
 })
 
-// เปลี่ยนภาษา + บันทึกลง localStorage + set html lang attribute
-function setLocale(lang) {
+// ตั้ง locale ในหน่วยความจำเท่านั้น ไม่เขียน storage — ใช้กับหน้าสาธารณะที่ต้องไม่ทับภาษาระบบหลังบ้าน
+function applyLocale(lang) {
   i18n.global.locale.value = lang
-  storage.setItem('lang', lang)
   document.documentElement.lang = lang
 }
 
-export { i18n, setLocale }
+// เปลี่ยนภาษา + บันทึกลง localStorage + set html lang attribute
+function setLocale(lang) {
+  applyLocale(lang)
+  storage.setItem('lang', lang)
+}
+
+export { i18n, setLocale, applyLocale }

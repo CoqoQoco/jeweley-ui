@@ -6,6 +6,8 @@ export default {
     codeNewLabel: 'New code',
     metalSectionTitle: 'Metal',
     gemsSectionTitle: 'Gemstones',
+    materialLabel: 'Material',
+    thumbAria: 'Show photo {n}',
     weightLabel: 'Weight',
     sizeLabel: 'Size',
     earringStemSizeLabel: 'Earring stem size',
@@ -31,7 +33,23 @@ export default {
     contactEmail: 'Email',
     contactWebsite: 'Website',
     contactLine: 'Line',
-    contactPhone: 'Phone'
+    contactPhone: 'Phone',
+    productType: {
+      ring: 'Ring',
+      pendant: 'Pendant',
+      earrings: 'Earrings',
+      studEarrings: 'Stud Earrings',
+      lockEarrings: 'Lock Earrings',
+      hookEarrings: 'Hook Earrings',
+      earringBacks: 'Earring Backs',
+      necklace: 'Necklace',
+      chain: 'Chain',
+      bracelet: 'Bracelet',
+      bangle: 'Bangle',
+      brooch: 'Brooch',
+      charm: 'Charm',
+      locket: 'Amulet Locket'
+    }
   },
   share: {
     dialogTitle: 'Show to customer',
