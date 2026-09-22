@@ -699,5 +699,32 @@ export default {
       cancelTitle: 'Confirm Cancel Document',
       cancelMessage: 'Reserved source pieces will be released back to stock. Cancel this document?'
     }
+  },
+  productGallery: {
+    tabCustomer: 'Customer Photos',
+    tabInternal: 'Internal Photos (Legacy)',
+    scanPlaceholder: 'Scan barcode / stock number / old code',
+    infoMoldSummary: 'Design {mold} · {count} pieces',
+    moldGroupTitle: 'Design {mold} Photos · Used by {count} pieces',
+    dropHint: 'Drop photos here, or click the + tile to choose files',
+    addPhotoAria: 'Add photo',
+    deleteAria: 'Delete this photo',
+    internalImageTag: 'Internal',
+    notLoadedHint: 'Scan or enter a stock number / old code to start managing customer photos',
+    missingListTitle: 'Designs Without Customer Photos',
+    missingListDesc: 'Find designs that still have no customer photos, then click "Manage Photos" to add them right away',
+    missingSearchLabel: 'Design / Product Name',
+    missingSearchPlaceholder: 'Search design / product name',
+    missingProductTypePlaceholder: 'Product type',
+    missingSummary: '{molds} designs / {pieces} pieces remaining',
+    missingSummaryFiltered: '(showing {count} designs matching filter)',
+    colMold: 'Design',
+    colName: 'Product Name',
+    colType: 'Type',
+    colMissingPieces: 'Pieces Missing Photos',
+    colInStockPieces: 'In Stock',
+    colInternalImage: 'Internal Photo',
+    manageBtn: 'Manage Photos',
+    noData: 'No designs missing customer photos'
   }
 }

@@ -115,6 +115,13 @@ import { useStockProductGalleryApiStore } from '@/stores/modules/api/stock/produ
 import { compressGalleryImage } from '@/services/helper/file/compress-image.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import {
+  buildGalleryPositionMap,
+  calcFreeSlots,
+  runUploadQueue,
+  moveIdToFront,
+  swapIds
+} from '@/services/helper/gallery/gallery-helpers.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import RadioGroupGeneric from '@/components/prime-vue/RadioGroupGeneric.vue'
@@ -178,16 +185,7 @@ export default {
     // id -> ตำแหน่งใน resolved display order รวม (SKU เรียง sortOrder ก่อน แล้ว MOLD ต่อ, 0-based)
     // ใช้กำหนด badge: 0=รูปหลัก, 1-3=เลขลำดับ, >=4=ไม่แสดงให้ลูกค้า (เกิน 4 รูปที่หน้าลูกค้าโชว์)
     photoPositionMap() {
-      const bySortOrder = (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
-      const resolved = [
-        ...[...this.skuGalleryImages].sort(bySortOrder),
-        ...[...this.moldGalleryImages].sort(bySortOrder)
-      ]
-      const map = {}
-      resolved.forEach((img, idx) => {
-        map[img.id] = idx
-      })
-      return map
+      return buildGalleryPositionMap(this.skuGalleryImages, this.moldGalleryImages)
     },
 
     skuPending() {
@@ -251,7 +249,7 @@ export default {
     freeSlotsForScope(scope) {
       const images = scope === 'MOLD' ? this.moldGalleryImages : this.skuGalleryImages
       const pendingList = scope === 'MOLD' ? this.moldPending : this.skuPending
-      return Math.max(0, 4 - images.length - pendingList.length)
+      return calcFreeSlots({ existingCount: images.length, pendingCount: pendingList.length })
     },
 
     triggerCamera() {
@@ -321,26 +319,19 @@ export default {
       if (this.isProcessingQueue) return
       this.isProcessingQueue = true
 
-      let next = this.pendingUploads.find((p) => p.status === 'queued')
-      while (next) {
-        next.status = 'uploading'
-        next.progress = 0
-        try {
-          await this.galleryStore.fetchUpload({
+      await runUploadQueue(
+        this.pendingUploads,
+        (item) =>
+          this.galleryStore.fetchUpload({
             stockNumber: this.stockNumber,
-            scope: next.scope,
-            file: next.file,
+            scope: item.scope,
+            file: item.file,
             onUploadProgress: (evt) => {
-              if (evt.total) next.progress = Math.round((evt.loaded / evt.total) * 100)
+              if (evt.total) item.progress = Math.round((evt.loaded / evt.total) * 100)
             }
-          })
-          next.status = 'done'
-        } catch {
-          next.status = 'error'
-          next.errorMessage = this.$t('view.mobile.stockProductPhotos.uploadErrorGeneric')
-        }
-        next = this.pendingUploads.find((p) => p.status === 'queued')
-      }
+          }),
+        { onError: () => this.$t('view.mobile.stockProductPhotos.uploadErrorGeneric') }
+      )
 
       this.isProcessingQueue = false
       await this.loadGallery(true)
@@ -393,9 +384,7 @@ export default {
 
     async onSetPrimary() {
       const { scope, index } = this.actionSheet
-      const ids = this.currentIds(scope)
-      const [moved] = ids.splice(index, 1)
-      ids.unshift(moved)
+      const ids = moveIdToFront(this.currentIds(scope), index)
       await this.reorder(scope, ids)
       this.closeActionSheet()
     },
@@ -403,8 +392,7 @@ export default {
     async onMoveLeft() {
       const { scope, index } = this.actionSheet
       if (index <= 0) return
-      const ids = this.currentIds(scope)
-      ;[ids[index - 1], ids[index]] = [ids[index], ids[index - 1]]
+      const ids = swapIds(this.currentIds(scope), index - 1, index)
       await this.reorder(scope, ids)
       this.closeActionSheet()
     },
@@ -412,8 +400,7 @@ export default {
     async onMoveRight() {
       const { scope, index, total } = this.actionSheet
       if (index >= total - 1) return
-      const ids = this.currentIds(scope)
-      ;[ids[index], ids[index + 1]] = [ids[index + 1], ids[index]]
+      const ids = swapIds(this.currentIds(scope), index, index + 1)
       await this.reorder(scope, ids)
       this.closeActionSheet()
     },

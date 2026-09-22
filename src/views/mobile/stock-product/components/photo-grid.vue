@@ -46,6 +46,7 @@
 
 <script>
 import ImagePreview from '@/components/prime-vue/ImagePreview.vue'
+import { classifyGalleryPosition } from '@/services/helper/gallery/gallery-helpers.js'
 
 export default {
   name: 'PhotoGrid',
@@ -78,14 +79,12 @@ export default {
     decoratedImages() {
       return this.images.map((img) => {
         const pos = this.positionMap[img.id]
-        let badgeType = 'hidden'
+        const badgeType = classifyGalleryPosition(pos)
         let badgeLabel = this.$t('view.mobile.stockProductPhotos.hiddenBadge')
 
-        if (pos === 0) {
-          badgeType = 'primary'
+        if (badgeType === 'primary') {
           badgeLabel = this.$t('view.mobile.stockProductPhotos.primaryBadge')
-        } else if (pos !== undefined && pos <= 3) {
-          badgeType = 'number'
+        } else if (badgeType === 'number') {
           badgeLabel = String(pos + 1)
         }
 

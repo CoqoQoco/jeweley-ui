@@ -325,6 +325,7 @@ export default {
     },
     stock: {
       product: { ...stock.product },
+      productGallery: { ...stock.productGallery },
       location: { ...stock.location },
       moveLocation: { ...stock.moveLocation },
       storageMoveReport: { ...stock.storageMoveReport },

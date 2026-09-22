@@ -32,6 +32,16 @@ export const useStockProductGalleryApiStore = defineStore('stockProductGalleryAp
     async fetchDelete({ id }) {
       const res = await api.jewelry.post('StockProductGallery/Delete', { id })
       return res || null
+    },
+
+    // แบบ (mold) ที่ยังไม่มีรูปสำหรับลูกค้าครบ — ใช้ที่ backlog list หน้า /goods-receipt-image (แท็บลูกค้า)
+    async fetchMissingList({ take, skip, sort, search, skipLoading = false }) {
+      const res = await api.jewelry.post(
+        'StockProductGallery/MissingList',
+        { take, skip, sort, search },
+        { skipLoading }
+      )
+      return res || null
     }
   }
 })

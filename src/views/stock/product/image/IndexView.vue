@@ -1,35 +1,59 @@
 <template>
   <div class="app-container">
-    <!-- <div class="filter-container-highlight">
-      <div class="form-col-container">
-        <div class="d-flex justify-content-between">
-          <div>
-            <span class="desc-text-white"><i class="bi bi-image"></i></span>
-            <span class="desc-text-white ml-2">รุปสินค้า</span>
-          </div>
-        </div>
-      </div>
-    </div> -->
-
-    <search></search>
-    <imageView></imageView>
+    <TabViewGeneric v-model="activeTab" :tabs="tabs">
+      <template #customer>
+        <customerGalleryView></customerGalleryView>
+      </template>
+      <template #internal>
+        <search></search>
+        <imageView></imageView>
+      </template>
+    </TabViewGeneric>
   </div>
 </template>
 
 <script>
+import TabViewGeneric from '@/components/generic/TabViewGeneric.vue'
+
 import search from './components/create-view.vue'
 import imageView from './components/image-view.vue'
+import customerGalleryView from './components/customer-gallery/customer-gallery-view.vue'
+
+const VALID_TABS = ['customer', 'internal']
 
 export default {
   name: 'ProductImage',
 
   components: {
+    TabViewGeneric,
     search,
-    imageView
+    imageView,
+    customerGalleryView
   },
 
   data() {
-    return {}
+    return {
+      activeTab: 'customer'
+    }
+  },
+
+  computed: {
+    tabs() {
+      return [
+        { value: 'customer', label: this.$t('view.stock.productGallery.tabCustomer') },
+        { value: 'internal', label: this.$t('view.stock.productGallery.tabInternal') }
+      ]
+    }
+  },
+
+  watch: {
+    activeTab(value) {
+      this.$router.replace({ query: { ...this.$route.query, tab: value } }).catch(() => {})
+    }
+  },
+
+  created() {
+    this.activeTab = VALID_TABS.includes(this.$route.query.tab) ? this.$route.query.tab : 'customer'
   }
 }
 </script>

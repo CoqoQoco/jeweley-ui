@@ -699,5 +699,32 @@ export default {
       cancelTitle: 'ยืนยันยกเลิกใบแปลงสินค้า',
       cancelMessage: 'ชิ้นต้นทางที่จองไว้จะถูกปล่อยคืนคลัง ต้องการยกเลิกใบแปลงสินค้านี้หรือไม่?'
     }
+  },
+  productGallery: {
+    tabCustomer: 'รูปสำหรับลูกค้า',
+    tabInternal: 'รูปภายใน (แบบเดิม)',
+    scanPlaceholder: 'ยิงบาร์โค้ด / เลขสต็อก / เลขเก่า',
+    infoMoldSummary: 'แบบ {mold} · {count} ชิ้น',
+    moldGroupTitle: 'รูปของแบบ {mold} · ใช้กับ {count} ชิ้น',
+    dropHint: 'ลากรูปมาวางที่นี่ หรือกดปุ่ม + เพื่อเลือกไฟล์',
+    addPhotoAria: 'เพิ่มรูป',
+    deleteAria: 'ลบรูปนี้',
+    internalImageTag: 'ภายใน',
+    notLoadedHint: 'สแกนหรือกรอกเลขที่ผลิต/เลขเก่า เพื่อเริ่มจัดการรูปสำหรับลูกค้า',
+    missingListTitle: 'แบบที่ยังไม่มีรูปลูกค้า',
+    missingListDesc: 'ค้นหาแบบที่ยังไม่มีรูปสำหรับลูกค้า แล้วกด "จัดการรูป" เพื่อเพิ่มรูปได้ทันที',
+    missingSearchLabel: 'แบบ/ชื่อสินค้า',
+    missingSearchPlaceholder: 'ค้นหาแบบ/ชื่อสินค้า',
+    missingProductTypePlaceholder: 'ประเภทสินค้า',
+    missingSummary: 'เหลือ {molds} แบบ / {pieces} ชิ้น',
+    missingSummaryFiltered: '(แสดง {count} แบบตามตัวกรอง)',
+    colMold: 'แบบ',
+    colName: 'ชื่อสินค้า',
+    colType: 'ประเภท',
+    colMissingPieces: 'ชิ้นที่ยังไม่มีรูป',
+    colInStockPieces: 'มีในคลัง',
+    colInternalImage: 'รูปภายใน',
+    manageBtn: 'จัดการรูป',
+    noData: 'ไม่พบแบบที่ขาดรูปลูกค้า'
   }
 }
