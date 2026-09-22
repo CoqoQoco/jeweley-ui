@@ -271,8 +271,8 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
     },
 
     // สร้างลิงก์หน้าสาธารณะ (/p/:token) สำหรับโชว์สินค้าให้ลูกค้าดู — endpoint นี้ต้อง login (ใช้ instance ปกติ)
-    async fetchPublicLink(stockNumber) {
-      return await api.jewelry.post('StockProduct/PublicLink', { stockNumber })
+    async fetchPublicLink(stockNumber, options = {}) {
+      return await api.jewelry.post('StockProduct/PublicLink', { stockNumber }, options)
     }
   }
 })

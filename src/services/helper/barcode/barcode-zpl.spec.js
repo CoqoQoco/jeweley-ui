@@ -6,7 +6,10 @@ import {
   generateLegacyZPLVertical,
   generateGt800ZPL,
   generateGt800ZPLVertical,
-  layoutGt800
+  generateGt800ZPLQr,
+  pickQrMagnification,
+  layoutGt800,
+  layoutGt800Qr
 } from './barcode-zpl.js'
 
 // สำเนาฟังก์ชันเดิมจาก commit 7048e5a^ (ก่อนย้ายไป DK Print Bridge) ไว้เทียบผลลัพธ์ตรงตัวอักษร
@@ -315,5 +318,125 @@ describe('generateGt800ZPL / generateGt800ZPLVertical', () => {
   it('ใช้ ^FO ไม่ใช่ ^F ที่คอลัมน์พลอย', () => {
     const zpl = generateGt800ZPL(form, 1)
     expect(zpl).not.toMatch(/\^F\d/)
+  })
+})
+
+describe('layoutGt800Qr / generateGt800ZPLQr — layout ใหม่ (บล็อกข้อความ 4 บรรทัด + QR กลางพื้นที่ว่างขวา)', () => {
+  // กรณี typical จาก spec ที่ verify กับเครื่องพิมพ์จริงแล้ว
+  const typical = {
+    productNameEn: '18K BRACELET WG D',
+    stockNumberOrigin: 'AH21142',
+    stockNumber: 'AH21142-XXXX',
+    salePrice: 87600,
+    gold: '5.19 g. Gold',
+    madeIn: 'MADE IN THAILAND',
+    publicUrl: 'https://app.duangkeaw.com/p/DK-18K-1XR-1747-EDTWQT5A'
+  }
+
+  // กรณี worst — ชื่อ/รหัส/ราคา/gold ยาวเกือบสุด
+  const worst = {
+    productNameEn: '18K BRACELET YG D/RU/White pearl',
+    stockNumber: 'DK-18K-20A-12810',
+    salePrice: 1234567,
+    gold: '12.35 g. Gold',
+    size: '#52',
+    goldType: '18K',
+    madeIn: 'MADE IN THAILAND',
+    publicUrl: 'https://app.duangkeaw.com/p/DK-18K-20A-12810-ABCDEFGH'
+  }
+
+  it('layoutGt800Qr: กรณี typical → blockRight≈404.2, qrX=470', () => {
+    const layout = layoutGt800Qr(typical)
+    expect(layout.blockRight).toBeCloseTo(404.2, 1)
+    expect(layout.qrX).toBe(470)
+  })
+
+  it('layoutGt800Qr: กรณี worst → qrX=517', () => {
+    const layout = layoutGt800Qr(worst)
+    expect(layout.qrX).toBe(517)
+  })
+
+  it('layoutGt800Qr: ข้อความยาวมาก → qrX ชนเพดาน 534', () => {
+    const layout = layoutGt800Qr({
+      productNameEn: 'X'.repeat(80),
+      stockNumber: 'Y'.repeat(40),
+      salePrice: 999999999,
+      gold: 'Z'.repeat(40),
+      publicUrl: 'https://app.duangkeaw.com/p/' + 'A'.repeat(60)
+    })
+    expect(layout.qrX).toBe(534)
+  })
+
+  it('generateGt800ZPLQr: header + MADE IN เหมือน generateGt800ZPL', () => {
+    const zpl = generateGt800ZPLQr(worst, 1)
+    expect(zpl.startsWith('^XA^LL104^MD15^LT0^XZ^XA')).toBe(true)
+    expect(zpl).toContain(`^FO25,50^A0N,15,15^FD${worst.madeIn}^FS`)
+  })
+
+  it('generateGt800ZPLQr: 4 บรรทัดข้อความตรงตำแหน่งที่กำหนด และไม่มี goldType นำหน้าบรรทัดทอง', () => {
+    const zpl = generateGt800ZPLQr(worst, 1)
+    const code = 'DK-18K-20A-12810'
+    expect(zpl).toContain(`^FO256,31^A0N,14,14^FD${worst.productNameEn}^FS`)
+    expect(zpl).toContain(`^FO262,47^BY1,3.0:1,18^BCN,18,N,N^FD${code}^FS`)
+    expect(zpl).toContain(`^FO256,68^A0N,15,15^FD${code} - 1,234,567.00^FS`)
+    expect(zpl).toContain('^FO256,86^A0N,14,14^FD12.35 g. Gold #52^FS')
+  })
+
+  it('generateGt800ZPLQr: productNameEn ว่าง → ไม่มีฟิลด์บรรทัดชื่อ', () => {
+    const zpl = generateGt800ZPLQr({ ...worst, productNameEn: '' }, 1)
+    expect(zpl).not.toContain('^FO256,31')
+  })
+
+  it('generateGt800ZPLQr: ไม่มีข้อความพลอยแม้ form จะมีพลอย', () => {
+    const zpl = generateGt800ZPLQr({ ...worst, gems: ['0.24ct.', '0.15ct.'] }, 1)
+    expect(zpl).not.toContain('0.24')
+    expect(zpl).not.toContain('ct.')
+  })
+
+  it('generateGt800ZPLQr: กรณี typical → ^FO470,13^BQN,2,2^FDLA,<url>^FS', () => {
+    const zpl = generateGt800ZPLQr(typical, 1)
+    expect(zpl).toContain(`^FO470,13^BQN,2,2^FDLA,${typical.publicUrl}^FS`)
+  })
+
+  it('generateGt800ZPLQr: กรณี worst → ^FO517,13^BQN,2,2^FDLA,<url>^FS', () => {
+    const zpl = generateGt800ZPLQr(worst, 1)
+    expect(zpl).toContain(`^FO517,13^BQN,2,2^FDLA,${worst.publicUrl}^FS`)
+  })
+
+  it('generateGt800ZPLQr: dpiScale 1.5 คูณทั้งตำแหน่งข้อความและ QR (ตำแหน่ง+magnification)', () => {
+    const scale = 1.5
+    const layout = layoutGt800Qr(worst)
+    const zpl = generateGt800ZPLQr(worst, scale)
+    const expectedMag = Math.max(1, Math.round(layout.mag * scale))
+
+    expect(zpl).toContain(`^FO${Math.round(256 * scale)},${Math.round(31 * scale)}^A0N,${Math.round(14 * scale)},${Math.round(14 * scale)}^FD`)
+    expect(zpl).toContain(
+      `^FO${Math.round(layout.qrX * scale)},${Math.round(13 * scale)}^BQN,2,${expectedMag}^FDLA,${worst.publicUrl}^FS`
+    )
+  })
+
+  it('generateGt800ZPLQr: publicUrl ว่าง → ไม่มี ^BQ', () => {
+    const zpl = generateGt800ZPLQr({ ...worst, publicUrl: '' }, 1)
+    expect(zpl).not.toContain('^BQ')
+  })
+})
+
+describe('pickQrMagnification', () => {
+  it('URL สั้น (≤17 ตัวอักษร) → 3', () => {
+    const url = 'https://a.co/xyz'
+    expect(url.length).toBeLessThanOrEqual(17)
+    expect(pickQrMagnification(url)).toBe(3)
+  })
+
+  it('URL ยาว 49-53 ตัวอักษร (v3, 29 modules) → 2', () => {
+    const url = 'https://app.duangkeaw.com/p/DK-18K-20A-12810-ABCDEFGH'
+    expect(url.length).toBeGreaterThanOrEqual(49)
+    expect(url.length).toBeLessThanOrEqual(53)
+    expect(pickQrMagnification(url)).toBe(2)
+  })
+
+  it('URL ยาวมาก (เกินความจุ v6) → 2 (ไม่ต่ำกว่า 2)', () => {
+    const url = 'https://app.duangkeaw.com/p/' + 'X'.repeat(150)
+    expect(pickQrMagnification(url)).toBe(2)
   })
 })

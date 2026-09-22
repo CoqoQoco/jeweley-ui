@@ -11,7 +11,8 @@ import {
   generateLegacyZPL,
   generateLegacyZPLVertical,
   generateGt800ZPL,
-  generateGt800ZPLVertical
+  generateGt800ZPLVertical,
+  generateGt800ZPLQr
 } from '@/services/helper/barcode/barcode-zpl.js'
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -19,6 +20,23 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 const noPrinterSelectedResult = {
   status: 'error',
   message: 'ยังไม่ได้ตั้งค่าเครื่องพิมพ์บาร์โค้ด กรุณาไปตั้งค่าที่หน้าตั้งค่าเครื่องพิมพ์บาร์โค้ดก่อนพิมพ์ครับ'
+}
+
+// ป้าย QR ใช้ได้เฉพาะ GT800 และต้องมีลิงก์หน้าสินค้าแล้วเท่านั้น — เช็คก่อนสร้าง ZPL ทุกครั้ง
+function checkQrLabelGuard(forms, profile) {
+  const hasQrLabel = forms.some((form) => form.barcodeType === 'original-qr')
+  if (!hasQrLabel) return null
+
+  if (profile === PRINTER_PROFILES.LEGACY) {
+    return { status: 'error', message: 'ป้าย QR ใช้ได้เฉพาะเครื่องพิมพ์ GT800 ครับ' }
+  }
+
+  const missingUrl = forms.some((form) => form.barcodeType === 'original-qr' && !form.publicUrl)
+  if (missingUrl) {
+    return { status: 'error', message: 'ยังไม่มีลิงก์หน้าสินค้า จึงพิมพ์ป้าย QR ไม่ได้ครับ' }
+  }
+
+  return null
 }
 
 export const zebraPrinterApi = defineStore('zebraPrinter', {
@@ -33,6 +51,10 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
 
       if (profile === PRINTER_PROFILES.LEGACY) {
         return isOriginal ? generateLegacyZPL(formValue) : generateLegacyZPLVertical(formValue)
+      }
+
+      if (formValue.barcodeType === 'original-qr') {
+        return generateGt800ZPLQr(formValue, dpiScale)
       }
 
       return isOriginal ? generateGt800ZPL(formValue, dpiScale) : generateGt800ZPLVertical(formValue, dpiScale)
@@ -87,6 +109,10 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
 
     async fetchZebraPrint({ formValue, skipLoading = true }) {
       const config = getBarcodePrinterConfig()
+
+      const qrGuardResult = checkQrLabelGuard([formValue], config.profile)
+      if (qrGuardResult) return qrGuardResult
+
       const printCount = formValue.print || 1
       const zpl = this.buildZpl(formValue, config.profile, config.dpiScale)
 
@@ -138,6 +164,10 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
 
     async fetchZebraPrints({ formValue, skipLoading = true }) {
       const config = getBarcodePrinterConfig()
+
+      const qrGuardResult = checkQrLabelGuard(formValue, config.profile)
+      if (qrGuardResult) return qrGuardResult
+
       const zpls = formValue.map((form) => this.buildZpl(form, config.profile, config.dpiScale))
 
       if (config.profile === PRINTER_PROFILES.LEGACY) {

@@ -87,6 +87,23 @@ describe('zebraPrinterApi — เลือก template ตาม profile + ส�
       expect(res.status).toBe('success')
       expect(res.summary).toEqual({ total: 2, success: 2, failed: 0 })
     })
+
+    it('original-qr บนโปรไฟล์ legacy → error พิมพ์ได้แค่ GT800 ไม่เรียก printZPL', async () => {
+      const store = zebraPrinterApi()
+      const res = await store.fetchZebraPrint({
+        formValue: {
+          stockNumber: 'RG-001',
+          barcodeType: 'original-qr',
+          publicUrl: 'https://app.duangkeaw.com/p/abc',
+          print: 1
+        }
+      })
+
+      expect(api.zebraPrinter.printZPL).not.toHaveBeenCalled()
+      expect(printZpl).not.toHaveBeenCalled()
+      expect(res.status).toBe('error')
+      expect(res.message).toContain('GT800')
+    })
   })
 
   describe('profile gt800 — พิมพ์ผ่าน DK Print Bridge (printZpl)', () => {
@@ -153,6 +170,38 @@ describe('zebraPrinterApi — เลือก template ตาม profile + ส�
 
       expect(res.status).toBe('partial')
       expect(res.summary).toEqual({ total: 2, success: 1, failed: 1 })
+    })
+
+    it('original-qr ไม่มี publicUrl → error ไม่เรียก printZpl', async () => {
+      setBarcodePrinterName('GT800 RAW')
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchZebraPrint({
+        formValue: { stockNumber: 'RG-001', barcodeType: 'original-qr', publicUrl: '', print: 1 }
+      })
+
+      expect(printZpl).not.toHaveBeenCalled()
+      expect(res.status).toBe('error')
+    })
+
+    it('original-qr มี publicUrl → ใช้ template QR (มี ^BQN) ไม่ตกไปแนวตั้ง', async () => {
+      setBarcodePrinterName('GT800 RAW')
+      printZpl.mockResolvedValue({ success: true })
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchZebraPrint({
+        formValue: {
+          stockNumber: 'RG-001',
+          barcodeType: 'original-qr',
+          publicUrl: 'https://app.duangkeaw.com/p/abc',
+          print: 1
+        }
+      })
+
+      expect(printZpl).toHaveBeenCalledTimes(1)
+      const sentZpl = printZpl.mock.calls[0][0].zpl
+      expect(sentZpl).toContain('^BQN')
+      expect(res.status).toBe('success')
     })
   })
 

@@ -68,6 +68,50 @@ const GT800_ROOMY_LINE_COUNT_THRESHOLD = 3
 const GT800_ROOMY_LINE_MAX_LEN = 20
 const GT800_ROOMY_GEM_MAX_LEN = 24
 
+// แท็บ original-qr — บล็อกข้อความชิดซ้าย 4 บรรทัด (ไม่มีพลอย) + QR วางกลางพื้นที่ว่างด้านขวาของบล็อก
+const GT800_QR_NAME_X = 256
+const GT800_QR_NAME_Y = 31
+const GT800_QR_NAME_FONT = [14, 14]
+
+const GT800_QR_BARCODE_X = 262
+const GT800_QR_BARCODE_Y = 47
+const GT800_QR_BARCODE_MODULE = 1
+const GT800_QR_BARCODE_RATIO = '3.0:1'
+const GT800_QR_BARCODE_HEIGHT = 18 // สูงเท่า template แนวตั้ง
+
+const GT800_QR_CODE_LINE_X = 256
+const GT800_QR_CODE_LINE_Y = 68
+const GT800_QR_CODE_LINE_FONT = [15, 15]
+
+const GT800_QR_GOLD_LINE_X = 256
+const GT800_QR_GOLD_LINE_Y = 86
+const GT800_QR_GOLD_LINE_FONT = [14, 14] // ไม่มี goldType (18K) นำหน้าเหมือน template อื่น
+
+// ประมาณความกว้างข้อความแต่ละบรรทัด (dot ต่อตัวอักษร ที่ dpiScale=1) แบบระมัดระวัง เพื่อหาขอบขวาสุดของบล็อกข้อความ (blockRight)
+const GT800_QR_NAME_CHAR_W = 7.2
+const GT800_QR_BARCODE_CHAR_W = 11 // ความกว้าง Code128 subset B โดยประมาณที่ module 1 คือ 11n+35 modules
+const GT800_QR_BARCODE_QUIET = 35
+const GT800_QR_CODE_LINE_CHAR_W = 7.8
+const GT800_QR_GOLD_LINE_CHAR_W = 6.2
+
+const GT800_QR_MIN_GAP = 10 // ระยะห่างขั้นต่ำจากท้ายบล็อกข้อความถึง QR
+const GT800_QR_RIGHT_EDGE = 594 // ขอบขวาสุดที่ยังใช้ได้ของหัวป้ายสีขาว (เผื่อขอบเล็กน้อยจาก x≈596)
+const GT800_QR_X = 534 // เพดานบนของ qrX (กันชนขอบเมื่อบล็อกข้อความสั้นมาก)
+// ^FO นี้คือจุดเริ่ม (ค่าที่ใส่ใน ^FO จริง) แต่ Labelary เรนเดอร์ ^BQ เยื้องลงจากจุด ^FO เองราว 20 dot
+// ทำให้ QR จริงไปอยู่ที่ y≈33 ซึ่งอยู่ในแถบใช้งานได้ y 30–103 (พ้นแถบส้มพิมพ์ล่วงหน้าที่ y<30) — ค่านี้ verify กับเครื่องพิมพ์จริงแล้ว
+const GT800_QR_Y = 13
+const GT800_QR_MAX_DOTS = 73 // ขนาดด้านยาวสุดของ QR ที่ยังพอดีกับแถบ
+
+// ความจุ byte mode ECC L ต่อเวอร์ชัน QR — ใช้ประมาณเวอร์ชันจากความยาว URL
+const QR_BYTE_CAPACITY = [
+  { version: 1, capacity: 17 },
+  { version: 2, capacity: 32 },
+  { version: 3, capacity: 53 },
+  { version: 4, capacity: 78 },
+  { version: 5, capacity: 106 },
+  { version: 6, capacity: 134 }
+]
+
 // ─────────────────────────────────────────────────────────────
 // helpers
 // ─────────────────────────────────────────────────────────────
@@ -299,6 +343,78 @@ export function generateGt800ZPL(formValue, dpiScale = 1) {
   }
 
   zpl += buildGemFieldsZpl(layout, s)
+
+  zpl += '^XZ'
+
+  return zpl
+}
+
+// ประมาณเวอร์ชัน QR จากความยาว URL (byte mode ECC L) — ใช้ร่วมกันระหว่าง pickQrMagnification และ layoutGt800Qr
+function resolveQrVersion(url) {
+  const byteLength = (url || '').length
+  const entry = QR_BYTE_CAPACITY.find((item) => byteLength <= item.capacity)
+  return entry ? entry.version : QR_BYTE_CAPACITY[QR_BYTE_CAPACITY.length - 1].version
+}
+
+// เลือก magnification ของ QR ที่ยังพอดีกับแถบ (ไม่ต่ำกว่า 2)
+export function pickQrMagnification(url) {
+  const version = resolveQrVersion(url)
+  const modules = 17 + 4 * version
+
+  return modules * 3 <= GT800_QR_MAX_DOTS ? 3 : 2
+}
+
+// คืนตำแหน่ง/ขนาดของบล็อกข้อความ + QR (แท็บ original-qr) ให้ test/preview ใช้ได้โดยไม่ต้องยุ่งกับ dpiScale
+export function layoutGt800Qr(formValue) {
+  const code = resolveLabelCode(formValue)
+  const productNameEn = formValue?.productNameEn || ''
+  const codeLine = [code, formatMoney(formValue?.salePrice)].filter(Boolean).join(' - ')
+  const goldLine = `${formValue?.gold || ''} ${formValue?.size || ''}`.trim()
+  const url = formValue?.publicUrl || ''
+
+  const blockRight = Math.max(
+    GT800_QR_NAME_X + productNameEn.length * GT800_QR_NAME_CHAR_W,
+    GT800_QR_BARCODE_X + (GT800_QR_BARCODE_CHAR_W * code.length + GT800_QR_BARCODE_QUIET),
+    GT800_QR_CODE_LINE_X + codeLine.length * GT800_QR_CODE_LINE_CHAR_W,
+    GT800_QR_GOLD_LINE_X + goldLine.length * GT800_QR_GOLD_LINE_CHAR_W
+  )
+
+  const version = resolveQrVersion(url)
+  const mag = pickQrMagnification(url)
+  const modules = 17 + 4 * version
+  const qrSize = modules * mag
+
+  const qrX = Math.round(
+    Math.min(GT800_QR_X, Math.max(blockRight + GT800_QR_MIN_GAP, (blockRight + GT800_QR_RIGHT_EDGE) / 2 - qrSize / 2))
+  )
+
+  return { code, codeLine, goldLine, productNameEn, blockRight, qrSize, mag, qrX }
+}
+
+// แท็บ original-qr — บล็อกข้อความชิดซ้าย 4 บรรทัด (ไม่มีพลอย) + QR วางกลางพื้นที่ว่างด้านขวาของบล็อก
+export function generateGt800ZPLQr(formValue, dpiScale = 1) {
+  const s = (n) => Math.round(n * dpiScale)
+  const layout = layoutGt800Qr(formValue)
+  const url = formValue?.publicUrl || ''
+
+  let zpl = `^XA^LL${s(GT800_LABEL_HEIGHT)}^MD15^LT0^XZ^XA`
+
+  zpl += `^FO${s(GT800_MADE_IN_X)},${s(GT800_MADE_IN_Y)}^A0N,${s(GT800_MADE_IN_FONT[0])},${s(GT800_MADE_IN_FONT[1])}^FD${formValue?.madeIn || ''}^FS`
+
+  if (layout.productNameEn) {
+    zpl += `^FO${s(GT800_QR_NAME_X)},${s(GT800_QR_NAME_Y)}^A0N,${s(GT800_QR_NAME_FONT[0])},${s(GT800_QR_NAME_FONT[1])}^FD${layout.productNameEn}^FS`
+  }
+
+  zpl += `^FO${s(GT800_QR_BARCODE_X)},${s(GT800_QR_BARCODE_Y)}^BY${s(GT800_QR_BARCODE_MODULE)},${GT800_QR_BARCODE_RATIO},${s(GT800_QR_BARCODE_HEIGHT)}^BCN,${s(GT800_QR_BARCODE_HEIGHT)},N,N^FD${layout.code}^FS`
+
+  zpl += `^FO${s(GT800_QR_CODE_LINE_X)},${s(GT800_QR_CODE_LINE_Y)}^A0N,${s(GT800_QR_CODE_LINE_FONT[0])},${s(GT800_QR_CODE_LINE_FONT[1])}^FD${layout.codeLine}^FS`
+
+  zpl += `^FO${s(GT800_QR_GOLD_LINE_X)},${s(GT800_QR_GOLD_LINE_Y)}^A0N,${s(GT800_QR_GOLD_LINE_FONT[0])},${s(GT800_QR_GOLD_LINE_FONT[1])}^FD${layout.goldLine}^FS`
+
+  if (url) {
+    const mag = Math.max(1, Math.round(layout.mag * dpiScale))
+    zpl += `^FO${s(layout.qrX)},${s(GT800_QR_Y)}^BQN,2,${mag}^FDLA,${url}^FS`
+  }
 
   zpl += '^XZ'
 

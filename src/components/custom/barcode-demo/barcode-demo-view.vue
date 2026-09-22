@@ -12,7 +12,7 @@
       <div class="main-box">
         <div class="box-col-container">
           <div class="left-box">
-            <div class="mold-box"></div>
+            <div class="mold-box">{{ isQrMode ? productNameEn : '' }}</div>
             <div class="d-flex justify-content-between">
               <div class="barcode-wrapper">
                 <svg ref="barcodeElement"></svg>
@@ -25,8 +25,9 @@
               <div class="gold-box ml-1">{{ size }}</div>
             </div>
           </div>
-          <div class="right-box">
-            <div v-if="displayGems.length > 0">
+          <div class="right-box" :class="{ 'right-box-center': isQrMode }">
+            <img v-if="qrDataUrl" :src="qrDataUrl" class="qr-preview" alt="QR" />
+            <div v-else-if="displayGems.length > 0">
               <div v-for="(item, index) in displayGems" :key="index">
                 <div class="gem-box">
                   <span class="text-left">{{ item }}</span>
@@ -42,6 +43,7 @@
 
 <script>
 import JsBarcode from 'jsbarcode'
+import QRCode from 'qrcode'
 
 import { formatGemText } from '@/services/helper/barcode/barcode-zpl.js'
 import { PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
@@ -99,6 +101,20 @@ export default {
         margin: 2,
         background: '#ffffff'
       })
+    },
+    qrUrl: {
+      type: String,
+      default: ''
+    },
+    productNameEn: {
+      type: String,
+      default: ''
+    }
+  },
+
+  data() {
+    return {
+      qrDataUrl: ''
     }
   },
 
@@ -106,6 +122,16 @@ export default {
     stockNumber: {
       handler(newVal) {
         this.generateBarcode(newVal)
+      },
+      immediate: true
+    },
+    qrUrl: {
+      async handler(val) {
+        if (!val) {
+          this.qrDataUrl = ''
+          return
+        }
+        this.qrDataUrl = await QRCode.toDataURL(val, { margin: 0, errorCorrectionLevel: 'L' })
       },
       immediate: true
     }
@@ -126,8 +152,13 @@ export default {
       return this.profile === PRINTER_PROFILES.GT800
     },
 
+    // แท็บ QR ไม่มีคอลัมน์พลอย ใช้พื้นที่นั้นแสดงชื่อสินค้า/QR แทน — ไม่มี goldType นำหน้าบรรทัดทอง
+    isQrMode() {
+      return !!this.qrUrl
+    },
+
     goldText() {
-      if (this.isGt800 && this.goldType) {
+      if (this.isGt800 && this.goldType && !this.isQrMode) {
         return [this.goldType, this.gold].filter(Boolean).join('  ')
       }
       return this.gold
@@ -241,5 +272,24 @@ export default {
   font-size: 10px;
   font-weight: bold;
   margin-left: 15px;
+}
+
+.qr-preview {
+  display: block;
+  width: 56px;
+  height: 56px;
+  margin-left: auto;
+  image-rendering: pixelated;
+}
+
+// แท็บ QR — จัดกลางพื้นที่ว่างขวาของบล็อกข้อความ แทนการชิดขวา
+.right-box-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .qr-preview {
+    margin-left: 0;
+  }
 }
 </style>

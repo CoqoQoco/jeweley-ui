@@ -38,6 +38,14 @@
             >
               <i class="bi bi-tag-fill mr-1"></i> {{ $t('view.stock.product.tabTagNoGold') }}
             </button>
+            <button
+              :class="['tab-btn', selectedType === 'original-qr' ? 'tab-btn-active' : '']"
+              :disabled="isLegacyProfile"
+              :title="isLegacyProfile ? $t('view.stock.product.qrGt800Only') : ''"
+              @click="selectedType = 'original-qr'"
+            >
+              <i class="bi bi-qr-code mr-1"></i> {{ $t('view.stock.product.tabOriginalQr') }}
+            </button>
           </div>
         </div>
 
@@ -48,13 +56,25 @@
           </div>
         </div>
 
+        <div v-if="showPublicLinkWarning" class="pl-4 pr-4 pt-2">
+          <div class="cost-missing-warning">
+            <span class="bi bi-exclamation-triangle mr-1"></span>
+            <span>{{ $t('view.stock.product.publicLinkError') }}</span>
+          </div>
+        </div>
+
         <div class="pl-4 pt-2">
           <span class="title-text">{{ $t('view.stock.product.previewLabel') }}</span>
         </div>
 
         <div class="form-col-container pl-4 pr-4">
           <div class="filter-container-bg-focus">
-            <barcodePreview :selectedType="selectedType" :barcode="barcode" :price="previewPrice" />
+            <barcodePreview
+              :selectedType="selectedType"
+              :barcode="barcode"
+              :price="previewPrice"
+              :qrUrl="selectedType === 'original-qr' ? publicUrl : ''"
+            />
           </div>
         </div>
 
@@ -115,7 +135,7 @@
               </div>
               <button
                 class="btn btn-sm btn-main"
-                :disabled="!isPrinterReady"
+                :disabled="isPrintDisabled"
                 @click="onPrintBarcode"
               >
                 <span class="bi bi-upc-scan"></span>
@@ -158,6 +178,8 @@ import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.
 import { buildBarcodeModel } from '@/services/helper/barcode/barcode-model.js'
 import { getPieceQty } from '@/services/utils/stock-piece-qty.js'
 import { error } from '@/services/alert/sweetAlerts.js'
+import { getBarcodeProfile, PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
+import { buildPublicUrl } from '@/config/public-site-config.js'
 
 export default {
   components: {
@@ -202,6 +224,8 @@ export default {
         this.stock = { ...val }
         this.costLoaded = false
         this.hasCostData = false
+        this.publicUrl = ''
+        this.publicLinkStatus = 'idle'
 
         this.barcode = {
           ...buildBarcodeModel(val),
@@ -223,8 +247,17 @@ export default {
           }
           this.costLoaded = true
         }
+
+        if (this.selectedType === 'original-qr') {
+          this.loadPublicLink()
+        }
       },
       immediate: true
+    },
+    selectedType(val) {
+      if (val === 'original-qr') {
+        this.loadPublicLink()
+      }
     }
   },
 
@@ -287,9 +320,24 @@ export default {
       return this.$t('common.printer.statusUnreachableTitle')
     },
 
-    // โหลดต้นทุนเสร็จแล้วแต่ไม่มีข้อมูล + แท็บราคา (ไม่ใช่ original) → เตือนว่าจะพิมพ์โดยไม่มีราคา
+    // โหลดต้นทุนเสร็จแล้วแต่ไม่มีข้อมูล + แท็บราคา (ไม่ใช่ original/original-qr) → เตือนว่าจะพิมพ์โดยไม่มีราคา
     showCostMissingWarning() {
-      return this.costLoaded && !this.hasCostData && this.selectedType !== 'original'
+      return this.costLoaded && !this.hasCostData && this.selectedType !== 'original' && this.selectedType !== 'original-qr'
+    },
+
+    // เครื่องพิมพ์เดิม (legacy) พิมพ์ป้าย QR ไม่ได้
+    isLegacyProfile() {
+      return getBarcodeProfile() === PRINTER_PROFILES.LEGACY
+    },
+
+    showPublicLinkWarning() {
+      return this.selectedType === 'original-qr' && this.publicLinkStatus === 'error'
+    },
+
+    isPrintDisabled() {
+      if (!this.isPrinterReady) return true
+      if (this.selectedType === 'original-qr' && this.publicLinkStatus !== 'ready') return true
+      return false
     }
   },
 
@@ -302,7 +350,9 @@ export default {
       stock: {},
       barcode: { ...interfaceBarcode },
       costLoaded: false,
-      hasCostData: false
+      hasCostData: false,
+      publicUrl: '',
+      publicLinkStatus: 'idle'
     }
   },
 
@@ -314,6 +364,8 @@ export default {
       this.printerCheck = { status: 'unknown', printerName: '', printers: [], detail: null }
       this.costLoaded = false
       this.hasCostData = false
+      this.publicUrl = ''
+      this.publicLinkStatus = 'idle'
     },
 
     closeModal() {
@@ -335,11 +387,43 @@ export default {
       this.printerCheck = await this.zebraPrinter.fetchBarcodePrinterStatus()
     },
 
+    // โหลดลิงก์หน้าสินค้าสาธารณะสำหรับฝัง QR — ข้ามถ้ามีลิงก์อยู่แล้วหรือกำลังโหลดอยู่
+    async loadPublicLink() {
+      if (this.publicUrl || this.publicLinkStatus === 'loading') return
+
+      const stockNumber = this.stock?.stockNumber
+      if (!stockNumber) return
+
+      this.publicLinkStatus = 'loading'
+
+      // skipError:true ยังปฏิเสธ promise อยู่ดี (axios-helper.js แค่ไม่โชว์ alert) — ต้อง catch เอง
+      // เพราะ endpoint นี้ตอบ 400 "not found" ปกติเมื่อ feature ปิด/หาชิ้นไม่เจอ
+      let res
+      try {
+        res = await this.productStore.fetchPublicLink(stockNumber, { skipLoading: true, skipError: true })
+      } catch {
+        if (this.stock?.stockNumber !== stockNumber) return
+        this.publicLinkStatus = 'error'
+        return
+      }
+
+      // กันเคส response ช้าแล้ว modal เปลี่ยนไปดูสินค้าอื่นแล้ว
+      if (this.stock?.stockNumber !== stockNumber) return
+
+      if (res?.path) {
+        this.publicUrl = buildPublicUrl(res.path)
+        this.publicLinkStatus = 'ready'
+      } else {
+        this.publicLinkStatus = 'error'
+      }
+    },
+
     async onPrintBarcode() {
       const zplData = {
         ...this.barcode,
         price: this.previewPrice,
-        barcodeType: this.selectedType
+        barcodeType: this.selectedType,
+        publicUrl: this.publicUrl
       }
       const res = await this.zebraPrinter.fetchZebraPrint({ formValue: zplData, skipLoading: true })
       if (res?.status !== 'success') {
@@ -397,6 +481,15 @@ input {
 
   &:hover {
     background: #f5f5f5;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+
+    &:hover {
+      background: #fff;
+    }
   }
 }
 

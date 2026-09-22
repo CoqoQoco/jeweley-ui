@@ -1,15 +1,17 @@
 <template>
   <barcodeDemo
-    v-if="selectedType === 'original'"
+    v-if="selectedType === 'original' || selectedType === 'original-qr'"
     :type="type"
     :madeIn="barcode.madeIn"
     :stockNumber="labelCode"
     :gold="barcode.gold"
-    :gems="barcode.gems"
+    :gems="previewGems"
     :size="barcode.size"
     :goldType="barcode.goldType"
     :salePrice="barcode.salePrice"
     :profile="profile"
+    :qrUrl="qrUrl"
+    :productNameEn="selectedType === 'original-qr' ? barcode.productNameEn : ''"
   />
   <barcodeVerticalDemo
     v-else
@@ -63,6 +65,10 @@ export default {
     type: {
       type: String,
       default: 'gem'
+    },
+    qrUrl: {
+      type: String,
+      default: ''
     }
   },
 
@@ -75,6 +81,11 @@ export default {
     // ตัวอย่างต้องตรงกับ profile เครื่องพิมพ์ที่ตั้งไว้ (legacy/gt800) ให้ตรงกับที่จะพิมพ์จริง
     profile() {
       return getBarcodeProfile()
+    },
+
+    // ป้าย QR ตัดคอลัมน์พลอยออก (QR แทนที่ตำแหน่งนั้น)
+    previewGems() {
+      return this.selectedType === 'original-qr' ? [] : this.barcode.gems
     }
   }
 }
