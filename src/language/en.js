@@ -227,6 +227,7 @@ export default {
       saleIndex: { ...mobileLang.saleIndex },
       components: { ...mobileLang.components },
       stockProduct: { ...mobileLang.stockProduct },
+      stockProductPhotos: { ...mobileLang.stockProductPhotos },
       receipt: { ...mobileLang.receipt },
       posHelp: { ...mobileLang.posHelp }
     },

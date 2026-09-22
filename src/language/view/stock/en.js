@@ -46,6 +46,7 @@ export default {
     selectImage: 'Select Product Image',
     selectProductType: 'Select product type',
     imageProduct: 'Product Image',
+    imageInternal: 'Internal Photo (Not Shown to Customer)',
     materialsTitle: "Gold {'|'} Diamond {'|'} Gem",
     addMaterial: 'Add Material',
     materialType: 'Type',

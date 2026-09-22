@@ -46,6 +46,7 @@ export default {
     selectImage: 'เลือกรูปสินค้า',
     selectProductType: 'เลือกประเภทสินค้า',
     imageProduct: 'รูปภาพสินค้า',
+    imageInternal: 'รูปภายใน (ไม่แสดงให้ลูกค้า)',
     materialsTitle: "ทอง {'|'} เพชร {'|'} พลอย",
     addMaterial: 'เพิ่มวัสดุ',
     materialType: 'ประเภท',

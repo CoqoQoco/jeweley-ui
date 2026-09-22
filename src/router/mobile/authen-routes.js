@@ -187,6 +187,16 @@ const routes = [
         }
       },
       {
+        path: 'stock-product-list/:stockNumber/photos',
+        name: 'mobile-stock-product-photos',
+        component: () => import('@/views/mobile/stock-product/photos-view.vue'),
+        meta: {
+          Displayname: { en: 'Product Photos', th: 'รูปสินค้า' },
+          requiresAuth: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT_GR_IMAGE_CREATE]
+        }
+      },
+      {
         path: 'showcase-scan',
         name: 'mobile-showcase-scan',
         component: () => import('@/views/showcase-scan/index-view.vue'),

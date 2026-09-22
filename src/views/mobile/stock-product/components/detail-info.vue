@@ -3,7 +3,7 @@
     <div class="info-card">
       <div class="card-header">
         <i class="bi bi-image"></i>
-        <span>{{ $t('view.stock.product.imageProduct') }}</span>
+        <span>{{ $t('view.stock.product.imageInternal') }}</span>
       </div>
       <div class="card-body image-body">
         <ImagePreview
@@ -16,6 +16,34 @@
         <div v-else class="no-image">
           <i class="bi bi-image"></i>
         </div>
+      </div>
+    </div>
+
+    <div class="info-card mobile-mt-2">
+      <div class="card-header">
+        <i class="bi bi-images"></i>
+        <span>{{ $t('view.mobile.stockProduct.customerGalleryTitle') }}</span>
+      </div>
+      <div class="card-body">
+        <div v-if="galleryImages.length" class="gallery-thumbs">
+          <div v-for="(img, idx) in galleryImages" :key="idx" class="gallery-thumb-tile">
+            <ImagePreview :imageName="img" :preview="false" :borderShow="false" :width="70" :height="70" />
+          </div>
+        </div>
+        <div v-else class="no-gallery">
+          <i class="bi bi-image"></i>
+          <span>{{ $t('view.mobile.stockProduct.customerGalleryEmpty') }}</span>
+        </div>
+        <div v-if="galleryCaption" class="gallery-caption">{{ galleryCaption }}</div>
+        <ButtonGeneric
+          v-if="canManageGallery"
+          variant="outline"
+          icon="bi-images"
+          :label="$t('view.mobile.stockProduct.manageGalleryBtn')"
+          :block="true"
+          class="mobile-mt-2"
+          @click="goManageGallery"
+        />
       </div>
     </div>
 
@@ -118,18 +146,25 @@
 
 <script>
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
+import { useStockProductGalleryApiStore } from '@/stores/modules/api/stock/product-gallery-api.js'
+import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
+import { PermissionService } from '@/services/permission/permission.js'
+import { PERMISSIONS } from '@/services/permission/config.js'
 
 import ImagePreview from '@/components/prime-vue/ImagePreview.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 
 export default {
   name: 'DetailInfo',
 
-  components: { ImagePreview },
+  components: { ImagePreview, ButtonGeneric },
 
   setup() {
     const masterStore = useMasterApiStore()
-    return { masterStore }
+    const galleryStore = useStockProductGalleryApiStore()
+    const authStore = useAuthStore()
+    return { masterStore, galleryStore, authStore }
   },
 
   props: {
@@ -139,7 +174,38 @@ export default {
     }
   },
 
+  data() {
+    return {
+      gallery: null
+    }
+  },
+
   computed: {
+    galleryImages() {
+      return this.gallery?.images || []
+    },
+
+    galleryCaption() {
+      if (!this.gallery) return ''
+      const parts = []
+      const skuCount = this.gallery.skuImages?.length || 0
+      const moldCount = this.gallery.moldImages?.length || 0
+      if (skuCount) parts.push(this.$t('view.mobile.stockProduct.galleryCaptionSku', { n: skuCount }))
+      if (moldCount) {
+        parts.push(
+          this.$t('view.mobile.stockProduct.galleryCaptionMold', { mold: this.gallery.mold, n: moldCount })
+        )
+      }
+      return parts.join(' · ')
+    },
+
+    canManageGallery() {
+      const user = this.authStore.user
+      if (!user) return false
+      const permissionService = new PermissionService(user, this.authStore.permissions)
+      return permissionService.hasPermission(PERMISSIONS.STOCK_PRODUCT_GR_IMAGE_CREATE)
+    },
+
     // เลขหลัก = เลขเก่า (stockNumberOrigin) เมื่อมี ไม่งั้น fallback เป็นเลขใหม่ (stockNumber)
     primaryCode() {
       return this.item.stockNumberOrigin || this.item.stockNumber || '-'
@@ -167,8 +233,25 @@ export default {
     }
   },
 
+  created() {
+    this.loadGallery()
+  },
+
   methods: {
     formatDecimal,
+
+    async loadGallery() {
+      const res = await this.galleryStore.fetchGet({ stockNumber: this.item.stockNumber, skipLoading: true })
+      if (res) this.gallery = res
+    },
+
+    goManageGallery() {
+      this.$router.push({
+        name: 'mobile-stock-product-photos',
+        params: { stockNumber: this.item.stockNumber },
+        query: this.item.stockNumberOrigin ? { stockNumberOrigin: this.item.stockNumberOrigin } : {}
+      })
+    },
 
     getMaterialTypeLabel(m) {
       if (m.type === 'Diamond') return this.getDiamondType(m.typeCode)
@@ -323,5 +406,55 @@ export default {
   gap: 2px;
   font-size: 0.8rem;
   color: #444;
+}
+
+.gallery-thumbs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-sm);
+}
+
+.gallery-thumb-tile {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #f5f5f5;
+
+  :deep(img),
+  :deep(.p-image) {
+    width: 100%;
+    height: 100%;
+  }
+
+  :deep(img) {
+    object-fit: cover;
+  }
+}
+
+.no-gallery {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-xs);
+  padding: var(--sp-lg) 0;
+  color: #999;
+  text-align: center;
+
+  i {
+    font-size: 2rem;
+  }
+
+  span {
+    font-size: 0.85rem;
+  }
+}
+
+.gallery-caption {
+  margin-top: var(--sp-sm);
+  font-size: 0.8rem;
+  color: #666;
 }
 </style>

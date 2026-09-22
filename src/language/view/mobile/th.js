@@ -244,7 +244,40 @@ export const stockProduct = {
   skuTotalLabel: 'ยอดรวม SKU',
   selectVersion: 'เลือกเวอร์ชัน',
   notFoundTitle: 'ไม่พบข้อมูลสินค้า',
-  loadingText: 'กำลังโหลดข้อมูล...'
+  loadingText: 'กำลังโหลดข้อมูล...',
+
+  // customer gallery card (detail-info)
+  customerGalleryTitle: 'รูปสำหรับลูกค้า',
+  customerGalleryEmpty: 'ยังไม่มีรูป — หน้าลิงก์ลูกค้าจะไม่มีรูป',
+  galleryCaptionSku: 'เฉพาะชิ้นนี้ {n} รูป',
+  galleryCaptionMold: 'แบบ {mold} {n} รูป',
+  manageGalleryBtn: 'จัดการรูป'
+}
+
+export const stockProductPhotos = {
+  codeHint: 'ลูกค้าเห็นสูงสุด 4 รูป · รูปเฉพาะชิ้นแสดงก่อน',
+  skuGroupTitle: 'รูปเฉพาะชิ้นนี้ (แสดงก่อน)',
+  moldGroupTitle: 'รูปของแบบ {mold}',
+  moldGroupSub: 'ใช้กับ {count} ชิ้น',
+  slotFullHint: 'ครบ 4 รูปแล้ว (สูงสุด)',
+  captureBtn: 'ถ่ายรูป',
+  pickBtn: 'เลือกรูป',
+  scopeLabel: 'เพิ่มไปที่',
+  scopeMoldOption: 'ทุกชิ้นของแบบนี้ ({count})',
+  scopeSkuOption: 'เฉพาะชิ้นนี้',
+  photoOptionsAria: 'ตัวเลือกรูปที่ {n}',
+  primaryBadge: 'รูปหลัก',
+  hiddenBadge: 'ไม่แสดงให้ลูกค้า',
+  warnScopeFull: 'กลุ่มนี้มีรูปครบ 4 รูปแล้ว กรุณาลบรูปเก่าก่อนเพิ่มรูปใหม่',
+  warnTooMany: 'เลือกได้อีก {free} รูปเท่านั้นในกลุ่มนี้ ระบบเลือกให้เฉพาะรูปแรกๆ',
+  uploadErrorGeneric: 'อัปโหลดรูปไม่สำเร็จ กรุณาลองใหม่',
+  retryBtn: 'ลองใหม่',
+  actionSheetTitle: 'จัดการรูปนี้',
+  actionSetPrimary: 'ตั้งเป็นรูปหลัก',
+  actionMoveLeft: 'เลื่อนซ้าย',
+  actionMoveRight: 'เลื่อนขวา',
+  confirmDeleteTitle: 'ยืนยันการลบรูป',
+  confirmDeleteMsg: 'ต้องการลบรูปนี้ออกจากหน้าลูกค้าใช่หรือไม่?'
 }
 
 export const tasks = {

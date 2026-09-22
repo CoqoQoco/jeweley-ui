@@ -148,7 +148,7 @@
 | สลับภาษา | เปลี่ยน locale ในหน่วยความจำเท่านั้น · ออกจากหน้า (เช่นกด "สแกนชิ้นถัดไป") → คืน locale เดิมของระบบ |
 | รูป 1 รูป | ซ่อน counter + thumbnails |
 | รูป 2–4 รูป | แสดง counter "n / N" + thumbnails, แตะ thumbnail เปลี่ยนรูปใหญ่ |
-| ไม่มีรูป | placeholder พื้น `--showcase-tile` + icon `bi-gem` |
+| ไม่มีรูป (ยังไม่มีรูป gallery ลูกค้า) | placeholder พื้น `--showcase-tile` + icon `bi-gem` |
 | ไม่มีรหัสเก่า | บรรทัดรหัสใช้รหัสใหม่ (`stockNumberOrigin || stockNumber`) |
 | ไม่มีราคา (`ShowPrice=false`) | กรอบเหลือแค่บรรทัดรหัส (ไม่มีเส้นสั้น) |
 | availability | pill เล็กใต้กรอบราคา (มีข้อมูลเท่านั้น) — เหมือนเดิม |
@@ -165,7 +165,7 @@
 - สเปกจาก icon list → การ์ด label/value 2 ฝั่ง แบ่ง Metal / Gemstones
 - trust จากบรรทัด icon → tile 2 คอลัมน์
 - ปุ่มแชร์จาก outline → filled maroon · ช่องทางติดต่อ mobile มี label ใต้ icon
-- gallery รองรับหลายรูป (สูงสุด 4) — ตอนนี้ API ส่งรูปเดียว (`imagePath`) หน้าจอจึงยังเห็น 1 รูป · อัปโหลดหลายรูป = งานถัดไป
+- gallery รองรับหลายรูป (สูงสุด 4) — มาจาก `PublicProduct/Get.images` (StockProductGallery ล้วน) เท่านั้น, `imagePath` (รูปภายใน) ไม่ใช้ fallback แล้ว · จัดการรูปที่หน้ามือถือ "จัดการรูป" (SKU/MOLD scope)
 - ภาษาเริ่มต้น EN (เดิมตามค่า `lang` ของระบบ) และไม่เขียนทับภาษาของระบบหลังบ้านอีกต่อไป
 - **ยังไม่ทำ 3D/360°** ในรอบนี้ (ต้องมีไฟล์ 3D หรือชุดภาพหมุนก่อน — ตัวใน canvas เป็นโมเดลสาธิต)
 

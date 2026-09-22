@@ -149,15 +149,9 @@ export default {
       return this.$i18n.locale === 'th' ? raw : ''
     },
 
-    // API ปัจจุบันส่งแค่ imagePath เดียว — รองรับ images[] ล่วงหน้าสำหรับตอนอัปโหลดหลายรูป
+    // gallery ลูกค้า (StockProductGallery) เท่านั้น — imagePath (รูปภายใน) ไม่ใช้แสดงหน้านี้แล้ว
     images() {
-      const list =
-        Array.isArray(this.product.images) && this.product.images.length
-          ? this.product.images
-          : this.product.imagePath
-            ? [this.product.imagePath]
-            : []
-      return list.slice(0, 4)
+      return Array.isArray(this.product.images) ? this.product.images.slice(0, 4) : []
     },
 
     mainCode() {

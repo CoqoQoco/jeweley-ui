@@ -244,7 +244,40 @@ export const stockProduct = {
   skuTotalLabel: 'SKU Total',
   selectVersion: 'Select version',
   notFoundTitle: 'Product not found',
-  loadingText: 'Loading...'
+  loadingText: 'Loading...',
+
+  // customer gallery card (detail-info)
+  customerGalleryTitle: 'Customer Photos',
+  customerGalleryEmpty: 'No photos yet — the customer link page will show no photo',
+  galleryCaptionSku: 'This piece only: {n}',
+  galleryCaptionMold: 'Design {mold}: {n}',
+  manageGalleryBtn: 'Manage Photos'
+}
+
+export const stockProductPhotos = {
+  codeHint: 'Customers see up to 4 photos · this-piece photos shown first',
+  skuGroupTitle: 'This Piece Only (Shown First)',
+  moldGroupTitle: 'Design {mold} Photos',
+  moldGroupSub: 'Used by {count} pieces',
+  slotFullHint: 'Already 4 photos (maximum)',
+  captureBtn: 'Take Photo',
+  pickBtn: 'Choose Photo',
+  scopeLabel: 'Add to',
+  scopeMoldOption: 'Every piece of this design ({count})',
+  scopeSkuOption: 'This piece only',
+  photoOptionsAria: 'Photo {n} options',
+  primaryBadge: 'Main',
+  hiddenBadge: 'Not shown to customer',
+  warnScopeFull: 'This group already has 4 photos. Delete an old one before adding a new one.',
+  warnTooMany: 'Only {free} more photo(s) allowed in this group. Only the first ones were selected.',
+  uploadErrorGeneric: 'Failed to upload photo. Please try again.',
+  retryBtn: 'Retry',
+  actionSheetTitle: 'Manage this photo',
+  actionSetPrimary: 'Set as main photo',
+  actionMoveLeft: 'Move left',
+  actionMoveRight: 'Move right',
+  confirmDeleteTitle: 'Confirm delete photo',
+  confirmDeleteMsg: 'Delete this photo from the customer page?'
 }
 
 export const tasks = {
