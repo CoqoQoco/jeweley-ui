@@ -63,7 +63,7 @@
             <Column header="Stone (cts)" :frozen="!!frozenCols['gem']" :alignFrozen="frozenCols['gem'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.salePriceTHB')" :frozen="!!frozenCols['priceOrigin']" :alignFrozen="frozenCols['priceOrigin'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.appraisalPriceTHB')" :frozen="!!frozenCols['appraisalPrice']" :alignFrozen="frozenCols['appraisalPrice'] || undefined" />
-            <Column :header="$t('view.sale.saleOrder.discountPercent')" :frozen="!!frozenCols['discountPercent']" :alignFrozen="frozenCols['discountPercent'] || undefined" />
+            <Column v-if="canViewMargin" :header="$t('view.sale.saleOrder.discountPercent')" :frozen="!!frozenCols['discountPercent']" :alignFrozen="frozenCols['discountPercent'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.discountPriceTHB')" :frozen="!!frozenCols['discountPrice']" :alignFrozen="frozenCols['discountPrice'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.convertedRate')" :frozen="!!frozenCols['currencyRate']" :alignFrozen="frozenCols['currencyRate'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.convertedPrice') + ' (' + (formSaleOrder.currencyUnit || 'THB') + ')'" :frozen="!!frozenCols['priceAfterMultiply']" :alignFrozen="frozenCols['priceAfterMultiply'] || undefined" />
@@ -457,7 +457,7 @@
           </template>
         </Column>
 
-        <Column field="discountPercent" :header="$t('view.sale.saleOrder.discountPercent')" style="min-width: 100px"
+        <Column v-if="canViewMargin" field="discountPercent" :header="$t('view.sale.saleOrder.discountPercent')" style="min-width: 100px"
           :frozen="!!frozenCols['discountPercent']"
           :alignFrozen="frozenCols['discountPercent'] || undefined"
         >
@@ -629,7 +629,7 @@
                 </div>
               </template>
             </Column>
-            <Column :colspan="2">
+            <Column :colspan="canViewMargin ? 2 : 1">
               <template #footer>
                 <div class="text-right type-container">
                   <span>{{ getSumDiscountPrice(stockItems) }}</span>
@@ -671,7 +671,7 @@
           </Row>
           <!-- รายการรอผลิต/รอแปลง — แถวรวม stock กับ copy ให้เห็นสาย stock + copy = ยอดรวมสินค้าทั้งใบ ก่อนลงไปหักส่วนลด/VAT -->
           <Row v-if="copyItemsCount > 0">
-            <Column :colspan="18">
+            <Column :colspan="canViewMargin ? 18 : 17">
               <template #footer>
                 <div class="text-right type-container">
                   <span>{{ $t('view.sale.saleOrder.copySubtotalRow', { n: copyItemsCount }) }}</span>
@@ -690,7 +690,7 @@
             </Column>
           </Row>
           <Row v-if="copyItemsCount > 0">
-            <Column :colspan="18">
+            <Column :colspan="canViewMargin ? 18 : 17">
               <template #footer>
                 <div class="text-right type-container">
                   <span class="font-weight-bold">{{ $t('view.sale.saleOrder.docSubtotalRow') }}</span>
@@ -710,7 +710,7 @@
           </Row>
           <!-- ส่วนลดพิเศษ -->
           <Row>
-            <Column :colspan="18">
+            <Column :colspan="canViewMargin ? 18 : 17">
               <template #footer>
                 <div class="text-right type-container">
                   <span>{{ $t('view.sale.quotation.specialDiscount') }}:</span>
@@ -738,7 +738,7 @@
           </Row>
           <!-- ส่วนเพิ่มพิเศษ -->
           <Row>
-            <Column :colspan="18">
+            <Column :colspan="canViewMargin ? 18 : 17">
               <template #footer>
                 <div class="text-right type-container">
                   <span>{{ $t('view.sale.quotation.specialSurcharge') }}:</span>
@@ -766,7 +766,7 @@
           </Row>
           <!-- ยอดรวมหลังปรับ -->
           <Row>
-            <Column :colspan="18">
+            <Column :colspan="canViewMargin ? 18 : 17">
               <template #footer>
                 <div class="text-right type-container">
                   <span class="font-weight-bold">{{ $t('view.sale.quotation.adjustedTotal') }}:</span>
@@ -786,7 +786,7 @@
           </Row>
           <!-- freight -->
           <Row>
-            <Column :colspan="18">
+            <Column :colspan="canViewMargin ? 18 : 17">
               <template #footer>
                 <div class="text-right type-container">
                   <span>Freight & Insurance:</span>
@@ -814,7 +814,7 @@
           </Row>
           <!-- ยอดรวมก่อน VAT -->
           <Row>
-            <Column :colspan="18">
+            <Column :colspan="canViewMargin ? 18 : 17">
               <template #footer>
                 <div class="text-right type-container">
                   <span class="font-weight-bold">{{ $t('view.sale.quotation.beforeVatTotal') }}:</span>
@@ -834,7 +834,7 @@
           </Row>
           <!-- VAT -->
           <Row>
-            <Column :colspan="18">
+            <Column :colspan="canViewMargin ? 18 : 17">
               <template #footer>
                 <div class="text-right type-container d-flex align-items-center justify-content-end">
                   <span class="mr-2 mt-1">VAT (%) :</span>
@@ -865,7 +865,7 @@
           </Row>
           <!-- ราคารวม (ก่อนปัด) -->
           <Row>
-            <Column :colspan="18">
+            <Column :colspan="canViewMargin ? 18 : 17">
               <template #footer>
                 <div class="text-right type-container">
                   <span>{{ $t('view.sale.quotation.preTotalBeforeRound') }}</span>
@@ -885,7 +885,7 @@
           </Row>
           <!-- ยอดที่ต้องชำระ -->
           <Row>
-            <Column :colspan="18">
+            <Column :colspan="canViewMargin ? 18 : 17">
               <template #footer>
                 <div class="text-right type-container">
                   <span class="font-weight-bold">{{ $t('view.sale.quotation.payableTotal') }}</span>
@@ -928,6 +928,7 @@ import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { PermissionService } from '@/services/permission/permission.js'
 import { PERMISSIONS } from '@/services/permission/config.js'
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
 
 export default {
   name: 'StockItemsTable',
@@ -1035,6 +1036,10 @@ export default {
   },
 
   computed: {
+    canViewMargin() {
+      return hasMarginAccess()
+    },
+
     activeRowItems() {
       return this.mergedRows
     },
@@ -1058,7 +1063,7 @@ export default {
     },
 
     columnFreezeList() {
-      return [
+      const list = [
         { field: 'index', label: '#' },
         { field: 'action', label: 'Action' },
         { field: 'image', label: 'รูป' },
@@ -1079,6 +1084,9 @@ export default {
         { field: 'qty', label: this.$t('common.field.quantity') },
         { field: 'total', label: this.$t('view.sale.saleOrder.totalPrice') }
       ]
+
+      // ผู้ใช้ไม่มีสิทธิ์เห็นส่วนลด % — ตัดออกจากลิสต์ตั้งค่าปักหมุด กันปักหมุดคอลัมน์ที่ไม่แสดงผล
+      return this.canViewMargin ? list : list.filter((col) => col.field !== 'discountPercent')
     },
 
     canConvert() {

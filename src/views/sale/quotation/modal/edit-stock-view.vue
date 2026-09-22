@@ -368,7 +368,7 @@
               <span class="title-text-lg ml-2">{{ $t('view.sale.costStock.appraisalSection') }}</span>
             </div>
             <!-- ข้อความแจ้งเตือนว่ารายการที่แสดงเป็นราคาต่อชิ้น -->
-            <div class="mb-2" style="color: #888; font-size: 14px">
+            <div v-if="canViewMargin" class="mb-2" style="color: #888; font-size: 14px">
               {{ $t('view.sale.costStock.perItemNote') }}
             </div>
             <!-- แถบเตือนซิงก์เกรดเพชร: เกรดในตารางวัตถุดิบเปลี่ยนแต่ตารางประเมินราคายังไม่อัปเดตตาม -->
@@ -420,11 +420,11 @@
                 <Row>
                   <Column :header="$t('view.sale.costStock.jobDetail')" :colspan="3" />
                   <Column :header="$t('common.field.quantity')" />
-                  <Column :header="`${$t('view.sale.costStock.pricePerQty')} (${displayCurrency})`" />
+                  <Column v-if="canViewMargin" :header="`${$t('view.sale.costStock.pricePerQty')} (${displayCurrency})`" />
                   <Column :header="$t('common.field.weight')" />
-                  <Column :header="`${$t('view.sale.costStock.pricePerWeight')} (${displayCurrency})`" />
+                  <Column v-if="canViewMargin" :header="`${$t('view.sale.costStock.pricePerWeight')} (${displayCurrency})`" />
                   <Column :header="$t('view.sale.costStock.applyGoldLoss')" />
-                  <Column :header="`${$t('view.sale.costStock.totalPrice')} (${displayCurrency})`" />
+                  <Column v-if="canViewMargin" :header="`${$t('view.sale.costStock.totalPrice')} (${displayCurrency})`" />
                 </Row>
               </ColumnGroup>
               <Column field="nameGroup" />
@@ -477,7 +477,7 @@
                   <div v-else>
                     <span>{{ slotProps.data.nameDescription }}</span>
                     <span
-                      v-if="slotProps.data.nameGroup === 'Gold' && slotProps.data.priceReference"
+                      v-if="canViewMargin && slotProps.data.nameGroup === 'Gold' && slotProps.data.priceReference"
                       class="ml-2 text-ref"
                     >
                       {{
@@ -501,7 +501,7 @@
                   />
                 </template>
               </Column>
-              <Column field="qtyPrice" style="width: 110px">
+              <Column v-if="canViewMargin" field="qtyPrice" style="width: 110px">
                 <template #body="slotProps">
                   <input
                     style="background-color: #b5dad4"
@@ -529,7 +529,7 @@
                   />
                 </template>
               </Column>
-              <Column field="qtyWeightPrice" style="width: 110px">
+              <Column v-if="canViewMargin" field="qtyWeightPrice" style="width: 110px">
                 <template #body="slotProps">
                   <input
                     style="background-color: #b5dad4"
@@ -555,7 +555,7 @@
                   <span v-else class="apply-gold-loss-na">—</span>
                 </template>
               </Column>
-              <Column field="totalPrice" style="width: 150px">
+              <Column v-if="canViewMargin" field="totalPrice" style="width: 150px">
                 <template #body="slotProps">
                   <input
                     v-model="slotProps.data.totalPrice"
@@ -571,7 +571,7 @@
                   <span>{{ getGroupName(slotProps.data.nameGroup) }}</span>
                 </div>
               </template>
-              <template #groupfooter="slotProps">
+              <template v-if="canViewMargin" #groupfooter="slotProps">
                 <div class="d-flex align-items-center justify-content-between gap-2 type-container">
                   <div>
                     <span><i class="bi bi-clipboard2-check-fill mr-2"></i></span>
@@ -583,7 +583,7 @@
                   </div>
                 </div>
               </template>
-              <ColumnGroup type="footer">
+              <ColumnGroup v-if="canViewMargin" type="footer">
                 <Row>
                   <Column :colspan="8">
                     <template #footer>
@@ -603,7 +603,7 @@
               </ColumnGroup>
             </DataTable>
             <!-- ต้นทุนต่อชิ้น -->
-            <div class="d-flex align-items-center mt-3">
+            <div v-if="canViewMargin" class="d-flex align-items-center mt-3">
               <span class="mr-2 type-container">{{ $t('view.sale.costStock.costPerPieceLabel') }} ({{ displayCurrency }}):</span>
               <span class="font-weight-bold mr-3 type-container">{{
                 costPerPiece.toFixed(2)
@@ -614,7 +614,7 @@
               <input type="checkbox" id="useCostPerPiece" v-model="useCostPerPiece" class="mr-1" />
               <span for="useCostPerPiece">{{ $t('view.sale.costStock.useCostPerPiece') }}</span>
             </div>
-            <div class="action-group-container mt-2">
+            <div v-if="canViewMargin" class="action-group-container mt-2">
               <div class="d-flex align-items-center gap-2">
                 <DropdownGeneric
                   :modelValue="masterValue"
@@ -686,6 +686,7 @@ import { getTermHistory } from '@/services/helper/breakdown-term-history-store.j
 import { isAlloyDescription } from '@/services/helper/breakdown-alloy-detect.js'
 import { getBreakdownTermOptions } from '@/services/helper/breakdown-item-presets.js'
 import { buildGradeSyncPlan } from '@/services/helper/quotation/diamond-grade-sync.js'
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
 
 export default {
   components: {
@@ -747,6 +748,9 @@ export default {
   },
 
   computed: {
+    canViewMargin() {
+      return hasMarginAccess()
+    },
     masterGold() {
       return this.masterStore.gold
     },
@@ -797,7 +801,7 @@ export default {
       ]
     },
     materialColumns() {
-      return [
+      const cols = [
         { field: 'type', header: this.$t('common.field.type'), sortable: false, width: '100px' },
         { field: 'typeCode', header: this.$t('common.field.code'), sortable: false, minWidth: '100px' },
         { field: 'size', header: this.$t('view.sale.costStock.materialSize'), sortable: false, width: '100px' },
@@ -807,6 +811,9 @@ export default {
         { field: 'price', header: this.$t('common.field.price'), sortable: false, width: '100px' },
         { field: 'action', header: '', sortable: false, width: '50px' }
       ]
+
+      if (this.canViewMargin) return cols
+      return cols.filter((c) => c.field !== 'price')
     },
     // แผนซิงก์เกรดเพชรจากตารางวัตถุดิบ (stock.materials) ไปตารางประเมินราคา (tranItems) — ดู diamond-grade-sync.js
     gradeSyncPlan() {

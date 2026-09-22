@@ -54,7 +54,7 @@
                   class="input-bg input-narrow"
                 />
               </div>
-              <div class="">
+              <div v-if="canViewMargin" class="">
                 <span class="title-text">{{ $t('view.sale.quotation.markup') }}</span>
                 <InputTextGeneric
                   v-model.number="customer.markup"
@@ -64,7 +64,7 @@
                   class="input-bg input-narrow"
                 />
               </div>
-              <div class="">
+              <div v-if="canViewMargin" class="">
                 <span class="title-text">{{ $t('view.sale.quotation.discountPercent') }}</span>
                 <InputWithButton
                   v-model.number="customer.discountPercent"
@@ -297,11 +297,23 @@
                 <i class="bi bi-eye mr-1"></i>
                 <span>{{ $t('view.sale.quotation.previewBtn') }}</span>
               </button>
-              <button class="btn btn-sm btn-green" type="button" @click="printBreakdown()">
+              <button
+                class="btn btn-sm btn-green"
+                type="button"
+                :disabled="!canViewMargin"
+                :title="canViewMargin ? '' : $t('view.sale.quotation.noMarginAccessTooltip')"
+                @click="printBreakdown()"
+              >
                 <i class="bi bi-file-earmark-pdf mr-1"></i>
                 <span>{{ $t('view.sale.quotation.breakdownBtn') }}</span>
               </button>
-              <button class="btn btn-sm btn-outline-main" type="button" @click="previewBreakdown()">
+              <button
+                class="btn btn-sm btn-outline-main"
+                type="button"
+                :disabled="!canViewMargin"
+                :title="canViewMargin ? '' : $t('view.sale.quotation.noMarginAccessTooltip')"
+                @click="previewBreakdown()"
+              >
                 <i class="bi bi-eye mr-1"></i>
                 <span>{{ $t('view.sale.quotation.previewBtn') }}</span>
               </button>
@@ -320,7 +332,8 @@
                 <span>{{ $t('view.sale.quotation.excelBtn') }}</span>
               </button>
               <button class="btn btn-sm btn-green" type="button" @click="exportBreakdownExcel"
-                :disabled="!customer.quotationItems || customer.quotationItems.length === 0">
+                :disabled="!canViewMargin || !customer.quotationItems || customer.quotationItems.length === 0"
+                :title="canViewMargin ? '' : $t('view.sale.quotation.noMarginAccessTooltip')">
                 <i class="bi bi-file-earmark-excel mr-1"></i>
                 <span>{{ $t('view.sale.quotation.breakdownExcelBtn') }}</span>
               </button>
@@ -457,6 +470,7 @@ import { buildCopyItem } from '@/services/utils/copy-item.js'
 import { compressCopyItemImage } from '@/services/helper/file/compress-image.js'
 import { warning, success, error } from '@/services/alert/sweetAlerts.js'
 import { storage } from '@/services/storage.js'
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
 import dayjs from 'dayjs'
 
 import ExcelExportConfirmModal from '@/components/modal/excel-export-confirm-modal.vue'
@@ -535,6 +549,9 @@ export default {
   computed: {
     form() {
       return this.modelForm || {}
+    },
+    canViewMargin() {
+      return hasMarginAccess()
     },
     goldPerGramDisplay() {
       const gram = Number(this.customer.goldPerOz) || 0
@@ -910,6 +927,7 @@ export default {
     },
 
     printBreakdown() {
+      if (!this.canViewMargin) return
       if (!this.validateBreakdownComplete()) return
       const filename = `Breakdown_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`
       generateBreakdownPdf({
@@ -923,6 +941,7 @@ export default {
       })
     },
     previewBreakdown() {
+      if (!this.canViewMargin) return
       if (!this.validateBreakdownComplete()) return
       const win1 = window.open('', '_blank')
       generateBreakdownPdf({
@@ -1300,6 +1319,7 @@ export default {
     },
 
     async exportBreakdownExcel() {
+      if (!this.canViewMargin) return
       if (!this.customer.quotationItems || this.customer.quotationItems.length === 0) {
         warning(this.$t('view.sale.quotation.validation.noItems'), this.$t('common.label.incompleteData'))
         return

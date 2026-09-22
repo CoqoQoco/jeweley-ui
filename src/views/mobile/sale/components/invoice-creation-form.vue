@@ -62,7 +62,7 @@
             </div>
             <div class="item-price-info">
               <span class="item-price-thb">{{ formatCurrency(getAppraisalPrice(item)) }} {{ $t('view.mobile.sale.itemCostUnit') }}</span>
-              <span v-if="Number(item.discountPercent) > 0" class="item-discount">-{{ item.discountPercent }}%</span>
+              <span v-if="canViewMargin && Number(item.discountPercent) > 0" class="item-discount">-{{ item.discountPercent }}%</span>
               <span class="item-qty">x{{ item.qty || 1 }}</span>
             </div>
             <div class="item-total-row">
@@ -252,6 +252,7 @@ import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { PAYMENT_METHODS, MOBILE_SALE_PAYMENT_LABEL_KEYS, getPaymentApiName } from '@/constants/payment-methods.js'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
 
 // value string ที่ v-model ของฟอร์มนี้ใช้ ('credit_card'/'credit_term' มี underscore ต่างจาก key ของ constants)
 const VALUE_BY_KEY = {
@@ -303,6 +304,10 @@ export default {
   },
 
   computed: {
+    canViewMargin() {
+      return hasMarginAccess()
+    },
+
     // สร้างจาก PAYMENT_METHODS ผ่าน $t เสมอ (ห้าม hardcode ภาษาไทยตรงๆ) — value ยังคงรูปแบบเดิม (มี underscore)
     // เพื่อไม่กระทบ v-model/paymentDays disabled ที่ผูกกับ 'cash' อยู่แล้ว
     paymentMethodOptions() {

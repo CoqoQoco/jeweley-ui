@@ -146,7 +146,7 @@
                 @input="recalculateAll"
               />
             </div>
-            <div class="cg-field">
+            <div class="cg-field" v-if="canViewMargin">
               <span class="title-text">Markup</span>
               <input
                 class="form-control bg-input input-bg cg-input"
@@ -157,7 +157,7 @@
                 :readonly="isViewMode"
               />
             </div>
-            <div class="cg-field">
+            <div class="cg-field" v-if="canViewMargin">
               <span class="title-text">Discount (%)</span>
               <InputWithButton
                 v-model.number="overallDiscountPercent"
@@ -671,6 +671,7 @@ import { getPieceQtyAvailable, sumUnconfirmedQtyByStockNumber } from '@/services
 import { lookupStockProduct } from '@/services/utils/stock-scan.js'
 import { CURRENCY_UNITS } from '@/constants/currency-units.js'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
 
 import { SaleOrderPdfBuilder } from '@/services/helper/pdf/sale-order/sale-order-pdf-builder.js'
 import { SaleOrderExcelBuilder } from '@/services/helper/excel/sale-order/sale-order-excel-builder.js'
@@ -856,6 +857,10 @@ export default {
   },
 
   computed: {
+    canViewMargin() {
+      return hasMarginAccess()
+    },
+
     priorityOptions() {
       return [
         { label: this.$t('view.sale.saleOrder.priorityNormal'), value: 'normal', id: 1 },

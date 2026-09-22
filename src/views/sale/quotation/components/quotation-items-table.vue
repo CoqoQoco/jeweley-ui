@@ -21,7 +21,7 @@
           <Column :header="$t('view.sale.quotation.stoneWeight')" />
           <Column :header="$t('view.sale.quotation.salePriceTHB')" />
           <Column :header="$t('view.sale.quotation.appraisalPriceTHB')" />
-          <Column :header="$t('view.sale.quotation.discount')" />
+          <Column v-if="canViewMargin" :header="$t('view.sale.quotation.discount')" />
           <Column :header="$t('view.sale.quotation.discountPriceTHB')" />
           <Column :header="$t('view.sale.quotation.convertedRate')" />
           <Column :header="$t('view.sale.quotation.convertedPrice') + ' (' + (customer.currencyUnit || '') + ') '" />
@@ -230,7 +230,7 @@
         </template>
       </column>
 
-      <column field="discountPercent" :header="$t('view.sale.quotation.discount') + ' (%)'" style="min-width: 100px">
+      <column v-if="canViewMargin" field="discountPercent" :header="$t('view.sale.quotation.discount') + ' (%)'" style="min-width: 100px">
         <template #body="slotProps">
           <div class="qty-container">
             <input
@@ -359,7 +359,7 @@
               </div>
             </template>
           </column>
-          <column :colspan="2">
+          <column :colspan="canViewMargin ? 2 : 1">
             <template #footer>
               <div class="text-right type-container">
                 <span>{{ sumDiscountPrice }}</span>
@@ -390,7 +390,7 @@
         </Row>
         <!-- ส่วนลดพิเศษ -->
         <Row>
-          <column :colspan="16">
+          <column :colspan="canViewMargin ? 16 : 15">
             <template #footer>
               <div class="text-right type-container">
                 <span>{{ $t('view.sale.quotation.specialDiscount') }}:</span>
@@ -415,7 +415,7 @@
         </Row>
         <!-- ส่วนเพิ่มพิเศษ -->
         <Row>
-          <column :colspan="16">
+          <column :colspan="canViewMargin ? 16 : 15">
             <template #footer>
               <div class="text-right type-container">
                 <span>{{ $t('view.sale.quotation.specialSurcharge') }}:</span>
@@ -440,7 +440,7 @@
         </Row>
         <!-- ยอดรวมหลังปรับ -->
         <Row>
-          <column :colspan="16">
+          <column :colspan="canViewMargin ? 16 : 15">
             <template #footer>
               <div class="text-right type-container">
                 <span class="font-weight-bold">{{ $t('view.sale.quotation.adjustedTotal') }}:</span>
@@ -457,7 +457,7 @@
         </Row>
         <!-- freight -->
         <Row>
-          <column :colspan="16">
+          <column :colspan="canViewMargin ? 16 : 15">
             <template #footer>
               <div class="text-right type-container">
                 <span>{{ $t('view.sale.quotation.freightInsurance') }}</span>
@@ -484,7 +484,7 @@
         </Row>
         <!-- ยอดรวมก่อน VAT -->
         <Row>
-          <column :colspan="16">
+          <column :colspan="canViewMargin ? 16 : 15">
             <template #footer>
               <div class="text-right type-container">
                 <span class="font-weight-bold">{{ $t('view.sale.quotation.beforeVatTotal') }}:</span>
@@ -501,7 +501,7 @@
         </Row>
         <!-- VAT -->
         <Row>
-          <column :colspan="16">
+          <column :colspan="canViewMargin ? 16 : 15">
             <template #footer>
               <div class="text-right type-container d-flex align-items-center justify-content-end">
                 <span class="mr-2 mt-1">{{ $t('view.sale.quotation.vatPercentLabel') }}</span>
@@ -529,7 +529,7 @@
         </Row>
         <!-- ราคารวม (ก่อนปัด) -->
         <Row>
-          <column :colspan="16">
+          <column :colspan="canViewMargin ? 16 : 15">
             <template #footer>
               <div class="text-right type-container">
                 <span>{{ $t('view.sale.quotation.preTotalBeforeRound') }}</span>
@@ -546,7 +546,7 @@
         </Row>
         <!-- ยอดที่ต้องชำระ -->
         <Row>
-          <column :colspan="16">
+          <column :colspan="canViewMargin ? 16 : 15">
             <template #footer>
               <div class="text-right type-container">
                 <span class="font-weight-bold">{{ $t('view.sale.quotation.payableTotal') }}</span>
@@ -579,6 +579,7 @@ import Row from 'primevue/row'
 import { formatDocCurrency } from '@/services/utils/decimal.js'
 import { convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
 
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 
@@ -640,6 +641,9 @@ export default {
   computed: {
     activeRowItems() {
       return this.customer.quotationItems
+    },
+    canViewMargin() {
+      return hasMarginAccess()
     }
   },
 

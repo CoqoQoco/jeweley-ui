@@ -129,6 +129,7 @@ import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
 import dayjs from 'dayjs'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
@@ -172,6 +173,10 @@ export default {
   },
 
   computed: {
+    canViewMargin() {
+      return hasMarginAccess()
+    },
+
     pullGroupOptions() {
       return [
         { code: 'Gold', name: this.$t('view.sale.costStock.group.gold') },
@@ -183,7 +188,7 @@ export default {
     },
 
     columns() {
-      return [
+      const cols = [
         {
           field: 'action',
           header: '',
@@ -227,6 +232,9 @@ export default {
           width: '80px'
         }
       ]
+
+      if (this.canViewMargin) return cols
+      return cols.filter((c) => c.field !== 'totalPrice' && c.field !== 'currencyUnit')
     }
   },
 

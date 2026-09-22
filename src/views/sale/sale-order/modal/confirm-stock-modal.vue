@@ -256,7 +256,7 @@
                   </template>
                 </Column>
 
-                <Column field="discountPercent" :header="$t('view.sale.saleOrder.discountPercent')" style="width: 100px">
+                <Column v-if="canViewMargin" field="discountPercent" :header="$t('view.sale.saleOrder.discountPercent')" style="width: 100px">
                   <template #body="slotProps">
                     <div class="text-right">
                       {{ formatCurrency(slotProps.data.discountPercent || 0) }}%
@@ -402,6 +402,7 @@ import { success, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js
 import { convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 import { isPlaceholderItem } from '@/services/utils/copy-item.js'
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -450,6 +451,10 @@ export default {
   },
 
   computed: {
+    canViewMargin() {
+      return hasMarginAccess()
+    },
+
     // Only show unconfirmed items in the selection — ตัดรายการรอผลิต/รอแปลงที่ยังเลือกไม่ได้ออกด้วย (ยังไม่มีเลขที่ผลิต/เลขซ้ำ)
     selectableItems() {
       return this.stockItems.filter(

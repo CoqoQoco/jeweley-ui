@@ -137,7 +137,7 @@
                     <Column :header="$t('view.sale.saleOrder.description')" />
                     <Column :header="$t('view.sale.saleOrder.salePriceTHB')" />
                     <Column :header="$t('view.sale.saleOrder.appraisalPriceTHB')" />
-                    <Column :header="$t('view.sale.saleOrder.discountPercent')" />
+                    <Column v-if="canViewMargin" :header="$t('view.sale.saleOrder.discountPercent')" />
                     <Column :header="$t('view.sale.saleOrder.discountPriceTHB')" />
                     <Column :header="$t('view.sale.saleOrder.convertedRate')" />
                     <Column :header="$t('view.sale.saleOrder.convertedPrice') + ' (' + (saleOrderData.currencyUnit || 'THB') + ')'" />
@@ -262,7 +262,7 @@
                   </template>
                 </Column>
 
-                <Column field="discountPercent" :header="$t('view.sale.saleOrder.discountPercent')" style="min-width: 100px">
+                <Column v-if="canViewMargin" field="discountPercent" :header="$t('view.sale.saleOrder.discountPercent')" style="min-width: 100px">
                   <template #body="slotProps">
                     <div class="qty-container">
                       <span class="confirmed-text text-right">
@@ -372,7 +372,7 @@
                         </div>
                       </template>
                     </Column>
-                    <Column :colspan="2">
+                    <Column :colspan="canViewMargin ? 2 : 1">
                       <template #footer>
                         <div class="text-right type-container">
                           <span>{{ getSumDiscountPrice() }}</span>
@@ -406,7 +406,7 @@
 
                   <!-- ส่วนลดพิเศษ -->
                   <Row>
-                    <Column :colspan="15">
+                    <Column :colspan="canViewMargin ? 15 : 14">
                       <template #footer>
                         <div class="text-right type-container">
                           <span>{{ $t('view.sale.invoiceDetail.specialDiscount') }}:</span>
@@ -432,7 +432,7 @@
 
                   <!-- ส่วนเพิ่มพิเศษ -->
                   <Row>
-                    <Column :colspan="15">
+                    <Column :colspan="canViewMargin ? 15 : 14">
                       <template #footer>
                         <div class="text-right type-container">
                           <span>{{ $t('view.sale.invoiceDetail.specialSurcharge') }}:</span>
@@ -458,7 +458,7 @@
 
                   <!-- ยอดรวมหลังปรับ -->
                   <Row>
-                    <Column :colspan="15">
+                    <Column :colspan="canViewMargin ? 15 : 14">
                       <template #footer>
                         <div class="text-right type-container">
                           <span class="font-weight-bold">{{ $t('view.sale.saleOrder.adjustedTotal') }}:</span>
@@ -478,7 +478,7 @@
 
                   <!-- Freight & Insurance -->
                   <Row>
-                    <Column :colspan="15">
+                    <Column :colspan="canViewMargin ? 15 : 14">
                       <template #footer>
                         <div class="text-right type-container">
                           <span>{{ $t('view.sale.quotation.freightInsurance') }}:</span>
@@ -504,7 +504,7 @@
 
                   <!-- ยอดรวมก่อน VAT -->
                   <Row>
-                    <Column :colspan="15">
+                    <Column :colspan="canViewMargin ? 15 : 14">
                       <template #footer>
                         <div class="text-right type-container">
                           <span class="font-weight-bold">{{ $t('view.sale.saleOrder.beforeVatTotal') }}:</span>
@@ -522,7 +522,7 @@
 
                   <!-- VAT -->
                   <Row>
-                    <Column :colspan="15">
+                    <Column :colspan="canViewMargin ? 15 : 14">
                       <template #footer>
                         <div class="text-right type-container d-flex align-items-center justify-content-end">
                           <span class="mr-2 mt-1">{{ $t('view.sale.quotation.vatPercentLabel') }}</span>
@@ -552,7 +552,7 @@
 
                   <!-- ยอดรวมสุดท้าย -->
                   <Row>
-                    <Column :colspan="15">
+                    <Column :colspan="canViewMargin ? 15 : 14">
                       <template #footer>
                         <div class="text-right type-container">
                           <h6 class="mb-0 text-primary">{{ $t('view.sale.saleOrder.invoiceTotal') }}:</h6>
@@ -747,6 +747,7 @@ import { computeDocumentTotals, convertedUnitPrice, lineAmount, formatDocumentMo
 import { ensureLineKey } from '@/services/utils/line-key.js'
 import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 import { isPlaceholderItem } from '@/services/utils/copy-item.js'
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -816,6 +817,10 @@ export default {
   },
 
   computed: {
+    canViewMargin() {
+      return hasMarginAccess()
+    },
+
     // SO มีจุดขายแล้ว (เกิดตอนสร้าง invoice ใบแรก) → ห้ามเปลี่ยนจุดขายที่ invoice ใบถัดไป
     isSaleChannelLocked() {
       return !!this.saleOrderData?.saleChannelCode

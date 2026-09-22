@@ -65,6 +65,7 @@ export const PERMISSIONS = {
   SALE_VIEW: 'sale:view',
   SALE_CREATE: 'sale:create',
   SALE_DEPOSIT: 'sale:deposit',
+  SALE_VIEW_MARGIN: 'sale:view-margin',
 
   // Ticket Management
   TICKET_MANAGE: 'ticket:manage',
@@ -147,6 +148,7 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.SALE_VIEW,
     PERMISSIONS.SALE_CREATE,
     PERMISSIONS.SALE_DEPOSIT,
+    PERMISSIONS.SALE_VIEW_MARGIN,
 
     PERMISSIONS.CATALOG_VIEW,
 
@@ -290,5 +292,7 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.MOBILE_DASHBOARD,
     PERMISSIONS.MOBILE_PROFILE,
     PERMISSIONS.MOBILE_SALE
-  ]
+  ],
+
+  SaleManager: [PERMISSIONS.SALE_VIEW_MARGIN]
 }

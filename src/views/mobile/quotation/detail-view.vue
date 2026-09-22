@@ -109,7 +109,7 @@
                 <span class="detail-label">{{ $t('view.mobile.quotation.itemQtyLabel') }}</span>
                 <span class="detail-value">{{ item.qty || 1 }}</span>
               </div>
-              <div v-if="item.discountPercent" class="detail-row">
+              <div v-if="canViewMargin && item.discountPercent" class="detail-row">
                 <span class="detail-label">{{ $t('view.mobile.quotation.itemDiscountLabel') }}</span>
                 <span class="detail-value">{{ item.discountPercent }}%</span>
               </div>
@@ -200,6 +200,7 @@
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
 import { generateInvoicePdf } from '@/services/helper/pdf/quotation/quotation-pdf-integration.js'
 import { error } from '@/services/alert/sweetAlerts.js'
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
 import dayjs from 'dayjs'
 
 export default {
@@ -220,6 +221,10 @@ export default {
   },
 
   computed: {
+    canViewMargin() {
+      return hasMarginAccess()
+    },
+
     hasCustomerInfo() {
       if (!this.quotation) return false
       return !!(

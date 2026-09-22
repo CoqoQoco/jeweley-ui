@@ -29,7 +29,7 @@
         <span class="detail-label">{{ $t('view.mobile.sale.soItemFieldQty') }}</span>
         <span class="detail-value">{{ item.qty || 1 }}</span>
       </div>
-      <div v-if="displayDiscount > 0" class="detail-row">
+      <div v-if="canViewMargin && displayDiscount > 0" class="detail-row">
         <span class="detail-label">{{ $t('view.mobile.sale.soItemFieldDiscount') }}</span>
         <span class="detail-value discount">{{ displayDiscount }}{{ $t('view.mobile.sale.soItemDiscountUnit') }}</span>
       </div>
@@ -43,6 +43,8 @@
 </template>
 
 <script>
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
+
 export default {
   name: 'SoItemCard',
 
@@ -58,6 +60,10 @@ export default {
   },
 
   computed: {
+    canViewMargin() {
+      return hasMarginAccess()
+    },
+
     // รหัสหลักที่โชว์เด่น = รหัสเก่าถ้ามี ไม่มีค่อยใช้รหัสใหม่ ไม่มีอีกค่อยใช้รหัสสินค้าแทน
     primaryCode() {
       return this.item.stockNumberOrigin || this.item.stockNumber || this.item.productNumber || '-'

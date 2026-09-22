@@ -105,6 +105,7 @@ import dataTablePaging from '@/composables/useDataTablePaging.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
 
 const mergeModal = defineAsyncComponent(() => import('./merge-quotation-modal.vue'))
 
@@ -145,8 +146,11 @@ export default {
     form() {
       return this.modelForm || {}
     },
+    canViewMargin() {
+      return hasMarginAccess()
+    },
     columns() {
-      return [
+      const cols = [
         { field: 'action', header: '', width: '50px', sortable: false },
         { field: 'number', header: this.$t('view.sale.quotationList.number'), sortable: true, minWidth: '150px' },
         { field: 'running', header: this.$t('view.sale.quotationList.running'), sortable: true, minWidth: '120px' },
@@ -163,6 +167,9 @@ export default {
         { field: 'createBy', header: this.$t('view.sale.quotationList.createBy'), sortable: true, minWidth: '120px' },
         { field: 'remark', header: this.$t('common.field.remark'), sortable: true, minWidth: '150px' }
       ]
+
+      if (this.canViewMargin) return cols
+      return cols.filter((c) => c.field !== 'markUp' && c.field !== 'discount')
     }
   },
 

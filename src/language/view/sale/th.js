@@ -399,7 +399,8 @@ export const quotation = {
   breakdownIncomplete: 'Break Down ยังไม่ครบ {count} ช่อง',
   breakdownIncompleteTooltip: 'ช่องที่ยังไม่ได้กรอก: {fields}',
   breakdownIncompleteHint: 'ยังไม่ได้กรอก {fields} — กรอกให้ครบก่อน จึงจะพิมพ์ / พรีวิว / ออก Excel ใบ Break Down ได้',
-  breakdownIncompleteWarning: 'กรอก Break Down ให้ครบก่อนออกเอกสาร ยังขาด: {fields}'
+  breakdownIncompleteWarning: 'กรอก Break Down ให้ครบก่อนออกเอกสาร ยังขาด: {fields}',
+  noMarginAccessTooltip: 'ไม่มีสิทธิ์ดูต้นทุน'
 }
 
 export const quotationList = {

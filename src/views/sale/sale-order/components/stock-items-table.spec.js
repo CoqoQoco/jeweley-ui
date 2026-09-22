@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { createPinia } from 'pinia'
+import { createPinia, setActivePinia } from 'pinia'
 import StockItemsTable from './stock-items-table.vue'
+import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
+import { PERMISSIONS } from '@/services/permission/config.js'
 
 const tMock = (key, params) => (params ? `${key}:${JSON.stringify(params)}` : key)
 
@@ -53,8 +55,12 @@ function makeCopyItemWithoutCode() {
   }
 }
 
-function createWrapper(copyItems) {
+function createWrapper(copyItems, { withMargin = false } = {}) {
   const pinia = createPinia()
+  setActivePinia(pinia)
+  const authStore = useAuthStore()
+  // sale:view-margin — ควบคุมว่าเห็นคอลัมน์ส่วนลด % ในตารางนี้หรือไม่ (default: ไม่มีสิทธิ์)
+  authStore.permissions = withMargin ? [PERMISSIONS.SALE_VIEW_MARGIN] : []
   return mount(StockItemsTable, {
     global: {
       plugins: [pinia],
@@ -102,5 +108,33 @@ describe('StockItemsTable — บรรทัดสำเนา (copy line) แ�
 
     const oldNumberCell = childRow.findAll('td')[OLD_NUMBER_COL_INDEX]
     expect(oldNumberCell.text().trim()).toBe('')
+  })
+})
+
+describe('StockItemsTable — sale:view-margin ซ่อนคอลัมน์ส่วนลด % ตามสิทธิ์', () => {
+  it('มีสิทธิ์ (canViewMargin): เห็นคอลัมน์ส่วนลด % ทั้ง header/body และ footer colspan เป็น 2/18', () => {
+    const wrapper = createWrapper([], { withMargin: true })
+
+    const headerTexts = wrapper.findAll('thead th').map((th) => th.text())
+    expect(headerTexts).toContain('view.sale.saleOrder.discountPercent')
+    expect(wrapper.find('tbody input[placeholder="0"]').exists()).toBe(true)
+
+    const footerRows = wrapper.findAll('tfoot tr')
+    // แถวรวม (Total row) — คอลัมน์ที่ 8 (index 7) คือ getSumDiscountPrice ที่ colspan ขยับตามสิทธิ์
+    expect(footerRows[0].findAll('td')[7].attributes('colspan')).toBe('2')
+    // แถว "ส่วนลดพิเศษ" — แถว tfoot ถัดมา (copyItemsCount=0 จึงไม่มีแถว copy/doc subtotal คั่น)
+    expect(footerRows[1].findAll('td')[0].attributes('colspan')).toBe('18')
+  })
+
+  it('ไม่มีสิทธิ์ (canViewMargin=false): ไม่เห็นคอลัมน์ส่วนลด % และ footer colspan เป็น 1/17', () => {
+    const wrapper = createWrapper([], { withMargin: false })
+
+    const headerTexts = wrapper.findAll('thead th').map((th) => th.text())
+    expect(headerTexts).not.toContain('view.sale.saleOrder.discountPercent')
+    expect(wrapper.find('tbody input[placeholder="0"]').exists()).toBe(false)
+
+    const footerRows = wrapper.findAll('tfoot tr')
+    expect(footerRows[0].findAll('td')[7].attributes('colspan')).toBe('1')
+    expect(footerRows[1].findAll('td')[0].attributes('colspan')).toBe('17')
   })
 })

@@ -399,7 +399,8 @@ export const quotation = {
   breakdownIncomplete: 'Break Down: {count} field(s) missing',
   breakdownIncompleteTooltip: 'Missing fields: {fields}',
   breakdownIncompleteHint: 'Missing {fields} — fill these in to print, preview, or export the Break Down document.',
-  breakdownIncompleteWarning: 'Complete the Break Down fields before generating the document. Missing: {fields}'
+  breakdownIncompleteWarning: 'Complete the Break Down fields before generating the document. Missing: {fields}',
+  noMarginAccessTooltip: 'You do not have permission to view cost'
 }
 
 export const quotationList = {

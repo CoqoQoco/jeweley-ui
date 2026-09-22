@@ -113,6 +113,7 @@ const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.v
 import { formatISOString } from '@/services/utils/dayjs.js'
 import { success } from '@/services/alert/sweetAlerts.js'
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
 
 const HEADER_FIELD_KEYS = [
   { key: 'customerName',    type: 'string', labelKey: 'view.sale.saleOrder.customerName' },
@@ -164,6 +165,10 @@ export default {
   },
 
   computed: {
+    canViewMargin() {
+      return hasMarginAccess()
+    },
+
     headerFields() {
       return HEADER_FIELD_KEYS.map((f) => ({
         ...f,
@@ -174,19 +179,24 @@ export default {
     conflicts() {
       if (this.quotations.length < 2) return []
 
-      return this.headerFields.filter((field) => {
-        const values = this.quotations.map((q) => q[field.key] ?? null)
-        const normalized = values.map((v) =>
-          field.type === 'number' ? String(Number(v || 0)) : String(v ?? '')
-        )
-        return new Set(normalized).size > 1
-      }).map((field) => ({
-        ...field,
-        options: this.quotations.map((q) => ({
-          quotationNumber: q.number,
-          value: q[field.key]
+      // ผู้ใช้ไม่มีสิทธิ์ดู margin: ไม่แสดง markup/ส่วนลดเป็น conflict ให้เลือก — onConfirm จะ fallback ไปใช้ค่าของใบแรกอัตโนมัติ
+      const hiddenKeys = this.canViewMargin ? [] : ['markUp', 'discount']
+
+      return this.headerFields
+        .filter((field) => !hiddenKeys.includes(field.key))
+        .filter((field) => {
+          const values = this.quotations.map((q) => q[field.key] ?? null)
+          const normalized = values.map((v) =>
+            field.type === 'number' ? String(Number(v || 0)) : String(v ?? '')
+          )
+          return new Set(normalized).size > 1
+        }).map((field) => ({
+          ...field,
+          options: this.quotations.map((q) => ({
+            quotationNumber: q.number,
+            value: q[field.key]
+          }))
         }))
-      }))
     },
 
     mergedItems() {

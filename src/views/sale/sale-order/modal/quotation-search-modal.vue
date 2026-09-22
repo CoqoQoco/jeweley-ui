@@ -226,6 +226,7 @@ import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
@@ -289,8 +290,11 @@ export default {
     isShowModal() {
       return this.isShow
     },
+    canViewMargin() {
+      return hasMarginAccess()
+    },
     columns() {
-      return [
+      const cols = [
         { field: 'action', header: this.$t('common.field.action'), width: '120px', sortable: false },
         { field: 'number', header: this.$t('view.sale.saleOrder.quotationRef'), sortable: true, minWidth: '150px' },
         { field: 'running', header: this.$t('view.sale.quotationList.running'), sortable: true, minWidth: '120px' },
@@ -304,6 +308,9 @@ export default {
         { field: 'createDate', header: this.$t('view.sale.saleOrderList.createDate'), sortable: true, minWidth: '140px', template: 'createDateTemplate' },
         { field: 'createBy', header: this.$t('view.sale.saleOrderList.createBy'), sortable: true, minWidth: '120px' }
       ]
+
+      // ไม่มีสิทธิ์เห็น markup / ส่วนลด — ตัดออกจากตารางค้นหาใบเสนอราคา
+      return this.canViewMargin ? cols : cols.filter((col) => col.field !== 'markUp' && col.field !== 'discount')
     }
   },
 

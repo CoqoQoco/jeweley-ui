@@ -15,7 +15,7 @@
 
     <div class="item-name">{{ item.description || '-' }}</div>
 
-    <div class="cost-info" v-if="item.costPrice">
+    <div class="cost-info" v-if="canViewMargin && item.costPrice">
       <span class="cost-label">{{ $t('view.mobile.sale.itemCostLabel') }}</span>
       <span class="cost-value">{{ formatCurrency(item.costPrice) }} {{ $t('view.mobile.sale.itemCostUnit') }}</span>
       <span v-if="item.tagPriceMultiplier > 1" class="multiplier-badge">
@@ -23,7 +23,7 @@
       </span>
     </div>
 
-    <div class="item-fields">
+    <div class="item-fields" :class="{ 'two-col': !canViewMargin }">
       <div class="field-group">
         <label>{{ $t('view.mobile.sale.itemFieldPrice') }}</label>
         <InputTextGeneric
@@ -45,7 +45,7 @@
           :step="1"
         />
       </div>
-      <div class="field-group">
+      <div class="field-group" v-if="canViewMargin">
         <label>{{ $t('view.mobile.sale.itemFieldDiscount') }}</label>
         <InputTextGeneric
           type="number"
@@ -69,6 +69,7 @@
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
 
 export default {
   name: 'ItemCard',
@@ -95,6 +96,10 @@ export default {
   emits: ['update', 'remove'],
 
   computed: {
+    canViewMargin() {
+      return hasMarginAccess()
+    },
+
     // รหัสหลักที่โชว์เด่น = รหัสเก่าถ้ามี ไม่มีค่อยใช้รหัสใหม่แทน
     // item จาก scan/appraisal/quotation ในหน้านี้ยังไม่ส่ง stockNumberOrigin มา จึง fallback เป็นรหัสใหม่เหมือนเดิมไปก่อน
     primaryCode() {
@@ -256,6 +261,11 @@ export default {
     grid-template-columns: 1fr 1fr 1fr;
     gap: 8px;
     margin-bottom: 10px;
+
+    // ไม่มีสิทธิ์เห็นส่วนลด % — เหลือ 2 ช่อง (ราคา/จำนวน) แบ่งพื้นที่เท่ากัน
+    &.two-col {
+      grid-template-columns: 1fr 1fr;
+    }
 
     .field-group {
       label {
