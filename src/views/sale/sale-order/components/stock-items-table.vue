@@ -34,7 +34,13 @@
         </div>
       </div>
     </div>
-    <div class="card-body p-0" @focusin="onRowFocusIn">
+    <div
+      class="card-body p-0"
+      @focusin="onRowFocusIn"
+      @dragover.prevent="onRowsDragOver"
+      @drop.prevent="onRowsDrop"
+      @dragleave="onRowsDragLeave"
+    >
       <!-- eslint-disable-next-line no-restricted-imports -->
       <DataTable
         :value="mergedRows"
@@ -87,6 +93,17 @@
         >
           <template #body="slotProps">
             <div v-if="!isDivider(slotProps.data)" class="d-flex justify-content-center align-items-center">
+              <!-- ห้ามเอา .stop ออก — ถ้า dragstart bubble ขึ้นไปถึง <tr> กลไก row-reorder ในตัวของ PrimeVue DataTable
+                   จะตื่นเอง (rowDragging=true) แล้วเติม class p-datatable-dragpoint-top/bottom ให้ตรงๆ ด้วย DOM API
+                   กลายเป็นเส้นไกด์สีม่วงซ้อนกับเส้นเขียวของเรา คนละตำแหน่งกัน และค้างจอเพราะ Vue ไม่ re-render ให้ลบ -->
+              <span
+                v-if="isMovableRow(slotProps.data)"
+                class="row-drag-handle bi bi-grip-vertical"
+                draggable="true"
+                :title="$t('view.sale.saleOrder.dragToReorderTitle')"
+                @dragstart.stop="onHandleDragStart($event, slotProps.data)"
+                @dragend="onHandleDragEnd"
+              ></span>
               <button
                 :class="[
                   'btn',
@@ -127,7 +144,7 @@
                 <span class="bi bi-arrow-counterclockwise"></span>
               </button>
               <button
-                v-if="slotProps.data.isConfirm && !slotProps.data.invoice && !isViewMode && !isPlaceholderRow(slotProps.data)"
+                v-if="isMovableRow(slotProps.data)"
                 class="btn btn-sm btn-outline-main ml-2"
                 type="button"
                 :title="$t('view.sale.saleOrder.moveUpTitle')"
@@ -137,7 +154,7 @@
                 <span class="bi bi-arrow-up"></span>
               </button>
               <button
-                v-if="slotProps.data.isConfirm && !slotProps.data.invoice && !isViewMode && !isPlaceholderRow(slotProps.data)"
+                v-if="isMovableRow(slotProps.data)"
                 class="btn btn-sm btn-outline-main ml-2"
                 type="button"
                 :title="$t('view.sale.saleOrder.moveDownTitle')"
@@ -1015,6 +1032,7 @@ export default {
     'copy-item',
     'cancel-confirmation',
     'move-item',
+    'move-item-to',
     'blur-price',
     'blur-qty',
     'blur-description',
@@ -1031,7 +1049,10 @@ export default {
   data() {
     return {
       isSettingsOpen: false,
-      frozenCols: {}
+      frozenCols: {},
+      draggingLineKey: null,
+      dropTargetLineKey: null,
+      dropPosition: null
     }
   },
 
@@ -1138,6 +1159,11 @@ export default {
     // isPlaceholderItem เป็น single source of truth — ห้ามเช็ค stockNumber == null เอง (copy line ตอนนี้มีเลขที่ผลิตได้แล้ว)
     isPlaceholderRow(data) {
       return isPlaceholderItem(data)
+    },
+
+    // เงื่อนไขแหล่งเดียวว่าแถวนี้ลากจัดลำดับได้ไหม — ใช้ทั้งปุ่มลูกศร ↑↓ และ drag handle
+    isMovableRow(data) {
+      return data._rowKind === 'stock' && !!data.isConfirm && !data.invoice && !this.isViewMode && !this.isPlaceholderRow(data)
     },
 
     isFullyFilled(item) {
@@ -1253,7 +1279,62 @@ export default {
       if (data._rowKind === 'divider') classes.push('orphan-divider-row')
       else if (data._rowKind === 'child') classes.push('copy-child-row')
       else if (data._rowKind === 'orphan') classes.push('copy-orphan-row')
+      if (data.lineKey === this.dropTargetLineKey) {
+        classes.push(this.dropPosition === 'before' ? 'drop-target-before' : 'drop-target-after')
+      }
+      if (data.lineKey === this.draggingLineKey) classes.push('row-dragging')
       return classes.filter(Boolean).join(' ')
+    },
+
+    onHandleDragStart(e, data) {
+      e.dataTransfer.setData('application/x-so-line-key', data.lineKey)
+      e.dataTransfer.effectAllowed = 'move'
+      this.draggingLineKey = data.lineKey
+    },
+
+    onHandleDragEnd() {
+      this.draggingLineKey = null
+      this.dropTargetLineKey = null
+      this.dropPosition = null
+    },
+
+    // delegate ที่ card-body — หา <tr> ปัจจุบันจาก data-p-index ที่ PrimeVue ใส่ให้ทุกแถว
+    onRowsDragOver(e) {
+      if (!this.draggingLineKey) return
+
+      const tr = e.target.closest?.('tr[data-p-index]')
+      const row = tr ? this.mergedRows[Number(tr.dataset.pIndex)] : null
+
+      if (!row || !this.isMovableRow(row) || row.lineKey === this.draggingLineKey) {
+        this.dropTargetLineKey = null
+        this.dropPosition = null
+        return
+      }
+
+      const rect = tr.getBoundingClientRect()
+      this.dropTargetLineKey = row.lineKey
+      this.dropPosition = e.clientY < rect.top + rect.height / 2 ? 'before' : 'after'
+      e.dataTransfer.dropEffect = 'move'
+    },
+
+    onRowsDrop() {
+      if (this.draggingLineKey && this.dropTargetLineKey) {
+        this.$emit('move-item-to', {
+          fromLineKey: this.draggingLineKey,
+          toLineKey: this.dropTargetLineKey,
+          position: this.dropPosition
+        })
+      }
+      this.draggingLineKey = null
+      this.dropTargetLineKey = null
+      this.dropPosition = null
+    },
+
+    // กันเส้นไกด์กระพริบตอนลากผ่านลูกๆ ของ card-body — เคลียร์เฉพาะตอนออกนอก card-body จริง
+    onRowsDragLeave(e) {
+      if (e.currentTarget.contains(e.relatedTarget)) return
+      this.dropTargetLineKey = null
+      this.dropPosition = null
     },
 
     openInvoiceDetail(invoiceNumber) {
@@ -1768,5 +1849,28 @@ export default {
     border-color: var(--base-font-color);
     color: #fff;
   }
+}
+
+/* Drag-to-reorder — handle + เส้นไกด์บอกตำแหน่งวาง (บน/ล่างเท่านั้น ห้ามใช้แถบซ้าย) */
+.row-drag-handle {
+  cursor: grab;
+  color: var(--base-sub-color);
+  margin-right: var(--sp-xs);
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+:deep(tr.row-dragging > td) {
+  opacity: 0.5;
+}
+
+:deep(tr.drop-target-before > td) {
+  border-top: 2px solid var(--base-green);
+}
+
+:deep(tr.drop-target-after > td) {
+  border-bottom: 2px solid var(--base-green);
 }
 </style>

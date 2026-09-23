@@ -558,6 +558,8 @@ export const saleOrder = {
   cancelConfirmTitle: 'Cancel Sale Confirmation',
   moveUpTitle: 'Move up',
   moveDownTitle: 'Move down',
+  dragToReorderTitle: 'Drag to reorder',
+  orderNotSavedHint: 'Order changed — not saved yet',
   invoiceLabel: 'Invoice No.',
   pendingInvoice: 'Pending Invoice',
   pendingConfirm: 'Pending Confirmation',

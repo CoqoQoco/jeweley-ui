@@ -16,8 +16,13 @@ vi.mock('@/services/alert/sweetAlerts.js', () => {
 
 const mockFetchSave = vi.fn().mockResolvedValue('SO-0001')
 const mockFetchGet = vi.fn().mockResolvedValue(null)
+const mockUnconfirmStockItems = vi.fn().mockResolvedValue({})
 vi.mock('@/stores/modules/api/sale/sale-order-store.js', () => ({
-  usrSaleOrderApiStore: vi.fn(() => ({ fetchSave: mockFetchSave, fetchGet: mockFetchGet }))
+  usrSaleOrderApiStore: vi.fn(() => ({
+    fetchSave: mockFetchSave,
+    fetchGet: mockFetchGet,
+    unconfirmStockItems: mockUnconfirmStockItems
+  }))
 }))
 
 vi.mock('@/stores/modules/api/stock/product-api.js', () => ({
@@ -443,5 +448,119 @@ describe('SaleOrderView — P4-1/P4-2 เติมของจากคลัง
 
     expect(vm.copyItems[0].orderedQty).toBe(4)
     expect(vm.copyItems[0].qty).toBe(0)
+  })
+})
+
+describe('SaleOrderView — moveStockItemTo (ลาก-วางจัดลำดับ) และ isOrderDirty', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockFetchSave.mockResolvedValue('SO-0001')
+    mockFetchDataList.mockResolvedValue({ data: [] })
+  })
+
+  it('ลาก A ไปวาง after B → สลับตำแหน่ง ตั้ง isOrderDirty และไม่บันทึกอัตโนมัติ', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    const a = makeItem('A', { isConfirm: true })
+    const b = makeItem('B', { isConfirm: true })
+    vm.stockItems = [a, b]
+    expect(vm.isOrderDirty).toBe(false)
+
+    vm.moveStockItemTo({ fromLineKey: a.lineKey, toLineKey: b.lineKey, position: 'after' })
+
+    expect(vm.stockItems.map((i) => i.stockNumber)).toEqual(['B', 'A'])
+    expect(vm.isOrderDirty).toBe(true)
+    expect(mockFetchSave).not.toHaveBeenCalled()
+  })
+
+  it('ลาก B ไปวาง before A → สลับตำแหน่งเหมือนกัน (ไม่บันทึกอัตโนมัติ)', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    const a = makeItem('A', { isConfirm: true })
+    const b = makeItem('B', { isConfirm: true })
+    vm.stockItems = [a, b]
+
+    vm.moveStockItemTo({ fromLineKey: b.lineKey, toLineKey: a.lineKey, position: 'before' })
+
+    expect(vm.stockItems.map((i) => i.stockNumber)).toEqual(['B', 'A'])
+    expect(mockFetchSave).not.toHaveBeenCalled()
+  })
+
+  it('มีแถวออกใบแจ้งหนี้แล้วคั่นอยู่ (หมุด) — ลากข้ามแล้ว index ของหมุดต้องไม่ขยับ', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    const inv1 = makeItem('INV1', { isConfirm: true, invoice: 'INV-001' })
+    const a = makeItem('A', { isConfirm: true })
+    const inv2 = makeItem('INV2', { isConfirm: true, invoice: 'INV-002' })
+    const b = makeItem('B', { isConfirm: true })
+    vm.stockItems = [inv1, a, inv2, b]
+
+    vm.moveStockItemTo({ fromLineKey: a.lineKey, toLineKey: b.lineKey, position: 'after' })
+
+    expect(vm.stockItems.map((i) => i.stockNumber)).toEqual(['INV1', 'B', 'INV2', 'A'])
+    expect(vm.isOrderDirty).toBe(true)
+    expect(mockFetchSave).not.toHaveBeenCalled()
+  })
+
+  it('target เป็นแถวที่ออกใบแจ้งหนี้แล้ว (ย้ายไม่ได้) → ไม่เปลี่ยนอะไรและ isOrderDirty ยังเป็น false', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    const a = makeItem('A', { isConfirm: true })
+    const invoiced = makeItem('INV1', { isConfirm: true, invoice: 'INV-001' })
+    vm.stockItems = [a, invoiced]
+
+    vm.moveStockItemTo({ fromLineKey: a.lineKey, toLineKey: invoiced.lineKey, position: 'after' })
+
+    expect(vm.stockItems.map((i) => i.stockNumber)).toEqual(['A', 'INV1'])
+    expect(vm.isOrderDirty).toBe(false)
+    expect(mockFetchSave).not.toHaveBeenCalled()
+  })
+
+  it('isOrderDirty กลับเป็น false หลัง fetchSaveSaleOrder() สำเร็จ', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    const a = makeItem('A', { isConfirm: true })
+    const b = makeItem('B', { isConfirm: true })
+    vm.stockItems = [a, b]
+    vm.moveStockItemTo({ fromLineKey: a.lineKey, toLineKey: b.lineKey, position: 'after' })
+    expect(vm.isOrderDirty).toBe(true)
+
+    await vm.fetchSaveSaleOrder()
+
+    expect(vm.isOrderDirty).toBe(false)
+  })
+})
+
+describe('SaleOrderView — ต้องบันทึกร่างก่อน reload จาก server (กันลำดับที่ยังไม่ save หายเงียบๆ)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockFetchSave.mockResolvedValue('SO-0001')
+    mockUnconfirmStockItems.mockResolvedValue({})
+    mockFetchGet.mockResolvedValue({
+      stockConfirm: [],
+      data: JSON.stringify({ stockItems: [], copyItems: [] })
+    })
+    mockFetchDataList.mockResolvedValue({ data: [] })
+  })
+
+  it('onReverseStockConfirm ต้องเรียก fetchSave ก่อน fetchGet (reload)', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    vm.formSaleOrder.number = 'SO-0001'
+    const item = makeItem('A', { isConfirm: true })
+    vm.stockItems = [item]
+
+    await vm.onReverseStockConfirm(item)
+
+    expect(mockUnconfirmStockItems).toHaveBeenCalledTimes(1)
+    expect(mockFetchSave).toHaveBeenCalledTimes(1)
+    expect(mockFetchGet).toHaveBeenCalledTimes(1)
+    expect(mockFetchSave.mock.invocationCallOrder[0]).toBeLessThan(mockFetchGet.mock.invocationCallOrder[0])
   })
 })

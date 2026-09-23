@@ -558,6 +558,8 @@ export const saleOrder = {
   cancelConfirmTitle: 'ยกเลิกยืนยันการขาย',
   moveUpTitle: 'ย้ายขึ้น',
   moveDownTitle: 'ย้ายลง',
+  dragToReorderTitle: 'ลากเพื่อจัดลำดับ',
+  orderNotSavedHint: 'ลำดับเปลี่ยนแล้ว ยังไม่บันทึก',
   invoiceLabel: 'เลขที่ Invoice',
   pendingInvoice: 'รอออก Invoice',
   pendingConfirm: 'รอยืนยันสินค้า',

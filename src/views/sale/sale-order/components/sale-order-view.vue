@@ -343,6 +343,7 @@
       @copy-item="onCopyStockToProduction($event)"
       @cancel-confirmation="reverseStockConfirm($event)"
       @move-item="moveStockItem($event)"
+      @move-item-to="moveStockItemTo($event)"
       @blur-price="onBlurPriceRouter($event.item, $event.stockNumber, $event.field)"
       @blur-qty="onBlurQtyRouter($event.item, $event.stockNumber, $event.field)"
       @blur-description="onBlurDescription($event.item, $event.stockNumber, $event.field)"
@@ -536,6 +537,10 @@
             <i class="bi bi-file-earmark mr-1"></i>
             {{ $t('view.sale.saleOrder.saveDraft') }}
           </button>
+          <span v-if="isOrderDirty" class="order-dirty-hint">
+            <i class="bi bi-exclamation-circle mr-1"></i>
+            {{ $t('view.sale.saleOrder.orderNotSavedHint') }}
+          </span>
         </div>
 
       </div>
@@ -667,6 +672,7 @@ import { formatISOString } from '@/services/utils/dayjs.js'
 import { storage } from '@/services/storage.js'
 import { createLineKey, ensureLineKey } from '@/services/utils/line-key.js'
 import { buildCopyItem, isPlaceholderItem } from '@/services/utils/copy-item.js'
+import { moveMovableItem } from '@/services/utils/item-reorder.js'
 import { getPieceQtyAvailable, sumUnconfirmedQtyByStockNumber } from '@/services/utils/stock-piece-qty.js'
 import { lookupStockProduct } from '@/services/utils/stock-scan.js'
 import { CURRENCY_UNITS } from '@/constants/currency-units.js'
@@ -794,6 +800,7 @@ export default {
       isLoadingData: false,
       customerLocallyEdited: false,
       isUnconfirming: false,
+      isOrderDirty: false,
 
       // Modal states
       isShow: {
@@ -1349,6 +1356,9 @@ export default {
       this.$nextTick(() => {
         this.isLoadingData = false
       })
+
+      // ข้อมูลสดจาก server ถือว่าตรงกับที่แสดงผลแล้วเสมอ — ล้างป้ายเตือน "ยังไม่บันทึก"
+      this.isOrderDirty = false
 
       this.refreshStockAvailability()
       this.loadPendingConversions()
@@ -1977,6 +1987,10 @@ export default {
       )
 
       if (this.formSaleOrder.number) {
+        // ต้องบันทึกร่างก่อนโหลดทับจาก server เสมอ กันลำดับที่เพิ่งจัด (และการแก้อื่นที่ยังไม่ save) หายเงียบๆ
+        // ปลอดภัย: applyConfirmedMatch() รีเซ็ต isConfirm/invoice/invoiceItem เป็นค่าว่างก่อน merge จาก stockConfirm[]
+        // ของ server ทุกครั้ง สถานะยืนยันเก่าที่ติดไปใน JSON จึงไม่ทำให้ข้อมูลเพี้ยน
+        await this.fetchSaveSaleOrder()
         const response = await this.getSaleOrderData(this.formSaleOrder.number)
         if (response) this.loadSaleOrderData(response)
       }
@@ -2147,6 +2161,7 @@ export default {
         if (res) {
           this.formSaleOrder.number = res
         }
+        this.isOrderDirty = false
       } catch {
         // fetchSave error handled by axios-helper
       } finally {
@@ -2154,26 +2169,31 @@ export default {
       }
     },
 
+    // เงื่อนไข "ย้ายลำดับได้" แหล่งเดียว — ยืนยันแล้ว + ยังไม่ออกใบแจ้งหนี้ + ไม่ใช่บรรทัดรอผลิต/รอแปลง
+    // ใช้ร่วมกันทั้งปุ่มขึ้น/ลง (moveStockItem) และลาก-วาง (moveStockItemTo)
+    isMovableStockItem(item) {
+      return !!item && !!item.isConfirm && !item.invoice && !isPlaceholderItem(item)
+    },
+
     // ย้ายลำดับสินค้าที่ยืนยันแล้วแต่ยังไม่ออก Invoice เท่านั้น (ลำดับสัมพัทธ์ของรายการที่ออก Invoice แล้วต้องไม่ขยับ)
     moveStockItem({ item, direction }) {
-      if (!item || !item.isConfirm || item.invoice) return
+      if (!this.isMovableStockItem(item)) return
 
       const currentIndex = this.stockItems.findIndex((i) => i.lineKey === item.lineKey)
       if (currentIndex === -1) return
 
-      const isMovable = (i) => i && i.isConfirm && !i.invoice
       let targetIndex = -1
 
       if (direction === 'up') {
         for (let i = currentIndex - 1; i >= 0; i--) {
-          if (isMovable(this.stockItems[i])) {
+          if (this.isMovableStockItem(this.stockItems[i])) {
             targetIndex = i
             break
           }
         }
       } else if (direction === 'down') {
         for (let i = currentIndex + 1; i < this.stockItems.length; i++) {
-          if (isMovable(this.stockItems[i])) {
+          if (this.isMovableStockItem(this.stockItems[i])) {
             targetIndex = i
             break
           }
@@ -2182,11 +2202,25 @@ export default {
 
       if (targetIndex === -1) return
 
-      const updated = [...this.stockItems]
-      const temp = updated[currentIndex]
-      updated[currentIndex] = updated[targetIndex]
-      updated[targetIndex] = temp
-      this.stockItems = updated
+      const targetLineKey = this.stockItems[targetIndex].lineKey
+      const position = direction === 'up' ? 'before' : 'after'
+      const result = moveMovableItem(this.stockItems, item.lineKey, targetLineKey, position, this.isMovableStockItem)
+
+      if (result !== this.stockItems) {
+        this.stockItems = result
+        this.isOrderDirty = true
+      }
+    },
+
+    // ลาก-วาง: ย้ายบรรทัดไปวางก่อน/หลังบรรทัดเป้าหมายที่ปล่อย (ตารางเป็นคนคำนวณ fromLineKey/toLineKey/position ให้)
+    // ห้าม autosave — ผู้ใช้ต้องกด "บันทึกร่าง" เองเสมอ (ดู isOrderDirty)
+    moveStockItemTo({ fromLineKey, toLineKey, position }) {
+      const result = moveMovableItem(this.stockItems, fromLineKey, toLineKey, position, this.isMovableStockItem)
+
+      if (result !== this.stockItems) {
+        this.stockItems = result
+        this.isOrderDirty = true
+      }
     },
 
     async exportPDF() {
@@ -2435,6 +2469,10 @@ export default {
         success(this.$t('view.sale.saleOrder.success.cancelConfirmTitle'), this.$t('view.sale.saleOrder.success.cancelConfirm', { stockNumber }))
 
         if (this.formSaleOrder.number) {
+          // ต้องบันทึกร่างก่อนโหลดทับจาก server เสมอ กันลำดับที่เพิ่งจัด (และการแก้อื่นที่ยังไม่ save) หายเงียบๆ
+          // ปลอดภัย: applyConfirmedMatch() รีเซ็ต isConfirm/invoice/invoiceItem เป็นค่าว่างก่อน merge จาก stockConfirm[]
+          // ของ server ทุกครั้ง สถานะยืนยันเก่าที่ติดไปใน JSON จึงไม่ทำให้ข้อมูลเพี้ยน
+          await this.fetchSaveSaleOrder()
           const response = await this.getSaleOrderData(this.formSaleOrder.number)
 
           if (response) {
@@ -2898,6 +2936,14 @@ export default {
   border: 1px solid #dee2e6;
   border-radius: 6px;
   background: #fafafa;
+}
+
+.order-dirty-hint {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--fs-sm);
+  color: var(--base-warning);
+  gap: var(--sp-xs);
 }
 
 /* Quotation table styles */
