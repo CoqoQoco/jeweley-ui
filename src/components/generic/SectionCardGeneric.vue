@@ -41,7 +41,7 @@
     title       — section title (optional)
     description — section description (optional, filled mode เท่านั้น)
     icon        — Bootstrap icon class เช่น 'bi-box-arrow-up' (legend / filled / dashboard mode เท่านั้น)
-    accent      — 'main' | 'green' (สีของ text+icon, default 'main' — legend + dashboard mode เท่านั้น)
+    accent      — 'main' | 'green' | 'warning' (สีของ text+icon, default 'main' — legend + dashboard mode เท่านั้น)
     headerStyle — 'underline' | 'legend' | 'filled' | 'dashboard' (default 'underline' = ใช้ pageTitle เดิม)
                   dashboard = หัวข้อ + เส้นคั่น ไม่มีกรอบ/พื้นครอบ (ไม่ double-border กับการ์ดลูกที่มีกรอบเอง)
 
@@ -124,7 +124,7 @@ export default {
     accent: {
       type: String,
       default: 'main',
-      validator: (v) => ['main', 'green'].includes(v)
+      validator: (v) => ['main', 'green', 'warning'].includes(v)
     },
     headerStyle: {
       type: String,
@@ -189,6 +189,10 @@ export default {
   &--green {
     color: var(--base-green);
   }
+
+  &--warning {
+    color: var(--base-warning);
+  }
 }
 
 .section-card--legend {
@@ -247,6 +251,13 @@ export default {
   i,
   .section-dashboard-header__title {
     color: var(--base-green);
+  }
+}
+
+.section-dashboard-header--warning {
+  i,
+  .section-dashboard-header__title {
+    color: var(--base-warning);
   }
 }
 
