@@ -43,17 +43,14 @@ const WARNING_LABELS = {
 
 const GROUP_LABELS = { Gold: 'ทอง', Worker: 'ค่าแรง', Embed: 'ค่าฝัง', Gem: 'พลอย', ETC: 'อื่นๆ' }
 
+// คั่นระหว่างท่อนข้อมูลในแถบสรุป — ใช้ pipe ASCII ธรรมดา (ไม่ใช้ตัวคั่นแบบจุดกลาง "·" เพราะยังไม่ยืนยันว่า
+// THSarabunNew มี glyph นี้จริง กันปัญหาแบบ ⚠/—/≠ ที่เจอมาก่อน)
+const STRIP_SEPARATOR = '   |   '
+
 function severityColor(severity) {
   if (severity === 'red') return PDF_COLORS.red
   if (severity === 'orange') return WARNING_ORANGE
   return PDF_COLORS.darkGray
-}
-
-// warning "เด่นสุด" ของรายการ — เอาไว้แสดงเป็น label สั้นๆ ในตารางสรุป (ไม่ใช่แค่จำนวน) ให้สีแดง (LOSS)
-// เด่นกว่าสีส้มเสมอ ถ้าไม่มีสีแดงเลยให้ใช้ตัวแรกที่พบ (ลำดับ push ใน buildItemWarnings คือลำดับความสำคัญอยู่แล้ว)
-function primaryWarning(warnings) {
-  if (!Array.isArray(warnings) || !warnings.length) return null
-  return warnings.find((w) => w.severity === 'red') || warnings[0]
 }
 
 function fmtPct(value) {
@@ -66,6 +63,13 @@ function fmtQty(value) {
   const num = Number(value)
   if (!num) return ''
   return num.toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 3 })
+}
+
+// เงินเป็นบวกเท่านั้นถึงแสดง — ค่า 0/ว่าง/undefined ให้เว้นว่างเซลล์ (กันคอลัมน์เต็มไปด้วย "0.00" ที่ไม่มีความหมาย
+// เช่นแถวค่าแรงที่คิดราคาต่อจำนวนอย่างเดียว ไม่มีน้ำหนัก → ช่องราคา/น้ำหนักต้องว่าง ไม่ใช่ 0.00)
+function formatMoneyOrBlank(value) {
+  const num = Number(value)
+  return num ? formatMoney(num) : ''
 }
 
 export class CostCheckPdfBuilder {
@@ -102,7 +106,7 @@ export class CostCheckPdfBuilder {
     return this
   }
 
-  // === Header/Footer ทุกหน้า ===
+  // === Header ทุกหน้า ===
 
   buildPageHeader(currentPage, pageCount) {
     return {
@@ -131,178 +135,93 @@ export class CostCheckPdfBuilder {
     }
   }
 
-  // === หน้า 1: พารามิเตอร์ราคา ===
-
-  buildParametersSection() {
-    const c = this.customer
-    const rows = [
-      ['สกุลเงิน', c.currencyUnit || '-', 'อัตราแลกเปลี่ยน', this.formatNum(c.currencyMultiplier)],
-      ['มาร์กอัป (×)', this.formatNum(c.markup), 'ส่วนลด (%)', this.formatNum(c.discountPercent)],
-      ['Gold Spot (US$/Oz.)', this.formatNum(c.goldSpotPrice), 'Premium', this.formatNum(c.goldPremium)],
-      ['Gold Markup', this.formatNum(c.goldMarkup), 'Gold Loss (%)', this.formatNum(c.goldLossPercent)],
-      ['ค่าบริการ/Service (%)', this.formatNum(c.profitPercent), '', '']
-    ]
-
-    return {
-      margin: [0, 8, 0, 0],
-      table: {
-        widths: [110, 120, 110, 120],
-        body: rows.map(([l1, v1, l2, v2]) => [
-          { text: l1, fontSize: 9, bold: true, color: PDF_COLORS.darkGray },
-          { text: v1, fontSize: 9 },
-          { text: l2, fontSize: 9, bold: true, color: PDF_COLORS.darkGray },
-          { text: v2, fontSize: 9 }
-        ])
-      },
-      layout: {
-        hLineWidth: () => 0,
-        vLineWidth: () => 0,
-        paddingLeft: () => 2,
-        paddingRight: () => 2,
-        paddingTop: () => 2,
-        paddingBottom: () => 2
-      }
-    }
-  }
-
   formatNum(value) {
     const num = Number(value)
     if (!Number.isFinite(num) || value === null || value === undefined || value === '') return '-'
     return num.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   }
 
-  buildTotalsBox() {
+  // === แถบสรุปยอดรวม — หน้า 1 เท่านั้น (ไม่มีหน้าสรุปแยกอีกต่อไป) ===
+
+  // บรรทัดพารามิเตอร์ราคา (มัวๆ เล็กๆ) — สกุลเงิน/อัตรา/มาร์กอัป/ส่วนลด/Gold Loss แสดงเสมอไม่ว่าจะเป็น 0 หรือไม่
+  buildStripParamsLine() {
+    const c = this.customer
+    const parts = [
+      `สกุลเงิน ${c.currencyUnit || '-'}`,
+      `อัตรา ${this.formatNum(c.currencyMultiplier)}`,
+      `มาร์กอัป ×${this.formatNum(c.markup)}`,
+      `ส่วนลด ${this.formatNum(c.discountPercent)}%`,
+      `Gold Loss ${this.formatNum(c.goldLossPercent)}%`
+    ]
+    return { text: parts.join(STRIP_SEPARATOR), fontSize: 8, color: PDF_COLORS.darkGray }
+  }
+
+  // บรรทัดตัวเลขรวมทั้งใบ — ส่วนลดพิเศษ/ส่วนเพิ่มพิเศษ/ค่าขนส่ง/VAT โชว์เฉพาะตอนมีค่า (ไม่ใช่ 0)
+  // เป็น rich-text runs (array) เพื่อให้ท่อน "กำไร" และ "มีคำเตือน" มีสีของตัวเองแยกจากท่อนอื่นได้ในบรรทัดเดียว
+  buildStripFigureRuns() {
     const d = this.document
     const t = d.totals
+    const runs = []
 
-    const row = (label, value, opts = {}) => [
-      { text: label, fontSize: 9, bold: true, color: PDF_COLORS.darkGray },
-      { text: value, fontSize: 9, alignment: 'right', ...opts }
-    ]
-
-    const body = [
-      row('ต้นทุนรวม (฿)', formatMoney(d.totalCost)),
-      row('ราคาตั้งขายรวม (฿)', formatMoney(d.totalAppraisal)),
-      row('ส่วนลดพิเศษ (สกุลขาย)', formatMoney(t.specialDiscount)),
-      row('ส่วนเพิ่มพิเศษ (สกุลขาย)', formatMoney(t.specialAddition)),
-      row('สุทธิรวม (฿)', formatMoney(d.totalNetThb)),
-      row(`สุทธิรวม (${this.currencyUnit})`, formatMoney(d.totalNetForeign)),
-      row('ค่าขนส่ง (สกุลขาย)', formatMoney(t.freight)),
-      row(`VAT (${this.formatNum(this.customer.vatPercent)}%)`, formatMoney(t.vatAmount)),
-      row(
-        'กำไรเอกสาร (฿)',
-        `${formatMoney(d.profitThb)}  (${fmtPct(d.profitPct)})`,
-        // สีแดงสงวนไว้สำหรับ "ขาดทุน" เท่านั้น กำไรปกติใช้สีดำตัวหนา (เป็นกลาง ไม่ใช่สีแดงของแบรนด์)
-        { bold: true, color: d.profitThb < 0 ? PDF_COLORS.red : PROFIT_NEUTRAL }
-      ),
-      row(
-        'จำนวนรายการที่มีคำเตือน',
-        String(d.warningCount),
-        { bold: true, color: d.warningCount > 0 ? WARNING_ORANGE : PDF_COLORS.darkGray }
-      )
-    ]
-
-    // layout ตารางนี้: padding 4/4, ไม่มีเส้นแนวตั้ง (vLineWidth 0) → cols=2
-    const maxWidth = maxTableContentWidth(2, { paddingX: 4, vLineWidth: 0 }) // = 516
-    return {
-      margin: [0, 10, 0, 0],
-      table: { widths: [200, maxWidth - 200], body },
-      layout: {
-        hLineWidth: (i) => (i === 0 || i === body.length ? 1 : 0.5),
-        vLineWidth: () => 0,
-        hLineColor: () => PDF_COLORS.lightGray,
-        fillColor: () => PDF_COLORS.panelBg,
-        paddingLeft: () => 4,
-        paddingRight: () => 4,
-        paddingTop: () => 3,
-        paddingBottom: () => 3
-      }
+    const push = (text, opts = {}) => {
+      if (runs.length) runs.push({ text: STRIP_SEPARATOR, color: PDF_COLORS.darkGray })
+      runs.push({ text, ...opts })
     }
+
+    push(`ต้นทุนรวม ${formatMoney(d.totalCost)} ฿`)
+    push(`ราคาตั้งขายรวม ${formatMoney(d.totalAppraisal)} ฿`)
+    push(`สุทธิ ${formatMoney(d.totalNetThb)} ฿ (${formatMoney(d.totalNetForeign)} ${this.currencyUnit})`)
+    if (Number(t.specialDiscount) > 0) push(`ส่วนลดพิเศษ ${formatMoney(t.specialDiscount)} ${this.currencyUnit}`)
+    if (Number(t.specialAddition) > 0) push(`ส่วนเพิ่มพิเศษ ${formatMoney(t.specialAddition)} ${this.currencyUnit}`)
+    if (Number(t.freight) > 0) push(`ค่าขนส่ง ${formatMoney(t.freight)} ${this.currencyUnit}`)
+    if (Number(t.vatAmount) > 0) push(`VAT ${formatMoney(t.vatAmount)} ${this.currencyUnit}`)
+
+    // สีแดงสงวนไว้สำหรับขาดทุนเท่านั้น กำไรปกติใช้สีดำตัวหนา (เป็นกลาง ไม่ใช่สีแดงของแบรนด์)
+    push(
+      `กำไร ${formatMoney(d.profitThb)} ฿ (${fmtPct(d.profitPct)})`,
+      { bold: true, color: d.profitThb < 0 ? PDF_COLORS.red : PROFIT_NEUTRAL }
+    )
+    push(
+      `มีคำเตือน ${d.warningCount} ชิ้น`,
+      { bold: d.warningCount > 0, color: d.warningCount > 0 ? WARNING_ORANGE : PDF_COLORS.darkGray }
+    )
+
+    return runs
   }
 
-  buildCompactTable() {
-    // layout ตารางนี้: padding 3/3, เส้นแนวตั้ง 0.5pt (ค่า default ของ maxTableContentWidth) → cols=9
-    // maxTableContentWidth(9) = 473 — Σwidths ต้องไม่เกินนี้ ไม่งั้นตารางล้นขอบขวา (ดูคอมเมนต์ formula ด้านบน)
-    const widths = [20, 93, 25, 60, 60, 60, 55, 40, 60] // sum = 473
-    const header = [
-      { text: '#', style: 'compactHeader', alignment: 'center' },
-      { text: 'รหัส', style: 'compactHeader' },
-      { text: 'จำนวน', style: 'compactHeader', alignment: 'center' },
-      { text: 'ต้นทุน (฿)', style: 'compactHeader', alignment: 'right' },
-      { text: 'ราคาตั้งขาย (฿)', style: 'compactHeader', alignment: 'right' },
-      { text: 'สุทธิ (฿)', style: 'compactHeader', alignment: 'right' },
-      { text: `สุทธิ (${this.currencyUnit})`, style: 'compactHeader', alignment: 'right' },
-      { text: '% กำไร', style: 'compactHeader', alignment: 'right' },
-      { text: 'เตือน', style: 'compactHeader', alignment: 'center' }
-    ]
-
-    const body = [header]
-
-    this.document.items.forEach((check, index) => {
-      const item = this.data[index]
-      const rowColor = check.severity === 'red' ? '#fdecea' : check.severity === 'orange' ? '#fff4e5' : null
-      const warnColor = severityColor(check.severity)
-      const warning = primaryWarning(check.warnings)
-
-      body.push([
-        { text: String(index + 1), fontSize: 8, alignment: 'center', fillColor: rowColor },
-        { text: formatItemStyleCode(item), fontSize: 8, fillColor: rowColor },
-        { text: fmtQty(check.qty) || '0', fontSize: 8, alignment: 'center', fillColor: rowColor },
-        { text: formatMoney(check.lineCost), fontSize: 8, alignment: 'right', fillColor: rowColor },
-        { text: formatMoney(check.lineAppraisal), fontSize: 8, alignment: 'right', fillColor: rowColor },
-        { text: formatMoney(check.lineNetThb), fontSize: 8, alignment: 'right', fillColor: rowColor },
-        { text: formatMoney(check.lineNetForeign), fontSize: 8, alignment: 'right', fillColor: rowColor },
-        { text: fmtPct(check.profitPct), fontSize: 8, alignment: 'right', fillColor: rowColor },
-        {
-          text: warning ? (WARNING_LABELS[warning.code] || warning.code) : '',
-          fontSize: 7.5,
-          alignment: 'center',
-          bold: true,
-          color: warnColor,
-          fillColor: rowColor
-        }
-      ])
-    })
-
+  buildTotalsStrip() {
+    // layout กล่องนี้: padding 8/8, เส้นขอบ 1pt, cols=1
+    const maxWidth = maxTableContentWidth(1, { paddingX: 8, vLineWidth: 1 }) // = 514
     return {
-      margin: [0, 10, 0, 0],
-      table: { headerRows: 1, widths, body },
+      margin: [0, 8, 0, 12],
+      table: {
+        widths: [maxWidth],
+        body: [
+          [
+            {
+              stack: [
+                this.buildStripParamsLine(),
+                { text: this.buildStripFigureRuns(), fontSize: 9.5, margin: [0, 3, 0, 0] }
+              ]
+            }
+          ]
+        ]
+      },
       layout: {
-        hLineWidth: () => 0.5,
-        vLineWidth: () => 0.5,
+        hLineWidth: () => 1,
+        vLineWidth: () => 1,
         hLineColor: () => PDF_COLORS.lightGray,
         vLineColor: () => PDF_COLORS.lightGray,
-        paddingLeft: () => 3,
-        paddingRight: () => 3,
-        paddingTop: () => 2,
-        paddingBottom: () => 2
+        fillColor: () => PDF_COLORS.panelBg,
+        paddingLeft: () => 8,
+        paddingRight: () => 8,
+        paddingTop: () => 6,
+        paddingBottom: () => 6
       }
     }
   }
 
-  buildSummaryPage() {
-    return {
-      stack: [
-        { text: 'พารามิเตอร์ราคา', bold: true, fontSize: 12, color: PDF_COLORS.primary },
-        this.buildParametersSection(),
-        { text: 'สรุปยอดรวมทั้งใบ', bold: true, fontSize: 12, color: PDF_COLORS.primary, margin: [0, 12, 0, 0] },
-        this.buildTotalsBox(),
-        { text: 'รายการสินค้า', bold: true, fontSize: 12, color: PDF_COLORS.primary, margin: [0, 12, 0, 0] },
-        this.buildCompactTable()
-      ]
-    }
-  }
-
-  // === หน้ารายละเอียดต่อชิ้น (ไหลต่อเนื่อง ไม่ใช่ 1 หน้า/ชิ้น) ===
-
-  buildImageCell(item) {
-    const raw = item.imageBase64
-    if (!raw) {
-      return { canvas: [{ type: 'rect', x: 0, y: 0, w: 55, h: 55, lineWidth: 0.5, lineColor: PDF_COLORS.lightGray }] }
-    }
-    const imageData = raw.startsWith('data:image') ? raw : `data:image/png;base64,${raw}`
-    return { image: imageData, fit: [55, 55] }
-  }
+  // === รายละเอียดต่อชิ้น (ไหลต่อเนื่องหลังแถบสรุปในหน้าเดียวกัน ไม่ใช่ 1 หน้า/ชิ้น) ===
 
   buildMaterialsSummary(item) {
     const materials = Array.isArray(item.materials) ? item.materials : []
@@ -315,14 +234,14 @@ export class CostCheckPdfBuilder {
       .join(' / ')
   }
 
+  // แถวชื่อชิ้นงาน 2 คอลัมน์ — ซ้าย: ลำดับ+รหัส+ประเภท+วัตถุดิบ, ขวา: จำนวน+ราคาป้ายอ้างอิง (ไม่มีบล็อกรูปแยกแล้ว
+  // เพราะรูปย้ายไปอยู่ในคอลัมน์แรกของตารางต้นทุนแทน — ดู buildImageCell/buildCostTable)
   buildItemHeaderRow(item, check, index) {
     const tagPrice = Number(item.price ?? item.productPrice) || 0
     return {
       columns: [
-        { width: 60, stack: [this.buildImageCell(item)] },
         {
           width: '*',
-          margin: [8, 0, 0, 0],
           stack: [
             { text: `${index + 1}. ${formatItemStyleCode(item)}`, bold: true, fontSize: 11, color: PDF_COLORS.primary },
             { text: item.productTypeName || item.productNameTh || item.productNameEn || '', fontSize: 9, color: PDF_COLORS.darkGray },
@@ -330,7 +249,7 @@ export class CostCheckPdfBuilder {
           ]
         },
         {
-          width: 130,
+          width: 150,
           alignment: 'right',
           stack: [
             { text: `จำนวน: ${fmtQty(check.qty) || '0'}`, fontSize: 9 },
@@ -341,40 +260,73 @@ export class CostCheckPdfBuilder {
     }
   }
 
+  // เซลล์รูปในคอลัมน์แรกของตารางต้นทุน — ต้อง fit ในความกว้างคอลัมน์ (widths[0] = 62, เผื่อ padding 3/3 แล้ว)
+  buildImageCell(item) {
+    const raw = item.imageBase64
+    if (!raw) return { text: '', alignment: 'center' }
+    const imageData = raw.startsWith('data:image') ? raw : `data:image/png;base64,${raw}`
+    return { image: imageData, fit: [54, 70], alignment: 'center', margin: [0, 2, 0, 2] }
+  }
+
   buildCostTable(item) {
     const groups = groupPriceTransactionsByGroup(item.priceTransactions)
-    // layout ตารางนี้: padding 3/3, เส้นแนวตั้ง 0.5pt (ค่า default ของ maxTableContentWidth) → cols=6
-    // maxTableContentWidth(6) = 492.5 — Σwidths ต้องไม่เกินนี้ ไม่งั้นตารางล้นขอบขวา (ดูคอมเมนต์ formula ด้านบน)
-    const widths = [55, 192, 35, 55, 80, 75] // sum = 492
+    // layout ตารางนี้: padding 3/3, เส้นแนวตั้ง 0.5pt (ค่า default ของ maxTableContentWidth) → cols=8
+    // maxTableContentWidth(8) = 479.5 — Σwidths ต้องไม่เกินนี้ ไม่งั้นตารางล้นขอบขวา (ดูคอมเมนต์ formula ด้านบน)
+    const widths = [62, 38, 138, 30, 50, 40, 55, 62] // sum = 475
     const header = [
+      { text: 'รูป', style: 'compactHeader', alignment: 'center' },
       { text: 'กลุ่ม', style: 'compactHeader' },
       { text: 'รายละเอียด', style: 'compactHeader' },
       { text: 'จำนวน', style: 'compactHeader', alignment: 'center' },
+      { text: 'ราคา/จำนวน', style: 'compactHeader', alignment: 'right' },
       { text: 'น้ำหนัก', style: 'compactHeader', alignment: 'right' },
-      { text: 'ราคา/หน่วย (฿)', style: 'compactHeader', alignment: 'right' },
+      { text: 'ราคา/น้ำหนัก', style: 'compactHeader', alignment: 'right' },
       { text: 'รวม (฿)', style: 'compactHeader', alignment: 'right' }
     ]
     const body = [header]
 
+    // เรียงทุก priceTransaction ตามกลุ่มก่อน (Gold/Worker/Embed/Gem/ETC) เพื่อรู้จำนวนแถวทั้งหมดล่วงหน้า —
+    // ใช้กำหนด rowSpan ของรูปให้ครอบคลุมถึงแถว "รวมต้นทุน" ท้ายตารางด้วย (ผู้ใช้ขอให้รูปคร่อมแถว footer ด้วย)
+    const orderedRows = []
     ;['Gold', 'Worker', 'Embed', 'Gem', 'ETC'].forEach((groupKey) => {
       const rows = groups[groupKey]
       if (!rows || !rows.length) return
-      rows.forEach((t, idx) => {
-        const unitPrice = Number(t.qtyWeight) ? Number(t.qtyWeightPrice) || 0 : Number(t.qtyPrice) || 0
+      rows.forEach((t, idx) => orderedRows.push({ t, groupKey, isFirstOfGroup: idx === 0 }))
+    })
+
+    const totalCost = orderedRows.reduce((sum, r) => sum + (Number(r.t.totalPrice) || 0), 0)
+    const totalRows = orderedRows.length + 1 // +1 = แถว "รวมต้นทุน" ท้ายตาราง
+
+    if (!orderedRows.length) {
+      body.push([
+        { ...this.buildImageCell(item), rowSpan: totalRows },
+        { text: 'ไม่มีข้อมูลต้นทุน', fontSize: 8, italics: true, color: PDF_COLORS.muted, colSpan: 6, alignment: 'center' },
+        {}, {}, {}, {}, {},
+        { text: '', fontSize: 8 }
+      ])
+    } else {
+      orderedRows.forEach((row, index) => {
+        const { t, groupKey, isFirstOfGroup } = row
         body.push([
-          { text: idx === 0 ? GROUP_LABELS[groupKey] : '', fontSize: 8, bold: true },
+          index === 0 ? { ...this.buildImageCell(item), rowSpan: totalRows } : {},
+          { text: isFirstOfGroup ? GROUP_LABELS[groupKey] : '', fontSize: 8, bold: true },
           { text: t.nameDescription || '-', fontSize: 8 },
           { text: fmtQty(t.qty), fontSize: 8, alignment: 'center' },
+          { text: formatMoneyOrBlank(t.qtyPrice), fontSize: 8, alignment: 'right' },
           { text: fmtQty(t.qtyWeight), fontSize: 8, alignment: 'right' },
-          { text: formatMoney(unitPrice), fontSize: 8, alignment: 'right' },
+          { text: formatMoneyOrBlank(t.qtyWeightPrice), fontSize: 8, alignment: 'right' },
           { text: formatMoney(Number(t.totalPrice) || 0), fontSize: 8, alignment: 'right' }
         ])
       })
-    })
-
-    if (body.length === 1) {
-      body.push([{ text: 'ไม่มีข้อมูลต้นทุน', fontSize: 8, italics: true, color: PDF_COLORS.muted, colSpan: 6, alignment: 'center' }, {}, {}, {}, {}, {}])
     }
+
+    // แถว "รวมต้นทุน" ท้ายตาราง — คอลัมน์รูป (0) เป็น {} ต่อ rowSpan จากด้านบน, colSpan ครอบ กลุ่ม..ราคา/น้ำหนัก (1-6)
+    body.push([
+      {},
+      { text: 'รวมต้นทุน', style: 'costTableFooterLabel', colSpan: 6 },
+      {}, {}, {}, {}, {},
+      { text: formatMoney(totalCost), style: 'costTableFooterLabel', alignment: 'right' }
+    ])
 
     return {
       margin: [0, 6, 0, 0],
@@ -460,12 +412,7 @@ export class CostCheckPdfBuilder {
       pageOrientation: 'portrait',
       pageMargins: [30, 80, 30, 30],
       header: (currentPage, pageCount) => this.buildPageHeader(currentPage, pageCount),
-      content: [
-        this.buildSummaryPage(),
-        { text: '', pageBreak: 'after' },
-        { text: 'รายละเอียดต้นทุนรายชิ้น', bold: true, fontSize: 12, color: PDF_COLORS.primary, margin: [0, 0, 0, 8] },
-        ...this.buildDetailSection()
-      ],
+      content: [this.buildTotalsStrip(), ...this.buildDetailSection()],
       defaultStyle: {
         font: COST_CHECK_FONT,
         fontSize: 10,
@@ -478,6 +425,12 @@ export class CostCheckPdfBuilder {
           color: 'white',
           fillColor: PDF_COLORS.primary,
           margin: [0, 2, 0, 2]
+        },
+        costTableFooterLabel: {
+          fontSize: 8,
+          bold: true,
+          color: PDF_COLORS.primary,
+          fillColor: PDF_COLORS.lightGray
         }
       }
     }
