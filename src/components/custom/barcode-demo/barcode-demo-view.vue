@@ -12,7 +12,7 @@
       <div class="main-box">
         <div class="box-col-container">
           <div class="left-box">
-            <div class="mold-box">{{ isQrMode ? productNameEn : '' }}</div>
+            <div class="mold-box">{{ productNameEn }}</div>
             <div class="d-flex justify-content-between">
               <div class="barcode-wrapper">
                 <svg ref="barcodeElement"></svg>
@@ -21,8 +21,8 @@
             </div>
             <div class="mold-box">{{ stockNumberLine }}</div>
             <div class="d-flex justify-content-start">
-              <div class="gold-box">{{ goldText }}</div>
-              <div class="gold-box ml-1">{{ size }}</div>
+              <div class="gold-box">{{ gold }}</div>
+              <div class="gold-box ml-1">{{ sizeDisplay }}</div>
             </div>
           </div>
           <div class="right-box" :class="{ 'right-box-center': isQrMode }">
@@ -45,7 +45,7 @@
 import JsBarcode from 'jsbarcode'
 import QRCode from 'qrcode'
 
-import { formatGemText, formatLabelPrice } from '@/services/helper/barcode/barcode-zpl.js'
+import { formatGemText, formatLabelPrice, normalizeGt800Size } from '@/services/helper/barcode/barcode-zpl.js'
 import { PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
 
 export default {
@@ -152,11 +152,12 @@ export default {
       return !!this.qrUrl
     },
 
-    goldText() {
-      if (this.isGt800 && this.goldType && !this.isQrMode) {
-        return [this.goldType, this.gold].filter(Boolean).join('  ')
+    // แท็บ original (GT800) เติม # ให้ไซซ์เหมือน ZPL จริง — legacy/QR แสดงไซซ์ดิบเหมือนเดิม
+    sizeDisplay() {
+      if (this.isGt800 && !this.isQrMode) {
+        return normalizeGt800Size(this.size)
       }
-      return this.gold
+      return this.size
     },
 
     displayGems() {

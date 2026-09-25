@@ -11,7 +11,7 @@
     :salePrice="barcode.salePrice"
     :profile="profile"
     :qrUrl="qrUrl"
-    :productNameEn="selectedType === 'original-qr' ? barcode.productNameEn : ''"
+    :productNameEn="showProductName ? barcode.productNameEn : ''"
   />
   <barcodeVerticalDemo
     v-else
@@ -32,7 +32,7 @@
 import { defineAsyncComponent } from 'vue'
 
 import { resolveLabelCode } from '@/services/helper/barcode/barcode-zpl.js'
-import { getBarcodeProfile } from '@/services/api/barcode-printer-config.js'
+import { getBarcodeProfile, PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
 
 const barcodeDemo = defineAsyncComponent(() =>
   import('@/components/custom/barcode-demo/barcode-demo-view.vue')
@@ -86,6 +86,11 @@ export default {
     // ป้าย QR ตัดคอลัมน์พลอยออก (QR แทนที่ตำแหน่งนั้น)
     previewGems() {
       return this.selectedType === 'original-qr' ? [] : this.barcode.gems
+    },
+
+    // แท็บ original แสดงชื่อสินค้าเฉพาะโปรไฟล์ GT800 (เครื่องเดิมไม่มีฟิลด์นี้) ส่วนแท็บ QR แสดงเสมอ
+    showProductName() {
+      return this.selectedType === 'original-qr' || (this.selectedType === 'original' && this.profile === PRINTER_PROFILES.GT800)
     }
   }
 }

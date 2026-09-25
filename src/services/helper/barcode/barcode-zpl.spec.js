@@ -273,14 +273,25 @@ describe('GT800 — เลือก ROOMY/TIGHT', () => {
     expect(layout.levelName).toBe('ROOMY')
   })
 
-  it('DK-18K-1XR-1747 (รหัสยาว) → TIGHT', () => {
+  it('DK-18K-1XR-1747 (รหัสยาว) แนวตั้ง → TIGHT (ยังพิจารณาความยาวบาร์โค้ดเหมือนเดิม)', () => {
+    const form = {
+      stockNumber: 'DK-18K-1XR-1747',
+      gems: ['D-1.00'],
+      salePrice: 1000
+    }
+    const layout = layoutGt800(form, 'vertical')
+    expect(layout.levelName).toBe('TIGHT')
+  })
+
+  it('DK-18K-1XR-1747 (รหัสยาว) แท็บ original → ROOMY (ไม่พิจารณาความยาวบาร์โค้ดแล้ว เพราะบาร์โค้ดอยู่ในซีกซ้าย)', () => {
     const form = {
       stockNumber: 'DK-18K-1XR-1747',
       gems: ['D-1.00'],
       salePrice: 1000
     }
     const layout = layoutGt800(form, 'original')
-    expect(layout.levelName).toBe('TIGHT')
+    expect(layout.levelName).toBe('ROOMY')
+    expect(layout.gemColumnX).toBe(440)
   })
 
   it('รหัสสั้น ไม่มีพลอย → ROOMY', () => {
@@ -300,13 +311,14 @@ describe('GT800 — เลือก ROOMY/TIGHT', () => {
     expect(layout.levelName).toBe('TIGHT')
   })
 
-  it('พลอยบรรทัดยาวเกิน 24 ตัวอักษร (หลัง formatGemText) → TIGHT', () => {
+  it('พลอยบรรทัดยาวเกิน 24 ตัวอักษร (หลัง formatGemText) → TIGHT แต่คอลัมน์พลอยยัง x=440 เท่าเดิม', () => {
     const form = {
       stockNumber: 'AB123',
       gems: ['ThisIsAVeryLongGemNameCt.5.00']
     }
     const layout = layoutGt800(form, 'original')
     expect(layout.levelName).toBe('TIGHT')
+    expect(layout.gemColumnX).toBe(440)
   })
 
   it('แนวตั้ง: ชื่อสินค้ายาวเกิน 20 ตัวอักษร + พลอย 3 บรรทัด → TIGHT', () => {
@@ -371,6 +383,94 @@ describe('generateGt800ZPL / generateGt800ZPLVertical', () => {
   it('ใช้ ^FO ไม่ใช่ ^F ที่คอลัมน์พลอย', () => {
     const zpl = generateGt800ZPL(form, 1)
     expect(zpl).not.toMatch(/\^F\d/)
+  })
+})
+
+describe('layoutGt800 / generateGt800ZPL — แท็บ original ใหม่ (ชื่อสินค้า + gold line ไม่มี goldType + พลอย x=440)', () => {
+  const form = {
+    stockNumber: 'AH21142',
+    salePrice: 12345,
+    gold: 'PG',
+    size: '55',
+    goldType: '18K',
+    madeIn: 'MADE IN THAILAND',
+    productNameEn: 'Ring Test',
+    gems: ['0.24ct.', '0.15ct.']
+  }
+
+  it('layoutGt800: ชื่อสั้นไม่ย่อฟอนต์ + คอลัมน์พลอยคงที่ x=440', () => {
+    const layout = layoutGt800(form, 'original')
+    expect(layout.productNameEn).toBe('Ring Test')
+    expect(layout.nameFont).toEqual([14, 14])
+    expect(layout.goldLine).toBe('PG #55')
+    expect(layout.gemColumnX).toBe(440)
+  })
+
+  it('layoutGt800: ชื่อยาว 32 ตัวอักษร (เกินพื้นที่ 164 dots) → ย่อฟอนต์เหลือ [10,10]', () => {
+    const layout = layoutGt800({ ...form, productNameEn: 'A'.repeat(32) }, 'original')
+    expect(layout.nameFont).toEqual([10, 10])
+  })
+
+  it('layoutGt800: ชื่อว่าง → ไม่ย่อฟอนต์ (ยังเป็น [14,14] แม้ไม่ได้ใช้)', () => {
+    const layout = layoutGt800({ ...form, productNameEn: '' }, 'original')
+    expect(layout.productNameEn).toBe('')
+    expect(layout.nameFont).toEqual([14, 14])
+  })
+
+  it('layoutGt800: goldLine ตัวอย่างจาก spec — gold "0.61 g. Gold" + size "#55" → "0.61 g. Gold #55"', () => {
+    expect(layoutGt800({ gold: '0.61 g. Gold', size: '#55' }, 'original').goldLine).toBe('0.61 g. Gold #55')
+  })
+
+  it('layoutGt800: goldLine — size "55" (ไม่มี #) → เติม # ให้เป็น "0.61 g. Gold #55" เหมือนกัน', () => {
+    expect(layoutGt800({ gold: '0.61 g. Gold', size: '55' }, 'original').goldLine).toBe('0.61 g. Gold #55')
+  })
+
+  it('layoutGt800: goldLine — size "#" หรือว่าง → ตัดไซซ์ทิ้งเหลือ "0.61 g. Gold"', () => {
+    expect(layoutGt800({ gold: '0.61 g. Gold', size: '#' }, 'original').goldLine).toBe('0.61 g. Gold')
+    expect(layoutGt800({ gold: '0.61 g. Gold', size: '' }, 'original').goldLine).toBe('0.61 g. Gold')
+  })
+
+  it('layoutGt800: goldLine ตัดช่องว่างหัว-ท้ายไซซ์ก่อนเช็ค', () => {
+    expect(layoutGt800({ gold: '0.61 g. Gold', size: '  55  ' }, 'original').goldLine).toBe('0.61 g. Gold #55')
+    expect(layoutGt800({ gold: '0.61 g. Gold', size: '  #  ' }, 'original').goldLine).toBe('0.61 g. Gold')
+  })
+
+  it('generateGt800ZPL: มีชื่อสินค้า → ฟิลด์ชื่อที่ x256,y31 font 14,14', () => {
+    const zpl = generateGt800ZPL(form, 1)
+    expect(zpl).toContain('^FO256,31^A0N,14,14^FDRing Test^FS')
+  })
+
+  it('generateGt800ZPL: ไม่มีชื่อสินค้า → ไม่มีฟิลด์ที่ x256,y31', () => {
+    const zpl = generateGt800ZPL({ ...form, productNameEn: '' }, 1)
+    expect(zpl).not.toContain('^FO256,31')
+  })
+
+  it('generateGt800ZPL: บาร์โค้ดที่ x262,y47 สูง 18', () => {
+    const zpl = generateGt800ZPL(form, 1)
+    expect(zpl).toContain('^FO262,47^BY1,3.0:1,18^BCN,18,N,N^FDAH21142^FS')
+  })
+
+  it('generateGt800ZPL: เลขที่ผลิต-ราคา ที่ x256,y68', () => {
+    const zpl = generateGt800ZPL(form, 1)
+    expect(zpl).toContain('^FO256,68^A0N,16,16^FDAH21142 - 12345R^FS')
+  })
+
+  it('generateGt800ZPL: บรรทัดทอง x256,y86 ไม่มี goldType นำหน้าอีกแล้ว', () => {
+    const zpl = generateGt800ZPL(form, 1)
+    expect(zpl).toContain('^FO256,86^A0N,14,14^FDPG #55^FS')
+    expect(zpl).not.toContain('18K')
+  })
+
+  it('generateGt800ZPL: คอลัมน์พลอยอยู่ที่ x=440 (ไม่ใช่ 422/472 เหมือนเดิม)', () => {
+    const zpl = generateGt800ZPL(form, 1)
+    expect(zpl).toContain('^FO440,31^A0N,14,15^FD0.24 ct.^FS')
+    expect(zpl).toContain('^FO440,46^A0N,14,15^FD0.15 ct.^FS')
+  })
+
+  it('generateGt800ZPL: ชื่อยาว 32 ตัวอักษร → ฟิลด์ชื่อใช้ฟอนต์ 10,10', () => {
+    const longName = 'A'.repeat(32)
+    const zpl = generateGt800ZPL({ ...form, productNameEn: longName }, 1)
+    expect(zpl).toContain(`^FO256,31^A0N,10,10^FD${longName}^FS`)
   })
 })
 

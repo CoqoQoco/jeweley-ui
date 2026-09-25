@@ -14,22 +14,30 @@ const GT800_MADE_IN_X = 25
 const GT800_MADE_IN_Y = 50
 const GT800_MADE_IN_FONT = [15, 15]
 
-// แถวบาร์โค้ด + บรรทัดเลขที่ผลิต-ราคา (template แนวนอน / แท็บ original)
-const GT800_H_BARCODE_X = 262
-const GT800_H_BARCODE_Y = 31
-const GT800_H_BARCODE_MODULE = 1
-const GT800_H_BARCODE_RATIO = '3.0:1'
-const GT800_H_BARCODE_HEIGHT = 20
+// แท็บ original — ชื่อสินค้า + บาร์โค้ด + เลขที่ผลิต-ราคา + บรรทัดทอง
+// พิกัดชุดนี้เหมือนแท็บ original-qr ทุกจุด (verify กับกระดาษจริงแล้ว) — พับครึ่งป้ายที่ x≈425
+// ฝั่งซ้าย (ชื่อ/บาร์โค้ด/เลขที่ผลิต/ทอง) ต้องจบก่อน x≈420 พลอยอยู่ฝั่งขวาที่ GT800_O_GEM_X
+const GT800_O_NAME_X = 256
+const GT800_O_NAME_Y = 31
+const GT800_O_NAME_FONT = [14, 14]
+const GT800_O_NAME_CHAR_W = 7.2 // dot ต่อตัวอักษรโดยประมาณ ใช้ย่อฟอนต์อัตโนมัติเมื่อชื่อยาวเกินพื้นที่
+const GT800_O_NAME_MIN_FONT = 10
+const GT800_O_NAME_RIGHT_LIMIT = 420 // ขอบขวาสุดของฝั่งซ้าย (ต้องจบก่อนแนวพับ x≈425)
 
-const GT800_H_CODE_LINE_X = 256
-const GT800_H_CODE_LINE_Y = 56
+const GT800_O_BARCODE_X = 262
+const GT800_O_BARCODE_Y = 47
+const GT800_O_BARCODE_MODULE = 1
+const GT800_O_BARCODE_RATIO = '3.0:1'
+const GT800_O_BARCODE_HEIGHT = 18
 
-// แถวล่าง: ประเภททอง + น้ำหนัก/ไซซ์ (template แนวนอน)
-const GT800_BOTTOM_LINE_Y = 78
-const GT800_BOTTOM_FONT = [15, 15]
-const GT800_GOLDTYPE_X = 256
-const GT800_GOLD_X_WITH_TYPE = 292
-const GT800_GOLD_X_NO_TYPE = 256
+const GT800_O_CODE_LINE_X = 256
+const GT800_O_CODE_LINE_Y = 68
+
+const GT800_O_GOLD_LINE_X = 256
+const GT800_O_GOLD_LINE_Y = 86
+const GT800_O_GOLD_LINE_FONT = [14, 14] // ไม่มี goldType นำหน้าอีกแล้ว (ชื่อสินค้ามีกะรัตอยู่ในตัวแล้ว)
+
+const GT800_O_GEM_X = 440 // คอลัมน์พลอยฝั่งขวาของแนวพับ คงที่ทุก level (ไม่ขยับตาม ROOMY/TIGHT เหมือนเดิม)
 
 // template แนวตั้ง (4 แท็บราคา)
 const GT800_V_NAME_X = 256
@@ -238,13 +246,14 @@ export function generateLegacyZPLVertical(formValue) {
 // GT800 — layout ใหม่
 // ─────────────────────────────────────────────────────────────
 
-function chooseGemLevel({ code, gems, checkLines }) {
+function chooseGemLevel({ code, gems, checkLines, ignoreBarcodeFit = false }) {
   const formattedGems = (Array.isArray(gems) ? gems : []).filter(Boolean).map(formatGemText)
 
   const barcodeEnd =
     GT800_BARCODE_START_X + (code.length + GT800_BARCODE_CHAR_EXTRA) * GT800_BARCODE_CHAR_WIDTH + GT800_BARCODE_END_PAD
 
-  const fitsBarcode = barcodeEnd + GT800_ROOMY_BARCODE_SAFETY <= GT800_ROOMY_BARCODE_END_MAX
+  // แท็บ original วางบาร์โค้ดในซีกซ้ายของป้าย (จบก่อนแนวพับ) เลยไม่ต้องพิจารณาความยาวบาร์โค้ดเทียบคอลัมน์พลอยอีก
+  const fitsBarcode = ignoreBarcodeFit || barcodeEnd + GT800_ROOMY_BARCODE_SAFETY <= GT800_ROOMY_BARCODE_END_MAX
 
   const hasManyGemLines = formattedGems.length >= GT800_ROOMY_LINE_COUNT_THRESHOLD
   const linesFitLength =
@@ -258,6 +267,26 @@ function chooseGemLevel({ code, gems, checkLines }) {
   return { level, barcodeEnd, formattedGems }
 }
 
+// ย่อฟอนต์ชื่อสินค้าอัตโนมัติถ้ากว้างเกินพื้นที่ก่อนแนวพับ x≈420 (แท็บ original เท่านั้น)
+function computeGt800NameFont(name) {
+  const budget = GT800_O_NAME_RIGHT_LIMIT - GT800_O_NAME_X
+  const estWidth = name.length * GT800_O_NAME_CHAR_W * (GT800_O_NAME_FONT[0] / 14)
+  if (estWidth <= budget) return GT800_O_NAME_FONT
+  const size = Math.max(
+    GT800_O_NAME_MIN_FONT,
+    Math.floor((GT800_O_NAME_FONT[0] * budget) / (name.length * GT800_O_NAME_CHAR_W))
+  )
+  return [size, size]
+}
+
+// ไซซ์บนบรรทัดทอง (แท็บ original) — ตัดช่องว่าง, ว่างหรือมีแค่ # ตัดทิ้ง, ไม่ขึ้นต้นด้วย # ให้เติมให้
+// export ไว้ให้ preview บนจอ (barcode-demo-view.vue) ใช้ logic เดียวกับ ZPL จริง ไม่ต้องเขียนซ้ำ
+export function normalizeGt800Size(size) {
+  const trimmed = (size || '').trim()
+  if (!trimmed || trimmed === '#') return ''
+  return trimmed.startsWith('#') ? trimmed : `#${trimmed}`
+}
+
 // คืนตำแหน่ง/ขนาด (level ROOMY/TIGHT ที่เลือก + ข้อความแต่ละบรรทัด) ให้ test ได้โดยไม่ต้องยุ่งกับ dpiScale
 export function layoutGt800(formValue, template) {
   const code = resolveLabelCode(formValue)
@@ -266,7 +295,17 @@ export function layoutGt800(formValue, template) {
   if (template === 'original') {
     const salePriceText = formatLabelPrice(formValue?.salePrice)
     const codeLine = [code, salePriceText].filter(Boolean).join(' - ')
-    const { level, barcodeEnd, formattedGems } = chooseGemLevel({ code, gems, checkLines: [codeLine] })
+    const { level, barcodeEnd, formattedGems } = chooseGemLevel({
+      code,
+      gems,
+      checkLines: [codeLine],
+      ignoreBarcodeFit: true
+    })
+
+    const productNameEn = formValue?.productNameEn || ''
+    const nameFont = computeGt800NameFont(productNameEn)
+    const sizeText = normalizeGt800Size(formValue?.size)
+    const goldLine = [formValue?.gold || '', sizeText].filter(Boolean).join(' ')
 
     return {
       template: 'original',
@@ -274,7 +313,10 @@ export function layoutGt800(formValue, template) {
       code,
       codeLine,
       barcodeEnd,
-      gemColumnX: level.x,
+      productNameEn,
+      nameFont,
+      goldLine,
+      gemColumnX: GT800_O_GEM_X,
       gemFont: level.gemFont,
       gemLineHeight: level.lineHeight,
       codeLineFont: level.priceFontHorizontal,
@@ -334,17 +376,15 @@ export function generateGt800ZPL(formValue, dpiScale = 1, options = {}) {
 
   zpl += `^FO${s(GT800_MADE_IN_X)},${s(GT800_MADE_IN_Y)}^A0N,${s(GT800_MADE_IN_FONT[0])},${s(GT800_MADE_IN_FONT[1])}^FD${formValue?.madeIn || ''}^FS`
 
-  zpl += `^FO${s(GT800_H_BARCODE_X)},${s(GT800_H_BARCODE_Y)}^BY${s(GT800_H_BARCODE_MODULE)},${GT800_H_BARCODE_RATIO},${s(GT800_H_BARCODE_HEIGHT)}^BCN,${s(GT800_H_BARCODE_HEIGHT)},N,N^FD${layout.code}^FS`
-
-  zpl += `^FO${s(GT800_H_CODE_LINE_X)},${s(GT800_H_CODE_LINE_Y)}^A0N,${s(layout.codeLineFont[0])},${s(layout.codeLineFont[1])}^FD${layout.codeLine}^FS`
-
-  const goldSizeText = `${formValue?.gold || ''} ${formValue?.size || ''}`.trim()
-  if (formValue?.goldType) {
-    zpl += `^FO${s(GT800_GOLDTYPE_X)},${s(GT800_BOTTOM_LINE_Y)}^A0N,${s(GT800_BOTTOM_FONT[0])},${s(GT800_BOTTOM_FONT[1])}^FD${formValue.goldType}^FS`
-    zpl += `^FO${s(GT800_GOLD_X_WITH_TYPE)},${s(GT800_BOTTOM_LINE_Y)}^A0N,${s(GT800_BOTTOM_FONT[0])},${s(GT800_BOTTOM_FONT[1])}^FD${goldSizeText}^FS`
-  } else {
-    zpl += `^FO${s(GT800_GOLD_X_NO_TYPE)},${s(GT800_BOTTOM_LINE_Y)}^A0N,${s(GT800_BOTTOM_FONT[0])},${s(GT800_BOTTOM_FONT[1])}^FD${goldSizeText}^FS`
+  if (layout.productNameEn) {
+    zpl += `^FO${s(GT800_O_NAME_X)},${s(GT800_O_NAME_Y)}^A0N,${s(layout.nameFont[0])},${s(layout.nameFont[1])}^FD${layout.productNameEn}^FS`
   }
+
+  zpl += `^FO${s(GT800_O_BARCODE_X)},${s(GT800_O_BARCODE_Y)}^BY${s(GT800_O_BARCODE_MODULE)},${GT800_O_BARCODE_RATIO},${s(GT800_O_BARCODE_HEIGHT)}^BCN,${s(GT800_O_BARCODE_HEIGHT)},N,N^FD${layout.code}^FS`
+
+  zpl += `^FO${s(GT800_O_CODE_LINE_X)},${s(GT800_O_CODE_LINE_Y)}^A0N,${s(layout.codeLineFont[0])},${s(layout.codeLineFont[1])}^FD${layout.codeLine}^FS`
+
+  zpl += `^FO${s(GT800_O_GOLD_LINE_X)},${s(GT800_O_GOLD_LINE_Y)}^A0N,${s(GT800_O_GOLD_LINE_FONT[0])},${s(GT800_O_GOLD_LINE_FONT[1])}^FD${layout.goldLine}^FS`
 
   zpl += buildGemFieldsZpl(layout, s)
 
