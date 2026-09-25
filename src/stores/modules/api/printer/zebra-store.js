@@ -46,25 +46,31 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
 
   actions: {
     // เลือก ZPL template ตาม profile เครื่องคอมนี้ × barcodeType (original → แนวนอน, อื่น → แนวตั้ง)
-    buildZpl(formValue, profile, dpiScale) {
+    buildZpl(formValue, profile, dpiScale, rotate180 = false) {
       const isOriginal = formValue.barcodeType === 'original'
 
       if (profile === PRINTER_PROFILES.LEGACY) {
         return isOriginal ? generateLegacyZPL(formValue) : generateLegacyZPLVertical(formValue)
       }
 
+      const options = { rotate180 }
+
       if (formValue.barcodeType === 'original-qr') {
-        return generateGt800ZPLQr(formValue, dpiScale)
+        return generateGt800ZPLQr(formValue, dpiScale, options)
       }
 
-      return isOriginal ? generateGt800ZPL(formValue, dpiScale) : generateGt800ZPLVertical(formValue, dpiScale)
+      return isOriginal
+        ? generateGt800ZPL(formValue, dpiScale, options)
+        : generateGt800ZPLVertical(formValue, dpiScale, options)
     },
 
     // ตรวจสถานะเครื่องพิมพ์บาร์โค้ดที่ตั้งไว้ — เครื่องเดิมเช็คผ่าน Zebra Print Service, GT800 เช็คผ่าน DK Print Bridge
-    async fetchBarcodePrinterStatus() {
+    // profileOverride — ใช้ตอนหน้าตั้งค่าอยากเช็คตาม profile ที่เลือกบนจอ (ยังไม่ได้กดบันทึก) แทนค่าที่บันทึกไว้
+    async fetchBarcodePrinterStatus(profileOverride) {
       const config = getBarcodePrinterConfig()
+      const profile = profileOverride || config.profile
 
-      if (config.profile === PRINTER_PROFILES.LEGACY) {
+      if (profile === PRINTER_PROFILES.LEGACY) {
         const result = await api.zebraPrinter.getStatus({ skipLoading: true, skipError: true })
         const status = result?.service?.status === 'running' ? 'success' : 'service-error'
         return {
@@ -114,7 +120,7 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
       if (qrGuardResult) return qrGuardResult
 
       const printCount = formValue.print || 1
-      const zpl = this.buildZpl(formValue, config.profile, config.dpiScale)
+      const zpl = this.buildZpl(formValue, config.profile, config.dpiScale, config.rotate180)
 
       if (config.profile === PRINTER_PROFILES.LEGACY) {
         for (let i = 0; i < printCount; i++) {
@@ -168,7 +174,7 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
       const qrGuardResult = checkQrLabelGuard(formValue, config.profile)
       if (qrGuardResult) return qrGuardResult
 
-      const zpls = formValue.map((form) => this.buildZpl(form, config.profile, config.dpiScale))
+      const zpls = formValue.map((form) => this.buildZpl(form, config.profile, config.dpiScale, config.rotate180))
 
       if (config.profile === PRINTER_PROFILES.LEGACY) {
         return await api.zebraPrinter.printsZPL(zpls, { skipLoading })

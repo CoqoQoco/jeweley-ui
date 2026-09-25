@@ -83,6 +83,8 @@ export default {
     dpiHint: 'Current labels are designed for 203 dpi — if the printer is 300 dpi, the system will scale the coordinates automatically',
     copyDelayLabel: 'Delay between labels (ms)',
     copyDelayHint: 'Delay before printing the next label when printing multiple copies at once',
+    rotate180Label: 'Rotate print 180°',
+    rotate180Hint: 'Turn on when labels print upside down — both left-right and top-bottom flipped. Set separately per computer',
     statusSectionTitle: 'Printer Status',
     statusSectionDescription: 'Check the connection status to DK Print Bridge and the configured printer',
     status: {

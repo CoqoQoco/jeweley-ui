@@ -4,6 +4,7 @@ export const BARCODE_PRINTER_STORAGE_KEY = 'print-bridge-printer-barcode'
 export const BARCODE_DPI_STORAGE_KEY = 'print-bridge-barcode-dpi'
 export const BARCODE_DELAY_STORAGE_KEY = 'print-bridge-barcode-delay'
 export const BARCODE_PROFILE_STORAGE_KEY = 'print-bridge-barcode-profile'
+export const BARCODE_ROTATE180_STORAGE_KEY = 'print-bridge-barcode-rotate180'
 
 // template ฉลากปัจจุบันเขียนพิกัดไว้ที่หัวพิมพ์ 203 dpi
 export const BASE_DPI = 203
@@ -63,12 +64,22 @@ export function setBarcodeProfile(profile) {
   )
 }
 
+// GT800 เท่านั้น — บิดเบี้ยว/ม้วนกระดาษต่างเครื่องทำให้บางเครื่องพิมพ์กลับหัว 180° ตั้งแยกได้ต่อเครื่อง ค่าเริ่มต้นปิด
+export function getBarcodeRotate180() {
+  return storage.getItem(BARCODE_ROTATE180_STORAGE_KEY, 'false') === 'true'
+}
+
+export function setBarcodeRotate180(value) {
+  storage.setItem(BARCODE_ROTATE180_STORAGE_KEY, value ? 'true' : 'false')
+}
+
 export function getBarcodePrinterConfig() {
   return {
     profile: getBarcodeProfile(),
     printerName: getBarcodePrinterName(),
     dpi: getBarcodeDpi(),
     dpiScale: getDpiScale(),
-    copyDelayMs: getCopyDelayMs()
+    copyDelayMs: getCopyDelayMs(),
+    rotate180: getBarcodeRotate180()
   }
 }

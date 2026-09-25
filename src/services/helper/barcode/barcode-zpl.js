@@ -312,6 +312,13 @@ export function layoutGt800(formValue, template) {
   }
 }
 
+// header ร่วมของทุกแท็บ GT800 — เมื่อ rotate180 ให้แทรก ^POI^PW600 ต่อท้าย ^XA ตัวที่สอง (จุดเริ่ม label format)
+// ^PW600 เป็นค่าคงที่ตามสเปกความกว้างป้าย ไม่คูณ dpiScale
+function gt800Header(s, rotate180) {
+  const header = `^XA^LL${s(GT800_LABEL_HEIGHT)}^MD15^LT0^XZ^XA`
+  return rotate180 ? `${header}^POI^PW600` : header
+}
+
 function buildGemFieldsZpl(layout, s) {
   let fields = ''
   let y = GEM_START_Y
@@ -322,11 +329,11 @@ function buildGemFieldsZpl(layout, s) {
   return fields
 }
 
-export function generateGt800ZPL(formValue, dpiScale = 1) {
+export function generateGt800ZPL(formValue, dpiScale = 1, options = {}) {
   const s = (n) => Math.round(n * dpiScale)
   const layout = layoutGt800(formValue, 'original')
 
-  let zpl = `^XA^LL${s(GT800_LABEL_HEIGHT)}^MD15^LT0^XZ^XA`
+  let zpl = gt800Header(s, options.rotate180)
 
   zpl += `^FO${s(GT800_MADE_IN_X)},${s(GT800_MADE_IN_Y)}^A0N,${s(GT800_MADE_IN_FONT[0])},${s(GT800_MADE_IN_FONT[1])}^FD${formValue?.madeIn || ''}^FS`
 
@@ -392,12 +399,12 @@ export function layoutGt800Qr(formValue) {
 }
 
 // แท็บ original-qr — บล็อกข้อความชิดซ้าย 4 บรรทัด (ไม่มีพลอย) + QR วางกลางพื้นที่ว่างด้านขวาของบล็อก
-export function generateGt800ZPLQr(formValue, dpiScale = 1) {
+export function generateGt800ZPLQr(formValue, dpiScale = 1, options = {}) {
   const s = (n) => Math.round(n * dpiScale)
   const layout = layoutGt800Qr(formValue)
   const url = formValue?.publicUrl || ''
 
-  let zpl = `^XA^LL${s(GT800_LABEL_HEIGHT)}^MD15^LT0^XZ^XA`
+  let zpl = gt800Header(s, options.rotate180)
 
   zpl += `^FO${s(GT800_MADE_IN_X)},${s(GT800_MADE_IN_Y)}^A0N,${s(GT800_MADE_IN_FONT[0])},${s(GT800_MADE_IN_FONT[1])}^FD${formValue?.madeIn || ''}^FS`
 
@@ -421,11 +428,11 @@ export function generateGt800ZPLQr(formValue, dpiScale = 1) {
   return zpl
 }
 
-export function generateGt800ZPLVertical(formValue, dpiScale = 1) {
+export function generateGt800ZPLVertical(formValue, dpiScale = 1, options = {}) {
   const s = (n) => Math.round(n * dpiScale)
   const layout = layoutGt800(formValue, 'vertical')
 
-  let zpl = `^XA^LL${s(GT800_LABEL_HEIGHT)}^MD15^LT0^XZ^XA`
+  let zpl = gt800Header(s, options.rotate180)
 
   zpl += `^FO${s(GT800_MADE_IN_X)},${s(GT800_MADE_IN_Y)}^A0N,${s(GT800_MADE_IN_FONT[0])},${s(GT800_MADE_IN_FONT[1])}^FD${formValue?.madeIn || ''}^FS`
 

@@ -22,7 +22,13 @@ vi.mock('@/services/api/printer-config-service.js', () => ({
 import api from '@/axios/axios-helper.js'
 import { printZpl } from '@/services/api/print-bridge-service.js'
 import { fetchPrinterList } from '@/services/api/printer-config-service.js'
-import { setBarcodeProfile, setBarcodePrinterName, setCopyDelayMs, PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
+import {
+  setBarcodeProfile,
+  setBarcodePrinterName,
+  setCopyDelayMs,
+  setBarcodeRotate180,
+  PRINTER_PROFILES
+} from '@/services/api/barcode-printer-config.js'
 import { zebraPrinterApi } from './zebra-store.js'
 
 describe('zebraPrinterApi — เลือก template ตาม profile + ส่งงานตาม profile + เช็คสถานะ', () => {
@@ -184,6 +190,33 @@ describe('zebraPrinterApi — เลือก template ตาม profile + ส�
       expect(res.status).toBe('error')
     })
 
+    it('rotate180 เปิดไว้ → ZPL ที่ส่งไป printZpl มี ^POI^PW600', async () => {
+      setBarcodePrinterName('GT800 RAW')
+      setBarcodeRotate180(true)
+      printZpl.mockResolvedValue({ success: true })
+
+      const store = zebraPrinterApi()
+      await store.fetchZebraPrint({
+        formValue: { stockNumber: 'RG-001', barcodeType: 'original', print: 1 }
+      })
+
+      const sentZpl = printZpl.mock.calls[0][0].zpl
+      expect(sentZpl).toContain('^POI^PW600')
+    })
+
+    it('rotate180 ปิด (default) → ZPL ที่ส่งไป printZpl ไม่มี ^POI^PW600', async () => {
+      setBarcodePrinterName('GT800 RAW')
+      printZpl.mockResolvedValue({ success: true })
+
+      const store = zebraPrinterApi()
+      await store.fetchZebraPrint({
+        formValue: { stockNumber: 'RG-001', barcodeType: 'original', print: 1 }
+      })
+
+      const sentZpl = printZpl.mock.calls[0][0].zpl
+      expect(sentZpl).not.toContain('^POI')
+    })
+
     it('original-qr มี publicUrl → ใช้ template QR (มี ^BQN) ไม่ตกไปแนวตั้ง', async () => {
       setBarcodePrinterName('GT800 RAW')
       printZpl.mockResolvedValue({ success: true })
@@ -271,6 +304,40 @@ describe('zebraPrinterApi — เลือก template ตาม profile + ส�
       const res = await store.fetchBarcodePrinterStatus()
 
       expect(res.status).toBe('printer-not-found')
+    })
+
+    it('profileOverride=gt800 แม้ saved profile เป็น legacy → เช็คผ่าน bridge ไม่ใช่ legacy', async () => {
+      setBarcodeProfile(PRINTER_PROFILES.LEGACY)
+      fetchPrinterList.mockResolvedValue({ status: 'ok', printers: [{ name: 'X', label: 'X' }], detail: '' })
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchBarcodePrinterStatus(PRINTER_PROFILES.GT800)
+
+      expect(res.profile).toBe('gt800')
+      expect(api.zebraPrinter.getStatus).not.toHaveBeenCalled()
+      expect(fetchPrinterList).toHaveBeenCalledTimes(1)
+    })
+
+    it('profileOverride=legacy แม้ saved profile เป็น gt800 → เช็คผ่าน Zebra Print Service ไม่ใช่ bridge', async () => {
+      setBarcodeProfile(PRINTER_PROFILES.GT800)
+      api.zebraPrinter.getStatus.mockResolvedValue({ service: { status: 'running' } })
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchBarcodePrinterStatus(PRINTER_PROFILES.LEGACY)
+
+      expect(res.profile).toBe('legacy')
+      expect(fetchPrinterList).not.toHaveBeenCalled()
+    })
+
+    it('ไม่ส่ง profileOverride → ใช้ saved profile เหมือนเดิม', async () => {
+      setBarcodeProfile(PRINTER_PROFILES.LEGACY)
+      api.zebraPrinter.getStatus.mockResolvedValue({ service: { status: 'running' } })
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchBarcodePrinterStatus()
+
+      expect(res.profile).toBe('legacy')
+      expect(fetchPrinterList).not.toHaveBeenCalled()
     })
   })
 })

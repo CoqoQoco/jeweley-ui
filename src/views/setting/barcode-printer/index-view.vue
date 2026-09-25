@@ -81,6 +81,15 @@
           <small class="field-hint">{{ $t('view.setting.barcodePrinter.copyDelayHint') }}</small>
         </FormFieldGeneric>
       </div>
+
+      <div class="form-row" v-if="!isLegacyProfile">
+        <CheckboxGeneric
+          :modelValue="form.rotate180"
+          :label="$t('view.setting.barcodePrinter.rotate180Label')"
+          @update:modelValue="onRotate180Change"
+        />
+        <small class="field-hint">{{ $t('view.setting.barcodePrinter.rotate180Hint') }}</small>
+      </div>
     </SectionCardGeneric>
 
     <!-- ส่วน ข: สถานะ bridge -->
@@ -177,6 +186,8 @@ import {
   setCopyDelayMs,
   getBarcodeProfile,
   setBarcodeProfile,
+  getBarcodeRotate180,
+  setBarcodeRotate180,
   DEFAULT_BARCODE_DPI,
   DEFAULT_COPY_DELAY_MS,
   PRINTER_PROFILES
@@ -190,6 +201,7 @@ import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import RadioGroupGeneric from '@/components/prime-vue/RadioGroupGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
@@ -203,7 +215,8 @@ export default {
     InputTextGeneric,
     ButtonGeneric,
     AutoCompleteGeneric,
-    RadioGroupGeneric
+    RadioGroupGeneric,
+    CheckboxGeneric
   },
 
   setup() {
@@ -217,7 +230,8 @@ export default {
         profile: getBarcodeProfile(),
         printerName: getBarcodePrinterName(),
         dpi: getBarcodeDpi(),
-        copyDelayMs: getCopyDelayMs()
+        copyDelayMs: getCopyDelayMs(),
+        rotate180: getBarcodeRotate180()
       },
       printerOptions: [],
       bridgeCheck: { status: 'no-printer', printerName: '', printers: [], detail: null },
@@ -307,13 +321,19 @@ export default {
     }
   },
 
+  watch: {
+    'form.profile'() {
+      this.checkBridgeStatus()
+    }
+  },
+
   mounted() {
     this.checkBridgeStatus()
   },
 
   methods: {
     async checkBridgeStatus() {
-      this.bridgeCheck = await this.zebraPrinter.fetchBarcodePrinterStatus()
+      this.bridgeCheck = await this.zebraPrinter.fetchBarcodePrinterStatus(this.form.profile)
       this.printerOptions = this.bridgeCheck.printers || []
     },
 
@@ -329,11 +349,16 @@ export default {
       this.form.printerName = ''
     },
 
+    onRotate180Change(value) {
+      this.form.rotate180 = value
+    },
+
     async onSave() {
       setBarcodeProfile(this.form.profile)
       setBarcodePrinterName(this.form.printerName)
       setBarcodeDpi(this.form.dpi)
       setCopyDelayMs(this.form.copyDelayMs)
+      setBarcodeRotate180(this.form.rotate180)
       success(this.$t('view.setting.barcodePrinter.saveSuccess'))
       await this.checkBridgeStatus()
     },
@@ -343,7 +368,8 @@ export default {
         profile: PRINTER_PROFILES.LEGACY,
         printerName: '',
         dpi: DEFAULT_BARCODE_DPI,
-        copyDelayMs: DEFAULT_COPY_DELAY_MS
+        copyDelayMs: DEFAULT_COPY_DELAY_MS,
+        rotate180: false
       }
       success(this.$t('view.setting.barcodePrinter.resetSuccess'))
     },

@@ -421,6 +421,51 @@ describe('layoutGt800Qr / generateGt800ZPLQr — layout ใหม่ (บล็�
   })
 })
 
+describe('GT800 rotate180 — ^POI^PW600 หลัง ^XA ตัวที่สอง', () => {
+  const form = {
+    stockNumber: 'AH21142',
+    salePrice: 12345,
+    gold: 'PG',
+    size: '55',
+    goldType: '18K',
+    madeIn: 'MADE IN THAILAND',
+    productNameEn: 'Ring Test',
+    productNumber: 'PN-001',
+    price: 9999,
+    gems: ['0.24ct.', '0.15ct.']
+  }
+
+  const qrForm = {
+    productNameEn: '18K BRACELET WG D',
+    stockNumberOrigin: 'AH21142',
+    stockNumber: 'AH21142-XXXX',
+    salePrice: 87600,
+    gold: '5.19 g. Gold',
+    madeIn: 'MADE IN THAILAND',
+    publicUrl: 'https://app.duangkeaw.com/p/DK-18K-1XR-1747-EDTWQT5A'
+  }
+
+  it('rotate180 ปิด (ไม่ส่ง options) → เอาต์พุตเหมือนเดิมทุกตัวอักษร ทั้ง 3 builder', () => {
+    expect(generateGt800ZPL(form, 1)).toBe(generateGt800ZPL(form, 1, { rotate180: false }))
+    expect(generateGt800ZPLVertical(form, 1)).toBe(generateGt800ZPLVertical(form, 1, { rotate180: false }))
+    expect(generateGt800ZPLQr(qrForm, 1)).toBe(generateGt800ZPLQr(qrForm, 1, { rotate180: false }))
+
+    expect(generateGt800ZPL(form, 1, { rotate180: false })).not.toContain('^POI^PW600')
+    expect(generateGt800ZPLVertical(form, 1, { rotate180: false })).not.toContain('^POI^PW600')
+    expect(generateGt800ZPLQr(qrForm, 1, { rotate180: false })).not.toContain('^POI^PW600')
+  })
+
+  it('rotate180 เปิด → มี ^POI^PW600 ต่อท้าย ^XA ตัวที่สอง ทั้ง 3 builder', () => {
+    const zpl = generateGt800ZPL(form, 1, { rotate180: true })
+    const zplVertical = generateGt800ZPLVertical(form, 1, { rotate180: true })
+    const zplQr = generateGt800ZPLQr(qrForm, 1, { rotate180: true })
+
+    expect(zpl).toContain('^XA^LL104^MD15^LT0^XZ^XA^POI^PW600')
+    expect(zplVertical).toContain('^XA^LL104^MD15^LT0^XZ^XA^POI^PW600')
+    expect(zplQr).toContain('^XA^LL104^MD15^LT0^XZ^XA^POI^PW600')
+  })
+})
+
 describe('pickQrMagnification', () => {
   it('URL สั้น (≤17 ตัวอักษร) → 3', () => {
     const url = 'https://a.co/xyz'

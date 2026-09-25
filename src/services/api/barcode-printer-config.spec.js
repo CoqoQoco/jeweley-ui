@@ -3,6 +3,8 @@ import {
   getBarcodeProfile,
   setBarcodeProfile,
   getBarcodePrinterConfig,
+  getBarcodeRotate180,
+  setBarcodeRotate180,
   BARCODE_PROFILE_STORAGE_KEY,
   PRINTER_PROFILES
 } from './barcode-printer-config.js'
@@ -41,5 +43,32 @@ describe('barcode profile config', () => {
     setBarcodeProfile(PRINTER_PROFILES.GT800)
     const config = getBarcodePrinterConfig()
     expect(config.profile).toBe(PRINTER_PROFILES.GT800)
+  })
+})
+
+describe('barcode rotate180 config', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  it('ยังไม่เคยตั้งค่า → default เป็น false', () => {
+    expect(getBarcodeRotate180()).toBe(false)
+  })
+
+  it('setBarcodeRotate180(true) แล้ว getBarcodeRotate180 คืน true', () => {
+    setBarcodeRotate180(true)
+    expect(getBarcodeRotate180()).toBe(true)
+  })
+
+  it('setBarcodeRotate180(false) แล้ว getBarcodeRotate180 คืน false', () => {
+    setBarcodeRotate180(true)
+    setBarcodeRotate180(false)
+    expect(getBarcodeRotate180()).toBe(false)
+  })
+
+  it('getBarcodePrinterConfig มี rotate180 รวมอยู่ด้วย', () => {
+    setBarcodeRotate180(true)
+    const config = getBarcodePrinterConfig()
+    expect(config.rotate180).toBe(true)
   })
 })
