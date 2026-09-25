@@ -64,6 +64,39 @@ export const stockProductImageApiStor = defineStore('stockProductImage', {
       } catch (error) {
         console.error('Error fetching list stock product image:', error)
       }
+    },
+    async fetchBulkPreview({ stockNumbers, includeSameMoldInReceipt }) {
+      try {
+        const param = {
+          stockNumbers: stockNumbers,
+          includeSameMoldInReceipt: includeSameMoldInReceipt
+        }
+        const res = await api.jewelry.post('StockProductImage/BulkPreview', param)
+        if (res) {
+          return res
+        } else {
+          return null
+        }
+      } catch (error) {
+        console.error('Error fetching bulk preview stock product image:', error)
+      }
+    },
+    async fetchCreateBulk({ form }) {
+      try {
+        let options = {
+          headers: {
+            'Content-Type': `multipart/form-data`
+          }
+        }
+        const res = await api.jewelry.post('StockProductImage/CreateBulk', form, options)
+        if (res) {
+          return res
+        } else {
+          return null
+        }
+      } catch (error) {
+        console.error('Error fetching create bulk stock product image:', error)
+      }
     }
   }
 })

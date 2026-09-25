@@ -45,6 +45,7 @@
       :selectedCount="selectableSelectedCount"
       :pendingCount="pendingStockCount"
       :defaultSearch="data.mold || ''"
+      :receiptNumber="data.receiptNumber || ''"
       @select="updateImage"
       @closeModal="closeModal"
     />

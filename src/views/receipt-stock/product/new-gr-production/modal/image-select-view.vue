@@ -13,65 +13,80 @@
               <span class="ml-2">{{ stock.stockReceiptNumber }}</span>
             </template>
           </div>
-          
-          <div>
-            <form @submit.prevent="handleSubmit">
-              <div class="input-group input-group-sm">
-                <div class="input-group input-group-inner">
-                  <input
-                    class="form-control"
-                    :style="getBgColor(search.name)"
-                    type="text"
-                    autocomplete="off"
-                    autocorrect="off"
-                    autocapitalize="off"
-                    spellcheck="false"
-                    v-model="search.name"
-                    :placeholder="$t('view.receiptStock.product.grProduction.searchImagePlaceholder')"
-                    required
-                  />
-                  <div class="input-group-append mr-1">
-                    <button type="submit" class="btn btn-main btn-sm btn-input-group mt-1">
-                      <span class="bi bi-search"></span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </form>
+
+          <div class="mode-toggle-row mt-2">
+            <ToggleGroupGeneric v-model="mode" :options="modeOptions" />
           </div>
 
-          <div class="mt-1">
-            <BaseDataTable
-              scrollHeight="400px"
-              :items="latestImage"
-              :totalRecords="latestImageTotalRecords"
-              :columns="columns"
-              :perPage="take"
-              :rowsPerPageOptions="[10, 20, 50]"
-              :selectionMode="true"
-              :itemsSelection="selectedItems"
-              :selectionType="selectionType"
-              @update:itemsSelection="updateSelection"
-              @page="handlePageChange"
-              @sort="handleSortChange"
-            >
-              <!-- Image Column -->
-              <template #imageTemplate="{ data }">
-                <div class="image-container">
-                  <div>
-                    <imagePreview
-                      :imageName="data.path"
-                      :path="data.path"
-                      :type="type"
-                      :width="50"
-                      :height="50"
-                      :preview="false"
-                    />
+          <template v-if="mode === 'upload'">
+            <div class="mt-2">
+              <JpgDropZoneGeneric
+                v-model="uploadFile"
+                v-model:previewUrl="uploadPreviewUrl"
+                :dropLabel="$t('view.receiptStock.product.grProduction.uploadDropHere')"
+                :browseLabel="$t('view.receiptStock.product.grProduction.uploadBrowse')"
+                :hintLabel="$t('view.receiptStock.product.grProduction.uploadSupportedFormat')"
+                :formatWarningLabel="$t('view.receiptStock.product.grProduction.uploadFormatWarning')"
+              />
+              <FormFieldGeneric
+                :label="$t('view.receiptStock.product.grProduction.imageNameLabel')"
+                :required="true"
+                class="mt-2"
+              >
+                <InputTextGeneric
+                  v-model="uploadName"
+                  :placeholder="$t('view.receiptStock.product.grProduction.imageNamePlaceholder')"
+                  :required="true"
+                />
+              </FormFieldGeneric>
+            </div>
+          </template>
+
+          <template v-else>
+            <div>
+              <form @submit.prevent="handleSubmit" class="library-search-row mt-2">
+                <InputTextGeneric
+                  v-model="search.name"
+                  :placeholder="$t('view.receiptStock.product.grProduction.searchImagePlaceholder')"
+                  :required="true"
+                />
+                <ButtonGeneric type="submit" variant="green" icon="bi-search" />
+              </form>
+            </div>
+
+            <div class="mt-1">
+              <BaseDataTable
+                scrollHeight="400px"
+                :items="latestImage"
+                :totalRecords="latestImageTotalRecords"
+                :columns="columns"
+                :perPage="take"
+                :rowsPerPageOptions="[10, 20, 50]"
+                :selectionMode="true"
+                :itemsSelection="selectedItems"
+                :selectionType="selectionType"
+                @update:itemsSelection="updateSelection"
+                @page="handlePageChange"
+                @sort="handleSortChange"
+              >
+                <!-- Image Column -->
+                <template #imageTemplate="{ data }">
+                  <div class="image-container">
+                    <div>
+                      <imagePreview
+                        :imageName="data.path"
+                        :path="data.path"
+                        :type="type"
+                        :width="50"
+                        :height="50"
+                        :preview="false"
+                      />
+                    </div>
                   </div>
-                </div>
-              </template>
-            </BaseDataTable>
-          </div>
+                </template>
+              </BaseDataTable>
+            </div>
+          </template>
 
           <div class="d-flex justify-content-between align-items-center mt-2">
             <div class="image-scope-row">
@@ -84,16 +99,22 @@
                 :inline="true"
               />
             </div>
-            <button
-              :class="['btn btn-sm', !selectedItems.length > 0 ? 'btn-secondary' : 'btn-main']"
-              type="button"
-              :disabled="!selectedItems.length > 0"
-              :title="$t('view.receiptStock.product.grProduction.updateImageBtn')"
+            <ButtonGeneric
+              v-if="mode === 'library'"
+              variant="main"
+              icon="bi-pencil-square"
+              :label="$t('view.receiptStock.product.grProduction.updateImageBtn')"
+              :disabled="!(selectedItems.length > 0)"
               @click="onSelect"
-            >
-              <span><i class="bi bi-pencil-square"></i></span>
-              <span class="ml-2">{{ $t('view.receiptStock.product.grProduction.updateImageBtn') }}</span>
-            </button>
+            />
+            <ButtonGeneric
+              v-else
+              variant="main"
+              icon="bi-cloud-arrow-up"
+              :label="$t('view.receiptStock.product.grProduction.uploadAndUseBtn')"
+              :disabled="!canUpload"
+              @click="onUploadAndUse"
+            />
           </div>
         </div>
       </template>
@@ -106,21 +127,35 @@ import { defineAsyncComponent } from 'vue'
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 
+import dataTablePaging from '@/composables/useDataTablePaging.js'
+import { stockProductImageApiStor } from '@/stores/modules/api/stock/image-api.js'
+import swAlert from '@/services/alert/sweetAlerts.js'
+
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import RadioGroupGeneric from '@/components/prime-vue/RadioGroupGeneric.vue'
-
-import { stockProductImageApiStor } from '@/stores/modules/api/stock/image-api.js'
+import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
+import JpgDropZoneGeneric from '@/components/generic/JpgDropZoneGeneric.vue'
+import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 
 const interfaceSearch = {
   name: null
 }
 
 export default {
+  mixins: [dataTablePaging],
+
   components: {
     modal,
     BaseDataTable,
     imagePreview,
-    RadioGroupGeneric
+    RadioGroupGeneric,
+    ToggleGroupGeneric,
+    JpgDropZoneGeneric,
+    FormFieldGeneric,
+    InputTextGeneric,
+    ButtonGeneric
   },
 
   setup() {
@@ -154,10 +189,23 @@ export default {
     defaultSearch: {
       type: String,
       default: ''
+    },
+    receiptNumber: {
+      type: String,
+      default: ''
     }
   },
 
   computed: {
+    modeOptions() {
+      return [
+        { value: 'library', label: this.$t('view.receiptStock.product.grProduction.libraryTabLabel') },
+        { value: 'upload', label: this.$t('view.receiptStock.product.grProduction.uploadTabLabel') }
+      ]
+    },
+    canUpload() {
+      return !!this.uploadFile && !!this.uploadName && !!this.uploadName.trim()
+    },
     scopeOptions() {
       const options = []
       if (!this.bulkMode) {
@@ -216,6 +264,8 @@ export default {
         this.isShowModal = val
         if (val === true) {
           this.scope = this.bulkMode ? (this.selectedCount > 0 ? 'selected' : 'all') : 'single'
+          this.mode = 'library'
+          this.resetUploadState()
           await this.openWithDefaultSearch()
         }
       },
@@ -227,6 +277,11 @@ export default {
         //console.log('modelStock', val)
       },
       immediate: true
+    },
+    mode(newMode, oldMode) {
+      if (oldMode === 'upload' && newMode !== 'upload') {
+        this.resetUploadState()
+      }
     }
   },
 
@@ -240,16 +295,16 @@ export default {
 
       type: 'STOCK-PRODUCT',
       scope: 'single',
+      mode: 'library',
+
+      uploadFile: null,
+      uploadPreviewUrl: null,
+      uploadName: '',
 
       latestImage: [],
       latestImageTotalRecords: 0,
       selectedItems: [],
-      selectionType: 'single',
-
-      tableHeight: '800px',
-      take: 10,
-      skip: 0,
-      sort: []
+      selectionType: 'single'
     }
   },
 
@@ -259,39 +314,69 @@ export default {
       this.selectedItems = []
       this.latestImage = []
       this.scope = 'single'
+      this.mode = 'library'
+      this.resetUploadState()
     },
     closeModal() {
       this.onClear()
       this.$emit('closeModal')
     },
-    getBgColor(data) {
-      if (data) {
-        return 'background-color: #b5dad4'
-      } else {
-        return 'background-color: #dad4b5'
-      }
+    resetUploadState() {
+      this.uploadFile = null
+      this.uploadPreviewUrl = null
+      this.uploadName = this.buildDefaultUploadName()
+    },
+    buildDefaultUploadName() {
+      return `${this.defaultSearch || ''}-${this.receiptNumber || ''}`.toUpperCase()
     },
     handleSubmit() {
-      //console.log('submit')
-      this.fetchLatestImage()
+      this.fetchData()
+    },
+    emitSelectImage(image) {
+      this.$emit('select', image, this.stock, this.scope)
+      this.onClear()
     },
     onSelect() {
-      //console.log('selectedItems:', this.selectedItems[0])
-      //console.log('stock:', this.stock)
-      this.$emit('select', this.selectedItems[0], this.stock, this.scope)
-      this.onClear()
+      this.emitSelectImage(this.selectedItems[0])
+    },
+    async onUploadAndUse() {
+      if (!this.canUpload) {
+        swAlert.warning('', this.$t('view.receiptStock.product.grProduction.uploadIncompleteWarning'))
+        return
+      }
+
+      const nameUpper = this.uploadName.trim().toUpperCase()
+      const safeName = nameUpper.replace(/[\\/:*?"<>|]/g, '_')
+      const renamedFile = new File([this.uploadFile], `${safeName}.jpg`, { type: 'image/jpeg' })
+
+      const formData = new FormData()
+      formData.append('name', nameUpper)
+      formData.append('description', '')
+      formData.append('image', renamedFile)
+
+      const res = await this.stockProductImageStore.fetchSaveImage({ form: formData })
+
+      if (res) {
+        await this.fetchData()
+        this.emitSelectImage({
+          name: nameUpper,
+          year: new Date().getFullYear(),
+          path: `${nameUpper}.jpg`
+        })
+      }
     },
 
     async openWithDefaultSearch() {
       if (this.defaultSearch) {
         this.search.name = this.defaultSearch
-        await this.fetchLatestImage()
+        await this.fetchData()
         if (this.latestImageTotalRecords === 0) {
+          this.mode = 'upload'
           this.search.name = null
-          await this.fetchLatestImage()
+          await this.fetchData()
         }
       } else {
-        await this.fetchLatestImage()
+        await this.fetchData()
       }
     },
 
@@ -299,21 +384,7 @@ export default {
       this.selectedItems = newSelection
       //console.log('updateSelection:', this.selectedItems.length)
     },
-    handlePageChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.fetchLatestImage()
-    },
-    handleSortChange(e) {
-      this.skip = e.first
-      this.take = e.rows
-      this.sort = e.multiSortMeta.map((item) => ({
-        field: item.field,
-        dir: item.order === 1 ? 'asc' : 'desc'
-      }))
-      this.fetchLatestImage()
-    },
-    async fetchLatestImage() {
+    async fetchData() {
       this.selectedItems = []
       const res = await this.stockProductImageStore.fetchListImage({
         take: this.take,
@@ -347,10 +418,18 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
 
-.btn-input-group {
-  height: 35px;
-  padding: 6px 12px;
-  margin-top: 5px !important;
+.mode-toggle-row {
+  display: flex;
+}
+
+.library-search-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-sm);
+
+  > :first-child {
+    flex: 1;
+  }
 }
 
 .image-scope-row {

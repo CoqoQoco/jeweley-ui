@@ -4,6 +4,17 @@
     <pageTitle :title="$t('view.stock.product.imageProduct')" :description="$t('view.stock.product.imageUploadDesc')" :isShowBtnClose="false">
     </pageTitle>
 
+    <div class="mode-toggle-row mt-2">
+      <ToggleGroupGeneric v-model="mode" :options="modeOptions" />
+    </div>
+
+    <template v-if="mode === 'bulk'">
+      <div class="mt-2">
+        <bulkImageUploadView />
+      </div>
+    </template>
+
+    <template v-else>
     <div class="form-col-container mt-2">
       <div class="filter-container">
         <form @submit.prevent="handleSubmit">
@@ -160,6 +171,7 @@
     </div>
 
     <div class="line"></div>
+    </template>
   </div>
 </template>
 
@@ -171,6 +183,8 @@ const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/I
 
 import pageTitle from '@/components/custom/page-title-main.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
+import bulkImageUploadView from './bulk-image-upload-view.vue'
 
 import { compressOptimalImage } from '@/services/helper/file/compress-image.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
@@ -187,7 +201,9 @@ export default {
   components: {
     pageTitle,
     BaseDataTable,
-    imagePreview
+    imagePreview,
+    ToggleGroupGeneric,
+    bulkImageUploadView
   },
 
   setup() {
@@ -196,6 +212,12 @@ export default {
   },
 
   computed: {
+    modeOptions() {
+      return [
+        { value: 'single', label: this.$t('view.stock.product.imageSingleModeTab') },
+        { value: 'bulk', label: this.$t('view.stock.product.imageBulkModeTab') }
+      ]
+    },
     columns() {
       return [
         {
@@ -230,6 +252,8 @@ export default {
 
   data() {
     return {
+      mode: 'single',
+
       imageUrl: null,
       loading: false,
       isSubmitted: false,
@@ -390,6 +414,10 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+
+.mode-toggle-row {
+  display: flex;
+}
 
 .upload-container {
   max-width: 600px;

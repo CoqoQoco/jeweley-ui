@@ -39,6 +39,7 @@ description: ตารางกฎ "ห้ามเรียกตรงๆ → 
 | `<i class="bi ...">` ผูก `@click` เอง (ไอคอนกดได้) | `ButtonGeneric variant="plain"` | `@/components/generic/ButtonGeneric.vue` — เหตุผล: `<i>` ไม่ focusable กด Tab/Enter ไม่ได้ |
 | segmented toggle เขียนเอง (`role="tablist"` + ปุ่มมือ) | `ToggleGroupGeneric` | `@/components/generic/ToggleGroupGeneric.vue` |
 | html5-qrcode camera เขียนเอง | `CameraScanGeneric` | `@/components/generic/CameraScanGeneric.vue` |
+| drag & drop JPG upload zone เขียนเอง | `JpgDropZoneGeneric` | `@/components/generic/JpgDropZoneGeneric.vue` |
 
 ---
 
