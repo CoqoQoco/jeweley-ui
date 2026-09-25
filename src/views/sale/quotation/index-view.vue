@@ -4,7 +4,7 @@
       v-model:quotation="formQuotation"
       @searchQuotation="onSearchQuotation"
     ></search>
-    <quotation v-model:modelForm="search" v-model:modelQuotation="quotation">
+    <quotation ref="quotationView" v-model:modelForm="search" v-model:modelQuotation="quotation">
       <template #productSearch>
         <product-search
           v-model:modelForm="form"
@@ -17,6 +17,8 @@
 </template>
 
 <script>
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+
 import search from './components/search-view.vue'
 import quotation from './components/quotation-view.vue'
 import productSearch from './components/product-search-view.vue'
@@ -92,6 +94,18 @@ export default {
       },
       immediate: true
     }
+  },
+
+  beforeRouteLeave(to, from, next) {
+    if (!this.$refs.quotationView?.hasUnsavedItems) {
+      next()
+      return
+    }
+    confirmThenSubmit(
+      this.$t('view.sale.quotation.leaveUnsavedMessage'),
+      this.$t('view.sale.quotation.leaveUnsavedTitle'),
+      () => next()
+    )
   }
 }
 </script>

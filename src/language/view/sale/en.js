@@ -404,7 +404,9 @@ export const quotation = {
   noMarginAccessTooltip: 'You do not have permission to view cost',
   dragToReorderTitle: 'Drag to reorder',
   moveUpTitle: 'Move up',
-  moveDownTitle: 'Move down'
+  moveDownTitle: 'Move down',
+  leaveUnsavedTitle: 'Quotation Not Saved',
+  leaveUnsavedMessage: 'There are unsaved item changes. Leaving this page will discard them. Do you want to leave this page?'
 }
 
 export const quotationList = {

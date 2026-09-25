@@ -759,6 +759,9 @@ export default {
     },
     breakdownComplete() {
       return this.breakdownMissingCount === 0
+    },
+    hasUnsavedItems() {
+      return JSON.stringify(this.customer.quotationItems || []) !== this.savedItemsSnapshot
     }
   },
 
@@ -788,7 +791,8 @@ export default {
       itemsPerPageInput: 10,
       pdfShowCifLabel: true,
       pendingInvoiceParams: null,
-      showExcelModal: false
+      showExcelModal: false,
+      savedItemsSnapshot: JSON.stringify([])
     }
   },
 
@@ -1190,6 +1194,7 @@ export default {
       }
 
       const dataSave = this.customer.quotationItems
+      const snapshot = JSON.stringify(dataSave || [])
 
       const formValue = {
         number: this.customer.invoiceNumber,
@@ -1228,7 +1233,7 @@ export default {
 
       const res = await this.quotationStore.fetchSave({ formValue })
       if (res) {
-        // แสดงข้อความสำเร็จ
+        this.savedItemsSnapshot = snapshot
       } else {
         // แสดงข้อความผิดพลาด
       }
@@ -1278,6 +1283,7 @@ export default {
           goldLossPercent: needsGoldLossFallback ? (breakdownSetting?.goldLossPercent ?? 12) : res.goldLossPercent
         }
         this.customer.quotationDate = res.date ? new Date(res.date) : new Date()
+        this.savedItemsSnapshot = JSON.stringify(this.customer.quotationItems)
       }
     },
     onSaveAndCreatePdfAndSave(itemsPerPage, showCifLabel, showDecimals) {
@@ -1458,6 +1464,12 @@ export default {
         this.$t('common.label.incompleteData')
       )
       return false
+    },
+
+    onBeforeUnload(e) {
+      if (!this.hasUnsavedItems) return
+      e.preventDefault()
+      e.returnValue = ''
     }
   },
 
@@ -1476,6 +1488,11 @@ export default {
         this.customer.goldLossPercent = breakdownSetting.goldLossPercent
       }
     }
+    window.addEventListener('beforeunload', this.onBeforeUnload)
+  },
+
+  beforeUnmount() {
+    window.removeEventListener('beforeunload', this.onBeforeUnload)
   }
 }
 </script>

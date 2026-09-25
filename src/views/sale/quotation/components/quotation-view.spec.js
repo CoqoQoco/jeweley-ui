@@ -189,3 +189,24 @@ describe('QuotationView — เติม lineKey ย้อนหลังให�
     })
   })
 })
+
+describe('QuotationView — hasUnsavedItems (เตือนก่อนออกจากหน้าเมื่อยังไม่ได้บันทึก)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('false ตอนเริ่มต้น, true หลัง push item, false หลัง snapshot อัปเดตให้ตรงกัน', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    expect(vm.hasUnsavedItems).toBe(false)
+
+    vm.customer.quotationItems.push(makeItem({ stockNumber: 'A' }))
+    await flushPromises()
+    expect(vm.hasUnsavedItems).toBe(true)
+
+    vm.savedItemsSnapshot = JSON.stringify(vm.customer.quotationItems)
+    await flushPromises()
+    expect(vm.hasUnsavedItems).toBe(false)
+  })
+})

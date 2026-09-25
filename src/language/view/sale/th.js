@@ -404,7 +404,9 @@ export const quotation = {
   noMarginAccessTooltip: 'ไม่มีสิทธิ์ดูต้นทุน',
   dragToReorderTitle: 'ลากเพื่อจัดลำดับ',
   moveUpTitle: 'ย้ายขึ้น',
-  moveDownTitle: 'ย้ายลง'
+  moveDownTitle: 'ย้ายลง',
+  leaveUnsavedTitle: 'ยังไม่ได้บันทึกใบเสนอราคา',
+  leaveUnsavedMessage: 'มีรายการสินค้าที่ยังไม่ได้บันทึก ถ้าออกจากหน้านี้ รายการจะหายไป ต้องการออกจากหน้านี้หรือไม่?'
 }
 
 export const quotationList = {
