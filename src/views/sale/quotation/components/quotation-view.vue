@@ -319,6 +319,26 @@
                 <i class="bi bi-eye mr-1"></i>
                 <span>{{ $t('view.sale.quotation.previewBtn') }}</span>
               </button>
+              <button
+                class="btn btn-sm btn-green"
+                type="button"
+                :disabled="!canViewMargin || !customer.quotationItems || customer.quotationItems.length === 0"
+                :title="canViewMargin ? '' : $t('view.sale.quotation.noMarginAccessTooltip')"
+                @click="printCostCheck()"
+              >
+                <i class="bi bi-file-earmark-pdf mr-1"></i>
+                <span>{{ $t('view.sale.quotation.costCheckBtn') }}</span>
+              </button>
+              <button
+                class="btn btn-sm btn-outline-main"
+                type="button"
+                :disabled="!canViewMargin || !customer.quotationItems || customer.quotationItems.length === 0"
+                :title="canViewMargin ? '' : $t('view.sale.quotation.noMarginAccessTooltip')"
+                @click="previewCostCheck()"
+              >
+                <i class="bi bi-eye mr-1"></i>
+                <span>{{ $t('view.sale.quotation.previewBtn') }}</span>
+              </button>
               <button class="btn btn-sm btn-green" type="button" @click="printSummary"
                 :disabled="!customer.quotationItems || customer.quotationItems.length === 0">
                 <i class="bi bi-file-earmark-pdf mr-1"></i>
@@ -455,6 +475,7 @@ import CostVersionPickerModal from '@/views/sale/quotation/modal/cost-version-pi
 import CustomerEditModal from '@/views/sale/quotation/modal/customer-edit-modal.vue'
 import { generateInvoicePdf } from '@/services/helper/pdf/quotation/quotation-pdf-integration.js'
 import { generateBreakdownPdf } from '@/services/helper/pdf/quotation/breakdown-pdf-integration.js'
+import { generateCostCheckPdf } from '@/services/helper/pdf/quotation/cost-check-pdf-integration.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
@@ -957,6 +978,30 @@ export default {
         targetWindow: win1,
         profitPercent: this.customer.profitPercent ?? 15,
         goldLossPercent: this.customer.goldLossPercent
+      })
+    },
+
+    printCostCheck() {
+      if (!this.canViewMargin) return
+      const filename = `CostCheck_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`
+      generateCostCheckPdf({
+        items: this.customer.quotationItems,
+        customer: this.customer,
+        invoiceDate: this.customer.quotationDate,
+        filename,
+        openInNewTab: false
+      })
+    },
+    previewCostCheck() {
+      if (!this.canViewMargin) return
+      const win1 = window.open('', '_blank')
+      generateCostCheckPdf({
+        items: this.customer.quotationItems,
+        customer: this.customer,
+        invoiceDate: this.customer.quotationDate,
+        filename: `CostCheck_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`,
+        openInNewTab: true,
+        targetWindow: win1
       })
     },
 

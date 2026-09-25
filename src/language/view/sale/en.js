@@ -385,6 +385,7 @@ export const quotation = {
   previewBtn: 'Preview',
   breakdownBtn: 'Breakdown',
   breakdownExcelBtn: 'Breakdown Excel',
+  costCheckBtn: 'Cost Check',
   summaryBtn: 'Summary by Type',
   summaryExcelBtn: 'Summary Excel',
   summaryTitle: 'SUMMARY BY PRODUCT TYPE',
