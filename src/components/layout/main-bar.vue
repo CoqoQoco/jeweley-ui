@@ -140,6 +140,7 @@ import { useNotificationStore } from '@/stores/modules/api/notification-store.js
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { setLocale } from '@/plugins/i18n/config.js'
 import { storage } from '@/services/storage.js'
+import { createVisiblePoller, DEFAULT_BADGE_POLL_INTERVAL } from '@/utils/visible-poller.js'
 
 import SidebarView from '@/components/layout/side-bar.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
@@ -256,9 +257,9 @@ export default {
       isSideBarVisible: false,
       scrolled: false,
       currentLang: storage.getItem('lang', 'th'),
-      ticketPollId: null,
-      reportPollId: null,
-      notificationPollId: null
+      ticketPoller: null,
+      reportPoller: null,
+      notificationPoller: null
     }
   },
 
@@ -311,16 +312,16 @@ export default {
   beforeUnmount() {
     document.body.style.overflow = '' // คืนค่าการเลื่อนหน้าเว็บ
 
-    if (this.ticketPollId) {
-      clearInterval(this.ticketPollId)
+    if (this.ticketPoller) {
+      this.ticketPoller.stop()
     }
 
-    if (this.reportPollId) {
-      clearInterval(this.reportPollId)
+    if (this.reportPoller) {
+      this.reportPoller.stop()
     }
 
-    if (this.notificationPollId) {
-      clearInterval(this.notificationPollId)
+    if (this.notificationPoller) {
+      this.notificationPoller.stop()
     }
 
     // ลบ event listener สำหรับการกด ESC เพื่อปิด sidebar
@@ -329,17 +330,26 @@ export default {
   },
 
   mounted() {
-    // fetch badge + start polling ถ้ามีสิทธิ์
+    // fetch badge + start polling ถ้ามีสิทธิ์ — poller หยุดเองเมื่อ tab ถูกซ่อน กันยิง API ทั้งวัน
     if (this.hasTicketPermission) {
-      this.ticketStore.fetchOpenCount()
-      this.ticketPollId = setInterval(() => this.ticketStore.fetchOpenCount(), 60000)
+      this.ticketPoller = createVisiblePoller(
+        () => this.ticketStore.fetchOpenCount(),
+        DEFAULT_BADGE_POLL_INTERVAL
+      )
+      this.ticketPoller.start()
     }
 
-    this.ticketStore.fetchMyUnreadCount()
-    this.reportPollId = setInterval(() => this.ticketStore.fetchMyUnreadCount(), 60000)
+    this.reportPoller = createVisiblePoller(
+      () => this.ticketStore.fetchMyUnreadCount(),
+      DEFAULT_BADGE_POLL_INTERVAL
+    )
+    this.reportPoller.start()
 
-    this.notificationStore.fetchCount()
-    this.notificationPollId = setInterval(() => this.notificationStore.fetchCount(), 60000)
+    this.notificationPoller = createVisiblePoller(
+      () => this.notificationStore.fetchCount(),
+      DEFAULT_BADGE_POLL_INTERVAL
+    )
+    this.notificationPoller.start()
 
     // เพิ่ม event listener สำหรับการกด ESC เพื่อปิด sidebar
     document.addEventListener('keydown', this.handleKeyDown)

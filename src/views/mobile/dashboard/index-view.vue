@@ -160,6 +160,7 @@ import { useNotificationStore } from '@/stores/modules/api/notification-store.js
 import { PermissionService } from '@/services/permission/permission.js'
 import { JOB_TYPE } from '@/constants/job-type.js'
 import { confirmSubmit } from '@/services/alert/sweetAlerts.js'
+import { createVisiblePoller, DEFAULT_BADGE_POLL_INTERVAL } from '@/utils/visible-poller.js'
 import JobCard from '@/views/mobile/components/job-card.vue'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
@@ -184,7 +185,7 @@ export default {
     return {
       myJobs: [],
       isRefreshing: false,
-      notificationPollTimer: null,
+      notificationPoller: null,
       // Placeholder data
       recentActivities: [
         {
@@ -263,7 +264,8 @@ export default {
     },
 
     /**
-     * เริ่ม poll จำนวนแจ้งเตือนทุก 60 วินาที (เฉพาะ user ที่มีสิทธิ์)
+     * เริ่ม poll จำนวนแจ้งเตือนทุก 3 นาที (เฉพาะ user ที่มีสิทธิ์)
+     * ใช้ visible-poller หยุด poll เองเมื่อ tab ถูกซ่อน กันยิง API ทั้งวัน
      * กัน interval ซ้อน: เคลียร์ตัวเก่าก่อนเสมอ ก่อนตั้งตัวใหม่
      * หมายเหตุ: หน้านี้ไม่มี MobileTopBar (LayoutMobile ซ่อนไว้ที่ route mobile-dashboard)
      * จึงไม่ชนกับ polling ของ mobile-top-bar.vue ตอนนี้ — แต่ถ้าวันหลังมีคนเปิด TopBar
@@ -273,19 +275,20 @@ export default {
       if (!this.showNotification) return
 
       this.stopNotificationPolling()
-      this.notificationStore.fetchCount()
-      this.notificationPollTimer = setInterval(() => {
-        this.notificationStore.fetchCount()
-      }, 60000)
+      this.notificationPoller = createVisiblePoller(
+        () => this.notificationStore.fetchCount(),
+        DEFAULT_BADGE_POLL_INTERVAL
+      )
+      this.notificationPoller.start()
     },
 
     /**
      * เคลียร์ polling interval
      */
     stopNotificationPolling() {
-      if (this.notificationPollTimer) {
-        clearInterval(this.notificationPollTimer)
-        this.notificationPollTimer = null
+      if (this.notificationPoller) {
+        this.notificationPoller.stop()
+        this.notificationPoller = null
       }
     },
 

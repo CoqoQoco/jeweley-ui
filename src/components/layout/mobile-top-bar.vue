@@ -35,6 +35,7 @@
 
 <script>
 import { useNotificationStore } from '@/stores/modules/api/notification-store.js'
+import { createVisiblePoller, DEFAULT_BADGE_POLL_INTERVAL } from '@/utils/visible-poller.js'
 
 export default {
   name: 'MobileTopBar',
@@ -73,7 +74,7 @@ export default {
 
   data() {
     return {
-      notificationPollTimer: null
+      notificationPoller: null
     }
   },
 
@@ -163,26 +164,28 @@ export default {
     },
 
     /**
-     * เริ่ม poll จำนวนแจ้งเตือนทุก 60 วินาที (เฉพาะตอนกระดิ่งแสดงอยู่)
+     * เริ่ม poll จำนวนแจ้งเตือนทุก 3 นาที (เฉพาะตอนกระดิ่งแสดงอยู่)
+     * ใช้ visible-poller หยุด poll เองเมื่อ tab ถูกซ่อน กันยิง API ทั้งวัน
      * กัน interval ซ้อน: เคลียร์ตัวเก่าก่อนเสมอ ก่อนตั้งตัวใหม่
      */
     startNotificationPolling() {
       if (!this.showNotification) return
 
       this.stopNotificationPolling()
-      this.notificationStore.fetchCount()
-      this.notificationPollTimer = setInterval(() => {
-        this.notificationStore.fetchCount()
-      }, 60000)
+      this.notificationPoller = createVisiblePoller(
+        () => this.notificationStore.fetchCount(),
+        DEFAULT_BADGE_POLL_INTERVAL
+      )
+      this.notificationPoller.start()
     },
 
     /**
      * เคลียร์ polling interval
      */
     stopNotificationPolling() {
-      if (this.notificationPollTimer) {
-        clearInterval(this.notificationPollTimer)
-        this.notificationPollTimer = null
+      if (this.notificationPoller) {
+        this.notificationPoller.stop()
+        this.notificationPoller = null
       }
     },
 
