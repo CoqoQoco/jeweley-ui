@@ -1,5 +1,11 @@
 <template>
-  <div class="base-datatable mt-2" @focusin="onRowFocusIn">
+  <div
+    class="base-datatable mt-2"
+    @focusin="onRowFocusIn"
+    @dragover.prevent="onRowsDragOver"
+    @drop.prevent="onRowsDrop"
+    @dragleave="onRowsDragLeave"
+  >
     <DataTable
       :value="customer.quotationItems"
       rowGroupMode="subheader"
@@ -39,6 +45,16 @@
       <Column field="action" style="width: 10px">
         <template #body="slotProps">
           <div class="d-flex justify-content-center align-items-center">
+            <!-- ห้ามเอา .stop ออก — ถ้า dragstart bubble ขึ้นไปถึง <tr> กลไก row-reorder ในตัวของ PrimeVue DataTable
+                 จะตื่นเอง (rowDragging=true) แล้วเติม class p-datatable-dragpoint-top/bottom ให้ตรงๆ ด้วย DOM API
+                 กลายเป็นเส้นไกด์สีม่วงซ้อนกับเส้นเขียวของเรา คนละตำแหน่งกัน และค้างจอเพราะ Vue ไม่ re-render ให้ลบ -->
+            <span
+              class="row-drag-handle bi bi-grip-vertical"
+              draggable="true"
+              :title="$t('view.sale.quotation.dragToReorderTitle')"
+              @dragstart.stop="onHandleDragStart($event, slotProps.data)"
+              @dragend="onHandleDragEnd"
+            ></span>
             <button
               class="btn btn-sm btn-red"
               type="button"
@@ -59,9 +75,27 @@
               class="btn btn-sm btn-outline-dark ml-2"
               type="button"
               :title="$t('common.btn.copy')"
-              @click="$emit('copy-item', slotProps.data)"
+              @click="$emit('copy-item', slotProps.data, slotProps.index)"
             >
               <span class="bi bi-files"></span>
+            </button>
+            <button
+              class="btn btn-sm btn-outline-main ml-2"
+              type="button"
+              :title="$t('view.sale.quotation.moveUpTitle')"
+              :disabled="slotProps.index === 0"
+              @click="$emit('move-item', { item: slotProps.data, direction: 'up' })"
+            >
+              <span class="bi bi-arrow-up"></span>
+            </button>
+            <button
+              class="btn btn-sm btn-outline-main ml-2"
+              type="button"
+              :title="$t('view.sale.quotation.moveDownTitle')"
+              :disabled="slotProps.index === customer.quotationItems.length - 1"
+              @click="$emit('move-item', { item: slotProps.data, direction: 'down' })"
+            >
+              <span class="bi bi-arrow-down"></span>
             </button>
           </div>
         </template>
@@ -626,6 +660,8 @@ export default {
     'blur-price',
     'blur-qty',
     'blur-freight',
+    'move-item',
+    'move-item-to',
     'update:freight',
     'update:vat-percent',
     'update:special-discount',
@@ -634,7 +670,10 @@ export default {
 
   data() {
     return {
-      type: 'STOCK-PRODUCT'
+      type: 'STOCK-PRODUCT',
+      draggingLineKey: null,
+      dropTargetLineKey: null,
+      dropPosition: null
     }
   },
 
@@ -656,6 +695,67 @@ export default {
 
     formatDocMoney(value) {
       return formatDocumentMoney(value)
+    },
+
+    // ทับ getRowClass ของ activeRowHighlight mixin เพื่อเพิ่ม class ของ drag-to-reorder ด้วย
+    getRowClass(data) {
+      const classes = [this.isActiveRow(data) ? 'row-active' : '']
+      if (data.lineKey === this.dropTargetLineKey) {
+        classes.push(this.dropPosition === 'before' ? 'drop-target-before' : 'drop-target-after')
+      }
+      if (data.lineKey === this.draggingLineKey) classes.push('row-dragging')
+      return classes.filter(Boolean).join(' ')
+    },
+
+    onHandleDragStart(e, data) {
+      e.dataTransfer.setData('application/x-quotation-line-key', data.lineKey)
+      e.dataTransfer.effectAllowed = 'move'
+      this.draggingLineKey = data.lineKey
+    },
+
+    onHandleDragEnd() {
+      this.draggingLineKey = null
+      this.dropTargetLineKey = null
+      this.dropPosition = null
+    },
+
+    // delegate ที่ wrapper — หา <tr> ปัจจุบันจาก data-p-index ที่ PrimeVue ใส่ให้ทุกแถว
+    onRowsDragOver(e) {
+      if (!this.draggingLineKey) return
+
+      const tr = e.target.closest?.('tr[data-p-index]')
+      const row = tr ? this.customer.quotationItems[Number(tr.dataset.pIndex)] : null
+
+      if (!row || row.lineKey === this.draggingLineKey) {
+        this.dropTargetLineKey = null
+        this.dropPosition = null
+        return
+      }
+
+      const rect = tr.getBoundingClientRect()
+      this.dropTargetLineKey = row.lineKey
+      this.dropPosition = e.clientY < rect.top + rect.height / 2 ? 'before' : 'after'
+      e.dataTransfer.dropEffect = 'move'
+    },
+
+    onRowsDrop() {
+      if (this.draggingLineKey && this.dropTargetLineKey) {
+        this.$emit('move-item-to', {
+          fromLineKey: this.draggingLineKey,
+          toLineKey: this.dropTargetLineKey,
+          position: this.dropPosition
+        })
+      }
+      this.draggingLineKey = null
+      this.dropTargetLineKey = null
+      this.dropPosition = null
+    },
+
+    // กันเส้นไกด์กระพริบตอนลากผ่านลูกๆ ของ wrapper — เคลียร์เฉพาะตอนออกนอก wrapper จริง
+    onRowsDragLeave(e) {
+      if (e.currentTarget.contains(e.relatedTarget)) return
+      this.dropTargetLineKey = null
+      this.dropPosition = null
     }
   }
 }
@@ -799,5 +899,28 @@ export default {
 
 :deep(.editing-row .p-column-body) {
   background-color: transparent !important;
+}
+
+/* Drag-to-reorder — handle + เส้นไกด์บอกตำแหน่งวาง (บน/ล่างเท่านั้น ห้ามใช้แถบซ้าย) */
+.row-drag-handle {
+  cursor: grab;
+  color: var(--base-sub-color);
+  margin-right: var(--sp-xs);
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+:deep(tr.row-dragging > td) {
+  opacity: 0.5;
+}
+
+:deep(tr.drop-target-before > td) {
+  border-top: 2px solid var(--base-green);
+}
+
+:deep(tr.drop-target-after > td) {
+  border-bottom: 2px solid var(--base-green);
 }
 </style>

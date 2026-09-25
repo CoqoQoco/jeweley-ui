@@ -400,7 +400,10 @@ export const quotation = {
   breakdownIncompleteTooltip: 'Missing fields: {fields}',
   breakdownIncompleteHint: 'Missing {fields} — fill these in to print, preview, or export the Break Down document.',
   breakdownIncompleteWarning: 'Complete the Break Down fields before generating the document. Missing: {fields}',
-  noMarginAccessTooltip: 'You do not have permission to view cost'
+  noMarginAccessTooltip: 'You do not have permission to view cost',
+  dragToReorderTitle: 'Drag to reorder',
+  moveUpTitle: 'Move up',
+  moveDownTitle: 'Move down'
 }
 
 export const quotationList = {

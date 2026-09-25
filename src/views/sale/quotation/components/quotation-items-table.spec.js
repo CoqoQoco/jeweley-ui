@@ -84,3 +84,97 @@ describe('QuotationItemsTable — sale:view-margin ซ่อนคอลัม�
     expect(footerRows[1].findAll('td')[0].attributes('colspan')).toBe('15')
   })
 })
+
+describe('QuotationItemsTable — reorder (drag handle + ปุ่มขึ้น/ลง)', () => {
+  function makeMultiItemCustomer(count) {
+    return {
+      quotationItems: Array.from({ length: count }, (_, i) => ({
+        lineKey: `line-${i}`,
+        stockNumber: `STK-${i}`,
+        appraisalPrice: 100,
+        discountPercent: 0,
+        qty: 1,
+        materials: []
+      })),
+      currencyUnit: 'THB',
+      currencyMultiplier: 1
+    }
+  }
+
+  function createWrapperWithItems(count) {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    const authStore = useAuthStore()
+    authStore.permissions = []
+
+    return mount(QuotationItemsTable, {
+      global: {
+        plugins: [pinia],
+        mocks: { $t: tMock },
+        stubs: { imagePreview: true }
+      },
+      props: {
+        customer: makeMultiItemCustomer(count),
+        sumNetWeight: 0,
+        sumGoldWeight: 0,
+        sumDiamondWeight: 0,
+        sumGemWeight: 0,
+        sumAppraisalPrice: 0,
+        sumDiscountPrice: 0,
+        sumConvertedPrice: 0,
+        sumQty: 0,
+        sumTotalConvertedPrice: 0,
+        totalAfterDiscountAndAddition: 0,
+        totalBeforeVat: 0,
+        vatAmount: 0,
+        grandTotalRaw: 0,
+        grandTotalRounded: 0
+      }
+    })
+  }
+
+  it('แถวแรก: ปุ่มขึ้น disabled — แถวสุดท้าย: ปุ่มลง disabled', () => {
+    const wrapper = createWrapperWithItems(3)
+
+    const upButtons = wrapper.findAll('[title="view.sale.quotation.moveUpTitle"]')
+    const downButtons = wrapper.findAll('[title="view.sale.quotation.moveDownTitle"]')
+
+    expect(upButtons).toHaveLength(3)
+    expect(downButtons).toHaveLength(3)
+
+    expect(upButtons[0].attributes('disabled')).toBeDefined()
+    expect(downButtons[0].attributes('disabled')).toBeUndefined()
+
+    expect(upButtons[1].attributes('disabled')).toBeUndefined()
+    expect(downButtons[1].attributes('disabled')).toBeUndefined()
+
+    expect(upButtons[2].attributes('disabled')).toBeUndefined()
+    expect(downButtons[2].attributes('disabled')).toBeDefined()
+  })
+
+  it('กดปุ่มลงยิง move-item พร้อม item และ direction', async () => {
+    const wrapper = createWrapperWithItems(2)
+    const downButtons = wrapper.findAll('[title="view.sale.quotation.moveDownTitle"]')
+
+    await downButtons[0].trigger('click')
+
+    expect(wrapper.emitted('move-item')).toBeTruthy()
+    expect(wrapper.emitted('move-item')[0][0]).toEqual({
+      item: wrapper.props('customer').quotationItems[0],
+      direction: 'down'
+    })
+  })
+
+  it('กดปุ่มคัดลอกยิง copy-item พร้อม item และ index', async () => {
+    const wrapper = createWrapperWithItems(2)
+    const copyButtons = wrapper.findAll('[title="common.btn.copy"]')
+
+    await copyButtons[1].trigger('click')
+
+    expect(wrapper.emitted('copy-item')).toBeTruthy()
+    expect(wrapper.emitted('copy-item')[0]).toEqual([
+      wrapper.props('customer').quotationItems[1],
+      1
+    ])
+  })
+})

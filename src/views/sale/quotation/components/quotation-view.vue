@@ -273,6 +273,8 @@
         @del-item="delItem"
         @edit-stock="onEditStock($event.data, $event.index)"
         @copy-item="copyItem"
+        @move-item="moveQuotationItem($event)"
+        @move-item-to="moveQuotationItemTo($event)"
         @upload-copy-image="onUploadCopyImage"
         @blur-description="onBlueDescription($event.data, $event.index, $event.fieldName)"
         @blur-price="onBluePrice($event.data, $event.index, $event.fieldName)"
@@ -471,6 +473,8 @@ import { compressCopyItemImage } from '@/services/helper/file/compress-image.js'
 import { warning, success, error } from '@/services/alert/sweetAlerts.js'
 import { storage } from '@/services/storage.js'
 import { hasMarginAccess } from '@/services/permission/margin-access.js'
+import { moveMovableItem } from '@/services/utils/item-reorder.js'
+import { ensureLineKey } from '@/services/utils/line-key.js'
 import dayjs from 'dayjs'
 
 import ExcelExportConfirmModal from '@/components/modal/excel-export-confirm-modal.vue'
@@ -883,7 +887,7 @@ export default {
           discountPercent: this.customer.discountPercent || 0
         }
 
-        this.customer.quotationItems.push(data)
+        this.customer.quotationItems.push(ensureLineKey(data))
       }
     },
     formatDateTime(date) {
@@ -998,7 +1002,12 @@ export default {
       this.isShow.isEditStock = false
       if (payload && payload.action === 'save' && payload.data) {
         // อัปเดตข้อมูลในตาราง - ใช้ deep copy เพื่อป้องกัน reference issues
-        this.customer.quotationItems[this.editStockIndex] = JSON.parse(JSON.stringify(payload.data))
+        // payload.data ควรมี lineKey ติดมาอยู่แล้ว (มาจาก modelEditStock ที่ copy จาก item เดิม) — เผื่อกรณีหลุดหาย
+        // ให้คงเลขเดิมของบรรทัดนี้ไว้ ไม่งั้น drag/ปุ่มขึ้นลงจะหาแถวนี้ไม่เจอ
+        const existingLineKey = this.customer.quotationItems[this.editStockIndex]?.lineKey
+        const updated = JSON.parse(JSON.stringify(payload.data))
+        if (!updated.lineKey) updated.lineKey = existingLineKey
+        this.customer.quotationItems[this.editStockIndex] = updated
 
         // sync discountPrice ถ้ามี priceDiscount (จาก modal)
         if (payload.data.priceDiscount !== undefined && payload.data.priceDiscount !== null) {
@@ -1010,10 +1019,40 @@ export default {
       this.modelEditStock = {}
       this.editStockIndex = null
     },
-    copyItem(item) {
+    copyItem(item, index) {
       // หน้าใบเสนอราคายังคง reset ราคาประเมินกลับเป็นราคาตั้งต้นเหมือนเดิม (resetAppraisal)
       const newItem = buildCopyItem(item, { resetAppraisal: true })
-      this.customer.quotationItems.push(newItem)
+      const sourceIndex = typeof index === 'number' && index >= 0
+        ? index
+        : this.customer.quotationItems.indexOf(item)
+      const insertAt = sourceIndex >= 0 ? sourceIndex + 1 : this.customer.quotationItems.length
+      this.customer.quotationItems.splice(insertAt, 0, newItem)
+    },
+
+    // ใช้ร่วมกันทั้งปุ่มขึ้น/ลง (moveQuotationItem) และลาก-วาง (moveQuotationItemTo) — ทุกบรรทัดย้ายได้หมด
+    moveQuotationItem({ item, direction }) {
+      const currentIndex = this.customer.quotationItems.findIndex((i) => i.lineKey === item.lineKey)
+      if (currentIndex === -1) return
+
+      const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+      if (targetIndex < 0 || targetIndex >= this.customer.quotationItems.length) return
+
+      const targetLineKey = this.customer.quotationItems[targetIndex].lineKey
+      const position = direction === 'up' ? 'before' : 'after'
+      const result = moveMovableItem(this.customer.quotationItems, item.lineKey, targetLineKey, position)
+
+      if (result !== this.customer.quotationItems) {
+        this.customer.quotationItems = result
+      }
+    },
+
+    // ลาก-วาง: ย้ายบรรทัดไปวางก่อน/หลังบรรทัดเป้าหมายที่ปล่อย (ตารางเป็นคนคำนวณ fromLineKey/toLineKey/position ให้)
+    moveQuotationItemTo({ fromLineKey, toLineKey, position }) {
+      const result = moveMovableItem(this.customer.quotationItems, fromLineKey, toLineKey, position)
+
+      if (result !== this.customer.quotationItems) {
+        this.customer.quotationItems = result
+      }
     },
 
     onUploadCopyImage(item) {
@@ -1093,7 +1132,7 @@ export default {
           discountPercent: this.customer.discountPercent || 0
         }
 
-        this.customer.quotationItems.push(item)
+        this.customer.quotationItems.push(ensureLineKey(item))
       }
     },
 
@@ -1164,7 +1203,8 @@ export default {
         this.customer = {
           ...this.customer,
           ...res,
-          quotationItems: res.data ? JSON.parse(res.data) : [],
+          // ใบเสนอราคาเก่าที่บันทึกไว้ก่อนมี lineKey (จำเป็นสำหรับ drag/ปุ่มขึ้น-ลง) — เติมย้อนหลังตอนโหลด
+          quotationItems: res.data ? JSON.parse(res.data).map((item) => ensureLineKey(item)) : [],
           freight: res.freight || 0,
 
           currencyUnit: res.currency || 'THB',
