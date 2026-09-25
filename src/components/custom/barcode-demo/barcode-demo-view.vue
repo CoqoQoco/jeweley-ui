@@ -45,7 +45,7 @@
 import JsBarcode from 'jsbarcode'
 import QRCode from 'qrcode'
 
-import { formatGemText } from '@/services/helper/barcode/barcode-zpl.js'
+import { formatGemText, formatLabelPrice } from '@/services/helper/barcode/barcode-zpl.js'
 import { PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
 
 export default {
@@ -139,12 +139,7 @@ export default {
 
   computed: {
     stockNumberLine() {
-      const priceText =
-        this.salePrice != null && this.salePrice > 0
-          ? new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
-              this.salePrice
-            )
-          : ''
+      const priceText = formatLabelPrice(this.salePrice)
       return [this.stockNumber, priceText].filter(Boolean).join(' - ')
     },
 

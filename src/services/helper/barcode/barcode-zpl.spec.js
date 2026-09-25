@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   resolveLabelCode,
   formatGemText,
+  formatLabelPrice,
   generateLegacyZPL,
   generateLegacyZPLVertical,
   generateGt800ZPL,
@@ -14,18 +15,14 @@ import {
 
 // สำเนาฟังก์ชันเดิมจาก commit 7048e5a^ (ก่อนย้ายไป DK Print Bridge) ไว้เทียบผลลัพธ์ตรงตัวอักษร
 // ต้นฉบับใช้ formValue.stockNumber ตรงๆ (ไม่มี concept ของ stockNumberOrigin)
+// ข้อความราคาใช้ formatLabelPrice (จำนวนเต็ม + R) ตามรูปแบบใหม่ — จุดเดียวที่ตั้งใจให้ต่างจากโค้ดต้นฉบับจริง
 function originalGenerateZPLs(formValue) {
   let zpl = '^XA^LL200^MD25^LT40^XZ'
   zpl += '^XA'
 
   zpl += `^FO248,35^BY1,3.0:1,25^BCN,Y,N,N^FD${formValue.stockNumber || ''}^FS`
 
-  const salePriceText =
-    formValue.salePrice != null && formValue.salePrice > 0
-      ? new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
-          formValue.salePrice
-        )
-      : ''
+  const salePriceText = formatLabelPrice(formValue.salePrice)
   const stockNumberLine = [formValue.stockNumber, salePriceText].filter(Boolean).join(' - ')
   zpl += `^FO248,65^A0N,20,18^FD${stockNumberLine}^FS`
 
@@ -66,9 +63,7 @@ function originalGenerateZPLVertical(formValue) {
 
   zpl += `^FO248,048^BY1,3.0:1,25^BCN,Y,N,N^FD${formValue.stockNumber || ''}^FS`
 
-  const priceText = hasPrice
-    ? new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(formValue.price)
-    : ''
+  const priceText = hasPrice ? formatLabelPrice(formValue.price) : ''
   const priceLine = [formValue.productNumber, priceText].filter(Boolean).join(' - ')
   if (priceLine) {
     zpl += `^FO250,100^A0N,14,16,B^FD${priceLine}^FS`
@@ -137,6 +132,64 @@ describe('formatGemText', () => {
     expect(formatGemText(null)).toBe('')
     expect(formatGemText('')).toBe('')
     expect(formatGemText(undefined)).toBe('')
+  })
+})
+
+describe('formatLabelPrice', () => {
+  it('23000 → 23000R', () => {
+    expect(formatLabelPrice(23000)).toBe('23000R')
+  })
+
+  it('3050 → 3050R', () => {
+    expect(formatLabelPrice(3050)).toBe('3050R')
+  })
+
+  it('87600.00 → 87600R', () => {
+    expect(formatLabelPrice(87600.0)).toBe('87600R')
+  })
+
+  it('23000.50 → 23000R (ตัดสตางค์ทิ้ง ไม่ปัดเศษ)', () => {
+    expect(formatLabelPrice(23000.5)).toBe('23000R')
+  })
+
+  it('23000.99 → 23000R (ตัดสตางค์ทิ้ง ไม่ปัดเศษขึ้น)', () => {
+    expect(formatLabelPrice(23000.99)).toBe('23000R')
+  })
+
+  it('1234.9999999 (float error) → 1234R', () => {
+    expect(formatLabelPrice(1234.9999999)).toBe('1234R')
+  })
+
+  it('3050.0000001 (float error) → 3050R', () => {
+    expect(formatLabelPrice(3050.0000001)).toBe('3050R')
+  })
+
+  it('0 → ค่าว่าง', () => {
+    expect(formatLabelPrice(0)).toBe('')
+  })
+
+  it('ค่าติดลบ → ค่าว่าง', () => {
+    expect(formatLabelPrice(-100)).toBe('')
+  })
+
+  it('null → ค่าว่าง', () => {
+    expect(formatLabelPrice(null)).toBe('')
+  })
+
+  it('undefined → ค่าว่าง', () => {
+    expect(formatLabelPrice(undefined)).toBe('')
+  })
+
+  it('string ตัวเลข "23000.50" → 23000R (coerce ด้วย Number())', () => {
+    expect(formatLabelPrice('23000.50')).toBe('23000R')
+  })
+
+  it('string ตัวเลข "3050" → 3050R', () => {
+    expect(formatLabelPrice('3050')).toBe('3050R')
+  })
+
+  it('string ไม่ใช่ตัวเลข → ค่าว่าง', () => {
+    expect(formatLabelPrice('abc')).toBe('')
   })
 })
 
@@ -239,7 +292,7 @@ describe('GT800 — เลือก ROOMY/TIGHT', () => {
   it('พลอย 3 บรรทัด แต่บรรทัดราคายาวเกิน 20 ตัวอักษร → TIGHT', () => {
     const form = {
       stockNumber: 'AB123',
-      salePrice: 123456789.99, // ดันให้ codeLine ยาวเกิน 20 ตัวอักษร
+      salePrice: 123456789012.99, // ดันให้ codeLine ยาวเกิน 20 ตัวอักษร (ราคาแบบใหม่สั้นลง ต้องใช้ตัวเลขหลักเยอะขึ้น)
       gems: ['0.24ct.', '0.15ct.', '0.10ct.']
     }
     const layout = layoutGt800(form, 'original')
@@ -345,15 +398,15 @@ describe('layoutGt800Qr / generateGt800ZPLQr — layout ใหม่ (บล็�
     publicUrl: 'https://app.duangkeaw.com/p/DK-18K-20A-12810-ABCDEFGH'
   }
 
-  it('layoutGt800Qr: กรณี typical → blockRight≈404.2, qrX=470', () => {
+  it('layoutGt800Qr: กรณี typical → blockRight≈380.8, qrX=458', () => {
     const layout = layoutGt800Qr(typical)
-    expect(layout.blockRight).toBeCloseTo(404.2, 1)
-    expect(layout.qrX).toBe(470)
+    expect(layout.blockRight).toBeCloseTo(380.8, 1)
+    expect(layout.qrX).toBe(458)
   })
 
-  it('layoutGt800Qr: กรณี worst → qrX=517', () => {
+  it('layoutGt800Qr: กรณี worst → qrX=511', () => {
     const layout = layoutGt800Qr(worst)
-    expect(layout.qrX).toBe(517)
+    expect(layout.qrX).toBe(511)
   })
 
   it('layoutGt800Qr: ข้อความยาวมาก → qrX ชนเพดาน 534', () => {
@@ -378,7 +431,7 @@ describe('layoutGt800Qr / generateGt800ZPLQr — layout ใหม่ (บล็�
     const code = 'DK-18K-20A-12810'
     expect(zpl).toContain(`^FO256,31^A0N,14,14^FD${worst.productNameEn}^FS`)
     expect(zpl).toContain(`^FO262,47^BY1,3.0:1,18^BCN,18,N,N^FD${code}^FS`)
-    expect(zpl).toContain(`^FO256,68^A0N,15,15^FD${code} - 1,234,567.00^FS`)
+    expect(zpl).toContain(`^FO256,68^A0N,15,15^FD${code} - 1234567R^FS`)
     expect(zpl).toContain('^FO256,86^A0N,14,14^FD12.35 g. Gold #52^FS')
   })
 
@@ -393,14 +446,14 @@ describe('layoutGt800Qr / generateGt800ZPLQr — layout ใหม่ (บล็�
     expect(zpl).not.toContain('ct.')
   })
 
-  it('generateGt800ZPLQr: กรณี typical → ^FO470,13^BQN,2,2^FDLA,<url>^FS', () => {
+  it('generateGt800ZPLQr: กรณี typical → ^FO458,13^BQN,2,2^FDLA,<url>^FS', () => {
     const zpl = generateGt800ZPLQr(typical, 1)
-    expect(zpl).toContain(`^FO470,13^BQN,2,2^FDLA,${typical.publicUrl}^FS`)
+    expect(zpl).toContain(`^FO458,13^BQN,2,2^FDLA,${typical.publicUrl}^FS`)
   })
 
-  it('generateGt800ZPLQr: กรณี worst → ^FO517,13^BQN,2,2^FDLA,<url>^FS', () => {
+  it('generateGt800ZPLQr: กรณี worst → ^FO511,13^BQN,2,2^FDLA,<url>^FS', () => {
     const zpl = generateGt800ZPLQr(worst, 1)
-    expect(zpl).toContain(`^FO517,13^BQN,2,2^FDLA,${worst.publicUrl}^FS`)
+    expect(zpl).toContain(`^FO511,13^BQN,2,2^FDLA,${worst.publicUrl}^FS`)
   })
 
   it('generateGt800ZPLQr: dpiScale 1.5 คูณทั้งตำแหน่งข้อความและ QR (ตำแหน่ง+magnification)', () => {

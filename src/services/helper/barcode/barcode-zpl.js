@@ -132,15 +132,19 @@ export function formatGemText(text) {
   return result
 }
 
-function formatMoney(value) {
-  if (value == null || value <= 0) return ''
-  return new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)
+// ราคาบนป้ายบาร์โค้ดสินค้า — จำนวนเต็มล้วน ไม่มี comma คั่นหลักพัน ไม่มีทศนิยม (ตัดสตางค์ทิ้ง ไม่ปัดเศษ) ตามด้วย R
+// value <= 0 / null / undefined → '' (ไม่มีราคา)
+export function formatLabelPrice(value) {
+  const num = Number(value)
+  if (value == null || !Number.isFinite(num) || num <= 0) return ''
+  return `${Math.trunc(num)}R`
 }
 
 // ─────────────────────────────────────────────────────────────
 // Legacy (เครื่องเดิม, Zebra Print Service) — คัดลอกจาก 7048e5a^ ตรงตัวอักษร
 // ห้ามแก้ตัวเลข/บั๊กเดิม (^F450 ตก O, เลขนำศูนย์ ^FO250,090 / ^FO025,050) เครื่องเดิมพิมพ์ถูกด้วยค่าชุดนี้
-// ข้อยกเว้นเดียว: ทุกจุดที่ใช้ formValue.stockNumber เปลี่ยนเป็น resolveLabelCode(formValue)
+// ข้อยกเว้น 2 จุด: (1) ทุกจุดที่ใช้ formValue.stockNumber เปลี่ยนเป็น resolveLabelCode(formValue)
+// (2) ข้อความราคาเปลี่ยนจากรูปแบบ th-TH ทศนิยม 2 ตำแหน่ง เป็น formatLabelPrice (จำนวนเต็ม + R)
 // ─────────────────────────────────────────────────────────────
 
 export function generateLegacyZPL(formValue) {
@@ -154,12 +158,7 @@ export function generateLegacyZPL(formValue) {
   zpl += `^FO248,35^BY1,3.0:1,25^BCN,Y,N,N^FD${code}^FS`
 
   // เลขที่ผลิต - ราคาขาย (เมื่อมีค่า)
-  const salePriceText =
-    formValue.salePrice != null && formValue.salePrice > 0
-      ? new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
-          formValue.salePrice
-        )
-      : ''
+  const salePriceText = formatLabelPrice(formValue.salePrice)
   const stockNumberLine = [code, salePriceText].filter(Boolean).join(' - ')
   zpl += `^FO248,65^A0N,20,18^FD${stockNumberLine}^FS`
 
@@ -213,9 +212,7 @@ export function generateLegacyZPLVertical(formValue) {
   zpl += `^FO248,048^BY1,3.0:1,25^BCN,Y,N,N^FD${code}^FS`
 
   // productNumber - price ไม่รวม gold
-  const priceText = hasPrice
-    ? new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(formValue.price)
-    : ''
+  const priceText = hasPrice ? formatLabelPrice(formValue.price) : ''
   const priceLine = [formValue.productNumber, priceText].filter(Boolean).join(' - ')
   if (priceLine) {
     zpl += `^FO250,100^A0N,14,16,B^FD${priceLine}^FS`
@@ -267,7 +264,7 @@ export function layoutGt800(formValue, template) {
   const gems = Array.isArray(formValue?.gems) ? formValue.gems : []
 
   if (template === 'original') {
-    const salePriceText = formatMoney(formValue?.salePrice)
+    const salePriceText = formatLabelPrice(formValue?.salePrice)
     const codeLine = [code, salePriceText].filter(Boolean).join(' - ')
     const { level, barcodeEnd, formattedGems } = chooseGemLevel({ code, gems, checkLines: [codeLine] })
 
@@ -288,7 +285,7 @@ export function layoutGt800(formValue, template) {
   const sizeText = formValue?.size ? ` #${formValue.size}` : ''
   const goldSizeLine = `${formValue?.gold || ''}${sizeText}`
   const hasPrice = formValue?.price != null && formValue.price > 0
-  const priceText = hasPrice ? formatMoney(formValue.price) : ''
+  const priceText = hasPrice ? formatLabelPrice(formValue.price) : ''
   const codeLine = [formValue?.productNumber, priceText].filter(Boolean).join(' - ')
 
   const { level, barcodeEnd, formattedGems } = chooseGemLevel({
@@ -375,7 +372,7 @@ export function pickQrMagnification(url) {
 export function layoutGt800Qr(formValue) {
   const code = resolveLabelCode(formValue)
   const productNameEn = formValue?.productNameEn || ''
-  const codeLine = [code, formatMoney(formValue?.salePrice)].filter(Boolean).join(' - ')
+  const codeLine = [code, formatLabelPrice(formValue?.salePrice)].filter(Boolean).join(' - ')
   const goldLine = `${formValue?.gold || ''} ${formValue?.size || ''}`.trim()
   const url = formValue?.publicUrl || ''
 

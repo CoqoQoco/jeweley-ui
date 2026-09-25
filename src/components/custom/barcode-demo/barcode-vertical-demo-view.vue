@@ -45,7 +45,7 @@
 <script>
 import JsBarcode from 'jsbarcode'
 
-import { formatGemText } from '@/services/helper/barcode/barcode-zpl.js'
+import { formatGemText, formatLabelPrice } from '@/services/helper/barcode/barcode-zpl.js'
 import { PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
 
 export default {
@@ -140,11 +140,7 @@ export default {
       }
     },
     formatPrice(value) {
-      if (!value && value !== 0) return ''
-      return new Intl.NumberFormat('th-TH', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(value)
+      return formatLabelPrice(value)
     }
   }
 }
