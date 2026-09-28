@@ -28,6 +28,7 @@ import downloadsLang from './view/downloads/en.js'
 import reportLang from './view/report/en.js'
 import printStationLang from './view/print-station/en.js'
 import publicLang from './view/public/en.js'
+import executiveLang from './view/executive/en.js'
 import * as mobileLang from './view/mobile/en.js'
 export default {
   breadcrumb: { ...breadcrumb },
@@ -238,6 +239,7 @@ export default {
     graph: { ...graphLang },
     downloads: { ...downloadsLang },
     report: { ...reportLang },
+    executive: { ...executiveLang },
     printStation: { ...printStationLang },
     mold: { ...moldLang },
     worker: { ...workerLang },

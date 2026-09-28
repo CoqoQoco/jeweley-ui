@@ -1,5 +1,8 @@
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 
+// ---- executive overview (boss-only) ----
+const ExecutiveOverview = () => import('@/views/report/executive/index-view.vue')
+
 // ---- production reports ----
 const ProductionDashboard = () => import('@/views/production/dashboard/index-view.vue')
 const reportPlanCompletedWithAllGold = () =>
@@ -51,6 +54,42 @@ const WagesMonthlyTrendReport = () =>
 import { PERMISSIONS } from '@/services/permission/config.js'
 
 const routes = [
+  // ------------------ executive overview (boss-only) -------------------
+  // แยก parent ของตัวเองไม่ผูกกับ report:view — ผู้บริหารที่มีสิทธิ์แค่ executive:view (ไม่มี report:view)
+  // ต้องยังเห็นเมนูนี้ (side-bar.vue ซ่อน parent ที่ user ไม่มีสิทธิ์ตาม meta.permissions ของ parent เอง)
+  {
+    path: '/report-executive',
+    component: Layout,
+    redirect: '/executive',
+    name: 'report-executive',
+    meta: {
+      Displayname: {
+        en: 'Executive Overview',
+        th: 'ภาพรวมผู้บริหาร'
+      },
+      classIcon: 'bi bi-speedometer2',
+      majorShow: true,
+      btsubLineShow: true,
+      menuSection: 'report',
+      permissions: [PERMISSIONS.EXECUTIVE_VIEW]
+    },
+    children: [
+      {
+        path: '/executive',
+        name: 'executive',
+        component: ExecutiveOverview,
+        meta: {
+          Displayname: {
+            en: 'Executive Overview',
+            th: 'ภาพรวมผู้บริหาร'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.EXECUTIVE_VIEW]
+        }
+      }
+    ]
+  },
+
   // ------------------ report: production -------------------
   {
     path: '/report-production',

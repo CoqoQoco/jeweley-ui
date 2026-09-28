@@ -55,6 +55,9 @@ export const PERMISSIONS = {
   //report
   REPORT_VIEW: 'report:view',
 
+  // Executive overview (boss-only dashboard)
+  EXECUTIVE_VIEW: 'executive:view',
+
   //master
   MASTER_VIEW: 'master:view',
 
@@ -294,5 +297,7 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.MOBILE_SALE
   ],
 
-  SaleManager: [PERMISSIONS.SALE_VIEW_MARGIN]
+  SaleManager: [PERMISSIONS.SALE_VIEW_MARGIN],
+
+  Executive: [PERMISSIONS.EXECUTIVE_VIEW]
 }

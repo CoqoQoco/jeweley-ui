@@ -1,0 +1,126 @@
+<template>
+  <SectionCardGeneric :title="$t('view.executive.stock.title')" icon="bi-box-seam" accent="main" headerStyle="legend" class="section-card-block">
+    <h6 class="chart-title">{{ $t('view.executive.stock.chartTitle') }}</h6>
+    <ChartGeneric type="bar" :series="ageSeries" :options="ageOptions" :height="280" :emptyText="$t('common.label.noData')" />
+
+    <h6 class="table-title">{{ $t('view.executive.stock.byReceiptTypeTitle') }}</h6>
+    <BaseDataTable :items="receiptTypeRows" :totalRecords="receiptTypeRows.length" :columns="receiptTypeColumns" :paginator="false" dataKey="key">
+      <template #countTemplate="{ data }">
+        <div class="text-right">{{ formatCount(data.count) }}</div>
+      </template>
+      <template #noCostCountTemplate="{ data }">
+        <div class="text-right">{{ formatCount(data.noCostCount) }}</div>
+      </template>
+    </BaseDataTable>
+  </SectionCardGeneric>
+</template>
+
+<script>
+import { CHART_TOKENS } from '@/services/utils/chart-colors.js'
+
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
+import ChartGeneric from '@/components/prime-vue/ChartGeneric.vue'
+import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+
+const AGE_BUCKET_KEYS = ['lt1y', 'y1to2', 'y2to5', 'gt5y']
+
+export default {
+  name: 'ExecutiveStockHealthView',
+
+  components: {
+    SectionCardGeneric,
+    ChartGeneric,
+    BaseDataTable
+  },
+
+  props: {
+    stockHealth: {
+      type: Object,
+      required: true
+    }
+  },
+
+  computed: {
+    bucketLabelMap() {
+      const map = {}
+      AGE_BUCKET_KEYS.forEach((key) => {
+        map[key] = this.$t(`view.executive.stock.ageBucket.${key}`)
+      })
+      return map
+    },
+
+    ageSeries() {
+      const buckets = this.stockHealth.ageBuckets || []
+      return [
+        {
+          name: this.$t('view.executive.stock.seriesWithCost'),
+          data: buckets.map((b) => Math.max((b.count || 0) - (b.noCostCount || 0), 0))
+        },
+        {
+          name: this.$t('view.executive.stock.seriesNoCost'),
+          data: buckets.map((b) => b.noCostCount || 0)
+        }
+      ]
+    },
+
+    ageOptions() {
+      const buckets = this.stockHealth.ageBuckets || []
+      return {
+        chart: { type: 'bar', stacked: true, toolbar: { show: false } },
+        colors: [CHART_TOKENS.green, CHART_TOKENS.warning],
+        plotOptions: { bar: { borderRadius: 4, columnWidth: '55%' } },
+        dataLabels: { enabled: true, style: { fontSize: '11px', fontWeight: 600 } },
+        xaxis: { categories: buckets.map((b) => this.bucketLabelMap[b.key] || b.key) },
+        yaxis: { labels: { formatter: (v) => this.formatCount(v) } },
+        tooltip: { y: { formatter: (v) => this.formatCount(v) } }
+      }
+    },
+
+    receiptTypeRows() {
+      return (this.stockHealth.receiptTypes || []).map((r) => ({
+        key: r.receiptType,
+        receiptType: r.receiptType,
+        count: r.count || 0,
+        noCostCount: r.noCostCount || 0
+      }))
+    },
+
+    receiptTypeColumns() {
+      return [
+        { field: 'receiptType', header: this.$t('view.executive.stock.colReceiptType'), sortable: false, minWidth: '160px' },
+        { field: 'count', header: this.$t('view.executive.stock.colCount'), sortable: false, minWidth: '100px', align: 'right' },
+        { field: 'noCostCount', header: this.$t('view.executive.stock.colNoCostCount'), sortable: false, minWidth: '100px', align: 'right' }
+      ]
+    }
+  },
+
+  methods: {
+    formatCount(value) {
+      return new Intl.NumberFormat('th-TH').format(value || 0)
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+@import '@/assets/scss/custom-style/standard-form.scss';
+
+.section-card-block {
+  height: 100%;
+}
+
+.chart-title,
+.table-title {
+  color: var(--base-font-color);
+  font-weight: 600;
+  font-size: var(--fs-base);
+  margin-bottom: var(--sp-sm);
+}
+
+.table-title {
+  margin-top: var(--sp-xl);
+  padding-bottom: var(--sp-sm);
+  border-bottom: 1px solid var(--color-border);
+  background: transparent !important;
+}
+</style>
