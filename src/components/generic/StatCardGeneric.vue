@@ -11,14 +11,26 @@
   </div>
 
   Props:
-    icon     — Bootstrap icon class เช่น 'bi-card-list'
-    value    — ค่าตัวเลข/ข้อความหลัก
-    label    — คำอธิบาย (i18n caller ส่ง $t(...) มา)
-    subLabel — ข้อความเสริมเล็กๆ ใต้ label (optional เช่น เศษส่วนตรวจสอบได้ '12/50')
-    variant  — 'main' | 'warning' | 'green' | 'grey' (default 'main') — สีวงกลม icon
+    icon      — Bootstrap icon class เช่น 'bi-card-list'
+    value     — ค่าตัวเลข/ข้อความหลัก
+    label     — คำอธิบาย (i18n caller ส่ง $t(...) มา)
+    subLabel  — ข้อความเสริมเล็กๆ ใต้ label (optional เช่น เศษส่วนตรวจสอบได้ '12/50')
+    variant   — 'main' | 'warning' | 'green' | 'grey' (default 'main') — สีวงกลม icon
+    clickable — เปิดโหมดกดได้ (default false) — เพิ่ม cursor:pointer + hover/focus lift + role="button"
+                + tabindex="0" + keyboard (Enter/Space) ให้ตัวการ์ดเอง
+
+  Emits: click (เฉพาะเมื่อ clickable=true)
 -->
 <template>
-  <div class="stat-card">
+  <div
+    class="stat-card"
+    :class="{ 'stat-card--clickable': clickable }"
+    :role="clickable ? 'button' : null"
+    :tabindex="clickable ? 0 : null"
+    @click="onClick"
+    @keydown.enter="onClick"
+    @keydown.space.prevent="onClick"
+  >
     <div class="stat-icon" :class="`stat-icon--${variant}`">
       <i :class="['bi', icon]"></i>
     </div>
@@ -55,6 +67,19 @@ export default {
       type: String,
       default: 'main',
       validator: (v) => ['main', 'warning', 'green', 'grey'].includes(v)
+    },
+    clickable: {
+      type: Boolean,
+      default: false
+    }
+  },
+
+  emits: ['click'],
+
+  methods: {
+    onClick(event) {
+      if (!this.clickable) return
+      this.$emit('click', event)
     }
   }
 }
@@ -69,6 +94,22 @@ export default {
   display: flex;
   align-items: center;
   gap: var(--sp-md);
+}
+
+.stat-card--clickable {
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+
+  &:hover,
+  &:focus-visible {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--base-font-color);
+    outline-offset: 2px;
+  }
 }
 
 .stat-icon {

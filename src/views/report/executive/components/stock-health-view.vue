@@ -1,21 +1,27 @@
 <template>
   <SectionCardGeneric :title="$t('view.executive.stock.title')" icon="bi-box-seam" accent="main" headerStyle="legend" class="section-card-block">
-    <h6 class="chart-title">{{ $t('view.executive.stock.chartTitle') }}</h6>
-    <ChartGeneric type="bar" :series="ageSeries" :options="ageOptions" :height="280" :emptyText="$t('common.label.noData')" />
-
-    <h6 class="table-title">{{ $t('view.executive.stock.byReceiptTypeTitle') }}</h6>
-    <BaseDataTable :items="receiptTypeRows" :totalRecords="receiptTypeRows.length" :columns="receiptTypeColumns" :paginator="false" dataKey="key">
-      <template #countTemplate="{ data }">
-        <div class="text-right">{{ formatCount(data.count) }}</div>
-      </template>
-      <template #noCostCountTemplate="{ data }">
-        <div class="text-right">{{ formatCount(data.noCostCount) }}</div>
-      </template>
-    </BaseDataTable>
+    <div class="stock-grid">
+      <div class="chart-col">
+        <h6 class="chart-title">{{ $t('view.executive.stock.chartTitle') }}</h6>
+        <ChartGeneric type="bar" :series="ageSeries" :options="ageOptions" :height="280" :emptyText="$t('common.label.noData')" />
+      </div>
+      <div class="table-col">
+        <h6 class="table-title">{{ $t('view.executive.stock.byReceiptTypeTitle') }}</h6>
+        <BaseDataTable :items="receiptTypeRows" :totalRecords="receiptTypeRows.length" :columns="receiptTypeColumns" :paginator="false" dataKey="key">
+          <template #countTemplate="{ data }">
+            <div class="text-right">{{ formatCount(data.count) }}</div>
+          </template>
+          <template #noCostCountTemplate="{ data }">
+            <div class="text-right">{{ formatCount(data.noCostCount) }}</div>
+          </template>
+        </BaseDataTable>
+      </div>
+    </div>
   </SectionCardGeneric>
 </template>
 
 <script>
+import { useExecutiveReportApiStore } from '@/stores/modules/api/report/executive-report-api.js'
 import { CHART_TOKENS } from '@/services/utils/chart-colors.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
@@ -33,10 +39,21 @@ export default {
     BaseDataTable
   },
 
+  setup() {
+    const executiveReportStore = useExecutiveReportApiStore()
+    return { executiveReportStore }
+  },
+
   props: {
-    stockHealth: {
-      type: Object,
-      required: true
+    refreshToken: {
+      type: Number,
+      default: 0
+    }
+  },
+
+  data() {
+    return {
+      stockHealth: { ageBuckets: [], receiptTypes: [] }
     }
   },
 
@@ -94,10 +111,25 @@ export default {
     }
   },
 
+  watch: {
+    refreshToken() {
+      this.fetchData()
+    }
+  },
+
   methods: {
     formatCount(value) {
       return new Intl.NumberFormat('th-TH').format(value || 0)
+    },
+
+    async fetchData() {
+      const res = await this.executiveReportStore.fetchStockHealth()
+      this.stockHealth = res ? { ageBuckets: res.ageBuckets || [], receiptTypes: res.receiptTypes || [] } : { ageBuckets: [], receiptTypes: [] }
     }
+  },
+
+  mounted() {
+    this.fetchData()
   }
 }
 </script>
@@ -105,8 +137,14 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
 
-.section-card-block {
-  height: 100%;
+.stock-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-xl);
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .chart-title,
@@ -115,12 +153,5 @@ export default {
   font-weight: 600;
   font-size: var(--fs-base);
   margin-bottom: var(--sp-sm);
-}
-
-.table-title {
-  margin-top: var(--sp-xl);
-  padding-bottom: var(--sp-sm);
-  border-bottom: 1px solid var(--color-border);
-  background: transparent !important;
 }
 </style>

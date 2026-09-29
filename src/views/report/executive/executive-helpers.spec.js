@@ -1,13 +1,22 @@
 import { describe, it, expect } from 'vitest'
 
 import {
-  GOLD_LOSS_OVER_ALLOWED_THRESHOLD,
+  EXECUTIVE_TABS,
+  resolveActiveTab,
+  KPI_TAB_MAP,
+  resolveKpiTab,
+  buildReceivablesDonutSeries,
+  buildDonutCenterLabel,
+  buildDonutCenterLabelsOptions,
+  DONUT_SLICE_FILTER_MAP,
+  resolveDonutSliceFilter,
   resolveKpiVariant,
   formatMoneyAbbreviated,
   formatMoneyFull,
   formatGramAmount,
   calcPercent,
-  isGoldLossOverThreshold,
+  resolveGoldLossKpiVariant,
+  resolveLatestGoldLossRow,
   formatMonthLabel,
   formatMoneyWithCurrency,
   buildMonthlyCompletedSeriesData,
@@ -16,10 +25,99 @@ import {
   buildReceivablesExcelRows,
   buildSalesOrdersExcelRows,
   buildStockAgingExcelRows,
-  buildGoldLossExcelRows
+  buildGoldLossMonthlyExcelRows,
+  buildGoldLossByWorkerExcelRows
 } from './executive-helpers.js'
+import { normalizeTangRow, normalizeSetterRow } from '@/services/utils/gold-loss/slip-monthly-helpers.js'
 
 describe('executive-helpers', () => {
+  describe('resolveActiveTab', () => {
+    it('returns the tab value when it is one of the known tabs', () => {
+      EXECUTIVE_TABS.forEach((tab) => {
+        expect(resolveActiveTab(tab)).toBe(tab)
+      })
+    })
+
+    it('falls back to production for invalid/missing values', () => {
+      expect(resolveActiveTab('bogus')).toBe('production')
+      expect(resolveActiveTab(undefined)).toBe('production')
+      expect(resolveActiveTab(null)).toBe('production')
+      expect(resolveActiveTab('')).toBe('production')
+    })
+  })
+
+  describe('resolveKpiTab', () => {
+    it('maps every known KPI key to its tab per KPI_TAB_MAP', () => {
+      Object.entries(KPI_TAB_MAP).forEach(([kpiKey, tab]) => {
+        expect(resolveKpiTab(kpiKey)).toBe(tab)
+      })
+    })
+
+    it('falls back to production for an unknown KPI key', () => {
+      expect(resolveKpiTab('unknownKpi')).toBe('production')
+    })
+  })
+
+  describe('buildReceivablesDonutSeries', () => {
+    const labels = { paid: 'รับแล้ว/บางส่วน', unpaidNotDue: 'ยังไม่รับ ยังไม่เลย', overdue: 'ยังไม่รับ เลยกำหนด' }
+
+    it('orders series as [paidOrPartialThb, unpaidNotOverdueThb, overdueThb]', () => {
+      const result = buildReceivablesDonutSeries(
+        { paidOrPartialThb: 100, unpaidNotOverdueThb: 200, overdueThb: 300 },
+        labels
+      )
+      expect(result.series).toEqual([100, 200, 300])
+      expect(result.labels).toEqual([labels.paid, labels.unpaidNotDue, labels.overdue])
+    })
+
+    it('defaults missing amounts to 0 and missing labels to empty string', () => {
+      const result = buildReceivablesDonutSeries(null, {})
+      expect(result.series).toEqual([0, 0, 0])
+      expect(result.labels).toEqual(['', '', ''])
+    })
+  })
+
+  describe('buildDonutCenterLabel', () => {
+    it('returns abbreviated total and raw invoice count', () => {
+      expect(buildDonutCenterLabel({ invoiceTotalThb: 5000000, invoiceCount: 62 })).toEqual({
+        totalAbbrev: '฿5.00M',
+        invoiceCount: 62
+      })
+    })
+
+    it('defaults to 0 for missing/empty summary', () => {
+      expect(buildDonutCenterLabel(null)).toEqual({ totalAbbrev: '฿0', invoiceCount: 0 })
+    })
+  })
+
+  describe('buildDonutCenterLabelsOptions', () => {
+    it('name.show/value.show ต้อง true คู่กับ total.show เสมอ (ไม่งั้น ApexCharts ไม่สร้าง element แสดง center label)', () => {
+      const options = buildDonutCenterLabelsOptions('62 ใบ', '฿5.00M')
+
+      expect(options.show).toBe(true)
+      expect(options.name.show).toBe(true)
+      expect(options.value.show).toBe(true)
+      expect(options.total.show).toBe(true)
+      expect(options.total.showAlways).toBe(true)
+      expect(options.total.label).toBe('62 ใบ')
+      expect(options.total.formatter()).toBe('฿5.00M')
+    })
+  })
+
+  describe('resolveDonutSliceFilter', () => {
+    it('maps slice index to the DONUT_SLICE_FILTER_MAP order', () => {
+      expect(DONUT_SLICE_FILTER_MAP).toEqual(['all', 'unpaid', 'overdue'])
+      expect(resolveDonutSliceFilter(0)).toBe('all')
+      expect(resolveDonutSliceFilter(1)).toBe('unpaid')
+      expect(resolveDonutSliceFilter(2)).toBe('overdue')
+    })
+
+    it('returns null for an out-of-range index', () => {
+      expect(resolveDonutSliceFilter(3)).toBeNull()
+      expect(resolveDonutSliceFilter(-1)).toBeNull()
+    })
+  })
+
   describe('resolveKpiVariant', () => {
     it('returns warning when isBad is true', () => {
       expect(resolveKpiVariant(true)).toBe('warning')
@@ -88,23 +186,19 @@ describe('executive-helpers', () => {
     })
   })
 
-  describe('isGoldLossOverThreshold', () => {
-    it('exposes the 0.4 default threshold constant', () => {
-      expect(GOLD_LOSS_OVER_ALLOWED_THRESHOLD).toBe(0.4)
+  describe('resolveGoldLossKpiVariant', () => {
+    it('คืน green เมื่อ lossPercent <= allowedPercent', () => {
+      expect(resolveGoldLossKpiVariant(1.5, 1.5)).toBe('green')
+      expect(resolveGoldLossKpiVariant(1.0, 1.5)).toBe('green')
     })
 
-    it('returns true when percent >= threshold', () => {
-      expect(isGoldLossOverThreshold(0.45)).toBe(true)
-      expect(isGoldLossOverThreshold(0.4)).toBe(true)
+    it('คืน warning เมื่อ lossPercent > allowedPercent', () => {
+      expect(resolveGoldLossKpiVariant(2.0, 1.5)).toBe('warning')
     })
 
-    it('returns false when percent < threshold', () => {
-      expect(isGoldLossOverThreshold(0.39)).toBe(false)
-    })
-
-    it('accepts a custom threshold', () => {
-      expect(isGoldLossOverThreshold(0.5, 1)).toBe(false)
-      expect(isGoldLossOverThreshold(1.5, 1)).toBe(true)
+    it('ค่า falsy/undefined ถือเป็น 0 ไม่พัง', () => {
+      expect(resolveGoldLossKpiVariant(undefined, undefined)).toBe('green')
+      expect(resolveGoldLossKpiVariant(0.1, undefined)).toBe('warning')
     })
   })
 
@@ -184,10 +278,14 @@ describe('executive-helpers', () => {
       stockInStockCount: 'สินค้าคงคลัง',
       stockNoCostCount: 'สินค้าไม่มีต้นทุน',
       stockCostThb: 'มูลค่าต้นทุนคงคลัง',
-      stockAgedOver1yCount: 'สินค้าอายุเกิน 1 ปี'
+      stockAgedOver1yCount: 'สินค้าอายุเกิน 1 ปี',
+      goldLossPercent: '% loss ทองช่างแต่ง',
+      goldLossAllowedPercent: '% เกณฑ์ในใบ',
+      goldLossOverSlipCount: 'จำนวนใบที่เกินเกณฑ์',
+      goldLossOverAllowedGram: 'เกินเกณฑ์รวม (กรัม)'
     }
 
-    it('flattens every summary field into label/value rows', () => {
+    it('flattens every summary field into label/value rows (รวมแถวทองเดือนล่าสุด)', () => {
       const summary = {
         asOf: '2026-09-28T10:00:00+07:00',
         production: { openCount: 2032, moved30dCount: 500, stale180dCount: 2032, meltedOpenCount: 3 },
@@ -204,21 +302,53 @@ describe('executive-helpers', () => {
         },
         salesOrders: { openCount: 10, noInvoiceCount: 8, noInvoiceThb: 3030000, overdueNoInvoiceCount: 2, noDeliveryDateCount: 4 },
         stock: { inStockCount: 1000, noCostCount: 850, costThb: 200000, agedOver1yCount: 100 },
-        goldLoss: []
+        goldLoss: [
+          { month: '2026-08', lossPercent: 1.1, allowedPercent: 1.5, overSlipCount: 1, overAllowedGram: 2 },
+          { month: '2026-09', lossPercent: 1.8, allowedPercent: 1.5, overSlipCount: 3, overAllowedGram: 4.5678 }
+        ]
       }
 
       const rows = buildSummaryExcelRows(summary, labels)
 
-      expect(rows).toHaveLength(23)
+      expect(rows).toHaveLength(27)
       expect(rows[0]).toEqual({ label: 'ข้อมูล ณ', value: '28/09/2026' })
       expect(rows.find((r) => r.label === labels.unpaidThb).value).toBe('4,560,000.00')
       expect(rows.find((r) => r.label === labels.stockNoCostCount).value).toBe(850)
+      // ใช้แถวเดือนล่าสุด (2026-09) ไม่ใช่แถวแรก
+      expect(rows.find((r) => r.label === labels.goldLossPercent).value).toBe('1.8%')
+      expect(rows.find((r) => r.label === labels.goldLossAllowedPercent).value).toBe('1.5%')
+      expect(rows.find((r) => r.label === labels.goldLossOverSlipCount).value).toBe(3)
+      expect(rows.find((r) => r.label === labels.goldLossOverAllowedGram).value).toBe('4.57')
     })
 
     it('handles a missing/empty summary without throwing', () => {
       expect(() => buildSummaryExcelRows(null, labels)).not.toThrow()
       const rows = buildSummaryExcelRows(null, labels)
       expect(rows[0]).toEqual({ label: 'ข้อมูล ณ', value: '' })
+      expect(rows.find((r) => r.label === labels.goldLossPercent).value).toBe('0%')
+    })
+  })
+
+  describe('resolveLatestGoldLossRow', () => {
+    it('คืนแถวสุดท้ายของ array (เดือนล่าสุด)', () => {
+      const rows = [{ month: '2026-08' }, { month: '2026-09' }]
+      expect(resolveLatestGoldLossRow(rows)).toBe(rows[1])
+    })
+
+    it('array ว่าง/undefined คืนแถว default ทุก field เป็น 0', () => {
+      expect(resolveLatestGoldLossRow([])).toEqual({
+        month: '',
+        slipCount: 0,
+        issuedGram: 0,
+        rawLossGram: 0,
+        allowedGram: 0,
+        overAllowedGram: 0,
+        overSlipCount: 0,
+        lossPercent: 0,
+        allowedPercent: 0,
+        overAllowedPercent: 0
+      })
+      expect(resolveLatestGoldLossRow(undefined).month).toBe('')
     })
   })
 
@@ -311,6 +441,16 @@ describe('executive-helpers', () => {
         daysOverdue: 12
       })
     })
+
+    it('falls back to running when dkInvoiceNumber is null (legacy invoices with no dk number)', () => {
+      const rows = buildReceivablesExcelRows([{ dkInvoiceNumber: null, running: 'RUN-62', outstanding: 100 }], paymentStateLabels)
+      expect(rows[0].dkInvoiceNumber).toBe('RUN-62')
+    })
+
+    it('uses empty string when both dkInvoiceNumber and running are missing', () => {
+      const rows = buildReceivablesExcelRows([{ outstanding: 100 }], paymentStateLabels)
+      expect(rows[0].dkInvoiceNumber).toBe('')
+    })
   })
 
   describe('buildSalesOrdersExcelRows', () => {
@@ -356,20 +496,39 @@ describe('executive-helpers', () => {
     })
   })
 
-  describe('buildGoldLossExcelRows', () => {
-    it('formats month + gram fields', () => {
-      const rows = buildGoldLossExcelRows([
-        { month: '2026-07', slipCount: 40, issuedGram: 1000.5, rawLossGram: 4.5678, overAllowedGram: 0.5, overAllowedPercent: 0.45 }
-      ])
+  describe('buildGoldLossMonthlyExcelRows', () => {
+    const deptLabels = { tang: 'ช่างแต่ง', setter: 'ช่างฝัง' }
 
-      expect(rows[0]).toEqual({
-        month: '07/2026',
-        slipCount: 40,
-        issuedGram: '1000.50',
-        rawLossGram: '4.57',
-        overAllowedGram: '0.50',
-        overAllowedPercent: '0.45'
-      })
+    it('สร้าง 2 แถวต่อเดือน (tang+setter) ตามลำดับ monthKeys ที่ให้มา', () => {
+      const tangRows = [normalizeTangRow({ workerCode: 'A', workerName: 'A', year: 2026, month: 7, slipCount: 1, totalIssued: 1000, totalRawLoss: 10, totalAllowedLoss: 15, totalAllowedLossBase: 1000 })]
+      const setterRows = [normalizeSetterRow({ workerCode: 'X', workerName: 'X', year: 2026, month: 7, slipCount: 1, totalWeightSend: 200, totalWeightCheck: 198, totalWeightLossAllowed: 3 })]
+
+      const rows = buildGoldLossMonthlyExcelRows(['2026-07', '2026-08'], tangRows, setterRows, deptLabels)
+
+      expect(rows).toEqual([
+        { month: '07/2026', dept: 'ช่างแต่ง', issuedGram: '1000.00', lossGram: '10.00', allowedGram: '15.00', lossPercent: '1.00' },
+        { month: '07/2026', dept: 'ช่างฝัง', issuedGram: '200.00', lossGram: '2.00', allowedGram: '3.00', lossPercent: '1.00' },
+        { month: '08/2026', dept: 'ช่างแต่ง', issuedGram: '0.00', lossGram: '0.00', allowedGram: '0.00', lossPercent: '0.00' },
+        { month: '08/2026', dept: 'ช่างฝัง', issuedGram: '0.00', lossGram: '0.00', allowedGram: '0.00', lossPercent: '0.00' }
+      ])
+    })
+  })
+
+  describe('buildGoldLossByWorkerExcelRows', () => {
+    it('รวม 2 แผนกเป็นชุดเดียว rank เริ่มใหม่ที่ 1 ต่อแผนก เรียง loss มากไปน้อย', () => {
+      const tangRows = [
+        normalizeTangRow({ workerCode: 'A', workerName: 'A', year: 2026, month: 8, slipCount: 1, totalIssued: 500, totalRawLoss: 5, totalAllowedLoss: 7.5, totalAllowedLossBase: 500 }),
+        normalizeTangRow({ workerCode: 'B', workerName: 'B', year: 2026, month: 8, slipCount: 1, totalIssued: 1000, totalRawLoss: 20, totalAllowedLoss: 15, totalAllowedLossBase: 1000 })
+      ]
+      const setterRows = [normalizeSetterRow({ workerCode: 'X', workerName: 'X', year: 2026, month: 8, slipCount: 1, totalWeightSend: 200, totalWeightCheck: 198, totalWeightLossAllowed: 3 })]
+
+      const rows = buildGoldLossByWorkerExcelRows(tangRows, setterRows, { tang: 'ช่างแต่ง', setter: 'ช่างฝัง' })
+
+      expect(rows).toEqual([
+        { rank: 1, dept: 'ช่างแต่ง', workerCode: 'B', workerName: 'B', issuedGram: '1000.00', lossGram: '20.00', allowedGram: '15.00', lossPercent: '2.00' },
+        { rank: 2, dept: 'ช่างแต่ง', workerCode: 'A', workerName: 'A', issuedGram: '500.00', lossGram: '5.00', allowedGram: '7.50', lossPercent: '1.00' },
+        { rank: 1, dept: 'ช่างฝัง', workerCode: 'X', workerName: 'X', issuedGram: '200.00', lossGram: '2.00', allowedGram: '3.00', lossPercent: '1.00' }
+      ])
     })
   })
 })

@@ -8,6 +8,8 @@
           :label="$t('view.executive.summary.stalePlans')"
           :subLabel="stalePlansSubLabel"
           :variant="resolveKpiVariant(summary.production.stale180dCount > 0)"
+          :clickable="true"
+          @click="onKpiClick('stalePlans')"
         />
       </div>
       <div class="kpi-card">
@@ -17,6 +19,8 @@
           :label="$t('view.executive.summary.receivablesOutstanding')"
           :subLabel="receivablesOutstandingSubLabel"
           :variant="resolveKpiVariant(summary.receivables.overdueCount > 0)"
+          :clickable="true"
+          @click="onKpiClick('receivablesOutstanding')"
         />
       </div>
       <div class="kpi-card">
@@ -26,6 +30,8 @@
           :label="$t('view.executive.summary.noDueDate')"
           :subLabel="noDueDateSubLabel"
           :variant="resolveKpiVariant(summary.receivables.noDueDateCount > 0)"
+          :clickable="true"
+          @click="onKpiClick('noDueDate')"
         />
       </div>
       <div class="kpi-card">
@@ -35,6 +41,8 @@
           :label="$t('view.executive.summary.soNoInvoice')"
           :subLabel="soNoInvoiceSubLabel"
           :variant="resolveKpiVariant(summary.salesOrders.noInvoiceCount > 0)"
+          :clickable="true"
+          @click="onKpiClick('soNoInvoice')"
         />
       </div>
       <div class="kpi-card">
@@ -44,6 +52,8 @@
           :label="$t('view.executive.summary.stockNoCost')"
           :subLabel="stockNoCostSubLabel"
           :variant="resolveKpiVariant(stockNoCostPercent >= 50)"
+          :clickable="true"
+          @click="onKpiClick('stockNoCost')"
         />
       </div>
       <div class="kpi-card">
@@ -52,7 +62,9 @@
           :value="goldLossPercentLabel"
           :label="$t('view.executive.summary.goldLossOverAllowed')"
           :subLabel="goldLossOverAllowedSubLabel"
-          :variant="resolveKpiVariant(isGoldLossOverThreshold(latestGoldLossPercent))"
+          :variant="goldLossKpiVariant"
+          :clickable="true"
+          @click="onKpiClick('goldLossOverAllowed')"
         />
       </div>
     </div>
@@ -62,11 +74,12 @@
 <script>
 import {
   resolveKpiVariant,
+  resolveKpiTab,
   formatMoneyAbbreviated,
   formatGramAmount,
   calcPercent,
-  isGoldLossOverThreshold,
-  formatMonthLabel
+  resolveGoldLossKpiVariant,
+  resolveLatestGoldLossRow
 } from '../executive-helpers.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
@@ -86,6 +99,8 @@ export default {
       required: true
     }
   },
+
+  emits: ['select-tab'],
 
   computed: {
     stalePlansSubLabel() {
@@ -134,23 +149,22 @@ export default {
     },
 
     latestGoldLossRow() {
-      const rows = this.summary.goldLoss || []
-      return rows.length ? rows[rows.length - 1] : { overAllowedPercent: 0, overAllowedGram: 0, issuedGram: 0, month: '' }
+      return resolveLatestGoldLossRow(this.summary.goldLoss)
     },
 
-    latestGoldLossPercent() {
-      return this.latestGoldLossRow.overAllowedPercent || 0
+    goldLossKpiVariant() {
+      return resolveGoldLossKpiVariant(this.latestGoldLossRow.lossPercent, this.latestGoldLossRow.allowedPercent)
     },
 
     goldLossPercentLabel() {
-      return `${this.latestGoldLossPercent}%`
+      return `${formatGramAmount(this.latestGoldLossRow.lossPercent)}%`
     },
 
     goldLossOverAllowedSubLabel() {
       return this.$t('view.executive.summary.goldLossOverAllowedSub', {
-        overAllowedGram: formatGramAmount(this.latestGoldLossRow.overAllowedGram),
-        issuedGram: formatGramAmount(this.latestGoldLossRow.issuedGram),
-        month: formatMonthLabel(this.latestGoldLossRow.month)
+        allowedPercent: formatGramAmount(this.latestGoldLossRow.allowedPercent),
+        overSlipCount: this.formatCount(this.latestGoldLossRow.overSlipCount),
+        overAllowedGram: formatGramAmount(this.latestGoldLossRow.overAllowedGram)
       })
     }
   },
@@ -158,10 +172,13 @@ export default {
   methods: {
     resolveKpiVariant,
     formatMoneyAbbreviated,
-    isGoldLossOverThreshold,
 
     formatCount(value) {
       return new Intl.NumberFormat('th-TH').format(value || 0)
+    },
+
+    onKpiClick(kpiKey) {
+      this.$emit('select-tab', resolveKpiTab(kpiKey))
     }
   }
 }

@@ -98,10 +98,6 @@ export default {
   },
 
   props: {
-    productionWip: {
-      type: Object,
-      required: true
-    },
     filter: {
       type: Object,
       default: () => ({ departmentKeys: [], minDays: 180 })
@@ -118,6 +114,7 @@ export default {
     return {
       departmentKeys: [...(this.filter.departmentKeys || [])],
       minDays: this.filter.minDays || 180,
+      productionWip: { departments: [], monthlyCompleted: [] },
       stalePlans: { data: [], total: 0 }
     }
   },
@@ -217,6 +214,7 @@ export default {
     },
 
     refreshToken() {
+      this.fetchProductionWip()
       this.fetchData()
     }
   },
@@ -233,6 +231,13 @@ export default {
       this.resetPaging()
     },
 
+    async fetchProductionWip() {
+      const res = await this.executiveReportStore.fetchProductionWip()
+      this.productionWip = res
+        ? { departments: res.departments || [], monthlyCompleted: res.monthlyCompleted || [] }
+        : { departments: [], monthlyCompleted: [] }
+    },
+
     async fetchData() {
       const res = await this.executiveReportStore.fetchStalePlans({
         take: this.take,
@@ -247,6 +252,7 @@ export default {
 
   mounted() {
     this.$emit('update:filter', { departmentKeys: this.departmentKeys, minDays: this.minDays })
+    this.fetchProductionWip()
     this.fetchData()
   }
 }

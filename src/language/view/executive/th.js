@@ -2,6 +2,12 @@ export default {
   title: 'ภาพรวมผู้บริหาร',
   asOf: 'ข้อมูล ณ {date}',
 
+  tabs: {
+    production: '🏭 ผลิต',
+    sales: '💰 ขายและเงิน',
+    stock: '📦 คลังสินค้า'
+  },
+
   summary: {
     title: 'สรุป',
     stalePlans: 'ใบงานไม่ขยับ > 180 วัน',
@@ -14,8 +20,8 @@ export default {
     soNoInvoiceSub: '{noInvoiceCount} ใบ · เลยวันส่งแล้ว {overdueNoInvoiceCount} · ไม่มีวันส่ง {noDeliveryDateCount}',
     stockNoCost: 'สต็อกไม่มีต้นทุน',
     stockNoCostSub: '{noCostCount} จาก {inStockCount} ชิ้น',
-    goldLossOverAllowed: 'ทองแต่งเกินเกณฑ์',
-    goldLossOverAllowedSub: '{overAllowedGram} g จากที่จ่าย {issuedGram} g · เดือน {month}'
+    goldLossOverAllowed: 'ทองช่างแต่ง loss เดือนนี้',
+    goldLossOverAllowedSub: 'ยอมให้ {allowedPercent}% · เกินรายใบ {overSlipCount} ใบ ({overAllowedGram} g)'
   },
 
   department: {
@@ -56,10 +62,11 @@ export default {
     seriesPaid: 'รับแล้ว/บางส่วน',
     seriesUnpaidNotDue: 'ยังไม่รับ (ยังไม่เลย/ไม่มีกำหนด)',
     seriesOverdue: 'ยังไม่รับ + เลยกำหนด',
-    tabUnpaid: 'ยังไม่รับเงิน',
-    tabOverdue: 'เลยกำหนด',
-    tabNoDueDate: 'ไม่มีวันครบกำหนด',
-    tabSoNoInvoice: 'SO ยังไม่ออกบิล',
+    donutInvoiceCount: '{count} ใบ',
+    tabUnpaid: 'ยังไม่รับเงิน {count}',
+    tabOverdue: 'เลยกำหนด {count}',
+    tabNoDueDate: 'ไม่มีวันครบกำหนด {count}',
+    tabSoNoInvoice: 'SO ยังไม่ออกบิล {count}',
     colInvoiceNumber: 'เลขที่ใบแจ้งหนี้',
     colSoRunning: 'เลขที่ SO',
     colSoNumber: 'เลขที่ SO',
@@ -106,25 +113,35 @@ export default {
     }
   },
 
-  goldLoss: {
-    title: 'ทองช่างแต่ง 3 เดือน',
-    colMonth: 'เดือน',
-    colSlipCount: 'จำนวนใบ',
-    colIssuedGram: 'จ่าย (กรัม)',
-    colRawLossGram: 'หาย (กรัม)',
-    colOverAllowedGram: 'เกินเกณฑ์ (กรัม)',
-    colOverAllowedPercent: '% เกิน',
-    overAllowedBadge: 'เกินเกณฑ์'
+  goldLossTrend: {
+    title: 'แนวโน้มทอง Gold Loss (6 เดือน)',
+    detailLink: 'ดูละเอียดที่หน้า Gold Loss',
+    rangeLabel: 'ช่วง',
+    rangeThisMonth: 'เดือนนี้',
+    range3Months: '3 เดือน',
+    excel: {
+      sheetMonthly: 'ทองรายเดือน',
+      sheetByWorker: 'ทองรายช่าง',
+      colMonth: 'เดือน',
+      colDept: 'แผนก',
+      colIssuedGram: 'จ่าย (กรัม)',
+      colLossGram: 'หาย (กรัม)',
+      colAllowedGram: 'เกณฑ์ในใบ (กรัม)',
+      colLossPercent: '% หาย',
+      colRank: 'อันดับ',
+      colWorkerCode: 'รหัสช่าง',
+      colWorkerName: 'ชื่อช่าง'
+    }
   },
 
   excel: {
+    exportAllBtn: 'Excel ทั้งหมด',
     filenamePrefix: 'ภาพรวมผู้บริหาร',
     sheetSummary: 'สรุป',
     sheetStalePlans: 'ใบงานค้าง',
     sheetReceivables: 'บิลค้างรับ',
     sheetSalesOrders: 'SO ยังไม่ออกบิล',
     sheetStockAging: 'คลังตามอายุ',
-    sheetGoldLoss: 'ทองช่างแต่ง',
     colLabel: 'รายการ',
     colValue: 'ค่า',
     colSection: 'หมวด',
@@ -154,7 +171,11 @@ export default {
       stockInStockCount: 'สินค้าคงคลัง (ชิ้น)',
       stockNoCostCount: 'สินค้าไม่มีต้นทุน (ชิ้น)',
       stockCostThb: 'มูลค่าต้นทุนคงคลัง (บาท)',
-      stockAgedOver1yCount: 'สินค้าอายุเกิน 1 ปี (ชิ้น)'
+      stockAgedOver1yCount: 'สินค้าอายุเกิน 1 ปี (ชิ้น)',
+      goldLossPercent: '% loss ทองช่างแต่ง (เดือนล่าสุด)',
+      goldLossAllowedPercent: '% เกณฑ์ในใบ (เดือนล่าสุด)',
+      goldLossOverSlipCount: 'จำนวนใบเกินเกณฑ์ (เดือนล่าสุด)',
+      goldLossOverAllowedGram: 'เกินเกณฑ์รวม (กรัม, เดือนล่าสุด)'
     }
   }
 }

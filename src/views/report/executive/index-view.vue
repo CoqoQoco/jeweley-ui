@@ -2,25 +2,24 @@
   <div class="app-container">
     <DashboardHeaderGeneric :title="$t('view.executive.title')" :subtitle="asOfSubtitle" icon="bi-speedometer2" @refresh="onRefresh">
       <template #controls>
-        <ButtonGeneric variant="green" icon="bi-file-earmark-excel" :label="$t('common.btn.export')" @click="onExportExcel" />
+        <ButtonGeneric variant="green" icon="bi-file-earmark-excel" :label="$t('view.executive.excel.exportAllBtn')" @click="onExportExcel" />
       </template>
     </DashboardHeaderGeneric>
 
-    <summaryView :summary="summary" />
+    <summaryView :summary="summary" @select-tab="onTabChange" />
 
-    <productionWipView
-      :productionWip="productionWip"
-      :filter="productionFilter"
-      :refreshToken="refreshToken"
-      @update:filter="productionFilter = $event"
-    />
-
-    <receivablesView :receivablesSummary="summary.receivables" :refreshToken="refreshToken" />
-
-    <div class="bottom-grid responsive-grid-2col">
-      <stockHealthView :stockHealth="stockHealth" />
-      <goldLossView :rows="summary.goldLoss" />
-    </div>
+    <TabViewGeneric :modelValue="activeTab" :tabs="tabsConfig" @update:modelValue="onTabChange">
+      <template #production>
+        <productionWipView :filter="productionFilter" :refreshToken="refreshToken" @update:filter="productionFilter = $event" />
+        <goldLossTrendView :refreshToken="refreshToken" v-model:rankingRange="goldLossRankingRange" />
+      </template>
+      <template #sales>
+        <salesView :receivablesSummary="summary.receivables" :salesOrdersSummary="summary.salesOrders" :refreshToken="refreshToken" />
+      </template>
+      <template #stock>
+        <stockHealthView :refreshToken="refreshToken" />
+      </template>
+    </TabViewGeneric>
   </div>
 </template>
 
@@ -28,25 +27,30 @@
 import dayjs from 'dayjs'
 
 import { useExecutiveReportApiStore } from '@/stores/modules/api/report/executive-report-api.js'
-import { formatDateTime } from '@/services/utils/dayjs.js'
+import { formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
+import api from '@/axios/axios-helper.js'
+import { normalizeTangRow, normalizeSetterRow, buildMonthRange, monthKeyOf, filterRowsByMonthKeys } from '@/services/utils/gold-loss/slip-monthly-helpers.js'
 import {
+  resolveActiveTab,
   buildSummaryExcelRows,
   buildStalePlansExcelRows,
   buildReceivablesExcelRows,
   buildSalesOrdersExcelRows,
   buildStockAgingExcelRows,
-  buildGoldLossExcelRows
+  buildGoldLossMonthlyExcelRows,
+  buildGoldLossByWorkerExcelRows
 } from './executive-helpers.js'
 
 import DashboardHeaderGeneric from '@/components/generic/DashboardHeaderGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import TabViewGeneric from '@/components/generic/TabViewGeneric.vue'
 
 import summaryView from './components/summary-view.vue'
 import productionWipView from './components/production-wip-view.vue'
-import receivablesView from './components/receivables-view.vue'
+import salesView from './components/sales-view.vue'
 import stockHealthView from './components/stock-health-view.vue'
-import goldLossView from './components/gold-loss-view.vue'
+import goldLossTrendView from './components/gold-loss-trend-view.vue'
 
 const EXPORT_TAKE = 5000
 
@@ -69,21 +73,18 @@ const emptySummary = () => ({
   goldLoss: []
 })
 
-const emptyProductionWip = () => ({ departments: [], monthlyCompleted: [] })
-
-const emptyStockHealth = () => ({ ageBuckets: [], receiptTypes: [] })
-
 export default {
   name: 'ExecutiveOverviewIndexView',
 
   components: {
     DashboardHeaderGeneric,
     ButtonGeneric,
+    TabViewGeneric,
     summaryView,
     productionWipView,
-    receivablesView,
+    salesView,
     stockHealthView,
-    goldLossView
+    goldLossTrendView
   },
 
   setup() {
@@ -94,16 +95,25 @@ export default {
   data() {
     return {
       summary: emptySummary(),
-      productionWip: emptyProductionWip(),
-      stockHealth: emptyStockHealth(),
       productionFilter: { departmentKeys: [], minDays: 180 },
-      refreshToken: 0
+      goldLossRankingRange: '3m',
+      refreshToken: 0,
+      activeTab: 'production',
+      isApplyingRouteQuery: false
     }
   },
 
   computed: {
     asOfSubtitle() {
       return this.summary.asOf ? this.$t('view.executive.asOf', { date: formatDateTime(this.summary.asOf) }) : ''
+    },
+
+    tabsConfig() {
+      return [
+        { value: 'production', label: this.$t('view.executive.tabs.production') },
+        { value: 'sales', label: this.$t('view.executive.tabs.sales') },
+        { value: 'stock', label: this.$t('view.executive.tabs.stock') }
+      ]
     },
 
     departmentLabelMap() {
@@ -119,33 +129,60 @@ export default {
     }
   },
 
+  watch: {
+    // single source of truth — ทั้ง TabViewGeneric (คลิกแท็บตรงๆ) และ summaryView (คลิก KPI) เปลี่ยน
+    // activeTab แล้วมาจบที่นี่เหมือนกัน คอย sync query string ?tab= เสมอ (refresh ไม่ผ่าน watcher นี้ — tab เดิม)
+    activeTab() {
+      this.syncStateToQuery()
+    }
+  },
+
   methods: {
     async fetchSummary() {
       const res = await this.executiveReportStore.fetchSummary()
       this.summary = res ? { ...emptySummary(), ...res } : emptySummary()
     },
 
-    async fetchProductionWip() {
-      const res = await this.executiveReportStore.fetchProductionWip()
-      this.productionWip = res
-        ? { departments: res.departments || [], monthlyCompleted: res.monthlyCompleted || [] }
-        : emptyProductionWip()
+    // อ่าน ?tab= ตอนเข้าหน้า/back-forward — ตั้ง guard กัน syncStateToQuery ยิง replace ซ้ำระหว่างที่กำลัง apply จาก query เอง
+    applyQueryToState(query) {
+      this.isApplyingRouteQuery = true
+      this.activeTab = resolveActiveTab(query.tab)
+      this.$nextTick(() => {
+        this.isApplyingRouteQuery = false
+      })
     },
 
-    async fetchStockHealth() {
-      const res = await this.executiveReportStore.fetchStockHealth()
-      this.stockHealth = res ? { ageBuckets: res.ageBuckets || [], receiptTypes: res.receiptTypes || [] } : emptyStockHealth()
+    syncStateToQuery() {
+      if (this.isApplyingRouteQuery) return
+      this.$router.replace({ query: { ...this.$route.query, tab: this.activeTab } }).catch(() => {})
+    },
+
+    onTabChange(tab) {
+      this.activeTab = resolveActiveTab(tab)
     },
 
     onRefresh() {
       this.fetchSummary()
-      this.fetchProductionWip()
-      this.fetchStockHealth()
       this.refreshToken += 1
     },
 
+    // ยิง endpoint ต่อช่างแบบ groupByMonth:true ครอบคลุม 6 เดือนล่าสุด (ช่วงเดียวกับที่จอ gold-loss-trend-view
+    // ใช้แสดง) แยกอิสระจากตอนแสดงผลบนจอ — ตาม pattern export ของไฟล์นี้ที่ยิงข้อมูลเต็มชุดใหม่เองทุกสheet
+    async fetchGoldLossWorkerReportsForExport() {
+      const requestDateStart = formatISOString(dayjs().subtract(5, 'month').startOf('month'))
+      const requestDateEnd = formatISOString(dayjs())
+      const [tangRes, setterRes] = await Promise.all([
+        api.jewelry.post('Worker/ReportGoldLossTangByWorker', { take: 0, skip: 0, sort: [], search: { requestDateStart, requestDateEnd, groupByMonth: true } }, { skipLoading: true }),
+        api.jewelry.post('Worker/ReportGoldLossSlipByWorker', { take: 0, skip: 0, sort: [], search: { requestDateStart, requestDateEnd, groupByMonth: true } }, { skipLoading: true })
+      ])
+      return {
+        tangRows: (tangRes?.data || []).map((r) => normalizeTangRow(r)),
+        setterRows: (setterRes?.data || []).map((r) => normalizeSetterRow(r))
+      }
+    },
+
     async onExportExcel() {
-      const [stalePlansRes, receivablesRes, salesOrdersRes] = await Promise.all([
+      const [stalePlansRes, receivablesRes, salesOrdersRes, stockHealthRes, goldLossWorkerRows] = await Promise.all([
         this.executiveReportStore.fetchStalePlans({
           take: EXPORT_TAKE,
           skip: 0,
@@ -154,8 +191,18 @@ export default {
           departmentKeys: this.productionFilter.departmentKeys
         }),
         this.executiveReportStore.fetchReceivables({ take: EXPORT_TAKE, skip: 0, sort: [], filter: 'all' }),
-        this.executiveReportStore.fetchSalesOrdersWithoutInvoice({ take: EXPORT_TAKE, skip: 0, sort: [] })
+        this.executiveReportStore.fetchSalesOrdersWithoutInvoice({ take: EXPORT_TAKE, skip: 0, sort: [] }),
+        this.executiveReportStore.fetchStockHealth(),
+        this.fetchGoldLossWorkerReportsForExport()
       ])
+
+      const goldLossCompareMonthKeys = buildMonthRange(dayjs().subtract(5, 'month'), dayjs()).map((m) => monthKeyOf(m.year, m.month))
+      const goldLossRankingMonthKeys =
+        this.goldLossRankingRange === 'thisMonth' ? goldLossCompareMonthKeys.slice(-1) : goldLossCompareMonthKeys.slice(-3)
+      const goldLossDeptLabels = {
+        tang: this.$t('view.production.goldLossDashboard.overview.slipDeptTang'),
+        setter: this.$t('view.production.goldLossDashboard.overview.slipDeptSetter')
+      }
 
       const paymentStateLabels = {
         paid: this.$t('view.executive.money.paymentState.paid'),
@@ -195,7 +242,11 @@ export default {
         stockInStockCount: this.$t('view.executive.excel.summary.stockInStockCount'),
         stockNoCostCount: this.$t('view.executive.excel.summary.stockNoCostCount'),
         stockCostThb: this.$t('view.executive.excel.summary.stockCostThb'),
-        stockAgedOver1yCount: this.$t('view.executive.excel.summary.stockAgedOver1yCount')
+        stockAgedOver1yCount: this.$t('view.executive.excel.summary.stockAgedOver1yCount'),
+        goldLossPercent: this.$t('view.executive.excel.summary.goldLossPercent'),
+        goldLossAllowedPercent: this.$t('view.executive.excel.summary.goldLossAllowedPercent'),
+        goldLossOverSlipCount: this.$t('view.executive.excel.summary.goldLossOverSlipCount'),
+        goldLossOverAllowedGram: this.$t('view.executive.excel.summary.goldLossOverAllowedGram')
       }
 
       await ExcelHelper.exportToExcelMultiSheet(
@@ -265,7 +316,7 @@ export default {
           },
           {
             sheetName: this.$t('view.executive.excel.sheetStockAging'),
-            data: buildStockAgingExcelRows(this.stockHealth.ageBuckets, this.stockHealth.receiptTypes, bucketLabels, sectionLabels),
+            data: buildStockAgingExcelRows(stockHealthRes?.ageBuckets, stockHealthRes?.receiptTypes, bucketLabels, sectionLabels),
             columns: [
               { header: this.$t('view.executive.excel.colSection'), key: 'section' },
               { header: this.$t('view.executive.excel.colKey'), key: 'key' },
@@ -275,15 +326,33 @@ export default {
             ]
           },
           {
-            sheetName: this.$t('view.executive.excel.sheetGoldLoss'),
-            data: buildGoldLossExcelRows(this.summary.goldLoss),
+            sheetName: this.$t('view.executive.goldLossTrend.excel.sheetMonthly'),
+            data: buildGoldLossMonthlyExcelRows(goldLossCompareMonthKeys, goldLossWorkerRows.tangRows, goldLossWorkerRows.setterRows, goldLossDeptLabels),
             columns: [
-              { header: this.$t('view.executive.goldLoss.colMonth'), key: 'month' },
-              { header: this.$t('view.executive.goldLoss.colSlipCount'), key: 'slipCount' },
-              { header: this.$t('view.executive.goldLoss.colIssuedGram'), key: 'issuedGram' },
-              { header: this.$t('view.executive.goldLoss.colRawLossGram'), key: 'rawLossGram' },
-              { header: this.$t('view.executive.goldLoss.colOverAllowedGram'), key: 'overAllowedGram' },
-              { header: this.$t('view.executive.goldLoss.colOverAllowedPercent'), key: 'overAllowedPercent' }
+              { header: this.$t('view.executive.goldLossTrend.excel.colMonth'), key: 'month' },
+              { header: this.$t('view.executive.goldLossTrend.excel.colDept'), key: 'dept' },
+              { header: this.$t('view.executive.goldLossTrend.excel.colIssuedGram'), key: 'issuedGram' },
+              { header: this.$t('view.executive.goldLossTrend.excel.colLossGram'), key: 'lossGram' },
+              { header: this.$t('view.executive.goldLossTrend.excel.colAllowedGram'), key: 'allowedGram' },
+              { header: this.$t('view.executive.goldLossTrend.excel.colLossPercent'), key: 'lossPercent' }
+            ]
+          },
+          {
+            sheetName: this.$t('view.executive.goldLossTrend.excel.sheetByWorker'),
+            data: buildGoldLossByWorkerExcelRows(
+              filterRowsByMonthKeys(goldLossWorkerRows.tangRows, goldLossRankingMonthKeys),
+              filterRowsByMonthKeys(goldLossWorkerRows.setterRows, goldLossRankingMonthKeys),
+              goldLossDeptLabels
+            ),
+            columns: [
+              { header: this.$t('view.executive.goldLossTrend.excel.colRank'), key: 'rank' },
+              { header: this.$t('view.executive.goldLossTrend.excel.colDept'), key: 'dept' },
+              { header: this.$t('view.executive.goldLossTrend.excel.colWorkerCode'), key: 'workerCode' },
+              { header: this.$t('view.executive.goldLossTrend.excel.colWorkerName'), key: 'workerName' },
+              { header: this.$t('view.executive.goldLossTrend.excel.colIssuedGram'), key: 'issuedGram' },
+              { header: this.$t('view.executive.goldLossTrend.excel.colLossGram'), key: 'lossGram' },
+              { header: this.$t('view.executive.goldLossTrend.excel.colAllowedGram'), key: 'allowedGram' },
+              { header: this.$t('view.executive.goldLossTrend.excel.colLossPercent'), key: 'lossPercent' }
             ]
           }
         ],
@@ -292,18 +361,12 @@ export default {
     }
   },
 
+  created() {
+    this.applyQueryToState(this.$route.query)
+  },
+
   mounted() {
     this.fetchSummary()
-    this.fetchProductionWip()
-    this.fetchStockHealth()
   }
 }
 </script>
-
-<style lang="scss" scoped>
-@import '@/assets/scss/responsive-style/web';
-
-.bottom-grid {
-  margin-top: var(--sp-lg);
-}
-</style>

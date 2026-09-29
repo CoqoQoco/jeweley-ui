@@ -2,6 +2,12 @@ export default {
   title: 'Executive Overview',
   asOf: 'As of {date}',
 
+  tabs: {
+    production: '🏭 Production',
+    sales: '💰 Sales & Money',
+    stock: '📦 Stock'
+  },
+
   summary: {
     title: 'Summary',
     stalePlans: 'Plans not moved > 180 days',
@@ -14,8 +20,8 @@ export default {
     soNoInvoiceSub: '{noInvoiceCount} SOs · past delivery {overdueNoInvoiceCount} · no delivery date {noDeliveryDateCount}',
     stockNoCost: 'Stock without cost',
     stockNoCostSub: '{noCostCount} of {inStockCount} pieces',
-    goldLossOverAllowed: 'Gold loss over allowance',
-    goldLossOverAllowedSub: '{overAllowedGram} g of {issuedGram} g issued · {month}'
+    goldLossOverAllowed: 'Trim gold loss this month',
+    goldLossOverAllowedSub: 'Allowed {allowedPercent}% · {overSlipCount} slips over ({overAllowedGram} g)'
   },
 
   department: {
@@ -56,10 +62,11 @@ export default {
     seriesPaid: 'Paid/Partial',
     seriesUnpaidNotDue: 'Unpaid (not due yet/no due date)',
     seriesOverdue: 'Unpaid + overdue',
-    tabUnpaid: 'Unpaid',
-    tabOverdue: 'Overdue',
-    tabNoDueDate: 'No due date',
-    tabSoNoInvoice: 'SO without invoice',
+    donutInvoiceCount: '{count} invoices',
+    tabUnpaid: 'Unpaid {count}',
+    tabOverdue: 'Overdue {count}',
+    tabNoDueDate: 'No due date {count}',
+    tabSoNoInvoice: 'SO without invoice {count}',
     colInvoiceNumber: 'Invoice No.',
     colSoRunning: 'SO No.',
     colSoNumber: 'SO No.',
@@ -106,25 +113,35 @@ export default {
     }
   },
 
-  goldLoss: {
-    title: 'Trim worker gold loss (3 months)',
-    colMonth: 'Month',
-    colSlipCount: 'Slip count',
-    colIssuedGram: 'Issued (g)',
-    colRawLossGram: 'Loss (g)',
-    colOverAllowedGram: 'Over allowed (g)',
-    colOverAllowedPercent: '% over',
-    overAllowedBadge: 'Over allowance'
+  goldLossTrend: {
+    title: 'Gold Loss trend (6 months)',
+    detailLink: 'View details on Gold Loss page',
+    rangeLabel: 'Range',
+    rangeThisMonth: 'This month',
+    range3Months: '3 months',
+    excel: {
+      sheetMonthly: 'Gold Monthly',
+      sheetByWorker: 'Gold By Worker',
+      colMonth: 'Month',
+      colDept: 'Department',
+      colIssuedGram: 'Issued (g)',
+      colLossGram: 'Loss (g)',
+      colAllowedGram: 'Allowed (g)',
+      colLossPercent: '% loss',
+      colRank: 'Rank',
+      colWorkerCode: 'Worker code',
+      colWorkerName: 'Worker name'
+    }
   },
 
   excel: {
+    exportAllBtn: 'Export All (Excel)',
     filenamePrefix: 'Executive-Overview',
     sheetSummary: 'Summary',
     sheetStalePlans: 'Stale Plans',
     sheetReceivables: 'Receivables',
     sheetSalesOrders: 'SO Without Invoice',
     sheetStockAging: 'Stock Aging',
-    sheetGoldLoss: 'Gold Loss',
     colLabel: 'Label',
     colValue: 'Value',
     colSection: 'Section',
@@ -154,7 +171,11 @@ export default {
       stockInStockCount: 'In-stock pieces',
       stockNoCostCount: 'Pieces without cost',
       stockCostThb: 'Stock cost value (THB)',
-      stockAgedOver1yCount: 'Pieces aged over 1 year'
+      stockAgedOver1yCount: 'Pieces aged over 1 year',
+      goldLossPercent: 'Trim gold loss % (latest month)',
+      goldLossAllowedPercent: 'Allowed % (latest month)',
+      goldLossOverSlipCount: 'Slips over allowance (latest month)',
+      goldLossOverAllowedGram: 'Total over allowance (g, latest month)'
     }
   }
 }
