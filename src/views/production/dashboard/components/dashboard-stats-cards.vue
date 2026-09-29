@@ -6,30 +6,35 @@
         :value="totalPlans"
         :label="$t('view.production.dashboard.totalPlans')"
         variant="main"
+        :loading="loading"
       />
       <StatCardGeneric
         icon="bi-gear-wide-connected"
         :value="inProgressPlans"
         :label="$t('view.production.dashboard.inProcess')"
         variant="grey"
+        :loading="loading"
       />
       <StatCardGeneric
         icon="bi-check-circle-fill"
         :value="completedPlans"
         :label="$t('view.production.dashboard.completedYesterday')"
         variant="green"
+        :loading="loading"
       />
       <StatCardGeneric
         icon="bi-calendar-check"
         :value="summary.completedToday || 0"
         :label="$t('view.production.dashboard.completedToday')"
         variant="green"
+        :loading="loading"
       />
       <StatCardGeneric
         icon="bi-exclamation-triangle-fill"
         :value="pendingPlans"
         :label="$t('view.production.dashboard.overduePlans')"
         variant="warning"
+        :loading="loading"
       />
       <StatCardGeneric
         icon="bi-percent"
@@ -37,6 +42,7 @@
         :label="$t('view.production.dashboard.completionRate')"
         :subLabel="completionFractionLabel"
         variant="main"
+        :loading="loading"
       />
     </div>
   </div>
@@ -72,6 +78,10 @@ export default {
     summary: {
       type: Object,
       default: () => ({})
+    },
+    loading: {
+      type: Boolean,
+      default: false
     }
   },
 

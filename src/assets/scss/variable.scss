@@ -86,6 +86,12 @@ $radius-lg: 12px;
   --lh-md: 1.6;
   --lh-lg: 1.8;
 
+  // Layout — ความสูงจริงของ top bar (`.main-bar-container` ใน components/layout/main-bar.vue,
+  // sticky top:0 ผ่าน `.mainbar-container` ใน layout/web/LayoutDashboard.vue) วัดจริงบนจอ = 53.2px
+  // (padding 5px บน-ล่าง + เนื้อหาสูง ~43px ไม่ได้ fix height ตรงๆ) — ใช้ค่านี้แทน hardcode ทุกที่ที่ sticky
+  // element อื่นต้องเว้น top offset ไม่ให้ซ้อนใต้ top bar เช่น production/insight toolbar
+  --mainbar-height: 53.2px;
+
   // Semantic color
   --color-border: #e0e0e0;
   --color-card-bg: #ffffff;

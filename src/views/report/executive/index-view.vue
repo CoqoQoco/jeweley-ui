@@ -10,8 +10,14 @@
 
     <TabViewGeneric :modelValue="activeTab" :tabs="tabsConfig" @update:modelValue="onTabChange">
       <template #production>
-        <productionWipView :filter="productionFilter" :refreshToken="refreshToken" @update:filter="productionFilter = $event" />
-        <goldLossTrendView :refreshToken="refreshToken" v-model:rankingRange="goldLossRankingRange" />
+        <productionInsightView>
+          <template #wip-extra>
+            <productionWipView :filter="productionFilter" :refreshToken="refreshToken" @update:filter="productionFilter = $event" />
+          </template>
+          <template #gold-extra>
+            <goldLossTrendView :refreshToken="refreshToken" v-model:rankingRange="goldLossRankingRange" />
+          </template>
+        </productionInsightView>
       </template>
       <template #sales>
         <salesView :receivablesSummary="summary.receivables" :salesOrdersSummary="summary.salesOrders" :refreshToken="refreshToken" />
@@ -51,6 +57,7 @@ import productionWipView from './components/production-wip-view.vue'
 import salesView from './components/sales-view.vue'
 import stockHealthView from './components/stock-health-view.vue'
 import goldLossTrendView from './components/gold-loss-trend-view.vue'
+import productionInsightView from '@/views/production/insight/index-view.vue'
 
 const EXPORT_TAKE = 5000
 
@@ -84,7 +91,8 @@ export default {
     productionWipView,
     salesView,
     stockHealthView,
-    goldLossTrendView
+    goldLossTrendView,
+    productionInsightView
   },
 
   setup() {

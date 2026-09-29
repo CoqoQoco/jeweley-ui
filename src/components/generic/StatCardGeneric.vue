@@ -18,6 +18,7 @@
     variant   — 'main' | 'warning' | 'green' | 'grey' (default 'main') — สีวงกลม icon
     clickable — เปิดโหมดกดได้ (default false) — เพิ่ม cursor:pointer + hover/focus lift + role="button"
                 + tabindex="0" + keyboard (Enter/Space) ให้ตัวการ์ดเอง
+    loading   — เปิดโหมด skeleton (default false) — แสดงแถบเทาแทน value/subLabel (label ยังโชว์ปกติ)
 
   Emits: click (เฉพาะเมื่อ clickable=true)
 -->
@@ -35,9 +36,11 @@
       <i :class="['bi', icon]"></i>
     </div>
     <div class="stat-content">
-      <div class="stat-value">{{ value }}</div>
+      <div v-if="loading" class="stat-skeleton stat-skeleton--value"></div>
+      <div v-else class="stat-value">{{ value }}</div>
       <div class="stat-label">{{ label }}</div>
-      <div v-if="subLabel" class="stat-sub-label">{{ subLabel }}</div>
+      <div v-if="loading" class="stat-skeleton stat-skeleton--sub"></div>
+      <div v-else-if="subLabel" class="stat-sub-label">{{ subLabel }}</div>
     </div>
   </div>
 </template>
@@ -69,6 +72,10 @@ export default {
       validator: (v) => ['main', 'warning', 'green', 'grey'].includes(v)
     },
     clickable: {
+      type: Boolean,
+      default: false
+    },
+    loading: {
       type: Boolean,
       default: false
     }
@@ -166,5 +173,28 @@ export default {
   color: var(--base-sub-color);
   opacity: 0.75;
   margin-top: 2px;
+}
+
+@keyframes stat-skeleton-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.stat-skeleton {
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
+  animation: stat-skeleton-pulse 1.2s ease-in-out infinite;
+
+  &--value {
+    width: 56px;
+    height: var(--fs-xl);
+    margin-top: 2px;
+  }
+
+  &--sub {
+    width: 72px;
+    height: var(--fs-sm);
+    margin-top: 6px;
+  }
 }
 </style>

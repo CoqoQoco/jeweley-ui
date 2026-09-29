@@ -3,15 +3,11 @@
     <div class="charts-row">
       <div class="chart-block">
         <h6 class="chart-title">{{ $t('view.executive.production.byDepartmentTitle') }}</h6>
-        <ChartGeneric type="bar" :series="departmentSeries" :options="departmentOptions" :height="departmentChartHeight" :emptyText="$t('common.label.noData')" />
+        <DepartmentWipChart :departments="productionWip.departments" />
       </div>
       <div class="chart-block">
         <h6 class="chart-title">{{ $t('view.executive.production.monthlyCompletedTitle') }}</h6>
-        <ChartGeneric type="bar" :series="monthlySeries" :options="monthlyOptions" :height="320" :emptyText="$t('common.label.noData')" />
-        <p class="chart-note">
-          <i class="bi bi-info-circle"></i>
-          {{ $t('view.executive.production.currentMonthBadge') }}
-        </p>
+        <MonthlyCompletedChart :monthlyCompleted="productionWip.monthlyCompleted" />
       </div>
     </div>
 
@@ -65,19 +61,16 @@
 <script>
 import { useExecutiveReportApiStore } from '@/stores/modules/api/report/executive-report-api.js'
 import { formatDate } from '@/services/utils/dayjs.js'
-import { CHART_TOKENS } from '@/services/utils/chart-colors.js'
-import { formatMonthLabel, buildMonthlyCompletedSeriesData } from '../executive-helpers.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
-import ChartGeneric from '@/components/prime-vue/ChartGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import DepartmentWipChart from '@/views/production/insight/components/department-wip-chart.vue'
+import MonthlyCompletedChart from '@/views/production/insight/components/monthly-completed-chart.vue'
 
 const DEPARTMENT_KEYS = ['design', 'trim', 'rawPolish', 'gemSort', 'setting', 'plating', 'costCard']
-const DEPARTMENT_BAR_MIN_HEIGHT = 240
-const DEPARTMENT_BAR_ROW_HEIGHT = 44
 
 export default {
   name: 'ExecutiveProductionWipView',
@@ -86,10 +79,11 @@ export default {
 
   components: {
     SectionCardGeneric,
-    ChartGeneric,
     BaseDataTable,
     MultiSelectGeneric,
-    InputTextGeneric
+    InputTextGeneric,
+    DepartmentWipChart,
+    MonthlyCompletedChart
   },
 
   setup() {
@@ -132,65 +126,6 @@ export default {
       return DEPARTMENT_KEYS.map((key) => ({ value: key, label: this.departmentLabelMap[key] }))
     },
 
-    departmentChartHeight() {
-      const rows = (this.productionWip.departments || []).length
-      return Math.max(DEPARTMENT_BAR_MIN_HEIGHT, rows * DEPARTMENT_BAR_ROW_HEIGHT + 60)
-    },
-
-    departmentSeries() {
-      const departments = this.productionWip.departments || []
-      return [
-        { name: this.$t('view.executive.production.seriesMoved30d'), data: departments.map((d) => d.moved30d || 0) },
-        { name: this.$t('view.executive.production.seriesMoved30to180d'), data: departments.map((d) => d.moved30to180d || 0) },
-        { name: this.$t('view.executive.production.seriesStale180d'), data: departments.map((d) => d.stale180d || 0) }
-      ]
-    },
-
-    departmentOptions() {
-      const departments = this.productionWip.departments || []
-      return {
-        chart: { type: 'bar', stacked: true, toolbar: { show: false } },
-        colors: [CHART_TOKENS.green, CHART_TOKENS.warning, CHART_TOKENS.red],
-        plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '65%' } },
-        dataLabels: { enabled: true, style: { fontSize: '11px', fontWeight: 600 } },
-        xaxis: {
-          categories: departments.map((d) => this.departmentLabelMap[d.key] || d.key),
-          labels: { formatter: (v) => this.formatCount(v) }
-        },
-        tooltip: { y: { formatter: (v) => this.formatCount(v) } }
-      }
-    },
-
-    monthlySeries() {
-      const rows = this.productionWip.monthlyCompleted || []
-      const { completed, current } = buildMonthlyCompletedSeriesData(rows)
-      return [
-        { name: this.$t('view.executive.production.seriesCompleted'), data: completed },
-        { name: this.$t('view.executive.production.seriesCurrentMonth'), data: current }
-      ]
-    },
-
-    // แยกเดือนปิดงานเป็น 2 series แทนการใช้ plotOptions.bar.distributed + colors callback —
-    // ApexCharts ไม่เรียก callback นั้นจริงและ cycle สี palette ปกติทุกแท่งแทน (ดู comment บน
-    // buildMonthlyCompletedSeriesData ใน executive-helpers.js) — colors[seriesIndex] แบบนี้
-    // รับประกันว่าทุกแท่ง "ปิดงาน" ได้สีเดียวกัน (neutral) ส่วนแท่งเดือนปัจจุบันได้สีต่าง (warning) เสมอ
-    monthlyOptions() {
-      const rows = this.productionWip.monthlyCompleted || []
-      return {
-        chart: { type: 'bar', stacked: true, toolbar: { show: false } },
-        colors: [CHART_TOKENS.sub, CHART_TOKENS.warning],
-        plotOptions: { bar: { borderRadius: 4, columnWidth: '55%' } },
-        dataLabels: {
-          enabled: true,
-          formatter: (v) => (v === null || v === undefined ? '' : this.formatCount(v)),
-          style: { fontSize: '11px', fontWeight: 600 }
-        },
-        xaxis: { categories: rows.map((r) => formatMonthLabel(r.month)) },
-        yaxis: { labels: { formatter: (v) => this.formatCount(v) } },
-        tooltip: { y: { formatter: (v) => this.formatCount(v) } }
-      }
-    },
-
     columns() {
       return [
         { field: 'wo', header: this.$t('view.executive.production.colWo'), sortable: false, minWidth: '130px' },
@@ -221,10 +156,6 @@ export default {
 
   methods: {
     formatDate,
-
-    formatCount(value) {
-      return new Intl.NumberFormat('th-TH').format(value || 0)
-    },
 
     onFilterChanged() {
       this.$emit('update:filter', { departmentKeys: this.departmentKeys, minDays: this.minDays })
@@ -281,12 +212,6 @@ export default {
   font-weight: 600;
   font-size: var(--fs-base);
   margin-bottom: var(--sp-sm);
-}
-
-.chart-note {
-  margin: var(--sp-sm) 0 0;
-  font-size: var(--fs-sm);
-  color: var(--base-sub-color);
 }
 
 .filter-row {

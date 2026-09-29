@@ -29,6 +29,7 @@ import reportLang from './view/report/en.js'
 import printStationLang from './view/print-station/en.js'
 import publicLang from './view/public/en.js'
 import executiveLang from './view/executive/en.js'
+import productionInsightLang from './view/production-insight/en.js'
 import * as mobileLang from './view/mobile/en.js'
 export default {
   breadcrumb: { ...breadcrumb },
@@ -171,6 +172,7 @@ export default {
         // Forecast layer (frontend-only estimate — run-rate)
         forecast: {
           title: 'Monthly Completion Forecast (Estimate — Not Actual Data)',
+          titleShort: 'Monthly Completion Forecast',
           quantityLabel: 'Estimated completions by month end ({month})',
           actualSeries: 'Actual Cumulative Completions (To Date)',
           forecastSeries: 'Forecasted Cumulative Completions (Projected)',
@@ -240,6 +242,7 @@ export default {
     downloads: { ...downloadsLang },
     report: { ...reportLang },
     executive: { ...executiveLang },
+    productionInsight: { ...productionInsightLang },
     printStation: { ...printStationLang },
     mold: { ...moldLang },
     worker: { ...workerLang },

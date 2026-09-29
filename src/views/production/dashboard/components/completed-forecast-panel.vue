@@ -1,7 +1,7 @@
 <template>
-  <div class="mb-4 completed-forecast-panel">
+  <div class="completed-forecast-panel" :class="{ 'mb-4': !bare, 'completed-forecast-panel--bare': bare }">
     <SectionCardGeneric
-      :title="$t('view.production.dashboard.forecast.title')"
+      :title="titleTextResolved"
       icon="bi-graph-up-arrow"
       accent="main"
       headerStyle="legend"
@@ -26,6 +26,7 @@
           :series="quantitySeries"
           :options="chartOptions"
           :height="320"
+          :loading="loading"
           :emptyText="$t('view.production.dashboard.forecast.chartEmpty')"
         />
 
@@ -61,10 +62,28 @@ export default {
     rows: {
       type: Array,
       default: () => []
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    // ใช้เมื่อฝังในกล่อง grid อื่น (เช่น production/insight overview-section) — ตัด margin-bottom (mb-4)
+    // เดิมทิ้ง, เปิด flex column เต็มความสูง (ให้ grid parent คุมความสูงเท่ากันทุกกล่องในแถว) และย่อ title
+    // ตัดวงเล็บ "(ค่าประมาณการ ไม่ใช่ข้อมูลจริง)" ออก (ข้อความเดียวกันมีอยู่แล้วใต้กราฟ) — /production-dashboard
+    // เดิมไม่ส่ง prop นี้ หน้าตาเดิมทุกประการ
+    bare: {
+      type: Boolean,
+      default: false
     }
   },
 
   computed: {
+    titleTextResolved() {
+      return this.bare
+        ? this.$t('view.production.dashboard.forecast.titleShort')
+        : this.$t('view.production.dashboard.forecast.title')
+    },
+
     trends() {
       return (this.rows || []).map((r) => ({
         date: r.date,
@@ -130,6 +149,31 @@ export default {
 .completed-forecast-panel {
   .forecast-stat-grid {
     margin-bottom: var(--sp-lg);
+  }
+
+  // bare mode — ฝังใน grid ที่คุมความสูงเอง (grid parent align-items:stretch) — เปิด flex column เต็ม
+  // ความสูงที่ได้รับมา แล้วให้พื้นที่กราฟ (ChartGeneric) ขยายเต็มพื้นที่ว่างที่เหลือแทนเหลือช่องว่างท้ายกล่อง
+  //
+  // margin-top ของ .section-card--legend เดิม (จาก SectionCardGeneric.vue) ทิ้งไปที่นี่ — parent grid
+  // (overview-section.vue .charts-row-b) เป็นคนเผื่อ clearance ให้ legend chip เองที่ระดับ container แทน
+  // (uniform ทุก grid item ในแถว กันปัญหา grid item ที่มี wrapper ห่อ 2 ชั้นแบบนี้เริ่มคนละ y กับกล่องข้างๆ)
+  &--bare {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    :deep(.section-card) {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    :deep(.chart-generic-wrap) {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
   }
 
   .forecast-empty {

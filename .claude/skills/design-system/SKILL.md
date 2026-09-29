@@ -50,6 +50,12 @@ description: ตารางโทเค็นทั้งหมด (spacing/rad
 | lh-md | `var(--lh-md)` | 1.6 |
 | lh-lg | `var(--lh-lg)` | 1.8 |
 
+### Layout
+
+| Token | CSS var | ค่า | ใช้เมื่อ |
+|---|---|---|---|
+| mainbar-height | `var(--mainbar-height)` | 53.2px | ความสูงจริงของ top bar (`.main-bar-container` ใน `components/layout/main-bar.vue`, sticky ผ่าน `.mainbar-container` ใน `layout/web/LayoutDashboard.vue`) — ใช้เป็น `top` offset ของ sticky element อื่นที่ต้องอยู่ใต้ top bar เสมอ (ห้าม hardcode px เอง) |
+
 ### Color
 
 | Token | CSS var | ค่า | ความหมาย |

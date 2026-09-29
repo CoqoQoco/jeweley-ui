@@ -29,6 +29,7 @@ import reportLang from './view/report/th.js'
 import printStationLang from './view/print-station/th.js'
 import publicLang from './view/public/th.js'
 import executiveLang from './view/executive/th.js'
+import productionInsightLang from './view/production-insight/th.js'
 import * as mobileLang from './view/mobile/th.js'
 export default {
   breadcrumb: { ...breadcrumb },
@@ -171,6 +172,7 @@ export default {
         // Forecast layer (frontend-only estimate — run-rate)
         forecast: {
           title: 'ประมาณการยอดงานเสร็จสิ้นเดือน (ค่าประมาณการ ไม่ใช่ข้อมูลจริง)',
+          titleShort: 'ประมาณการยอดงานเสร็จสิ้นเดือน',
           quantityLabel: 'ยอดงานเสร็จสิ้นเดือนโดยประมาณ ({month})',
           actualSeries: 'ยอดเสร็จจริงสะสม (ถึงวันนี้)',
           forecastSeries: 'ประมาณการยอดเสร็จสะสม (คาดการณ์)',
@@ -240,6 +242,7 @@ export default {
     downloads: { ...downloadsLang },
     report: { ...reportLang },
     executive: { ...executiveLang },
+    productionInsight: { ...productionInsightLang },
     printStation: { ...printStationLang },
     mold: { ...moldLang },
     worker: { ...workerLang },
