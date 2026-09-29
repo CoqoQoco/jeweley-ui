@@ -1,8 +1,10 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
-import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
+import { PDF_FONT, PDF_COLORS } from '@/services/helper/pdf/shared/pdf-theme.js'
+import { buildDocumentHeader } from '@/services/helper/pdf/shared/pdf-sections.js'
 import { isAlloyDescription } from '@/services/helper/breakdown-alloy-detect.js'
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
+import { COMPANY_INFO, loadCompanyInfo } from '@/config/company-info.js'
 
 export class BreakdownPdfBuilder {
   constructor({
@@ -33,13 +35,7 @@ export class BreakdownPdfBuilder {
     // fallback ไป goldPerOz รองรับใบเสนอราคาเก่าที่ยังไม่ได้บันทึกราคา spot
     this.goldSpotPrice = customer.goldSpotPrice || customer.goldPerOz || 0
     this.logoBase64 = null
-    this.companyInfo = {
-      name: 'Duang Kaew Jewelry Manufacturer Co.,Ltd.',
-      address: '200/16 Rama 6 Rd., Phayathai, Phayathai, Bangkok 10400 Thailand',
-      phone: '(+662) 6196601-4',
-      fax: ' (+662) 2710834',
-      email: 'info@dkbkk.com'
-    }
+    this.companyInfo = { ...COMPANY_INFO }
   }
 
   async prepareImages() {
@@ -67,6 +63,8 @@ export class BreakdownPdfBuilder {
         console.error('Failed to load logo:', error)
       }
     }
+    const company = await loadCompanyInfo()
+    this.companyInfo = { ...COMPANY_INFO, ...(company?.info || {}) }
     await this.prepareImages()
     return this
   }
@@ -88,252 +86,50 @@ export class BreakdownPdfBuilder {
   }
 
   getBreakdownDocDefinition() {
-    const breakdownHeader = {
+    const breakdownRightStack = {
       stack: [
+        { text: 'BREAKDOWN', fontSize: 16, color: PDF_COLORS.darkGray, alignment: 'center', margin: [0, 8, 0, 2] },
         {
-          margin: [-10, -10, -10, 0],
-          table: {
-            widths: ['70%', '30%'],
-            body: [
-              [
-                {
-                  fillColor: '#e0e0e0',
-                  stack: [
-                    {
-                      columns: [
-                        this.logoBase64
-                          ? {
-                              image: this.logoBase64,
-                              width: 35,
-                              height: 35,
-                              margin: [15, 10, 10, 0]
-                            }
-                          : {
-                              text: 'LOGO',
-                              fontSize: 14,
-                              color: 'white',
-                              margin: [15, 20, 10, 0]
-                            },
-                        {
-                          stack: [
-                            {
-                              text: 'Duang Kaew Jewelry',
-                              fontSize: 30,
-                              bold: true,
-                              color: '#8B0000',
-                              margin: [25, 5, 0, 0]
-                            },
-                            {
-                              text: 'The first step is always the hardest',
-                              fontSize: 12,
-                              color: '#8B0000',
-                              margin: [25, -10, 0, 0]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  stack: [
-                    {
-                      text: 'BREAKDOWN',
-                      fontSize: 20,
-                      color: '#393939',
-                      alignment: 'center',
-                      margin: [0, 10, 0, 0]
-                    },
-                    {
-                      columns: [
-                        {
-                          text: 'No.:',
-                          fontSize: 9,
-                          color: '#393939',
-                          alignment: 'right',
-                          width: '45%'
-                        },
-                        {
-                          text: this.invoiceNo || '',
-                          fontSize: 12,
-                          bold: true,
-                          color: '#8B0000',
-                          alignment: 'left',
-                          width: '55%',
-                          margin: [5, 0, 0, 0]
-                        }
-                      ]
-                    },
-                    {
-                      columns: [
-                        {
-                          text: 'Date:',
-                          fontSize: 9,
-                          color: '#393939',
-                          alignment: 'right',
-                          width: '45%'
-                        },
-                        {
-                          text: dayjs(this.invoiceDate).locale('en').format('MMMM DD, YYYY'),
-                          fontSize: 12,
-                          bold: true,
-                          color: '#8B0000',
-                          alignment: 'left',
-                          width: '55%',
-                          margin: [5, 0, 0, 0]
-                        }
-                      ]
-                    },
-                    {
-                      columns: [
-                        {
-                          text: 'Gold Spot:',
-                          fontSize: 9,
-                          color: '#393939',
-                          alignment: 'right',
-                          width: '45%'
-                        },
-                        {
-                          text: this.goldSpotPrice ? `$${this.formatPrice(this.goldSpotPrice)} /Oz.` : '-',
-                          fontSize: 12,
-                          bold: true,
-                          color: '#8B0000',
-                          alignment: 'left',
-                          width: '55%',
-                          margin: [5, 0, 0, 0]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            ]
-          },
-          layout: 'noBorders'
-        },
-        {
-          margin: [0, 0, 0, 5],
-          canvas: [
-            {
-              type: 'line',
-              x1: 0,
-              y1: 0,
-              x2: 955,
-              y2: 0,
-              lineWidth: 2,
-              lineColor: '#E0E0E0'
-            }
-          ]
-        },
-        {
-          margin: [0, 0, 0, 0],
           columns: [
-            {
-              width: '50%',
-              stack: [
-                {
-                  text: 'From: Duang Kaew Jewelry Manufacturer Co.,Ltd.',
-                  fontSize: 14,
-                  bold: true,
-                  color: '#8B0000',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: this.companyInfo.address || '',
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'TEL: ' + (this.companyInfo.phone || ''),
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'FAX: ' + (this.companyInfo.fax || ''),
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'E-Mail: ' + (this.companyInfo.email || ''),
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                }
-                // {
-                //   text: this.goldPerOz
-                //     ? `Gold Price Per Oz: ${this.formatPrice(this.goldPerOz)}`
-                //     : '',
-                //   fontSize: 10,
-                //   color: '#393939',
-                //   margin: [0, 0, 0, 0]
-                // }
-              ]
-            },
-            {
-              width: '50%',
-              stack: [
-                {
-                  text: `Consigned To: ${this.customer.name || ''}`,
-                  fontSize: 14,
-                  bold: true,
-                  color: '#8B0000',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'Address: ' + (this.customer.address || ''),
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                },
-
-                {
-                  text: 'TEl: ' + (this.customer.tel || ''),
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                },
-                { text: 'E-mail: ' + (this.customer.email || ''), fontSize: 10, color: '#393939' },
-                {
-                  text: this.goldSpotPrice
-                    ? `Gold Spot: US$  ${this.formatPrice(this.goldSpotPrice)} /Oz.`
-                    : '',
-                  fontSize: 10,
-                  color: '#393939',
-                  bold: true,
-                  margin: [0, 0, 0, 0]
-                }
-              ]
-            }
+            { text: 'No.:', fontSize: 8, color: PDF_COLORS.darkGray, alignment: 'right', width: '35%' },
+            { text: this.invoiceNo || '', fontSize: 10, bold: true, color: PDF_COLORS.primary, alignment: 'left', width: '65%', margin: [5, 0, 0, 0] }
           ]
         },
-
-        // this.customer.remark
-        //   ? {
-        //       margin: [0, 5, 0, 0],
-        //       text: 'Note: ' + this.customer.remark,
-        //       fontSize: 10,
-        //       color: '#0000FF'
-        //     }
-        //   : null,
         {
-          margin: [0, 5, 0, 5],
-          canvas: [
-            {
-              type: 'line',
-              x1: 0,
-              y1: 0,
-              x2: 975,
-              y2: 0,
-              lineWidth: 2,
-              lineColor: '#E0E0E0'
-            }
+          columns: [
+            { text: 'Date:', fontSize: 8, color: PDF_COLORS.darkGray, alignment: 'right', width: '35%' },
+            { text: dayjs(this.invoiceDate).locale('en').format('MMMM DD, YYYY'), fontSize: 10, bold: true, color: PDF_COLORS.primary, alignment: 'left', width: '65%', margin: [5, 0, 0, 0] }
+          ]
+        },
+        {
+          columns: [
+            { text: 'Gold Spot:', fontSize: 8, color: PDF_COLORS.darkGray, alignment: 'right', width: '35%' },
+            { text: this.goldSpotPrice ? `$${this.formatPrice(this.goldSpotPrice)} /Oz.` : '-', fontSize: 10, bold: true, color: PDF_COLORS.primary, alignment: 'left', width: '65%', margin: [5, 0, 0, 0] }
           ]
         }
-      ].filter(Boolean)
+      ]
     }
+
+    const breakdownCustomerLeft = [
+      { text: `Consigned To: ${this.customer.name || ''}`, fontSize: 11, bold: true, color: PDF_COLORS.primary },
+      { text: 'Address: ' + (this.customer.address || ''), fontSize: 9, color: PDF_COLORS.darkGray }
+    ]
+    const breakdownCustomerRight = [
+      { text: 'TEL: ' + (this.customer.tel || ''), fontSize: 9, color: PDF_COLORS.darkGray },
+      { text: 'E-mail: ' + (this.customer.email || ''), fontSize: 9, color: PDF_COLORS.darkGray },
+      ...(this.goldSpotPrice
+        ? [{ text: `Gold Spot: US$ ${this.formatPrice(this.goldSpotPrice)} /Oz.`, fontSize: 9, bold: true, color: PDF_COLORS.darkGray }]
+        : [])
+    ]
+
+    const breakdownHeader = buildDocumentHeader({
+      logoBase64: this.logoBase64,
+      company: this.companyInfo,
+      rightStack: breakdownRightStack,
+      customerLeft: breakdownCustomerLeft,
+      customerRight: breakdownCustomerRight,
+      ruleWidth: 822 // landscape A4 content width (842 - pageMargins[10,10])
+    })
 
     const tableHeader = [
       { text: 'No.', style: 'summaryLabelColored', alignment: 'center' },

@@ -2,19 +2,15 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { formatDecimal } from '@/services/utils/decimal.js'
-import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
+import { PDF_FONT, PDF_COLORS } from '@/services/helper/pdf/shared/pdf-theme.js'
+import { buildDocumentHeader } from '@/services/helper/pdf/shared/pdf-sections.js'
+import { COMPANY_INFO, loadCompanyInfo } from '@/config/company-info.js'
 
 export class AppraisalHistoryPdfBuilder {
   constructor(stockData, versionData, options = {}) {
     this.stockData = stockData || {}
     this.versionData = versionData || {}
-    this.companyInfo = {
-      name: 'Duang Kaew Jewelry Manufacturer Co.,Ltd.',
-      address: '200/16 Rama 6 Rd., Phayathai, Phayathai, Bangkok 10400 Thailand',
-      phone: '(+662) 6196601-4',
-      fax: ' (+662) 2710834',
-      email: 'info@dkbangkok.com'
-    }
+    this.companyInfo = { ...COMPANY_INFO }
     this.logoBase64 = null
     this.productImageBase64 = null
     this.groupOrder = {
@@ -38,6 +34,8 @@ export class AppraisalHistoryPdfBuilder {
         console.error('Failed to load logo:', error)
       }
     }
+    const company = await loadCompanyInfo()
+    this.companyInfo = { ...COMPANY_INFO, ...(company?.info || {}) }
     await this.prepareImages()
     return this
   }
@@ -75,201 +73,38 @@ export class AppraisalHistoryPdfBuilder {
   }
 
   getHeaderContent() {
-    return {
+    const rightStack = {
       stack: [
-        // Main Header
+        { text: 'APPRAISAL HISTORY', fontSize: 16, color: PDF_COLORS.darkGray, alignment: 'center', margin: [0, 8, 0, 2] },
         {
-          margin: [-10, -10, -10, 0],
-          table: {
-            widths: ['70%', '30%'],
-            body: [
-              [
-                {
-                  fillColor: '#e0e0e0',
-                  stack: [
-                    {
-                      columns: [
-                        this.logoBase64
-                          ? {
-                              image: this.logoBase64,
-                              width: 35,
-                              height: 35,
-                              margin: [15, 10, 10, 0]
-                            }
-                          : {
-                              text: 'LOGO',
-                              fontSize: 14,
-                              color: 'white',
-                              margin: [15, 20, 10, 0]
-                            },
-                        {
-                          stack: [
-                            {
-                              text: 'Duang Kaew Jewelry',
-                              fontSize: 30,
-                              bold: true,
-                              color: '#8B0000',
-                              margin: [25, 5, 0, 0]
-                            },
-                            {
-                              text: 'The first step is always the hardest',
-                              fontSize: 12,
-                              color: '#8B0000',
-                              margin: [25, -10, 0, 0]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  stack: [
-                    {
-                      text: 'APPRAISAL HISTORY',
-                      fontSize: 20,
-                      color: '#393939',
-                      alignment: 'center',
-                      margin: [0, 10, 0, 0]
-                    },
-                    {
-                      columns: [
-                        {
-                          text: 'Version:',
-                          fontSize: 9,
-                          color: '#393939',
-                          alignment: 'right',
-                          width: '45%'
-                        },
-                        {
-                          text: this.versionData.running || '',
-                          fontSize: 12,
-                          bold: true,
-                          color: '#8B0000',
-                          alignment: 'left',
-                          width: '55%',
-                          margin: [5, 0, 0, 0]
-                        }
-                      ]
-                    },
-                    {
-                      columns: [
-                        {
-                          text: 'Date:',
-                          fontSize: 9,
-                          color: '#393939',
-                          alignment: 'right',
-                          width: '45%'
-                        },
-                        {
-                          text: dayjs(this.versionData.createDate).locale('en').format('MMMM DD, YYYY'),
-                          fontSize: 12,
-                          bold: true,
-                          color: '#8B0000',
-                          alignment: 'left',
-                          width: '55%',
-                          margin: [5, 0, 0, 0]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            ]
-          },
-          layout: 'noBorders'
-        },
-
-        // Horizontal line
-        {
-          margin: [0, 0, 0, 5],
-          canvas: [
-            {
-              type: 'line',
-              x1: 0,
-              y1: 0,
-              x2: 675,
-              y2: 0,
-              lineWidth: 2,
-              lineColor: '#E0E0E0'
-            }
-          ]
-        },
-
-        // Company info and Created by
-        {
-          margin: [0, 0, 0, 0],
           columns: [
-            {
-              width: '50%',
-              stack: [
-                {
-                  text: 'Company: Duang Kaew Jewelry Manufacturer Co.,Ltd.',
-                  fontSize: 14,
-                  bold: true,
-                  color: '#8B0000',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'Address: ' + (this.companyInfo.address || ''),
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'TEL: ' + (this.companyInfo.phone || ''),
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'E-Mail: ' + (this.companyInfo.email || ''),
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                }
-              ]
-            },
-            {
-              width: '50%',
-              stack: [
-                {
-                  text: `Created By: ${this.versionData.createBy || '-'}`,
-                  fontSize: 14,
-                  bold: true,
-                  color: '#8B0000',
-                  margin: [0, 0, 0, 5]
-                },
-                this.versionData.remark
-                  ? {
-                      text: 'Remark: ' + this.versionData.remark,
-                      fontSize: 10,
-                      color: '#393939',
-                      margin: [0, 0, 0, 0]
-                    }
-                  : null
-              ].filter(Boolean)
-            }
+            { text: 'Version:', fontSize: 8, color: PDF_COLORS.darkGray, alignment: 'right', width: '35%' },
+            { text: this.versionData.running || '', fontSize: 10, bold: true, color: PDF_COLORS.primary, alignment: 'left', width: '65%', margin: [5, 0, 0, 0] }
           ]
         },
-
-        // Horizontal line
         {
-          margin: [0, 5, 0, 5],
-          canvas: [
-            {
-              type: 'line',
-              x1: 0,
-              y1: 0,
-              x2: 575,
-              y2: 0,
-              lineWidth: 2,
-              lineColor: '#E0E0E0'
-            }
+          columns: [
+            { text: 'Date:', fontSize: 8, color: PDF_COLORS.darkGray, alignment: 'right', width: '35%' },
+            { text: dayjs(this.versionData.createDate).locale('en').format('MMMM DD, YYYY'), fontSize: 10, bold: true, color: PDF_COLORS.primary, alignment: 'left', width: '65%', margin: [5, 0, 0, 0] }
           ]
         }
-      ].filter(Boolean)
+      ]
     }
+
+    const customerLeft = [
+      { text: `Created By: ${this.versionData.createBy || '-'}`, fontSize: 11, bold: true, color: PDF_COLORS.primary }
+    ]
+    const customerRight = this.versionData.remark
+      ? [{ text: 'Remark: ' + this.versionData.remark, fontSize: 9, color: PDF_COLORS.darkGray }]
+      : []
+
+    return buildDocumentHeader({
+      logoBase64: this.logoBase64,
+      company: this.companyInfo,
+      rightStack,
+      customerLeft,
+      customerRight
+    })
   }
 
   getStockInfoSection() {

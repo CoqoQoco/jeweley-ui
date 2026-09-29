@@ -2,9 +2,11 @@ import dayjs from 'dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { formatMoney } from '@/services/utils/decimal.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
-import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
+import { PDF_FONT, PDF_COLORS } from '@/services/helper/pdf/shared/pdf-theme.js'
+import { buildDocumentHeader } from '@/services/helper/pdf/shared/pdf-sections.js'
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
 import { i18n } from '@/plugins/i18n/config.js'
+import { COMPANY_INFO, loadCompanyInfo } from '@/config/company-info.js'
 
 export class SaleOrderPdfBuilder {
   constructor(soData, options = {}) {
@@ -13,13 +15,7 @@ export class SaleOrderPdfBuilder {
     // รายการรอผลิต/รอแปลง — ยังไม่มี stockNumber จริง พิมพ์แยกส่วนหลังตาราง stock (P2-5)
     // เติมของครบแล้ว (qty 0) ไม่ต้องพิมพ์ซ้ำในเอกสาร — ยังอยู่ใน SO JSON เพื่อ traceability แต่ตัดออกจากหน้าพิมพ์ (P4-2)
     this.copyItems = (soData?.copyItems || []).filter((item) => (Number(item.qty) || 0) > 0)
-    this.companyInfo = {
-      name: 'Duang Kaew Jewelry Manufacturer Co.,Ltd.',
-      address: '200/16 Rama 6 Rd., Phayathai, Phayathai, Bangkok 10400 Thailand',
-      phone: '(+662) 6196601-4',
-      fax: ' (+662) 2710834',
-      email: 'info@dkbkk.com'
-    }
+    this.companyInfo = { ...COMPANY_INFO }
     this.logoBase64 = null
     this.currencyUnit = options.currencyUnit || 'THB'
     this.currencyRate = Number(options.currencyRate) || 1
@@ -76,6 +72,9 @@ export class SaleOrderPdfBuilder {
         console.error('Failed to load logo:', error)
       }
     }
+
+    const company = await loadCompanyInfo()
+    this.companyInfo = { ...COMPANY_INFO, ...(company?.info || {}) }
 
     await this.prepareImages()
 
@@ -137,239 +136,42 @@ export class SaleOrderPdfBuilder {
   }
 
   getHeaderContent() {
-    return {
+    const rightStack = {
       stack: [
-        // Main Header
+        { text: 'SALE ORDER', fontSize: 16, color: PDF_COLORS.darkGray, alignment: 'center', margin: [0, 8, 0, 2] },
         {
-          margin: [-10, -10, -10, 0],
-          table: {
-            widths: ['70%', '30%'],
-            body: [
-              [
-                {
-                  fillColor: '#e0e0e0',
-                  stack: [
-                    {
-                      columns: [
-                        this.logoBase64
-                          ? {
-                              image: this.logoBase64,
-                              width: 35,
-                              height: 35,
-                              margin: [15, 10, 10, 0]
-                            }
-                          : {
-                              text: 'LOGO',
-                              fontSize: 11,
-                              color: 'white',
-                              margin: [15, 20, 10, 0]
-                            },
-                        {
-                          stack: [
-                            {
-                              text: 'Duang Kaew Jewelry',
-                              fontSize: 22,
-                              bold: true,
-                              color: '#8B0000',
-                              margin: [25, 5, 0, 0]
-                            },
-                            {
-                              text: 'The first step is always the hardest',
-                              fontSize: 10,
-                              color: '#8B0000',
-                              margin: [25, -2, 0, 0]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  stack: [
-                    {
-                      text: 'SALE ORDER',
-                      fontSize: 16,
-                      color: '#393939',
-                      alignment: 'center',
-                      margin: [0, 10, 0, 0]
-                    },
-                    {
-                      columns: [
-                        {
-                          text: 'SO No.:',
-                          fontSize: 8,
-                          color: '#393939',
-                          alignment: 'right',
-                          width: '30%'
-                        },
-                        {
-                          text: this.soData.soNumber || '',
-                          fontSize: 10,
-                          bold: true,
-                          color: '#8B0000',
-                          alignment: 'left',
-                          width: '70%',
-                          margin: [5, 0, 0, 0]
-                        }
-                      ]
-                    },
-                    {
-                      columns: [
-                        {
-                          text: 'Date:',
-                          fontSize: 8,
-                          color: '#393939',
-                          alignment: 'right',
-                          width: '30%'
-                        },
-                        {
-                          text: dayjs(this.soData.createDate).locale('en').format('MMMM DD, YYYY'),
-                          fontSize: 10,
-                          bold: true,
-                          color: '#8B0000',
-                          alignment: 'left',
-                          width: '70%',
-                          margin: [5, 0, 0, 0]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            ]
-          },
-          layout: 'noBorders'
-        },
-
-        // Horizontal line
-        {
-          margin: [0, 0, 0, 5],
-          canvas: [
-            {
-              type: 'line',
-              x1: 0,
-              y1: 0,
-              x2: 675,
-              y2: 0,
-              lineWidth: 2,
-              lineColor: '#E0E0E0'
-            }
-          ]
-        },
-
-        // Company info and Customer info
-        {
-          margin: [0, 0, 0, 0],
           columns: [
-            {
-              width: '50%',
-              stack: [
-                {
-                  text: 'From: Duang Kaew Jewelry Manufacturer Co.,Ltd.',
-                  fontSize: 11,
-                  bold: true,
-                  color: '#8B0000',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'Address: ' + (this.companyInfo.address || ''),
-                  fontSize: 9,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'TEL: ' + (this.companyInfo.phone || ''),
-                  fontSize: 9,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'FAX: ' + (this.companyInfo.fax || ''),
-                  fontSize: 9,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'E-Mail: ' + (this.companyInfo.email || ''),
-                  fontSize: 9,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                }
-              ]
-            },
-            {
-              width: '50%',
-              stack: [
-                {
-                  text: `Customer: ${this.soData.customerName || ''}`,
-                  fontSize: 11,
-                  bold: true,
-                  color: '#8B0000',
-                  margin: [0, 0, 0, 0]
-                },
-                this.soData.customerAddress
-                  ? {
-                      text: 'Address: ' + this.soData.customerAddress,
-                      fontSize: 9,
-                      color: '#393939',
-                      margin: [0, 0, 0, 0]
-                    }
-                  : null,
-                this.soData.customerTel
-                  ? {
-                      text: 'TEL: ' + this.soData.customerTel,
-                      fontSize: 9,
-                      color: '#393939',
-                      margin: [0, 0, 0, 0]
-                    }
-                  : null,
-                this.soData.remark
-                  ? {
-                      text: 'Remark: ' + this.soData.remark,
-                      fontSize: 9,
-                      color: '#393939',
-                      margin: [0, 5, 0, 0]
-                    }
-                  : null,
-                this.soData.salePerson
-                  ? {
-                      text: 'SALE: ' + this.soData.salePerson,
-                      fontSize: 9,
-                      color: '#393939',
-                      margin: [0, 5, 0, 0]
-                    }
-                  : null,
-                this.soData.saleSupport
-                  ? {
-                      text: 'SUPPORT: ' + this.soData.saleSupport,
-                      fontSize: 9,
-                      color: '#393939',
-                      margin: [0, 5, 0, 0]
-                    }
-                  : null
-              ].filter(Boolean)
-            }
+            { text: 'SO No.:', fontSize: 8, color: PDF_COLORS.darkGray, alignment: 'right', width: '35%' },
+            { text: this.soData.soNumber || '', fontSize: 10, bold: true, color: PDF_COLORS.primary, alignment: 'left', width: '65%', margin: [5, 0, 0, 0] }
           ]
         },
-
-        // Horizontal line
         {
-          margin: [0, 5, 0, 5],
-          canvas: [
-            {
-              type: 'line',
-              x1: 0,
-              y1: 0,
-              x2: 575,
-              y2: 0,
-              lineWidth: 2,
-              lineColor: '#E0E0E0'
-            }
+          columns: [
+            { text: 'Date:', fontSize: 8, color: PDF_COLORS.darkGray, alignment: 'right', width: '35%' },
+            { text: dayjs(this.soData.createDate).locale('en').format('MMMM DD, YYYY'), fontSize: 10, bold: true, color: PDF_COLORS.primary, alignment: 'left', width: '65%', margin: [5, 0, 0, 0] }
           ]
         }
-      ].filter(Boolean)
+      ]
     }
+
+    const customerLeft = [
+      { text: `Customer: ${this.soData.customerName || ''}`, fontSize: 11, bold: true, color: PDF_COLORS.primary },
+      ...(this.soData.customerAddress ? [{ text: 'Address: ' + this.soData.customerAddress, fontSize: 9, color: PDF_COLORS.darkGray }] : [])
+    ]
+    const customerRight = [
+      ...(this.soData.customerTel ? [{ text: 'TEL: ' + this.soData.customerTel, fontSize: 9, color: PDF_COLORS.darkGray }] : []),
+      ...(this.soData.remark ? [{ text: 'Remark: ' + this.soData.remark, fontSize: 9, color: PDF_COLORS.darkGray }] : []),
+      ...(this.soData.salePerson ? [{ text: 'SALE: ' + this.soData.salePerson, fontSize: 9, color: PDF_COLORS.darkGray }] : []),
+      ...(this.soData.saleSupport ? [{ text: 'SUPPORT: ' + this.soData.saleSupport, fontSize: 9, color: PDF_COLORS.darkGray }] : [])
+    ]
+
+    return buildDocumentHeader({
+      logoBase64: this.logoBase64,
+      company: this.companyInfo,
+      rightStack,
+      customerLeft,
+      customerRight
+    })
   }
 
   // T1/T6: บรรทัดสินค้าจริงตามด้วยบรรทัดลูก (copy line ที่ parentLineKey ตรงกัน) เรียงตามลำดับที่สร้าง

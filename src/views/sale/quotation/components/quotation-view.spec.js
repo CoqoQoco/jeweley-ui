@@ -163,6 +163,66 @@ describe('QuotationView — moveQuotationItem / moveQuotationItemTo (จัด�
   })
 })
 
+describe('QuotationView — ส่วนลดหัวใบต้องไม่ auto-apply กับรายการใหม่ (TK202609250001)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('fetchGetData: สแกนรายการใหม่ต้องได้ discountPercent 0 แม้ customer.discountPercent = 60', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    vm.customer.quotationItems = []
+    vm.customer.discountPercent = 60
+    vm.productStore.fetchDataGet.mockResolvedValueOnce({
+      stockNumber: 'A',
+      productNameEn: 'Ring',
+      productPrice: 100,
+      planQty: 1
+    })
+
+    await vm.fetchGetData()
+
+    expect(vm.customer.quotationItems).toHaveLength(1)
+    expect(vm.customer.quotationItems[0].discountPercent).toBe(0)
+  })
+
+  it('onCostVersionItemSelected: ดึงจาก appraisal version ก็ต้องได้ discountPercent 0 แม้ customer.discountPercent = 60', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    vm.customer.quotationItems = []
+    vm.customer.discountPercent = 60
+    vm.productStore.fetchDataGet.mockResolvedValueOnce({
+      stockNumber: 'A',
+      productNameEn: 'Ring',
+      productPrice: 100,
+      planQty: 1,
+      materials: []
+    })
+
+    await vm.onCostVersionItemSelected(
+      { stockNumber: 'A', prictransection: [], tagPriceMultiplier: 1, running: 1 },
+      ['Gold', 'Gem']
+    )
+
+    expect(vm.customer.quotationItems).toHaveLength(1)
+    expect(vm.customer.quotationItems[0].discountPercent).toBe(0)
+  })
+
+  it('applyGlobalDiscount: ยังคงตั้งส่วนลดหัวใบให้ทุกรายการเมื่อกดปุ่มเอง', async () => {
+    const { vm } = createWrapper()
+    await flushPromises()
+
+    vm.customer.discountPercent = 60
+    vm.customer.quotationItems = [makeItem({ stockNumber: 'A', discountPercent: 0 })]
+
+    vm.applyGlobalDiscount()
+
+    expect(vm.customer.quotationItems[0].discountPercent).toBe(60)
+  })
+})
+
 describe('QuotationView — เติม lineKey ย้อนหลังให้ใบเสนอราคาเก่า', () => {
   beforeEach(() => {
     vi.clearAllMocks()

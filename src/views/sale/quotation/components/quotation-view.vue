@@ -909,7 +909,8 @@ export default {
           group: 'product',
           planQty: data.planQty || 1,
           stockNumberOrigin: data.stockNumberOrigin || data.stockNumber,
-          discountPercent: this.customer.discountPercent || 0
+          // รายการที่เพิ่มใหม่เริ่มที่ 0 เสมอ ส่วนลดหัวใบใส่ให้เฉพาะตอนกดปุ่ม "ตั้งส่วนลด" (applyGlobalDiscount)
+          discountPercent: 0
         }
 
         this.customer.quotationItems.push(ensureLineKey(data))
@@ -1178,7 +1179,8 @@ export default {
           priceTransactions: priceTransactions,
           source: 'costVersion',
           costVersionRunning: version.running,
-          discountPercent: this.customer.discountPercent || 0
+          // เช่นเดียวกับ fetchGetData — ไม่ auto-apply ส่วนลดหัวใบให้รายการใหม่
+          discountPercent: 0
         }
 
         this.customer.quotationItems.push(ensureLineKey(item))

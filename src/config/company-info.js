@@ -1,12 +1,12 @@
 import { getCompanySetting } from '@/services/helper/company-info-store.js'
 
 export const COMPANY_INFO = {
-  name: 'Duangkaew Jewelry Manufacturer Co., Ltd.',
+  name: 'Duang Kaew Jewelry Manufacturer Co.,Ltd.',
   nameTh: 'บริษัท ดวงแก้ว จิวเวลรี่ แมนูแฟคเจอเรอร์ จำกัด',
   branchLabel: 'สำนักงานใหญ่',
-  address: '200/16 Rama 6 Road, Phaya Thai, Phaya Thai, Bangkok 10400 Thailand',
+  address: '200/16 Rama 6 Rd., Phayathai, Phayathai, Bangkok 10400 Thailand',
   addressTh: '200/16 ถนนพระรามที่ 6 แขวงพญาไท เขตพญาไท กรุงเทพมหานคร 10400',
-  phone: '(66) 2 619-6601-4',
+  phone: '(+662) 6196601-4',
   fax: '(+662) 2710834',
   email: 'info@dkbkk.com',
   website: 'www.dkbangkok.com'

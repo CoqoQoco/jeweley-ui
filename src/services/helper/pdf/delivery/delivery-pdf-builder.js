@@ -2,7 +2,9 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
-import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
+import { PDF_FONT, PDF_COLORS } from '@/services/helper/pdf/shared/pdf-theme.js'
+import { buildDocumentHeader } from '@/services/helper/pdf/shared/pdf-sections.js'
+import { COMPANY_INFO, loadCompanyInfo } from '@/config/company-info.js'
 
 export class DeliveryPdfBuilder {
   constructor(
@@ -19,13 +21,7 @@ export class DeliveryPdfBuilder {
     this.customer = customer || {}
     this.saleOrderData = saleOrderData || {}
     this.deliveryDate = deliveryDate || dayjs()
-    this.companyInfo = {
-      name: 'Duang Kaew Jewelry Manufacturer Co.,Ltd.',
-      address: '200/16 Rama 6 Rd., Phayathai, Phayathai, Bangkok 10400 Thailand',
-      phone: '(+662) 6196601-4',
-      fax: ' (+662) 2710834',
-      email: 'info@dkbkk.com'
-    }
+    this.companyInfo = { ...COMPANY_INFO }
     this.deliveryNo = deliveryNo || this.generateDeliveryNumber()
     this.logoBase64 = null
     this.currencyUnit = currencyUnit || 'THB'
@@ -44,6 +40,9 @@ export class DeliveryPdfBuilder {
         console.error('Failed to load logo:', error)
       }
     }
+
+    const company = await loadCompanyInfo()
+    this.companyInfo = { ...COMPANY_INFO, ...(company?.info || {}) }
 
     // Pre-load all product images from Azure Blob Storage
     await this.prepareImages()
@@ -108,238 +107,46 @@ export class DeliveryPdfBuilder {
   }
 
   getHeaderContent() {
-    return {
+    const rightStack = {
       stack: [
-        // --- Main Header with dark blue background and green accent ---
+        { text: 'DELIVERY NOTE', fontSize: 16, color: PDF_COLORS.darkGray, alignment: 'center', margin: [0, 8, 0, 2] },
         {
-          margin: [-10, -10, -10, 0], // ขยายให้เต็มความกว้าง
-          table: {
-            widths: ['70%', '30%'],
-            body: [
-              [
-                {
-                  // Left side - Company info with dark blue background
-                  fillColor: '#e0e0e0',
-                  stack: [
-                    {
-                      columns: [
-                        this.logoBase64
-                          ? {
-                              image: this.logoBase64,
-                              width: 35,
-                              height: 35,
-                              margin: [15, 10, 10, 0]
-                            }
-                          : {
-                              text: 'LOGO',
-                              fontSize: 14,
-                              color: 'white',
-                              margin: [15, 20, 10, 0]
-                            },
-                        {
-                          stack: [
-                            {
-                              text: 'Duang Kaew Jewelry',
-                              fontSize: 30,
-                              bold: true,
-                              color: '#8B0000',
-                              margin: [25, 5, 0, 0]
-                            },
-                            {
-                              text: 'The first step is always the hardest',
-                              fontSize: 12,
-                              color: '#8B0000',
-                              margin: [25, -10, 0, 0]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  // Right side - Delivery Note title
-                  stack: [
-                    {
-                      text: 'DELIVERY NOTE',
-                      fontSize: 20,
-                      color: '#393939',
-                      alignment: 'center',
-                      margin: [0, 10, 0, 0]
-                    },
-                    {
-                      columns: [
-                        {
-                          text: 'No.:',
-                          fontSize: 9,
-                          color: '#393939',
-                          alignment: 'right',
-                          width: '45%'
-                        },
-                        {
-                          text: this.deliveryNo || '',
-                          fontSize: 12,
-                          bold: true,
-                          color: '#8B0000',
-                          alignment: 'left',
-                          width: '55%',
-                          margin: [5, 0, 0, 0]
-                        }
-                      ]
-                    },
-                    {
-                      columns: [
-                        {
-                          text: 'Date:',
-                          fontSize: 9,
-                          color: '#393939',
-                          alignment: 'right',
-                          width: '45%'
-                        },
-                        {
-                          text: dayjs(this.deliveryDate).locale('en').format('MMMM DD, YYYY'),
-                          fontSize: 12,
-                          bold: true,
-                          color: '#8B0000',
-                          alignment: 'left',
-                          width: '55%',
-                          margin: [5, 0, 0, 0]
-                        }
-                      ]
-                    },
-                    {
-                      columns: [
-                        {
-                          text: 'SO#:',
-                          fontSize: 9,
-                          color: '#393939',
-                          alignment: 'right',
-                          width: '45%'
-                        },
-                        {
-                          text: this.saleOrderData.soNumber || this.saleOrderData.number || '',
-                          fontSize: 12,
-                          bold: true,
-                          color: '#8B0000',
-                          alignment: 'left',
-                          width: '55%',
-                          margin: [5, 0, 0, 0]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            ]
-          },
-          layout: 'noBorders'
-        },
-
-        {
-          margin: [0, 0, 0, 5],
-          canvas: [
-            {
-              type: 'line',
-              x1: 0,
-              y1: 0,
-              x2: 675,
-              y2: 0,
-              lineWidth: 2,
-              lineColor: '#E0E0E0'
-            }
-          ]
-        },
-
-        // --- Company details and Delivery To section ---
-        {
-          margin: [0, 0, 0, 0],
           columns: [
-            {
-              width: '50%',
-              stack: [
-                // Company Address
-                {
-                  text: 'From: Duang Kaew Jewelry Manufacturer Co.,Ltd.',
-                  fontSize: 14,
-                  bold: true,
-                  color: '#8B0000',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'Address: ' + (this.companyInfo.address || ''),
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'TEL: ' + (this.companyInfo.phone || ''),
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'FAX: ' + (this.companyInfo.fax || ''),
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'E-Mail: ' + (this.companyInfo.email || ''),
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                }
-              ]
-            },
-            {
-              width: '50%',
-              stack: [
-                {
-                  text: `Delivery To: ${this.customer.name || ''}`,
-                  fontSize: 14,
-                  bold: true,
-                  color: '#8B0000',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'Address: ' + (this.customer.address || ''),
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'TEL: ' + (this.customer.phone || ''),
-                  fontSize: 10,
-                  color: '#393939',
-                  margin: [0, 0, 0, 0]
-                },
-                {
-                  text: 'E-mail: ' + (this.customer.email || ''),
-                  fontSize: 10,
-                  color: '#393939'
-                }
-              ]
-            }
+            { text: 'No.:', fontSize: 8, color: PDF_COLORS.darkGray, alignment: 'right', width: '35%' },
+            { text: this.deliveryNo || '', fontSize: 10, bold: true, color: PDF_COLORS.primary, alignment: 'left', width: '65%', margin: [5, 0, 0, 0] }
           ]
         },
-
-        // --- Horizontal line separator ---
         {
-          margin: [0, 5, 0, 5],
-          canvas: [
-            {
-              type: 'line',
-              x1: 0,
-              y1: 0,
-              x2: 575,
-              y2: 0,
-              lineWidth: 2,
-              lineColor: '#E0E0E0'
-            }
+          columns: [
+            { text: 'Date:', fontSize: 8, color: PDF_COLORS.darkGray, alignment: 'right', width: '35%' },
+            { text: dayjs(this.deliveryDate).locale('en').format('MMMM DD, YYYY'), fontSize: 10, bold: true, color: PDF_COLORS.primary, alignment: 'left', width: '65%', margin: [5, 0, 0, 0] }
+          ]
+        },
+        {
+          columns: [
+            { text: 'SO#:', fontSize: 8, color: PDF_COLORS.darkGray, alignment: 'right', width: '35%' },
+            { text: this.saleOrderData.soNumber || this.saleOrderData.number || '', fontSize: 10, bold: true, color: PDF_COLORS.primary, alignment: 'left', width: '65%', margin: [5, 0, 0, 0] }
           ]
         }
-      ].filter(Boolean) // กรอง null values ออก
+      ]
     }
+
+    const customerLeft = [
+      { text: `Delivery To: ${this.customer.name || ''}`, fontSize: 11, bold: true, color: PDF_COLORS.primary },
+      { text: 'Address: ' + (this.customer.address || ''), fontSize: 9, color: PDF_COLORS.darkGray }
+    ]
+    const customerRight = [
+      { text: 'TEL: ' + (this.customer.phone || ''), fontSize: 9, color: PDF_COLORS.darkGray },
+      { text: 'E-mail: ' + (this.customer.email || ''), fontSize: 9, color: PDF_COLORS.darkGray }
+    ]
+
+    return buildDocumentHeader({
+      logoBase64: this.logoBase64,
+      company: this.companyInfo,
+      rightStack,
+      customerLeft,
+      customerRight
+    })
   }
 
   // แก้ไขเมธอด createPages
