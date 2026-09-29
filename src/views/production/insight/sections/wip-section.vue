@@ -1,0 +1,168 @@
+<!--
+  wip-section — หมวด "งานค้างและคอขวด" (default tab) ของ ProductionInsightView (Revision 2: per-topic tabs)
+  ยิง ProductionInsight/Wip ครั้งเดียวได้ทั้ง problems/forecasts/actions/status + ข้อมูลกราฟ departments/flow
+  ส่วนตาราง stalePlans/dueRisk เป็น panel แยก (ยิง endpoint ของตัวเอง, paginate อิสระ) — ตัวกรองแผนก/
+  ไม่ขยับเกิน (วัน)/เตือนล่วงหน้า (วัน) มาจาก props.filter (คุมจาก FilterPanelGeneric ของ ProductionInsightView)
+-->
+<template>
+  <InsightTabLayout
+    :title="$t('view.productionInsight.nav.wip')"
+    :status="status"
+    :problems="problems"
+    :forecasts="forecasts"
+    :actions="actions"
+    :loading="loading"
+  >
+    <template #report>
+      <div class="wip-section__charts-row">
+        <div id="insight-report-departments" class="wip-section__anchor">
+          <SectionCardGeneric :title="$t('view.executive.production.byDepartmentTitle')" icon="bi-diagram-3" accent="main" headerStyle="legend">
+            <DepartmentWipChart :departments="report.departments" :loading="loading" />
+          </SectionCardGeneric>
+        </div>
+
+        <div id="insight-report-flow" class="wip-section__anchor">
+          <SectionCardGeneric :title="$t('view.productionInsight.wip.flowTitle')" icon="bi-arrow-left-right" accent="main" headerStyle="legend">
+            <DepartmentFlowChart :flow="report.flow" :loading="loading" />
+          </SectionCardGeneric>
+        </div>
+      </div>
+
+      <WipStalePlansPanel :departmentKeys="filter.departmentKeys" :minDays="filter.staleDays" />
+      <WipDueRiskPanel :departmentKeys="filter.departmentKeys" :riskWindowDays="filter.riskWindowDays" />
+    </template>
+  </InsightTabLayout>
+</template>
+
+<script>
+import { useProductionInsightApiStore } from '@/stores/modules/api/production/production-insight-api.js'
+
+import InsightTabLayout from '@/components/insight/insight-tab-layout.vue'
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
+import DepartmentWipChart from '../components/department-wip-chart.vue'
+import DepartmentFlowChart from '../components/department-flow-chart.vue'
+import WipStalePlansPanel from '../components/wip-stale-plans-panel.vue'
+import WipDueRiskPanel from '../components/wip-due-risk-panel.vue'
+
+const emptyReport = () => ({
+  departments: [],
+  flow: [],
+  openCount: 0,
+  overdueCount: 0,
+  dueSoonAtRiskCount: 0,
+  becomingStaleCount: 0,
+  meltedOpenCount: 0
+})
+
+export default {
+  name: 'ProductionInsightWipSection',
+
+  components: {
+    InsightTabLayout,
+    SectionCardGeneric,
+    DepartmentWipChart,
+    DepartmentFlowChart,
+    WipStalePlansPanel,
+    WipDueRiskPanel
+  },
+
+  setup() {
+    const productionInsightStore = useProductionInsightApiStore()
+    return { productionInsightStore }
+  },
+
+  props: {
+    filter: {
+      type: Object,
+      required: true
+    }
+  },
+
+  data() {
+    return {
+      loading: false,
+      status: '',
+      problems: [],
+      forecasts: [],
+      actions: [],
+      report: emptyReport()
+    }
+  },
+
+  watch: {
+    filter: {
+      handler() {
+        this.fetchWip()
+      },
+      deep: true,
+      immediate: true
+    }
+  },
+
+  methods: {
+    async fetchWip() {
+      this.loading = true
+      const res = await this.productionInsightStore.fetchWip({
+        staleDays: this.filter.staleDays,
+        riskWindowDays: this.filter.riskWindowDays
+      })
+      this.status = res?.status || ''
+      this.problems = res?.problems || []
+      this.forecasts = res?.forecasts || []
+      this.actions = res?.actions || []
+      this.report = res?.report ? { ...emptyReport(), ...res.report } : emptyReport()
+      this.loading = false
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+// เหมือน .insight-tab-layout__row--split — เผื่อ clearance ของ legend chip ที่ระดับ container แทน
+// margin-top ของ .section-card--legend เอง ให้ทั้ง 2 กล่องในแถวเริ่ม y เดียวกันเป๊ะ
+.wip-section__charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  gap: var(--sp-md);
+  padding-top: var(--sp-2xl);
+
+  > * {
+    min-width: 0;
+  }
+
+  :deep(.section-card) {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  :deep(.section-card--legend) {
+    margin-top: 0 !important;
+  }
+
+  :deep(.chart-generic-wrap) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    padding-top: 0;
+
+    :deep(.section-card) {
+      height: auto;
+    }
+
+    :deep(.section-card--legend) {
+      margin-top: var(--sp-2xl) !important;
+    }
+  }
+}
+
+.wip-section__anchor {
+  scroll-margin-top: calc(var(--mainbar-height) + 64px);
+}
+</style>

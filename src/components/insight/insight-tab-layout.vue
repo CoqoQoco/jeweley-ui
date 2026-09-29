@@ -1,0 +1,234 @@
+<!--
+  insight-tab-layout — โครง 4 ส่วนมาตรฐานของทุก topic tab ใน Production Insight (Revision 2):
+  (1) ปัญหาที่เกิดแล้ว (2) คาดการณ์ปัญหาที่จะเกิด — 2 กล่อง legend ข้างกัน สูงเท่ากัน (≤1024px stack)
+  (3) วิธีแก้ / สิ่งที่ควรทำ — กล่อง legend เต็มความกว้าง
+  (4) รายงาน — slot #report เต็มความกว้าง (กล่องของตัวเอง จัดการ id="insight-report-<reportRef>" เอง)
+
+  แปล code -> ข้อความผ่าน i18n `${i18nPrefix}.<CODE>` พร้อม params (deptKey resolve เป็นชื่อแผนกที่แปลแล้ว
+  ผ่าน view.executive.department.* ก่อนเสมอ) — [ดู ›] ใน insight-finding-list เลื่อนไปยัง DOM id
+  `insight-report-<reportRef>` ที่เนื้อหาใน slot #report ต้องกำกับเอง (ตรงกับ reportRef ที่ API ส่งมา)
+
+  ตัวอย่างการใช้งาน:
+  <InsightTabLayout
+    :title="$t('view.productionInsight.nav.wip')"
+    :status="status"
+    :problems="problems"
+    :forecasts="forecasts"
+    :actions="actions"
+    :loading="loading"
+  >
+    <template #report>
+      <div id="insight-report-departments">...</div>
+    </template>
+  </InsightTabLayout>
+
+  Props:
+    title      — String (required)
+    status     — String ('critical'|'warning'|'ok'|''), default '' (ไม่แสดง chip)
+    problems   — Array ของ { code, severity, params, reportRef? } (default [])
+    forecasts  — Array เหมือน problems (default [])
+    actions    — Array ของ { code, priority, ownerRole, relatedCodes, params } (default [])
+    loading    — Boolean (false)
+    i18nPrefix — String (default 'view.productionInsight.rules') namespace สำหรับ code -> ข้อความ
+
+  Slots: #report (เต็มความกว้าง)
+-->
+<template>
+  <div class="insight-tab-layout">
+    <div class="insight-tab-layout__header">
+      <h3 class="insight-tab-layout__title">{{ title }}</h3>
+      <span v-if="status" class="insight-tab-layout__status" :class="`insight-tab-layout__status--${status}`">
+        <i :class="['bi', statusIcon]"></i>
+        {{ $t(`view.productionInsight.status.${status}`) }}
+      </span>
+    </div>
+
+    <div class="insight-tab-layout__row insight-tab-layout__row--split">
+      <SectionCardGeneric :title="$t('view.productionInsight.section.problems')" icon="bi-exclamation-triangle" accent="warning" headerStyle="legend">
+        <InsightFindingList :findings="resolvedProblems" :loading="loading" @goto-report="scrollToReport" />
+      </SectionCardGeneric>
+
+      <SectionCardGeneric :title="$t('view.productionInsight.section.forecasts')" icon="bi-graph-up-arrow" accent="main" headerStyle="legend">
+        <InsightFindingList :findings="resolvedForecasts" :loading="loading" @goto-report="scrollToReport" />
+      </SectionCardGeneric>
+    </div>
+
+    <SectionCardGeneric :title="$t('view.productionInsight.section.actions')" icon="bi-list-check" accent="green" headerStyle="legend">
+      <InsightActionList :actions="resolvedActions" :loading="loading" />
+    </SectionCardGeneric>
+
+    <div class="insight-tab-layout__report">
+      <slot name="report" />
+    </div>
+  </div>
+</template>
+
+<script>
+import { resolveStatusIcon, resolveFindingParams, buildFindingKey } from './insight-helpers.js'
+
+import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
+import InsightFindingList from './insight-finding-list.vue'
+import InsightActionList from './insight-action-list.vue'
+
+export default {
+  name: 'InsightTabLayout',
+
+  components: {
+    SectionCardGeneric,
+    InsightFindingList,
+    InsightActionList
+  },
+
+  props: {
+    title: {
+      type: String,
+      required: true
+    },
+    status: {
+      type: String,
+      default: ''
+    },
+    problems: {
+      type: Array,
+      default: () => []
+    },
+    forecasts: {
+      type: Array,
+      default: () => []
+    },
+    actions: {
+      type: Array,
+      default: () => []
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    i18nPrefix: {
+      type: String,
+      default: 'view.productionInsight.rules'
+    }
+  },
+
+  computed: {
+    statusIcon() {
+      return resolveStatusIcon(this.status)
+    },
+
+    resolvedProblems() {
+      return this.resolveFindings(this.problems)
+    },
+
+    resolvedForecasts() {
+      return this.resolveFindings(this.forecasts)
+    },
+
+    resolvedActions() {
+      return (this.actions || []).map((action) => ({
+        key: buildFindingKey(action.code, action.params),
+        text: this.resolveText(action.code, action.params),
+        ownerRoleLabel: action.ownerRole ? this.$t(`view.productionInsight.ownerRole.${action.ownerRole}`) : '',
+        relatedText: this.buildRelatedText(action.relatedCodes)
+      }))
+    }
+  },
+
+  methods: {
+    translateDept(key) {
+      return this.$t(`view.executive.department.${key}`)
+    },
+
+    resolveText(code, params) {
+      return this.$t(`${this.i18nPrefix}.${code}`, resolveFindingParams(params, this.translateDept))
+    },
+
+    resolveFindings(items) {
+      return (items || []).map((item) => ({
+        key: buildFindingKey(item.code, item.params),
+        severity: item.severity,
+        text: this.resolveText(item.code, item.params),
+        reportRef: item.reportRef
+      }))
+    },
+
+    buildRelatedText(relatedCodes) {
+      if (!relatedCodes || !relatedCodes.length) return ''
+      const labels = relatedCodes.map((code) => this.$t(`view.productionInsight.codeLabel.${code}`))
+      return `${this.$t('view.productionInsight.relatedPrefix')} ${labels.join(', ')}`
+    },
+
+    scrollToReport(reportRef) {
+      const el = document.getElementById(`insight-report-${reportRef}`)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.insight-tab-layout > * + * {
+  margin-top: var(--sp-lg);
+}
+
+.insight-tab-layout__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-md);
+  flex-wrap: wrap;
+}
+
+.insight-tab-layout__title {
+  margin: 0;
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--base-font-color);
+}
+
+.insight-tab-layout__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  padding: var(--sp-xs) var(--sp-md);
+  border-radius: var(--radius-lg);
+  border: 1px solid currentColor;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+
+  &--critical { color: var(--base-red); }
+  &--warning { color: var(--base-warning); }
+  &--ok { color: var(--base-green); }
+}
+
+// row1 (ปัญหา|คาดการณ์) — 2 กล่อง legend เท่ากันทุกประการ: เผื่อ clearance ของ legend chip ที่ระดับ
+// container (padding-top) แทน margin-top ของ .section-card--legend เอง กัน 2 กล่องเริ่มคนละ y เมื่อ
+// โครง DOM/wrapper ต่างกัน (ดู Decision Log docs/design-system.md 2026-09-29 layout follow-up)
+.insight-tab-layout__row--split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  gap: var(--sp-md);
+  padding-top: var(--sp-2xl);
+
+  > * {
+    min-width: 0;
+  }
+
+  :deep(.section-card) {
+    height: 100%;
+  }
+
+  :deep(.section-card--legend) {
+    margin-top: 0 !important;
+  }
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    padding-top: 0;
+
+    :deep(.section-card--legend) {
+      margin-top: var(--sp-2xl) !important;
+    }
+  }
+}
+</style>

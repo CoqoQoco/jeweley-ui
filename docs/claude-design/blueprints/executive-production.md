@@ -218,4 +218,117 @@ URL state: `?tab=production&view=<overview|wip|capacity|monthly|gold>&start=&end
 ## Screenshots
 
 - before: `/production-dashboard` (3 tab), `/gold-loss-dashboard` ภาพรวม, `/executive` tab ผลิต (ภาพจาก user 2026-09-29)
-- after: รอ Phase 1
+- after (Phase 1, Revision 1 — ภาพรวม/KPI 6 ช่อง + legend grid 2×2): screenshot วัดจอ 1900px ของ user 2026-09-29 (แก้ layout 2 รอบตามที่ระบุ)
+
+---
+
+## Revision 2 (2026-09-29): per-topic tabs, 4-part structure
+
+**⚠️ Supersedes**: หมวด "ภาพรวม" (Revision 1 — KPI 6 ช่อง + legend grid 2×2: งานค้างแยกแผนก/พยากรณ์ปิดงาน/ปิดงานรายเดือน/ทองเดือนนี้) **ถูกแทนที่ทั้งหมด** — ลบ `overview-section.vue` + `gold-this-month-panel.vue` แล้ว ไม่มีหมวด "ภาพรวม" รวมทุกอย่างอีกต่อไป โครง layout เดิม (`.charts-row-b` container-padding trick, mainbar sticky offset ฯลฯ) ยังใช้ต่อใน `insight-tab-layout.vue`/`wip-section.vue` (แก้ปัญหาเดียวกัน แค่คนละ context)
+
+**เหตุผลที่เปลี่ยน**: ข้อมูลดิบ (จำนวน/กราฟ) อย่างเดียวไม่พอให้ผู้บริหารตัดสินใจเร็ว — ต้องมี "จะเกิดปัญหาอะไร (คาดการณ์)" + "ต้องทำอะไรต่อ (วิธีแก้)" กำกับข้อมูลเสมอ ไม่ใช่แค่โยนตัวเลขให้ไปตีความเอง โจทย์ใหม่มาจาก API ใหม่ (`ProductionInsight/*`, กำลังสร้างคู่ขนาน) ที่คำนวณ "ปัญหา/คาดการณ์/วิธีแก้" มาให้ตรงๆ ผ่าน `code`+`params` แทนที่ frontend จะต้องคำนวณเอง — โครงนี้ reusable ข้ามหัวข้อได้ (ผลิต/ขาย/คลัง) เพราะทุกหมวดใช้ contract เดียวกัน (`problems`/`forecasts`/`actions`/`report`)
+
+### Tab list (เมนูย่อยชั้น 2 — แทน overview/wip/capacity/monthly/gold เดิม)
+
+| value | label | สถานะ Revision 2 |
+|---|---|---|
+| `wip` (default) | งานค้างและคอขวด | ✅ implement จริง — `ProductionInsight/Wip` |
+| `delivery` | ส่งงานตรงเวลา | 🔵 placeholder |
+| `capacity` | กำลังการผลิต | 🔵 placeholder |
+| `gold` | ทองและ Loss | 🔵 placeholder (ฝัง `gold-loss-trend-view.vue` เดิมเป็นรายงานเสริม) |
+| `workers` | ช่างและค่าแรง | 🔵 placeholder |
+| `materials` | วัตถุดิบที่กระทบการผลิต | 🔵 placeholder |
+
+placeholder ทุกหมวดใช้โครง 4 ส่วนเดียวกัน — problems/forecasts เป็น bullet ข้อความล้วน (severity `info`, ดูตาราง "เนื้อหาที่วางแผนไว้" ด้านล่าง) ไม่มี actions จนกว่าจะมีข้อมูลจริง, รายงาน = ลิงก์กลับหน้าเดิม (`/production-dashboard`, `/gold-loss-dashboard`, `/report-production-worker-wages`, `/stock-gem-dashboard`)
+
+### Wide frame
+
+```
+┌─ 📊 ภาพรวมผู้บริหาร · ข้อมูล ณ 29/09/2026 13:23                                    [⬇ Excel] [↻] ┐
+├──────────────────────────────────────────────────────────────────────────────────────────────┤
+│ [🏭 ผลิต] [💰 ขายและเงิน] [📦 คลังสินค้า]                                  TabViewGeneric ชั้น 1 │
+│ ┌──────────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │(งานค้างฯ│ส่งงานตรงเวลา│กำลังการผลิต│ทองฯ│ช่างฯ│วัตถุดิบฯ) [แผนก✕][ไม่ขยับเกิน:90✕] [⚙ ตัวกรอง(2)]│ │ ← sticky toolbar (เฉพาะ wip มี filter)
+│ ├──────────────────────────────────────────────────────────────────────────────────────────┤ │
+│ │  งานค้างและคอขวด                                                    (● วิกฤต / ต้องระวัง)   │ │ InsightTabLayout header
+│ │ ┌─ ⚠ ปัญหาที่เกิดแล้ว (legend) ───────┐ ┌─ 📈 คาดการณ์ปัญหาที่จะเกิด (legend) ──────────┐   │ │
+│ │ │ [🔴 งานเลยกำหนด 12 ใบ (8%)        ดู›]│ │ [🟢 คาดว่าจะค้างเพิ่ม 5 ใบ ใน 14 วัน      ดู›]│   │ │ InsightFindingList ×2
+│ │ │ [🟡 แผนกฝังค้างมากสุด 20 ใบ (35%) ดู›]│ │ [🟢 งานใกล้ครบกำหนด เสี่ยงเลย 3 ใบ        ดู›]│   │ │
+│ │ └────────────────────────────────────┘ └────────────────────────────────────────────────┘   │ │
+│ │ ┌─ ✅ วิธีแก้ / สิ่งที่ควรทำ (legend) ───────────────────────────────────────────────────┐   │ │
+│ │ │ 1. เร่งปิดงานค้างไม่ขยับ 12 ใบ [หัวหน้าแผนก]      แก้ปัญหา: งานเลยกำหนดส่ง             │   │ │ InsightActionList
+│ │ │ 2. กำหนด SLA ให้แผนกฝัง [ผู้จัดการฝ่ายผลิต]        แก้ปัญหา: แผนกที่ค้างมากที่สุด        │   │ │
+│ │ └──────────────────────────────────────────────────────────────────────────────────────┘   │ │
+│ │ ┌─ งานค้างแยกแผนก (legend) ───────────┐ ┌─ งานเข้า-ออกแต่ละแผนก 90วัน (legend) ────────┐   │ │
+│ │ │ stacked bar #insight-report-        │ │ grouped bar (inflow/outflow + net) #insight-  │   │ │ report anchors
+│ │ │ departments                         │ │ report-flow                                   │   │ │
+│ │ └──────────────────────────────────────┘ └────────────────────────────────────────────────┘ │ │
+│ │ ┌─ ใบงานค้าง (legend) #insight-report-stalePlans ────────────────────────────────────────┐   │ │
+│ │ │ ตาราง (filter แผนก/ไม่ขยับเกิน จาก toolbar)                                              │   │ │
+│ │ └──────────────────────────────────────────────────────────────────────────────────────┘   │ │
+│ │ ┌─ งานเสี่ยงเลยกำหนด (legend) #insight-report-dueRisk ───────────────────────────────────┐   │ │
+│ │ │ (เลยกำหนด│ครบกำหนดใน 30 วัน) ToggleGroup + ตาราง                                        │   │ │
+│ │ └──────────────────────────────────────────────────────────────────────────────────────┘   │ │
+│ └──────────────────────────────────────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### API contract (`ProductionInsight/*`, POST, `api.jewelry`)
+
+`ProductionInsight/Wip` body `{ staleDays?:180, riskWindowDays?:30 }` → `{ asOf, status, problems:[{code,severity,params,reportRef}], forecasts:[…same], actions:[{code,priority,ownerRole,relatedCodes,params}], report:{ departments:[{key,total,moved30d,moved30to180d,stale180d}], flow:[{key,inflow90d,outflow90d,net}], openCount, overdueCount, dueSoonAtRiskCount, becomingStaleCount, meltedOpenCount } }`
+
+`ProductionInsight/StalePlans` — contract เดียวกับ `ExecutiveReport/StalePlans` เดิม (`{take,skip,sort,minDays,departmentKeys}`, flat ไม่ห่อ `search`) — `ProductionInsight/DueRiskPlans` — สมมติ contract เดียวกัน + `mode:'overdue'|'dueSoon'` + `riskWindowDays`, item = StalePlans item + `dueDate`, `daysToDue` (**assumption**: ยังไม่ยืนยันชื่อ field ที่แน่นอนกับฝั่ง API เพราะ "being built in parallel" — โค้ด FE อิง contract นี้ไว้ก่อน)
+
+| กลุ่ม | code | params | severity/priority | ownerRole |
+|---|---|---|---|---|
+| problems | `WIP_STALE` | `count, openCount, percent` | critical/warning (จาก API) | — |
+| problems | `WIP_OVERDUE` | `count, openCount, percent` | critical/warning | — |
+| problems | `WIP_DEPT_STALE_TOP` | `deptKey, count, share` | critical/warning | — |
+| problems | `WIP_MELTED_OPEN` | `count` | critical/warning | — |
+| forecasts | `FC_BECOMING_STALE` | `count, days` | critical/warning/info | — |
+| forecasts | `FC_DUE_SOON_AT_RISK` | `count, days` | critical/warning/info | — |
+| forecasts | `FC_BOTTLENECK` | `deptKey, inflow, outflow, net` | critical/warning/info | — |
+| actions | `ACT_CLOSE_STALE` | `count` | priority (API) | `deptHead` |
+| actions | `ACT_PRIORITIZE_DUE` | `overdue, dueSoon` | priority | `planner` |
+| actions | `ACT_STAGE_SLA` | `deptKey` | priority | `productionManager` |
+| actions | `ACT_CLOSE_MELTED` | `count` | priority | `goldControl` |
+
+`reportRef ∈ departments\|flow\|stalePlans\|dueRisk` — DOM anchor id = `insight-report-<reportRef>` (ดูโค้ดที่ `insight-tab-layout.vue` `scrollToReport()`)
+
+### เนื้อหาที่วางแผนไว้ (placeholder 5 หมวด — code ชั่วคราว, severity `info` ล้วน, รอ API จริง)
+
+| หมวด | problems | forecasts |
+|---|---|---|
+| delivery | เลยกำหนดส่ง | ครบกำหนดใน 14 วันแต่ยังอยู่ขั้นต้น |
+| capacity | ปิดงานเดือนนี้ต่ำกว่าค่าเฉลี่ย | ประมาณการปิดงานสิ้นเดือน |
+| gold | ช่างที่เสียทองเกินเกณฑ์, เล่มหล่อที่ยังไม่คืนทอง | ช่างที่ % loss สูงขึ้น 3 เดือนติด |
+| workers | รายการที่ไม่มีค่าแรง | ค่าแรงต่อชิ้นสูงขึ้น |
+| materials | พลอยใกล้หมดเทียบงานที่รอคัดพลอย, ทองวัตถุดิบในระบบติดลบ | — (ไม่มี — ทั้ง 2 ข้อเป็นปัญหาปัจจุบันล้วน) |
+
+### Component ใหม่ (Revision 2)
+
+| Component | ไฟล์ | หน้าที่ |
+|---|---|---|
+| `InsightTabLayout` | `src/components/insight/insight-tab-layout.vue` | โครง 4 ส่วน (header+status chip / problems+forecasts / actions / `#report` slot) — แปล code→ข้อความในตัว |
+| `InsightFindingList` | `src/components/insight/insight-finding-list.vue` | severity chip (critical/warning/info) + `[ดู ›]` เลื่อนไป report anchor |
+| `InsightActionList` | `src/components/insight/insight-action-list.vue` | เลขลำดับ + owner-role chip + related findings |
+| `insight-helpers.js` (+ spec) | `src/components/insight/` | pure: severity/status icon map, `worstStatus`, `resolveFindingParams` (deptKey translate), number/percent format |
+
+`FilterPanelGeneric` เพิ่มพฤติกรรม: slot `#global` ว่าง → ซ่อนทั้ง label "ใช้กับทุกหมวด" (ไม่ใช่แค่ field เปล่า) — Revision 2 ไม่มีตัวกรองข้ามหมวดอีกต่อไป (เดิม dateRange/gold/goldSize/productType/customerType ไม่มี endpoint ใหม่ตัวไหนรับ) แต่ละหมวดถือ filter อิสระของตัวเอง (ตอนนี้มีจริงแค่ `wip`: แผนก/ไม่ขยับเกิน (วัน)/เตือนล่วงหน้า (วัน) — query key `wipDept`/`wipStaleDays`/`wipRiskWindow`)
+
+### Mapping → โค้ด (Revision 2)
+
+| ไฟล์ | แก้อะไร | agent |
+|---|---|---|
+| `src/components/insight/{insight-tab-layout,insight-finding-list,insight-action-list,insight-helpers}.{vue,js}` (+ spec) | ใหม่ทั้งหมด | @ui-implementer |
+| `src/stores/modules/api/production/production-insight-api.js` (ใหม่) | เรียก `ProductionInsight/{Wip,StalePlans,DueRiskPlans}` | @ui-implementer |
+| `src/views/production/insight/sections/wip-section.vue` (ใหม่) + `components/{department-flow-chart,wip-stale-plans-panel,wip-due-risk-panel}.vue` (ใหม่) | หมวด "งานค้างและคอขวด" เต็มรูปแบบ | @ui-implementer |
+| `src/views/production/insight/sections/topic-placeholder-section.vue` (ใหม่) | 5 หมวดที่เหลือ | @ui-implementer |
+| `src/views/production/insight/insight-filters.js` + spec | เขียนใหม่ทั้งหมด (SECTION_VALUES ใหม่, wip filter) | @ui-implementer |
+| `src/views/production/insight/index-view.vue` | เขียนใหม่ (toolbar เดิม + filter เฉพาะ wip) | @ui-implementer |
+| `src/views/report/executive/index-view.vue` | ตัด `productionWipView`/`goldLossTrendView` ออกจาก template (ยังใช้ data/method เดิมสำหรับ Excel) | @ui-implementer |
+| ลบ: `overview-section.vue`, `gold-this-month-panel.vue`, `production-wip-view.vue`, `monthly-completed-chart.vue` | ไฟล์ Revision 1 ที่ไม่มีจุดใช้แล้วหลัง Revision 2 | @ui-implementer |
+| Backend `ProductionInsight/{Wip,StalePlans,DueRiskPlans}` | ใหม่ทั้งหมด — "being built in parallel" | @api-implementer |
+
+- verify: `npm run lint` + `npx vitest run` + `npm run build` (chrome-mcp รอ backend endpoint จริง — ตอนนี้เรียกแล้วจะ error เพราะ API ยังไม่มี ถือว่าปกติจนกว่า backend จะ deploy)
+- ห้ามกล่องเส้นสีหนาด้านซ้าย (Core Principle #14) · token/generic/i18n เท่านั้น · ห้าม try/catch ครอบ store call

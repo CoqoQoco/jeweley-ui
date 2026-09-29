@@ -354,8 +354,9 @@ describe('executive-helpers', () => {
 
   describe('buildStalePlansExcelRows', () => {
     const departmentLabels = { trim: 'แต่ง', setting: 'ฝัง' }
+    const createdFallbackLabel = 'สร้างใบงาน'
 
-    it('maps rows using woText fallback chain and department label lookup', () => {
+    it('maps rows using woText fallback chain, department label lookup, and the new last-action/workers fields', () => {
       const rows = buildStalePlansExcelRows(
         [
           {
@@ -370,10 +371,15 @@ describe('executive-helpers', () => {
             statusName: 'รอช่างรับงาน',
             createDate: '2026-01-01',
             lastMoveDate: '2026-01-10',
+            lastUpdateBy: 'สมชาย',
+            lastAction: 'ส่งขัด',
+            lastActionDate: '2026-01-10T09:00:00',
+            workers: ['สมชาย', 'สมหญิง'],
             daysSinceMove: 260
           }
         ],
-        departmentLabels
+        departmentLabels,
+        createdFallbackLabel
       )
 
       expect(rows).toEqual([
@@ -387,6 +393,10 @@ describe('executive-helpers', () => {
           status: 'รอช่างรับงาน',
           createDate: '01/01/2026',
           lastMoveDate: '10/01/2026',
+          lastUpdateBy: 'สมชาย',
+          lastAction: 'ส่งขัด',
+          lastActionDate: '10/01/2026',
+          workers: 'สมชาย, สมหญิง',
           daysSinceMove: 260
         }
       ])
@@ -395,6 +405,18 @@ describe('executive-helpers', () => {
     it('falls back to the raw departmentKey when no label is found', () => {
       const rows = buildStalePlansExcelRows([{ departmentKey: 'unknownDept' }], departmentLabels)
       expect(rows[0].department).toBe('unknownDept')
+    })
+
+    it('falls back lastAction to createdFallbackLabel when the plan has no status history yet', () => {
+      const rows = buildStalePlansExcelRows([{ departmentKey: 'trim', lastAction: null }], departmentLabels, createdFallbackLabel)
+      expect(rows[0].lastAction).toBe(createdFallbackLabel)
+    })
+
+    it('defaults lastUpdateBy/lastActionDate/workers to empty when missing', () => {
+      const rows = buildStalePlansExcelRows([{ departmentKey: 'trim' }], departmentLabels)
+      expect(rows[0].lastUpdateBy).toBe('')
+      expect(rows[0].lastActionDate).toBe('')
+      expect(rows[0].workers).toBe('')
     })
 
     it('returns [] for empty/undefined input', () => {

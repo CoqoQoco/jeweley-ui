@@ -198,7 +198,9 @@ export function buildSummaryExcelRows(summary, labels = {}) {
 }
 
 // sheet "ใบงานค้าง" — StalePlans rows
-export function buildStalePlansExcelRows(rows, departmentLabels = {}) {
+// createdFallbackLabel — ข้อความแทน lastAction เมื่อยังไม่มีประวัติสถานะ (caller ส่ง $t(...) มาแปลแล้ว
+// เช่น "สร้างใบงาน") — ไฟล์นี้เป็น pure function ห้าม import i18n ตรงๆ
+export function buildStalePlansExcelRows(rows, departmentLabels = {}, createdFallbackLabel = '') {
   return (rows || []).map((row) => ({
     wo: row.woText || row.woNumber || row.wo || '',
     mold: row.mold || '',
@@ -209,6 +211,10 @@ export function buildStalePlansExcelRows(rows, departmentLabels = {}) {
     status: row.statusName || '',
     createDate: row.createDate ? formatDate(row.createDate) : '',
     lastMoveDate: row.lastMoveDate ? formatDate(row.lastMoveDate) : '',
+    lastUpdateBy: row.lastUpdateBy || '',
+    lastAction: row.lastAction || createdFallbackLabel,
+    lastActionDate: row.lastActionDate ? formatDate(row.lastActionDate) : '',
+    workers: (row.workers || []).filter(Boolean).join(', '),
     daysSinceMove: row.daysSinceMove || 0
   }))
 }

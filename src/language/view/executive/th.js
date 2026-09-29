@@ -52,6 +52,10 @@ export default {
     colDepartment: 'แผนก/สถานะ',
     colOpenDate: 'เปิดเมื่อ',
     colLastMove: 'ขยับล่าสุด',
+    colLastUpdateBy: 'ผู้อัปเดตล่าสุด',
+    colLastAction: 'การทำรายการล่าสุด',
+    colLastActionDate: 'วันที่อัปเดต',
+    colWorkers: 'ช่าง',
     colDays: 'วัน',
     currentMonthBadge: 'ยังไม่ครบเดือน'
   },

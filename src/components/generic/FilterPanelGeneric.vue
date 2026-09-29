@@ -34,7 +34,8 @@
     width  — String ('420px') — ความกว้าง panel — ≤768px บังคับเป็น 100vw เสมอ (CSS, ไม่ต้องส่ง prop)
 
   Slots:
-    #global        — ฟิลด์ที่ใช้กับทุกหมวด (เช่น ช่วงวันที่, ชนิดทอง)
+    #global        — ฟิลด์ที่ใช้กับทุกหมวด (เช่น ช่วงวันที่, ชนิดทอง) — ไม่ส่ง = ไม่แสดงกลุ่มนี้เลย (label
+                     "ใช้กับทุกหมวด" หายไปด้วย ไม่ใช่แค่ field ว่าง)
     #section-title — label ของกลุ่มฟิลด์เฉพาะหมวดที่เปิดอยู่ (ไม่ส่ง = ไม่แสดงกลุ่มนี้เลย)
     #section       — ฟิลด์เฉพาะหมวดที่เปิดอยู่
 
@@ -52,13 +53,15 @@
   >
     <template #content>
       <div class="filter-panel-generic__body">
-        <div class="filter-panel-generic__section-label">{{ $t('view.productionInsight.filter.globalLabel') }}</div>
-        <div class="filter-panel-generic__fields">
-          <slot name="global" />
-        </div>
+        <template v-if="$slots.global">
+          <div class="filter-panel-generic__section-label">{{ $t('view.productionInsight.filter.globalLabel') }}</div>
+          <div class="filter-panel-generic__fields">
+            <slot name="global" />
+          </div>
+        </template>
 
         <template v-if="$slots['section-title'] || $slots.section">
-          <div class="filter-panel-generic__divider"></div>
+          <div v-if="$slots.global" class="filter-panel-generic__divider"></div>
           <div class="filter-panel-generic__section-label">
             <slot name="section-title" />
           </div>

@@ -1,14 +1,19 @@
 <!--
-  ProductionInsightView — Dashboard v2 archetype (blueprint: docs/claude-design/blueprints/executive-production.md)
-  หมวดย่อย 2 ชั้น (ToggleGroupGeneric) + ตัวกรองแบบ slide panel (FilterPanelGeneric) + chip ตัวกรอง
-  (ActiveFilterChipsGeneric) — โหลดข้อมูลเฉพาะหมวดที่เปิด (mount ครั้งแรกแล้วค้างด้วย v-show)
+  ProductionInsightView — Dashboard v2 archetype, Revision 2 (per-topic tabs)
+  (blueprint: docs/claude-design/blueprints/executive-production.md, "Revision 2" section)
 
-  Phase 1: เฉพาะหมวด "ภาพรวม" มีเนื้อหาจริง — อีก 4 หมวดแสดง placeholder พร้อมลิงก์กลับไปหน้าเดิม
-  ("งานค้าง"/"ทอง" รับเนื้อหาเสริมจาก host ผ่าน slot #wip-extra/#gold-extra เพื่อให้ /executive คง
-  ตาราง stale-plans + gold trend เดิมไว้ ไม่ให้ boss เสียของ)
+  เมนูย่อยชั้น 2 (ToggleGroupGeneric) 6 หมวด: งานค้างและคอขวด (default) / ส่งงานตรงเวลา / กำลังการผลิต /
+  ทองและ Loss / ช่างและค่าแรง / วัตถุดิบที่กระทบการผลิต — ทุกหมวดใช้โครง 4 ส่วนเดียวกัน (InsightTabLayout):
+  ปัญหาที่เกิดแล้ว / คาดการณ์ปัญหาที่จะเกิด / วิธีแก้ / รายงาน
 
-  URL sync: อ่าน query ครั้งเดียวใน created() แล้ว $router.replace ตอนเปลี่ยน — คง query key อื่นของ host
-  ไว้เสมอ (เช่น executive ?tab=)
+  Revision 2: เฉพาะหมวด "งานค้างและคอขวด" (wip) มีเนื้อหาจริง (เรียก ProductionInsight/Wip) — อีก 5 หมวด
+  เป็น placeholder (topic-placeholder-section.vue) จนกว่าจะมี API ของหมวดนั้น — ตัวกรอง (FilterPanelGeneric)
+  ตอนนี้มีจริงแค่หมวด wip เท่านั้น (แผนก/ไม่ขยับเกิน (วัน)/เตือนล่วงหน้า (วัน)) หมวดอื่นไม่มีตัวกรองให้กด
+  (ปุ่ม/chip แถวตัวกรองซ่อนไปเลยเมื่อหมวดนั้นไม่มี filter — ดู hasFilterableFields)
+
+  โหลดข้อมูลเฉพาะหมวดที่เปิด (mount ครั้งแรกแล้วค้างด้วย v-show/visitedSections) — URL sync: อ่าน query
+  ครั้งเดียวใน created() แล้ว $router.replace ตอนเปลี่ยน คงค่า query key อื่นของ host ไว้เสมอ (เช่น
+  executive ?tab=)
 -->
 <template>
   <div class="production-insight">
@@ -21,37 +26,29 @@
       />
 
       <ActiveFilterChipsGeneric
+        v-if="hasFilterableFields"
         class="production-insight__chips"
         :chips="activeChips"
         @remove="onRemoveChip"
         @clear-all="onClearFilter"
       />
 
-      <ButtonGeneric variant="outline" icon="bi-sliders" class="production-insight__filter-btn" @click="openFilterPanel">
+      <ButtonGeneric v-if="hasFilterableFields" variant="outline" icon="bi-sliders" class="production-insight__filter-btn" @click="openFilterPanel">
         {{ $t('view.productionInsight.filter.button') }}
         <span v-if="activeChips.length" class="production-insight__filter-badge">{{ activeChips.length }}</span>
       </ButtonGeneric>
     </div>
 
     <div class="production-insight__body">
-      <OverviewSection v-show="activeSection === 'overview'" :filter="filter" @switch-section="onSwitchSection" />
+      <WipSection v-show="activeSection === 'wip'" :filter="filters.wip" />
 
-      <template v-for="section in placeholderSections" :key="section.value">
-        <div v-if="visitedSections.has(section.value)" v-show="activeSection === section.value" class="production-insight__placeholder-wrap">
-          <div class="insight-placeholder">
-            <i class="bi bi-signpost-2"></i>
-            <p>{{ $t('view.productionInsight.placeholder.message') }}</p>
-            <router-link :to="section.linkTo">
-              {{ section.linkLabel }}
-              <i class="bi bi-chevron-right"></i>
-            </router-link>
-          </div>
-          <slot :name="`${section.value}-extra`" />
-        </div>
+      <template v-for="topic in placeholderTopics" :key="topic">
+        <TopicPlaceholderSection v-if="visitedSections.has(topic)" v-show="activeSection === topic" :topicKey="topic" />
       </template>
     </div>
 
     <FilterPanelGeneric
+      v-if="hasFilterableFields"
       :show="isFilterPanelOpen"
       :title="$t('view.productionInsight.filter.title')"
       width="420px"
@@ -59,54 +56,23 @@
       @clear="onFilterClear"
       @close="onFilterPanelClose"
     >
-      <template #global>
-        <FormFieldGeneric :label="$t('view.production.dashboard.filterDateRange')">
-          <DateRangeGeneric
-            :startDate="draftFilter.start"
-            :endDate="draftFilter.end"
-            @update:startDate="draftFilter.start = $event"
-            @update:endDate="draftFilter.end = $event"
-          />
-        </FormFieldGeneric>
-        <FormFieldGeneric :label="$t('view.production.dashboard.filterGold')">
+      <template v-if="activeSection === 'wip'" #section-title>{{ $t('view.productionInsight.wip.filterSectionTitle') }}</template>
+      <template v-if="activeSection === 'wip'" #section>
+        <FormFieldGeneric :label="$t('view.productionInsight.wip.filterDept')">
           <MultiSelectGeneric
-            v-model="draftFilter.gold"
-            :options="masterApiStore.gold"
-            optionLabel="nameTh"
-            optionValue="nameEn"
+            v-model="draftWipFilter.departmentKeys"
+            :options="departmentOptions"
+            optionLabel="label"
+            optionValue="value"
             :placeholder="$t('common.label.all')"
             :showClear="true"
           />
         </FormFieldGeneric>
-        <FormFieldGeneric :label="$t('view.production.dashboard.filterGoldSize')">
-          <MultiSelectGeneric
-            v-model="draftFilter.goldSize"
-            :options="masterApiStore.goldSize"
-            optionLabel="nameTh"
-            optionValue="nameEn"
-            :placeholder="$t('common.label.all')"
-            :showClear="true"
-          />
+        <FormFieldGeneric :label="$t('view.productionInsight.wip.filterStaleDays')">
+          <InputTextGeneric v-model.number="draftWipFilter.staleDays" type="number" :min="1" />
         </FormFieldGeneric>
-        <FormFieldGeneric :label="$t('view.production.dashboard.productType')">
-          <MultiSelectGeneric
-            v-model="draftFilter.productType"
-            :options="masterApiStore.productType"
-            optionLabel="nameTh"
-            optionValue="code"
-            :placeholder="$t('common.label.all')"
-            :showClear="true"
-          />
-        </FormFieldGeneric>
-        <FormFieldGeneric :label="$t('view.production.dashboard.customerType')">
-          <MultiSelectGeneric
-            v-model="draftFilter.customerType"
-            :options="masterApiStore.customerType"
-            optionLabel="nameTh"
-            optionValue="code"
-            :placeholder="$t('common.label.all')"
-            :showClear="true"
-          />
+        <FormFieldGeneric :label="$t('view.productionInsight.wip.filterRiskWindowDays')">
+          <InputTextGeneric v-model.number="draftWipFilter.riskWindowDays" type="number" :min="1" />
         </FormFieldGeneric>
       </template>
     </FilterPanelGeneric>
@@ -114,17 +80,16 @@
 </template>
 
 <script>
-import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import {
   SECTION_VALUES,
   resolveActiveSection,
-  buildDefaultFilter,
-  buildDefaultDateRange,
-  parseFilterQuery,
-  filterToQuery,
-  clearedFilterQueryKeys,
+  buildDefaultWipFilter,
+  parseWipFilterQuery,
+  wipFilterToQuery,
+  clearedWipFilterQueryKeys,
   buildActiveChips,
-  formatChipDateRange
+  WIP_DEFAULT_STALE_DAYS,
+  WIP_DEFAULT_RISK_WINDOW_DAYS
 } from './insight-filters.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
@@ -132,11 +97,12 @@ import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 import FilterPanelGeneric from '@/components/generic/FilterPanelGeneric.vue'
 import ActiveFilterChipsGeneric from '@/components/generic/ActiveFilterChipsGeneric.vue'
-import DateRangeGeneric from '@/components/prime-vue/DateRangeGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
-import OverviewSection from './sections/overview-section.vue'
+import WipSection from './sections/wip-section.vue'
+import TopicPlaceholderSection from './sections/topic-placeholder-section.vue'
 
-const PLACEHOLDER_SECTION_VALUES = SECTION_VALUES.filter((v) => v !== 'overview')
+const DEPARTMENT_KEYS = ['design', 'trim', 'rawPolish', 'gemSort', 'setting', 'plating', 'costCard']
 
 export default {
   name: 'ProductionInsightView',
@@ -147,22 +113,20 @@ export default {
     ToggleGroupGeneric,
     FilterPanelGeneric,
     ActiveFilterChipsGeneric,
-    DateRangeGeneric,
+    InputTextGeneric,
     MultiSelectGeneric,
-    OverviewSection
-  },
-
-  setup() {
-    const masterApiStore = useMasterApiStore()
-    return { masterApiStore }
+    WipSection,
+    TopicPlaceholderSection
   },
 
   data() {
     return {
-      activeSection: 'overview',
-      visitedSections: new Set(['overview']),
-      filter: buildDefaultFilter(),
-      draftFilter: buildDefaultFilter(),
+      activeSection: 'wip',
+      visitedSections: new Set(['wip']),
+      filters: {
+        wip: buildDefaultWipFilter()
+      },
+      draftWipFilter: buildDefaultWipFilter(),
       isFilterPanelOpen: false,
       isApplyingRouteQuery: false
     }
@@ -173,25 +137,27 @@ export default {
       return SECTION_VALUES.map((value) => ({ value, label: this.$t(`view.productionInsight.nav.${value}`) }))
     },
 
-    placeholderSections() {
-      return PLACEHOLDER_SECTION_VALUES.map((value) => ({
-        value,
-        linkTo: value === 'gold' ? '/gold-loss-dashboard' : '/production-dashboard',
-        linkLabel: this.$t(`view.productionInsight.placeholder.link.${value}`)
-      }))
+    placeholderTopics() {
+      return SECTION_VALUES.filter((v) => v !== 'wip')
+    },
+
+    departmentOptions() {
+      return DEPARTMENT_KEYS.map((key) => ({ value: key, label: this.$t(`view.executive.department.${key}`) }))
+    },
+
+    // ตอนนี้มีตัวกรองจริงแค่หมวด "งานค้างและคอขวด" — หมวดอื่นยังเป็น placeholder ไม่มี filter ให้กด
+    hasFilterableFields() {
+      return this.activeSection === 'wip'
     },
 
     activeChips() {
-      return buildActiveChips(
-        [
-          { key: 'dateRange', label: '', value: formatChipDateRange(this.filter.start, this.filter.end), alwaysShow: true },
-          { key: 'gold', label: this.$t('view.production.dashboard.filterGold'), value: this.resolveCodesLabel(this.filter.gold, this.masterApiStore.gold, 'nameEn', 'nameTh') },
-          { key: 'goldSize', label: this.$t('view.production.dashboard.filterGoldSize'), value: this.resolveCodesLabel(this.filter.goldSize, this.masterApiStore.goldSize, 'nameEn', 'nameTh') },
-          { key: 'productType', label: this.$t('view.production.dashboard.productType'), value: this.resolveCodesLabel(this.filter.productType, this.masterApiStore.productType, 'code', 'nameTh') },
-          { key: 'customerType', label: this.$t('view.production.dashboard.customerType'), value: this.resolveCodesLabel(this.filter.customerType, this.masterApiStore.customerType, 'code', 'nameTh') }
-        ],
-        this.activeSection
-      )
+      if (this.activeSection !== 'wip') return []
+      const f = this.filters.wip
+      return buildActiveChips([
+        { key: 'departmentKeys', label: this.$t('view.productionInsight.wip.filterDept'), value: this.resolveDeptLabels(f.departmentKeys) },
+        { key: 'staleDays', label: this.$t('view.productionInsight.wip.filterStaleDays'), value: f.staleDays !== WIP_DEFAULT_STALE_DAYS ? String(f.staleDays) : '' },
+        { key: 'riskWindowDays', label: this.$t('view.productionInsight.wip.filterRiskWindowDays'), value: f.riskWindowDays !== WIP_DEFAULT_RISK_WINDOW_DAYS ? String(f.riskWindowDays) : '' }
+      ])
     }
   },
 
@@ -201,7 +167,7 @@ export default {
       this.syncStateToQuery()
     },
 
-    filter: {
+    filters: {
       handler() {
         this.syncStateToQuery()
       },
@@ -210,21 +176,16 @@ export default {
   },
 
   methods: {
-    resolveCodesLabel(codes, options, valueKey, labelKey) {
-      if (!codes || !codes.length) return ''
-      return codes
-        .map((code) => {
-          const found = (options || []).find((o) => o[valueKey] === code)
-          return found ? found[labelKey] : code
-        })
-        .join(', ')
+    resolveDeptLabels(keys) {
+      if (!keys || !keys.length) return ''
+      return keys.map((key) => this.$t(`view.executive.department.${key}`)).join(', ')
     },
 
     applyQueryToState(query) {
       this.isApplyingRouteQuery = true
       this.activeSection = resolveActiveSection(query.view)
       this.visitedSections.add(this.activeSection)
-      this.filter = parseFilterQuery(query)
+      this.filters.wip = parseWipFilterQuery(query)
       this.$nextTick(() => {
         this.isApplyingRouteQuery = false
       })
@@ -232,17 +193,13 @@ export default {
 
     syncStateToQuery() {
       if (this.isApplyingRouteQuery) return
-      const query = { ...this.$route.query, view: this.activeSection, ...filterToQuery(this.filter) }
-      clearedFilterQueryKeys(this.filter).forEach((key) => delete query[key])
+      const query = { ...this.$route.query, view: this.activeSection, ...wipFilterToQuery(this.filters.wip) }
+      clearedWipFilterQueryKeys(this.filters.wip).forEach((key) => delete query[key])
       this.$router.replace({ query }).catch(() => {})
     },
 
-    onSwitchSection(section) {
-      this.activeSection = resolveActiveSection(section)
-    },
-
     openFilterPanel() {
-      this.draftFilter = { ...this.filter }
+      this.draftWipFilter = { ...this.filters.wip }
       this.isFilterPanelOpen = true
     },
 
@@ -251,12 +208,12 @@ export default {
     },
 
     onFilterApply() {
-      this.filter = { ...this.draftFilter }
+      this.filters.wip = { ...this.draftWipFilter }
       this.closeFilterPanel()
     },
 
     onFilterClear() {
-      this.filter = buildDefaultFilter()
+      this.filters.wip = buildDefaultWipFilter()
       this.closeFilterPanel()
     },
 
@@ -265,28 +222,20 @@ export default {
     },
 
     onRemoveChip(key) {
-      const next = { ...this.filter }
-      if (key === 'dateRange') {
-        const defaults = buildDefaultDateRange()
-        next.start = defaults.start
-        next.end = defaults.end
-      } else {
-        next[key] = []
-      }
-      this.filter = next
+      const next = { ...this.filters.wip }
+      if (key === 'departmentKeys') next.departmentKeys = []
+      else if (key === 'staleDays') next.staleDays = WIP_DEFAULT_STALE_DAYS
+      else if (key === 'riskWindowDays') next.riskWindowDays = WIP_DEFAULT_RISK_WINDOW_DAYS
+      this.filters.wip = next
     },
 
     onClearFilter() {
-      this.filter = buildDefaultFilter()
+      this.filters.wip = buildDefaultWipFilter()
     }
   },
 
   created() {
     this.applyQueryToState(this.$route.query)
-    if (!this.masterApiStore.gold.length) this.masterApiStore.fetchGold()
-    if (!this.masterApiStore.goldSize.length) this.masterApiStore.fetchGoldSize()
-    if (!this.masterApiStore.productType.length) this.masterApiStore.fetchProductType()
-    if (!this.masterApiStore.customerType.length) this.masterApiStore.fetchCustomerType()
   }
 }
 </script>
@@ -321,6 +270,7 @@ export default {
 
 .production-insight__filter-btn {
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 @media (max-width: 1024px) {
@@ -342,47 +292,5 @@ export default {
   color: var(--on-inverse);
   font-size: var(--fs-sm);
   font-weight: 700;
-}
-
-.production-insight__placeholder-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-lg);
-}
-
-.insight-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-sm);
-  padding: var(--sp-2xl);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-card-bg);
-  color: var(--base-sub-color);
-  text-align: center;
-
-  i {
-    font-size: var(--fs-xl);
-    color: var(--base-sub-color);
-  }
-
-  p {
-    margin: 0;
-    font-size: var(--fs-base);
-  }
-
-  a {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--sp-xs);
-    color: var(--base-green);
-    font-weight: 600;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
 }
 </style>

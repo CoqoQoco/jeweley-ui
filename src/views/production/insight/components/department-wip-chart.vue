@@ -1,8 +1,7 @@
 <!--
   department-wip-chart — กราฟ "งานค้างแยกแผนก" (stacked horizontal bar)
-  สกัดจาก src/views/report/executive/components/production-wip-view.vue เพื่อใช้ร่วมกับ
-  src/views/production/insight/sections/overview-section.vue (Dashboard v2 /executive + /production-dashboard)
-  ไม่มี logic คำนวณใหม่ — ย้ายมาตรงๆ (verbatim) จาก departmentSeries/departmentOptions เดิม
+  feed จาก report.departments ของ ProductionInsight/Wip — ใช้ใน src/views/production/insight/sections/wip-section.vue
+  (Revision 2 per-topic tabs) — ไม่มี logic คำนวณพิเศษ นอกจาก series/options mapping ตรงๆ จาก props
 -->
 <template>
   <ChartGeneric

@@ -52,6 +52,10 @@ export default {
     colDepartment: 'Department/Status',
     colOpenDate: 'Opened',
     colLastMove: 'Last moved',
+    colLastUpdateBy: 'Last Updated By',
+    colLastAction: 'Last Action',
+    colLastActionDate: 'Update Date',
+    colWorkers: 'Workers',
     colDays: 'Days',
     currentMonthBadge: 'Not yet complete'
   },

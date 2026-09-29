@@ -10,14 +10,7 @@
 
     <TabViewGeneric :modelValue="activeTab" :tabs="tabsConfig" @update:modelValue="onTabChange">
       <template #production>
-        <productionInsightView>
-          <template #wip-extra>
-            <productionWipView :filter="productionFilter" :refreshToken="refreshToken" @update:filter="productionFilter = $event" />
-          </template>
-          <template #gold-extra>
-            <goldLossTrendView :refreshToken="refreshToken" v-model:rankingRange="goldLossRankingRange" />
-          </template>
-        </productionInsightView>
+        <productionInsightView />
       </template>
       <template #sales>
         <salesView :receivablesSummary="summary.receivables" :salesOrdersSummary="summary.salesOrders" :refreshToken="refreshToken" />
@@ -53,10 +46,8 @@ import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import TabViewGeneric from '@/components/generic/TabViewGeneric.vue'
 
 import summaryView from './components/summary-view.vue'
-import productionWipView from './components/production-wip-view.vue'
 import salesView from './components/sales-view.vue'
 import stockHealthView from './components/stock-health-view.vue'
-import goldLossTrendView from './components/gold-loss-trend-view.vue'
 import productionInsightView from '@/views/production/insight/index-view.vue'
 
 const EXPORT_TAKE = 5000
@@ -88,10 +79,8 @@ export default {
     ButtonGeneric,
     TabViewGeneric,
     summaryView,
-    productionWipView,
     salesView,
     stockHealthView,
-    goldLossTrendView,
     productionInsightView
   },
 
@@ -269,7 +258,7 @@ export default {
           },
           {
             sheetName: this.$t('view.executive.excel.sheetStalePlans'),
-            data: buildStalePlansExcelRows(stalePlansRes?.data, this.departmentLabelMap),
+            data: buildStalePlansExcelRows(stalePlansRes?.data, this.departmentLabelMap, this.$t('view.productionInsight.wip.lastActionCreated')),
             columns: [
               { header: this.$t('view.executive.production.colWo'), key: 'wo' },
               { header: this.$t('view.executive.production.colMold'), key: 'mold' },
@@ -280,6 +269,10 @@ export default {
               { header: this.$t('common.field.status'), key: 'status' },
               { header: this.$t('view.executive.production.colOpenDate'), key: 'createDate' },
               { header: this.$t('view.executive.production.colLastMove'), key: 'lastMoveDate' },
+              { header: this.$t('view.executive.production.colLastUpdateBy'), key: 'lastUpdateBy' },
+              { header: this.$t('view.executive.production.colLastAction'), key: 'lastAction' },
+              { header: this.$t('view.executive.production.colLastActionDate'), key: 'lastActionDate' },
+              { header: this.$t('view.executive.production.colWorkers'), key: 'workers' },
               { header: this.$t('view.executive.production.colDays'), key: 'daysSinceMove' }
             ]
           },
