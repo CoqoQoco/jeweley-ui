@@ -91,6 +91,14 @@ export default {
     cameraErrorNotSupported: 'This browser does not support camera access — please use HTTPS',
     cameraErrorGeneric: 'Unable to open camera — please try again'
   },
+  rangePreset: {
+    title: {
+      '1m': 'Last 1 month · weekly view',
+      '3m': 'Last 3 months · weekly view',
+      '6m': 'Last 6 months · monthly view',
+      '1y': 'Last 1 year · monthly view'
+    }
+  },
   printer: {
     reload: 'Reload printer list',
     selectPlaceholder: 'Select or type printer name',

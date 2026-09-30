@@ -6,7 +6,8 @@
   <InsightFindingList :findings="resolvedProblems" :loading="loading" @goto-report="onGotoReport" />
 
   Props:
-    findings — Array (required) ของ { key, severity: 'critical'|'warning'|'info', text, reportRef? }
+    findings — Array (required) ของ { key, severity: 'critical'|'warning'|'info', text, helpText?, reportRef? }
+               `helpText` ว่าง = ไม่แสดงไอคอน ⓘ (ไม่ใช่ทุก finding จะมีคำอธิบาย)
     loading  — Boolean (false)
 
   Emits: goto-report(reportRef) — เมื่อกดปุ่ม [ดู ›] ของ finding ที่มี reportRef
@@ -29,6 +30,7 @@
       >
         <i :class="['bi', severityIcon(finding.severity)]"></i>
         <span class="insight-finding-list__text">{{ finding.text }}</span>
+        <InfoTipGeneric v-if="finding.helpText" :text="finding.helpText" />
         <ButtonGeneric
           v-if="finding.reportRef"
           variant="plain"
@@ -46,12 +48,14 @@
 import { resolveFindingSeverityIcon } from './insight-helpers.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import InfoTipGeneric from '@/components/generic/InfoTipGeneric.vue'
 
 export default {
   name: 'InsightFindingList',
 
   components: {
-    ButtonGeneric
+    ButtonGeneric,
+    InfoTipGeneric
   },
 
   props: {

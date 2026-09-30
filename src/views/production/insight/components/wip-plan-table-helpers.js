@@ -28,3 +28,15 @@ export function buildLastActionLine(lastUpdateBy, lastAction, createdFallbackLab
   const action = lastAction || createdFallbackLabel
   return `${who} · ${action}`
 }
+
+export const PLAN_DETAIL_ROUTE_NAME = 'plan-order-tracking-detail'
+
+// ตัดสินใจว่าเลขที่ใบงานในตารางจะ render เป็นลิงก์เปิด detail (แท็บใหม่) หรือข้อความอ่านอย่างเดียว — pure
+// ล้วน ไม่พึ่ง Vue Router จริง (แค่คืน route location object ให้ caller ส่งเข้า `$router.resolve()` เอง)
+// เพื่อให้เทสได้โดยไม่ต้อง mock router — hasPermission ให้ caller เช็คจาก PermissionService มาก่อนแล้ว
+export function resolvePlanLinkState(planId, hasPermission) {
+  if (!planId || !hasPermission) {
+    return { canOpen: false, routeLocation: null }
+  }
+  return { canOpen: true, routeLocation: { name: PLAN_DETAIL_ROUTE_NAME, params: { id: planId } } }
+}

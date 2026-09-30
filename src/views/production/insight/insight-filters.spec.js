@@ -8,7 +8,10 @@ import {
   parseWipFilterQuery,
   wipFilterToQuery,
   clearedWipFilterQueryKeys,
-  buildActiveChips
+  buildActiveChips,
+  WIP_DEFAULT_STALE_DAYS,
+  WIP_DEFAULT_RISK_WINDOW_DAYS,
+  WIP_DEFAULT_GROWTH_THRESHOLD_PERCENT
 } from './insight-filters.js'
 
 describe('resolveActiveSection', () => {
@@ -27,53 +30,93 @@ describe('resolveActiveSection', () => {
 })
 
 describe('buildDefaultWipFilter', () => {
-  it('defaults to no department filter, 180-day stale threshold, 30-day risk window', () => {
-    expect(buildDefaultWipFilter()).toEqual({
-      departmentKeys: [],
-      staleDays: 180,
-      riskWindowDays: 30
-    })
+  it('defaults to no department filter, 180-day stale threshold, 30-day risk window, 20% growth threshold, 3m range', () => {
+    const filter = buildDefaultWipFilter()
+    expect(filter.departmentKeys).toEqual([])
+    expect(filter.staleDays).toBe(180)
+    expect(filter.riskWindowDays).toBe(30)
+    expect(filter.growthThresholdPercent).toBe(20)
+    expect(filter.rangePreset).toBe('3m')
+    expect(filter.bucket).toBe('week')
+    expect(filter.start).toBeInstanceOf(Date)
+    expect(filter.end).toBeInstanceOf(Date)
   })
 })
 
 describe('parseWipFilterQuery / wipFilterToQuery round-trip', () => {
-  it('parses query strings back into filter shape', () => {
-    const filter = parseWipFilterQuery({ wipDept: 'setting,trim', wipStaleDays: '90', wipRiskWindow: '14' })
-    expect(filter).toEqual({ departmentKeys: ['setting', 'trim'], staleDays: 90, riskWindowDays: 14 })
+  it('parses query strings back into filter shape, including range and growth threshold', () => {
+    const filter = parseWipFilterQuery({ wipDept: 'setting,trim', wipStaleDays: '90', wipRiskWindow: '14', wipGrowth: '35', range: '1y' })
+    expect(filter.departmentKeys).toEqual(['setting', 'trim'])
+    expect(filter.staleDays).toBe(90)
+    expect(filter.riskWindowDays).toBe(14)
+    expect(filter.growthThresholdPercent).toBe(35)
+    expect(filter.rangePreset).toBe('1y')
+    expect(filter.bucket).toBe('month')
   })
 
   it('falls back to defaults when the query is empty', () => {
-    expect(parseWipFilterQuery({})).toEqual(buildDefaultWipFilter())
+    const filter = parseWipFilterQuery({})
+    const defaults = buildDefaultWipFilter()
+    expect(filter.departmentKeys).toEqual(defaults.departmentKeys)
+    expect(filter.staleDays).toBe(defaults.staleDays)
+    expect(filter.riskWindowDays).toBe(defaults.riskWindowDays)
+    expect(filter.growthThresholdPercent).toBe(defaults.growthThresholdPercent)
+    expect(filter.rangePreset).toBe(defaults.rangePreset)
+  })
+
+  it('parses a custom start/end range', () => {
+    const filter = parseWipFilterQuery({ start: '2026-01-01', end: '2026-02-01' })
+    expect(filter.rangePreset).toBe('custom')
+    expect(filter.bucket).toBe('week')
   })
 
   it('ignores invalid non-positive numeric query values and falls back to defaults', () => {
-    const filter = parseWipFilterQuery({ wipStaleDays: '0', wipRiskWindow: 'abc' })
-    expect(filter.staleDays).toBe(180)
-    expect(filter.riskWindowDays).toBe(30)
+    const filter = parseWipFilterQuery({ wipStaleDays: '0', wipRiskWindow: 'abc', wipGrowth: '-5' })
+    expect(filter.staleDays).toBe(WIP_DEFAULT_STALE_DAYS)
+    expect(filter.riskWindowDays).toBe(WIP_DEFAULT_RISK_WINDOW_DAYS)
+    expect(filter.growthThresholdPercent).toBe(WIP_DEFAULT_GROWTH_THRESHOLD_PERCENT)
   })
 
   it('wipFilterToQuery only emits keys that differ from default', () => {
     expect(wipFilterToQuery(buildDefaultWipFilter())).toEqual({})
-    expect(wipFilterToQuery({ departmentKeys: ['setting'], staleDays: 180, riskWindowDays: 30 })).toEqual({ wipDept: 'setting' })
-    expect(wipFilterToQuery({ departmentKeys: [], staleDays: 90, riskWindowDays: 30 })).toEqual({ wipStaleDays: '90' })
+    expect(wipFilterToQuery({ ...buildDefaultWipFilter(), departmentKeys: ['setting'] })).toEqual({ wipDept: 'setting' })
+    expect(wipFilterToQuery({ ...buildDefaultWipFilter(), growthThresholdPercent: 35 })).toEqual({ wipGrowth: '35' })
+    expect(wipFilterToQuery({ ...buildDefaultWipFilter(), rangePreset: '1y', start: new Date('2025-09-29'), end: new Date('2026-09-29') })).toEqual({
+      range: '1y'
+    })
   })
 
   it('round-trips through parseWipFilterQuery -> wipFilterToQuery -> parseWipFilterQuery', () => {
-    const original = { departmentKeys: ['setting', 'trim'], staleDays: 120, riskWindowDays: 14 }
+    const original = {
+      departmentKeys: ['setting', 'trim'],
+      staleDays: 120,
+      riskWindowDays: 14,
+      growthThresholdPercent: 35,
+      rangePreset: '1y',
+      start: new Date('2025-09-29'),
+      end: new Date('2026-09-29'),
+      bucket: 'month'
+    }
     const roundTripped = parseWipFilterQuery(wipFilterToQuery(original))
-    expect(roundTripped).toEqual(original)
+    expect(roundTripped.departmentKeys).toEqual(original.departmentKeys)
+    expect(roundTripped.staleDays).toBe(original.staleDays)
+    expect(roundTripped.riskWindowDays).toBe(original.riskWindowDays)
+    expect(roundTripped.growthThresholdPercent).toBe(original.growthThresholdPercent)
+    expect(roundTripped.rangePreset).toBe(original.rangePreset)
   })
 })
 
 describe('clearedWipFilterQueryKeys', () => {
   it('returns query keys that are back to default', () => {
     const keys = clearedWipFilterQueryKeys(buildDefaultWipFilter())
-    expect(keys.sort()).toEqual(['wipDept', 'wipRiskWindow', 'wipStaleDays'].sort())
+    expect(keys.sort()).toEqual(['range', 'start', 'end', 'wipDept', 'wipRiskWindow', 'wipStaleDays', 'wipGrowth'].sort())
   })
 
   it('excludes keys that are still non-default', () => {
-    const keys = clearedWipFilterQueryKeys({ departmentKeys: ['setting'], staleDays: 90, riskWindowDays: 30 })
-    expect(keys.sort()).toEqual(['wipRiskWindow'].sort())
+    const keys = clearedWipFilterQueryKeys({ ...buildDefaultWipFilter(), staleDays: 90, growthThresholdPercent: 35 })
+    expect(keys).not.toContain('wipStaleDays')
+    expect(keys).not.toContain('wipGrowth')
+    expect(keys).toContain('wipRiskWindow')
   })
 })
 

@@ -5,6 +5,11 @@
 // ไม่มี endpoint ใหม่ตัวไหนรับพารามิเตอร์พวกนี้เลย) — แต่ละ topic tab ถือ filter ของตัวเองอิสระ ตอนนี้
 // implement จริงแค่หมวด "wip" (งานค้างและคอขวด) — หมวดอื่นเพิ่ม default/parse/query ของตัวเองทีหลังตอน
 // implement จริงตามรูปแบบเดียวกับ wip ด้านล่าง
+//
+// ช่วงเวลา (rangePreset/start/end/bucket) ประกอบร่วมกับ range-presets.js (infra กลาง ใช้ query key ไม่มี
+// prefix — range/start/end) — ฟังก์ชันด้านล่างห่อรวมให้ caller (index-view.vue) เห็น filters.wip เป็น
+// object เดียว ไม่ต้องยุ่งกับ 2 โมดูลแยกกันเอง
+import { buildDefaultRangeState, parseRangeQuery, rangeToQuery, clearedRangeQueryKeys } from '@/services/utils/range-presets.js'
 
 export const SECTION_VALUES = ['wip', 'delivery', 'capacity', 'gold', 'workers', 'materials']
 export const DEFAULT_SECTION = 'wip'
@@ -13,16 +18,23 @@ export function resolveActiveSection(value) {
   return SECTION_VALUES.includes(value) ? value : DEFAULT_SECTION
 }
 
-// ---- WIP tab filter (departmentKeys / staleDays / riskWindowDays) ----
+// ---- WIP tab filter (departmentKeys / staleDays / riskWindowDays / growthThresholdPercent / range) ----
 
 export const WIP_DEFAULT_STALE_DAYS = 180
 export const WIP_DEFAULT_RISK_WINDOW_DAYS = 30
+export const WIP_DEFAULT_GROWTH_THRESHOLD_PERCENT = 20
 
 export function buildDefaultWipFilter() {
+  const range = buildDefaultRangeState()
   return {
     departmentKeys: [],
     staleDays: WIP_DEFAULT_STALE_DAYS,
-    riskWindowDays: WIP_DEFAULT_RISK_WINDOW_DAYS
+    riskWindowDays: WIP_DEFAULT_RISK_WINDOW_DAYS,
+    growthThresholdPercent: WIP_DEFAULT_GROWTH_THRESHOLD_PERCENT,
+    rangePreset: range.preset,
+    start: range.start,
+    end: range.end,
+    bucket: range.bucket
   }
 }
 
@@ -40,29 +52,39 @@ function parsePositiveIntOr(value, fallback) {
 }
 
 export function parseWipFilterQuery(query = {}) {
+  const range = parseRangeQuery(query)
   return {
     departmentKeys: parseArrayParam(query.wipDept),
     staleDays: parsePositiveIntOr(query.wipStaleDays, WIP_DEFAULT_STALE_DAYS),
-    riskWindowDays: parsePositiveIntOr(query.wipRiskWindow, WIP_DEFAULT_RISK_WINDOW_DAYS)
+    riskWindowDays: parsePositiveIntOr(query.wipRiskWindow, WIP_DEFAULT_RISK_WINDOW_DAYS),
+    growthThresholdPercent: parsePositiveIntOr(query.wipGrowth, WIP_DEFAULT_GROWTH_THRESHOLD_PERCENT),
+    rangePreset: range.preset,
+    start: range.start,
+    end: range.end,
+    bucket: range.bucket
   }
 }
 
 // คืนเฉพาะ key ของ query ที่ไฟล์นี้เป็นเจ้าของ (caller merge กับ query เดิม เช่น executive ?tab= เอง) —
 // ละเว้น key ที่ยังเป็นค่า default (กัน URL รก เมื่อผู้ใช้ยังไม่แตะตัวกรองเลย)
 export function wipFilterToQuery(filter = {}) {
-  const query = {}
+  const query = { ...rangeToQuery({ preset: filter.rangePreset, start: filter.start, end: filter.end }) }
   if (filter.departmentKeys && filter.departmentKeys.length) query.wipDept = filter.departmentKeys.join(',')
   if (filter.staleDays && filter.staleDays !== WIP_DEFAULT_STALE_DAYS) query.wipStaleDays = String(filter.staleDays)
   if (filter.riskWindowDays && filter.riskWindowDays !== WIP_DEFAULT_RISK_WINDOW_DAYS) query.wipRiskWindow = String(filter.riskWindowDays)
+  if (filter.growthThresholdPercent && filter.growthThresholdPercent !== WIP_DEFAULT_GROWTH_THRESHOLD_PERCENT) {
+    query.wipGrowth = String(filter.growthThresholdPercent)
+  }
   return query
 }
 
 // key ของ query ที่ต้องลบทิ้งเมื่อ filter กลับไปเป็นค่า default
 export function clearedWipFilterQueryKeys(filter = {}) {
-  const keys = []
+  const keys = [...clearedRangeQueryKeys({ preset: filter.rangePreset, start: filter.start, end: filter.end })]
   if (!filter.departmentKeys || !filter.departmentKeys.length) keys.push('wipDept')
   if (!filter.staleDays || filter.staleDays === WIP_DEFAULT_STALE_DAYS) keys.push('wipStaleDays')
   if (!filter.riskWindowDays || filter.riskWindowDays === WIP_DEFAULT_RISK_WINDOW_DAYS) keys.push('wipRiskWindow')
+  if (!filter.growthThresholdPercent || filter.growthThresholdPercent === WIP_DEFAULT_GROWTH_THRESHOLD_PERCENT) keys.push('wipGrowth')
   return keys
 }
 
@@ -70,6 +92,7 @@ export function clearedWipFilterQueryKeys(filter = {}) {
 // items: Array<{ key, label, value, alwaysShow? }> — value/label ต้อง resolve เป็นข้อความจริงมาก่อนแล้ว
 // (i18n resolution เป็นหน้าที่ของ component ผู้เรียก ไม่ใช่ไฟล์นี้) — ไม่มี concept "dimmed" ข้ามหมวดอีก
 // ต่อไปเพราะแต่ละหมวดถือ filter อิสระของตัวเอง (สลับหมวด = เปลี่ยนชุด chip ทั้งชุด ไม่ใช่แค่ทำให้จาง)
+// ไม่มี chip ของช่วงเวลาที่นี่ — RangePresetGeneric ในแถบเครื่องมือแสดงช่วงที่ใช้อยู่แล้ว ไม่ต้องซ้ำ
 export function buildActiveChips(items = []) {
   return items
     .filter((item) => item.alwaysShow || (item.value !== null && item.value !== undefined && item.value !== ''))

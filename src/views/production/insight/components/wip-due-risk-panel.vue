@@ -6,6 +6,7 @@
 <template>
   <div id="insight-report-dueRisk" class="wip-due-risk-panel">
     <SectionCardGeneric :title="$t('view.productionInsight.wip.dueRiskTitle')" icon="bi-hourglass-split" accent="warning" headerStyle="legend">
+      <p class="wip-due-risk-panel__note">{{ $t('view.productionInsight.wip.asOfTodayNote') }}</p>
       <div class="wip-due-risk-panel__toolbar">
         <ToggleGroupGeneric v-model="mode" :options="modeOptions" :ariaLabel="$t('view.productionInsight.wip.dueRiskModeLabel')" />
       </div>
@@ -20,8 +21,33 @@
           @page="handlePageChange"
           @sort="handleSortChange"
         >
+          <template #header-lastAction>
+            <span class="wip-due-risk-panel__col-header">
+              {{ $t('view.productionInsight.wip.colLastAction') }}
+              <InfoTipGeneric :text="$t('view.productionInsight.help.staleColLastAction')" position="bottom" tone="inverse" />
+            </span>
+          </template>
+
+          <template #header-workers>
+            <span class="wip-due-risk-panel__col-header">
+              {{ $t('view.productionInsight.wip.colWorkers') }}
+              <InfoTipGeneric :text="$t('view.productionInsight.help.staleColWorkers')" position="bottom" tone="inverse" />
+            </span>
+          </template>
+
           <template #woTemplate="{ data }">
-            {{ data.woText || data.woNumber || data.wo }}
+            <ButtonGeneric
+              v-if="planLinkState(data).canOpen"
+              variant="plain"
+              icon="bi-box-arrow-up-right"
+              :label="data.woText || data.woNumber || data.wo"
+              :title="$t('view.productionInsight.wip.planLinkTitle')"
+              @click="openPlanDetail(data.planId)"
+            />
+            <span v-else class="wip-due-risk-panel__plan-no">
+              {{ data.woText || data.woNumber || data.wo }}
+              <InfoTipGeneric :text="$t('view.productionInsight.wip.planLinkNoPermission')" />
+            </span>
           </template>
 
           <template #productTemplate="{ data }">
@@ -67,11 +93,15 @@
 
 <script>
 import { useProductionInsightApiStore } from '@/stores/modules/api/production/production-insight-api.js'
+import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
+import { PermissionService } from '@/services/permission/permission.js'
 import { formatDate } from '@/services/utils/dayjs.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
-import { summarizeWorkers, resolveStatusLine, buildLastActionLine } from './wip-plan-table-helpers.js'
+import { summarizeWorkers, resolveStatusLine, buildLastActionLine, resolvePlanLinkState, PLAN_DETAIL_ROUTE_NAME } from './wip-plan-table-helpers.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
+import InfoTipGeneric from '@/components/generic/InfoTipGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 
@@ -84,13 +114,16 @@ export default {
 
   components: {
     SectionCardGeneric,
+    InfoTipGeneric,
+    ButtonGeneric,
     BaseDataTable,
     ToggleGroupGeneric
   },
 
   setup() {
     const productionInsightStore = useProductionInsightApiStore()
-    return { productionInsightStore }
+    const authStore = useAuthStore()
+    return { productionInsightStore, authStore }
   },
 
   props: {
@@ -115,8 +148,16 @@ export default {
   computed: {
     modeOptions() {
       return [
-        { value: 'overdue', label: this.$t('view.productionInsight.wip.dueRiskModeOverdue') },
-        { value: 'dueSoon', label: this.$t('view.productionInsight.wip.dueRiskModeDueSoon', { days: this.riskWindowDays }) }
+        {
+          value: 'overdue',
+          label: this.$t('view.productionInsight.wip.dueRiskModeOverdue'),
+          title: this.$t('view.productionInsight.help.dueRiskModeOverdue')
+        },
+        {
+          value: 'dueSoon',
+          label: this.$t('view.productionInsight.wip.dueRiskModeDueSoon', { days: this.riskWindowDays }),
+          title: this.$t('view.productionInsight.help.dueRiskModeDueSoon', { days: this.riskWindowDays })
+        }
       ]
     },
 
@@ -128,8 +169,12 @@ export default {
       return map
     },
 
+    // BaseDataTable/PrimeVue เรนเดอร์ทั้ง `header` prop และ `#header-<field>` slot คู่กันเสมอ (ไม่ทับกัน — ดู
+    // node_modules/primevue/datatable/HeaderCell.vue) คอลัมน์ไหนมี custom header slot (label+ⓘ) ต้องเคลียร์
+    // `header` prop ทิ้งเป็น '' ไม่งั้นหัวขึ้นซ้ำ 2 จุด (เหมือน gold-loss-dashboard reconcile-tab)
     columns() {
-      return [
+      const fieldsWithCustomHeaderSlot = ['lastAction', 'workers']
+      const cols = [
         { field: 'wo', header: this.$t('view.executive.production.colWo'), sortable: false, minWidth: '130px' },
         { field: 'mold', header: this.$t('view.executive.production.colMold'), sortable: false, minWidth: '110px' },
         { field: 'product', header: this.$t('view.executive.production.colProduct'), sortable: false, minWidth: '160px' },
@@ -139,6 +184,15 @@ export default {
         { field: 'dueDate', header: this.$t('view.productionInsight.wip.dueRiskColDueDate'), sortable: false, minWidth: '110px' },
         { field: 'daysToDue', header: this.$t('view.productionInsight.wip.dueRiskColDaysToDue'), sortable: false, minWidth: '90px', align: 'right' }
       ]
+      return cols.map((col) => (fieldsWithCustomHeaderSlot.includes(col.field) ? { ...col, header: '' } : col))
+    },
+
+    // สิทธิ์เปิดรายละเอียดใบงาน — อ่านจาก meta.permissions ของ route ปลายทางเอง (ไม่ hardcode
+    // PERMISSIONS.PRODUCTION_EDIT ซ้ำที่นี่ ผูกกับ route definition แหล่งเดียว)
+    canOpenPlanDetail() {
+      const route = this.$router.resolve({ name: PLAN_DETAIL_ROUTE_NAME, params: { id: 0 } })
+      const permissionService = new PermissionService(this.authStore.getUser, this.authStore.permissions)
+      return permissionService.hasAnyPermission(route.meta.permissions)
     }
   },
 
@@ -172,6 +226,15 @@ export default {
       return summarizeWorkers(data.workers)
     },
 
+    planLinkState(data) {
+      return resolvePlanLinkState(data.planId, this.canOpenPlanDetail)
+    },
+
+    openPlanDetail(planId) {
+      const route = this.$router.resolve({ name: PLAN_DETAIL_ROUTE_NAME, params: { id: planId } })
+      window.open(route.href, '_blank', 'noopener')
+    },
+
     async fetchData() {
       const res = await this.productionInsightStore.fetchDueRiskPlans({
         take: this.take,
@@ -200,6 +263,13 @@ export default {
   min-width: 0;
 }
 
+.wip-due-risk-panel__note {
+  margin: 0 0 var(--sp-sm);
+  font-size: var(--fs-sm);
+  color: var(--base-sub-color);
+  font-style: italic;
+}
+
 .wip-due-risk-panel__toolbar {
   margin-bottom: var(--sp-lg);
 }
@@ -207,5 +277,17 @@ export default {
 .wip-due-risk-panel__overdue {
   color: var(--base-red);
   font-weight: 700;
+}
+
+.wip-due-risk-panel__col-header {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-xs);
+}
+
+.wip-due-risk-panel__plan-no {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-xs);
 }
 </style>

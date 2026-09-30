@@ -44,6 +44,8 @@
     accent      — 'main' | 'green' | 'warning' (สีของ text+icon, default 'main' — legend + dashboard mode เท่านั้น)
     headerStyle — 'underline' | 'legend' | 'filled' | 'dashboard' (default 'underline' = ใช้ pageTitle เดิม)
                   dashboard = หัวข้อ + เส้นคั่น ไม่มีกรอบ/พื้นครอบ (ไม่ double-border กับการ์ดลูกที่มีกรอบเอง)
+    titleTip    — String ('') — คำอธิบายเสริมข้างหัวข้อ (เรนเดอร์ `InfoTipGeneric` ต่อท้าย title) —
+                  **legend mode เท่านั้น** (โหมดอื่นยังไม่รองรับ)
 
   Slots:
     default         — เนื้อหาหลักของ card
@@ -75,6 +77,7 @@
     >
       <i v-if="icon" :class="['bi', icon]"></i>
       {{ title }}
+      <InfoTipGeneric v-if="titleTip" :text="titleTip" class="section-legend__tip" />
     </span>
     <div
       v-else-if="title && isDashboardMode"
@@ -99,13 +102,16 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
+import InfoTipGeneric from '@/components/generic/InfoTipGeneric.vue'
+
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
 
 export default {
   name: 'SectionCardGeneric',
 
   components: {
-    pageTitle
+    pageTitle,
+    InfoTipGeneric
   },
 
   props: {
@@ -130,6 +136,10 @@ export default {
       type: String,
       default: 'underline',
       validator: (v) => ['underline', 'legend', 'filled', 'dashboard'].includes(v)
+    },
+    titleTip: {
+      type: String,
+      default: ''
     }
   },
 

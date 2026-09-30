@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { summarizeWorkers, resolveStatusLine, buildLastActionLine } from './wip-plan-table-helpers.js'
+import { summarizeWorkers, resolveStatusLine, buildLastActionLine, resolvePlanLinkState, PLAN_DETAIL_ROUTE_NAME } from './wip-plan-table-helpers.js'
 
 describe('summarizeWorkers', () => {
   it('returns empty shape when workers is empty/missing', () => {
@@ -59,5 +59,24 @@ describe('buildLastActionLine', () => {
 
   it('handles both missing', () => {
     expect(buildLastActionLine(null, null, 'สร้างใบงาน')).toBe('— · สร้างใบงาน')
+  })
+})
+
+describe('resolvePlanLinkState', () => {
+  it('allows opening when planId is present and permission is granted', () => {
+    expect(resolvePlanLinkState(123, true)).toEqual({
+      canOpen: true,
+      routeLocation: { name: PLAN_DETAIL_ROUTE_NAME, params: { id: 123 } }
+    })
+  })
+
+  it('blocks opening when permission is not granted', () => {
+    expect(resolvePlanLinkState(123, false)).toEqual({ canOpen: false, routeLocation: null })
+  })
+
+  it('blocks opening when planId is missing', () => {
+    expect(resolvePlanLinkState(null, true)).toEqual({ canOpen: false, routeLocation: null })
+    expect(resolvePlanLinkState(undefined, true)).toEqual({ canOpen: false, routeLocation: null })
+    expect(resolvePlanLinkState(0, true)).toEqual({ canOpen: false, routeLocation: null })
   })
 })

@@ -9,7 +9,8 @@ import {
   resolveFindingParams,
   buildFindingKey,
   formatInsightNumber,
-  formatInsightPercent
+  formatInsightPercent,
+  resolveHelpKey
 } from './insight-helpers.js'
 
 describe('resolveFindingSeverityIcon', () => {
@@ -116,5 +117,21 @@ describe('formatInsightPercent', () => {
 
   it('defaults to 0% for falsy values', () => {
     expect(formatInsightPercent(null)).toBe('0%')
+  })
+})
+
+describe('resolveHelpKey', () => {
+  it('returns the help i18n key for every known WIP code', () => {
+    ;['WIP_STALE', 'WIP_OVERDUE', 'WIP_DEPT_STALE_TOP', 'WIP_MELTED_OPEN', 'WIP_DEPT_GROWING', 'FC_BECOMING_STALE', 'FC_DUE_SOON_AT_RISK', 'FC_BOTTLENECK'].forEach(
+      (code) => {
+        expect(resolveHelpKey(code)).toBe(`view.productionInsight.help.${code}`)
+      }
+    )
+  })
+
+  it('returns an empty string for a code without a defined help entry (e.g. placeholder/action codes)', () => {
+    expect(resolveHelpKey('DELIVERY_PLACEHOLDER_OVERDUE')).toBe('')
+    expect(resolveHelpKey('ACT_CLOSE_STALE')).toBe('')
+    expect(resolveHelpKey('bogus')).toBe('')
   })
 })

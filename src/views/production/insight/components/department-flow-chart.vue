@@ -1,6 +1,9 @@
 <!--
-  department-flow-chart — กราฟ "งานเข้า-ออกแต่ละแผนก (90 วัน)" (grouped horizontal bar: inflow vs outflow)
+  department-flow-chart — กราฟ "งานเข้า-ออกแต่ละแผนก" (grouped horizontal bar: inflow vs outflow) ตามช่วง
+  เวลาที่เลือก (RangePresetGeneric/filter panel — หัวข้อกล่องเป็นคนโชว์ label ช่วง ไม่ใช่ component นี้)
   สุทธิ (net) แสดงต่อท้ายชื่อแผนกในแกนหมวดหมู่ (ไม่ใช้ ApexCharts annotation ซับซ้อน) — สี CHART_PALETTE เท่านั้น
+  ใช้ field inflow/outflow แบบทั่วไป (ไม่ผูกกับ 90 วันอีกต่อไป) — fallback ไปที่ inflow90d/outflow90d เดิม
+  เผื่อ backend ยังไม่ deploy field ใหม่ (endpoint กำลังพัฒนาคู่ขนาน)
 -->
 <template>
   <ChartGeneric
@@ -55,8 +58,8 @@ export default {
     series() {
       const rows = this.flow || []
       return [
-        { name: this.$t('view.productionInsight.wip.flowInflow'), data: rows.map((r) => r.inflow90d || 0) },
-        { name: this.$t('view.productionInsight.wip.flowOutflow'), data: rows.map((r) => r.outflow90d || 0) }
+        { name: this.$t('view.productionInsight.wip.flowInflow'), data: rows.map((r) => this.inflowOf(r)) },
+        { name: this.$t('view.productionInsight.wip.flowOutflow'), data: rows.map((r) => this.outflowOf(r)) }
       ]
     },
 
@@ -77,9 +80,17 @@ export default {
   },
 
   methods: {
+    inflowOf(row) {
+      return row.inflow ?? row.inflow90d ?? 0
+    },
+
+    outflowOf(row) {
+      return row.outflow ?? row.outflow90d ?? 0
+    },
+
     buildCategoryLabel(row) {
       const label = this.departmentLabelMap[row.key] || row.key
-      const net = row.net ?? (row.inflow90d || 0) - (row.outflow90d || 0)
+      const net = row.net ?? this.inflowOf(row) - this.outflowOf(row)
       const sign = net > 0 ? '+' : ''
       return `${label} (${this.$t('view.productionInsight.wip.flowNet')} ${sign}${this.formatCount(net)})`
     },

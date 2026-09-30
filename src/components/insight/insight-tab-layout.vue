@@ -30,6 +30,9 @@
     actions    — Array ของ { code, priority, ownerRole, relatedCodes, params } (default [])
     loading    — Boolean (false)
     i18nPrefix — String (default 'view.productionInsight.rules') namespace สำหรับ code -> ข้อความ
+    helpParams — Object ({}) — ค่าพารามิเตอร์เสริมสำหรับ resolve ข้อความคำอธิบาย (view.productionInsight.help.<CODE>)
+                 ที่ไม่ได้มากับ finding เอง (เช่น staleDays จาก filter ปัจจุบัน) — params ของ finding เอง
+                 (ถ้ามี field ชนกัน) ชนะเสมอ
 
   Slots: #report (เต็มความกว้าง)
 -->
@@ -40,20 +43,39 @@
       <span v-if="status" class="insight-tab-layout__status" :class="`insight-tab-layout__status--${status}`">
         <i :class="['bi', statusIcon]"></i>
         {{ $t(`view.productionInsight.status.${status}`) }}
+        <InfoTipGeneric :text="$t('view.productionInsight.help.statusMeaning')" />
       </span>
     </div>
 
     <div class="insight-tab-layout__row insight-tab-layout__row--split">
-      <SectionCardGeneric :title="$t('view.productionInsight.section.problems')" icon="bi-exclamation-triangle" accent="warning" headerStyle="legend">
+      <SectionCardGeneric
+        :title="$t('view.productionInsight.section.problems')"
+        :titleTip="$t('view.productionInsight.help.sectionProblems')"
+        icon="bi-exclamation-triangle"
+        accent="warning"
+        headerStyle="legend"
+      >
         <InsightFindingList :findings="resolvedProblems" :loading="loading" @goto-report="scrollToReport" />
       </SectionCardGeneric>
 
-      <SectionCardGeneric :title="$t('view.productionInsight.section.forecasts')" icon="bi-graph-up-arrow" accent="main" headerStyle="legend">
+      <SectionCardGeneric
+        :title="$t('view.productionInsight.section.forecasts')"
+        :titleTip="$t('view.productionInsight.help.sectionForecasts')"
+        icon="bi-graph-up-arrow"
+        accent="main"
+        headerStyle="legend"
+      >
         <InsightFindingList :findings="resolvedForecasts" :loading="loading" @goto-report="scrollToReport" />
       </SectionCardGeneric>
     </div>
 
-    <SectionCardGeneric :title="$t('view.productionInsight.section.actions')" icon="bi-list-check" accent="green" headerStyle="legend">
+    <SectionCardGeneric
+      :title="$t('view.productionInsight.section.actions')"
+      :titleTip="$t('view.productionInsight.help.sectionActions')"
+      icon="bi-list-check"
+      accent="green"
+      headerStyle="legend"
+    >
       <InsightActionList :actions="resolvedActions" :loading="loading" />
     </SectionCardGeneric>
 
@@ -64,9 +86,10 @@
 </template>
 
 <script>
-import { resolveStatusIcon, resolveFindingParams, buildFindingKey } from './insight-helpers.js'
+import { resolveStatusIcon, resolveFindingParams, resolveHelpKey, buildFindingKey } from './insight-helpers.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
+import InfoTipGeneric from '@/components/generic/InfoTipGeneric.vue'
 import InsightFindingList from './insight-finding-list.vue'
 import InsightActionList from './insight-action-list.vue'
 
@@ -75,6 +98,7 @@ export default {
 
   components: {
     SectionCardGeneric,
+    InfoTipGeneric,
     InsightFindingList,
     InsightActionList
   },
@@ -107,6 +131,10 @@ export default {
     i18nPrefix: {
       type: String,
       default: 'view.productionInsight.rules'
+    },
+    helpParams: {
+      type: Object,
+      default: () => ({})
     }
   },
 
@@ -142,11 +170,21 @@ export default {
       return this.$t(`${this.i18nPrefix}.${code}`, resolveFindingParams(params, this.translateDept))
     },
 
+    // คำอธิบาย "วิธีคำนวณ/เกณฑ์ด่วน" ของ finding — คืนค่าว่างเมื่อ code นั้นยังไม่มีคำอธิบาย (resolveHelpKey)
+    // เพื่อให้ caller (insight-finding-list.vue) ไม่ render ไอคอน ⓘ เลย — ผสม helpParams (เช่น staleDays
+    // จาก filter ปัจจุบัน) เข้ากับ params ของ finding เอง (params ของ finding ชนะถ้าชื่อ field ชนกัน)
+    resolveHelpText(code, params) {
+      const helpKey = resolveHelpKey(code)
+      if (!helpKey) return ''
+      return this.$t(helpKey, { ...this.helpParams, ...resolveFindingParams(params, this.translateDept) })
+    },
+
     resolveFindings(items) {
       return (items || []).map((item) => ({
         key: buildFindingKey(item.code, item.params),
         severity: item.severity,
         text: this.resolveText(item.code, item.params),
+        helpText: this.resolveHelpText(item.code, item.params),
         reportRef: item.reportRef
       }))
     },

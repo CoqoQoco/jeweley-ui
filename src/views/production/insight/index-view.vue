@@ -25,6 +25,14 @@
         class="production-insight__nav"
       />
 
+      <RangePresetGeneric
+        v-if="hasFilterableFields"
+        :modelValue="rangeModelValue"
+        :ariaLabel="$t('view.productionInsight.wip.rangeAriaLabel')"
+        :helpText="$t('view.productionInsight.help.rangeControl')"
+        @update:modelValue="onRangePresetChange"
+      />
+
       <ActiveFilterChipsGeneric
         v-if="hasFilterableFields"
         class="production-insight__chips"
@@ -74,6 +82,23 @@
         <FormFieldGeneric :label="$t('view.productionInsight.wip.filterRiskWindowDays')">
           <InputTextGeneric v-model.number="draftWipFilter.riskWindowDays" type="number" :min="1" />
         </FormFieldGeneric>
+        <FormFieldGeneric
+          :label="$t('view.productionInsight.wip.filterGrowthThreshold')"
+          :tip="$t('view.productionInsight.help.filterGrowthThreshold')"
+        >
+          <InputTextGeneric v-model.number="draftWipFilter.growthThresholdPercent" type="number" :min="1" />
+        </FormFieldGeneric>
+        <FormFieldGeneric
+          :label="$t('view.productionInsight.wip.filterCustomRangeLabel')"
+          :tip="$t('view.productionInsight.help.filterCustomRange')"
+        >
+          <DateRangeGeneric
+            :startDate="draftWipFilter.start"
+            :endDate="draftWipFilter.end"
+            @update:startDate="onDraftCustomRangeChange('start', $event)"
+            @update:endDate="onDraftCustomRangeChange('end', $event)"
+          />
+        </FormFieldGeneric>
       </template>
     </FilterPanelGeneric>
   </div>
@@ -89,16 +114,20 @@ import {
   clearedWipFilterQueryKeys,
   buildActiveChips,
   WIP_DEFAULT_STALE_DAYS,
-  WIP_DEFAULT_RISK_WINDOW_DAYS
+  WIP_DEFAULT_RISK_WINDOW_DAYS,
+  WIP_DEFAULT_GROWTH_THRESHOLD_PERCENT
 } from './insight-filters.js'
+import { resolvePresetRange, resolveCustomBucket } from '@/services/utils/range-presets.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 import FilterPanelGeneric from '@/components/generic/FilterPanelGeneric.vue'
 import ActiveFilterChipsGeneric from '@/components/generic/ActiveFilterChipsGeneric.vue'
+import RangePresetGeneric from '@/components/generic/RangePresetGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+import DateRangeGeneric from '@/components/prime-vue/DateRangeGeneric.vue'
 import WipSection from './sections/wip-section.vue'
 import TopicPlaceholderSection from './sections/topic-placeholder-section.vue'
 
@@ -113,8 +142,10 @@ export default {
     ToggleGroupGeneric,
     FilterPanelGeneric,
     ActiveFilterChipsGeneric,
+    RangePresetGeneric,
     InputTextGeneric,
     MultiSelectGeneric,
+    DateRangeGeneric,
     WipSection,
     TopicPlaceholderSection
   },
@@ -156,8 +187,18 @@ export default {
       return buildActiveChips([
         { key: 'departmentKeys', label: this.$t('view.productionInsight.wip.filterDept'), value: this.resolveDeptLabels(f.departmentKeys) },
         { key: 'staleDays', label: this.$t('view.productionInsight.wip.filterStaleDays'), value: f.staleDays !== WIP_DEFAULT_STALE_DAYS ? String(f.staleDays) : '' },
-        { key: 'riskWindowDays', label: this.$t('view.productionInsight.wip.filterRiskWindowDays'), value: f.riskWindowDays !== WIP_DEFAULT_RISK_WINDOW_DAYS ? String(f.riskWindowDays) : '' }
+        { key: 'riskWindowDays', label: this.$t('view.productionInsight.wip.filterRiskWindowDays'), value: f.riskWindowDays !== WIP_DEFAULT_RISK_WINDOW_DAYS ? String(f.riskWindowDays) : '' },
+        {
+          key: 'growthThresholdPercent',
+          label: this.$t('view.productionInsight.wip.filterGrowthThreshold'),
+          value: f.growthThresholdPercent !== WIP_DEFAULT_GROWTH_THRESHOLD_PERCENT ? String(f.growthThresholdPercent) : ''
+        }
       ])
+    },
+
+    // RangePresetGeneric เป็น controlled component — ส่ง state ปัจจุบันของ filters.wip เข้าไปแสดงผล
+    rangeModelValue() {
+      return { preset: this.filters.wip.rangePreset, start: this.filters.wip.start, end: this.filters.wip.end }
     }
   },
 
@@ -226,11 +267,29 @@ export default {
       if (key === 'departmentKeys') next.departmentKeys = []
       else if (key === 'staleDays') next.staleDays = WIP_DEFAULT_STALE_DAYS
       else if (key === 'riskWindowDays') next.riskWindowDays = WIP_DEFAULT_RISK_WINDOW_DAYS
+      else if (key === 'growthThresholdPercent') next.growthThresholdPercent = WIP_DEFAULT_GROWTH_THRESHOLD_PERCENT
       this.filters.wip = next
     },
 
     onClearFilter() {
       this.filters.wip = buildDefaultWipFilter()
+    },
+
+    // กดปุ่ม preset ใน RangePresetGeneric (แถบเครื่องมือ) — ใช้ทันที ไม่ผ่าน draft/apply เหมือน field อื่น
+    // ในแผงตัวกรอง (สอดคล้องกับการสลับหมวด/nav ที่ใช้ทันทีเช่นกัน)
+    onRangePresetChange({ preset, start, end }) {
+      this.filters.wip = { ...this.filters.wip, rangePreset: preset, start, end, bucket: resolvePresetRange(preset)?.bucket || this.filters.wip.bucket }
+    },
+
+    // แก้ช่วงเวลากำหนดเองในแผงตัวกรอง — ตั้ง rangePreset เป็น 'custom' ทันทีที่แตะ (ยังอยู่ใน draft จนกว่า
+    // จะกด "ใช้ตัวกรอง") ให้ RangePresetGeneric เลิก highlight ปุ่ม preset เมื่อ apply แล้ว
+    onDraftCustomRangeChange(field, value) {
+      this.draftWipFilter = {
+        ...this.draftWipFilter,
+        [field]: value,
+        rangePreset: 'custom',
+        bucket: resolveCustomBucket(field === 'start' ? value : this.draftWipFilter.start, field === 'end' ? value : this.draftWipFilter.end)
+      }
     }
   },
 

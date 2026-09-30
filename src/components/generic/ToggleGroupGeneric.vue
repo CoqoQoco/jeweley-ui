@@ -14,7 +14,8 @@
 
   Props:
     modelValue — String|Number (required) — ค่าที่เลือกอยู่
-    options    — Array (required) ของ { value, label }
+    options    — Array (required) ของ { value, label, title? } — `title` optional: native tooltip
+                 (attribute `title`) ต่อปุ่ม เช่นอธิบายว่าปุ่มนั้นหมายถึงอะไร
     ariaLabel  — String ('') — aria-label ของ role="tablist"
     disabled   — Boolean (false) — ปิดการกดทุกปุ่ม
 
@@ -31,6 +32,7 @@
       :class="{ 'toggle-group__btn--active': option.value === modelValue }"
       :aria-selected="option.value === modelValue"
       :disabled="disabled"
+      :title="option.title || null"
       @click="onSelect(option.value)"
     >
       {{ option.label }}

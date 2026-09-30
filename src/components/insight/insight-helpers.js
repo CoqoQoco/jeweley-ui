@@ -60,3 +60,21 @@ export function formatInsightNumber(value) {
 export function formatInsightPercent(value) {
   return `${new Intl.NumberFormat('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 1 }).format(value || 0)}%`
 }
+
+// code -> i18n key ของคำอธิบาย ("วิธีคำนวณ/เกณฑ์ด่วน" ต่อ finding) ใต้ namespace view.productionInsight.help
+// — ไม่ใช่ทุก code จะมีคำอธิบาย (เช่น code ชั่วคราวของหมวด placeholder) คืนค่าว่างเมื่อไม่มี ให้ caller
+// ไม่ render ไอคอน ⓘ เลย (กัน vue-i18n โชว์ key ดิบเวลาไม่เจอคำแปล)
+const HELP_KEY_CODES = new Set([
+  'WIP_STALE',
+  'WIP_OVERDUE',
+  'WIP_DEPT_STALE_TOP',
+  'WIP_MELTED_OPEN',
+  'WIP_DEPT_GROWING',
+  'FC_BECOMING_STALE',
+  'FC_DUE_SOON_AT_RISK',
+  'FC_BOTTLENECK'
+])
+
+export function resolveHelpKey(code) {
+  return HELP_KEY_CODES.has(code) ? `view.productionInsight.help.${code}` : ''
+}

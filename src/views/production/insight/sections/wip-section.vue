@@ -12,17 +12,33 @@
     :forecasts="forecasts"
     :actions="actions"
     :loading="loading"
+    :helpParams="helpParams"
   >
     <template #report>
+      <WipTrendPanel :start="filter.start" :end="filter.end" :bucket="filter.bucket" />
+
       <div class="wip-section__charts-row">
         <div id="insight-report-departments" class="wip-section__anchor">
-          <SectionCardGeneric :title="$t('view.executive.production.byDepartmentTitle')" icon="bi-diagram-3" accent="main" headerStyle="legend">
+          <SectionCardGeneric
+            :title="$t('view.executive.production.byDepartmentTitle')"
+            :titleTip="$t('view.productionInsight.help.departmentWipChart')"
+            icon="bi-diagram-3"
+            accent="main"
+            headerStyle="legend"
+          >
+            <p class="wip-section__note">{{ $t('view.productionInsight.wip.asOfTodayNote') }}</p>
             <DepartmentWipChart :departments="report.departments" :loading="loading" />
           </SectionCardGeneric>
         </div>
 
         <div id="insight-report-flow" class="wip-section__anchor">
-          <SectionCardGeneric :title="$t('view.productionInsight.wip.flowTitle')" icon="bi-arrow-left-right" accent="main" headerStyle="legend">
+          <SectionCardGeneric
+            :title="flowTitle"
+            :titleTip="$t('view.productionInsight.help.flowChart')"
+            icon="bi-arrow-left-right"
+            accent="main"
+            headerStyle="legend"
+          >
             <DepartmentFlowChart :flow="report.flow" :loading="loading" />
           </SectionCardGeneric>
         </div>
@@ -36,11 +52,13 @@
 
 <script>
 import { useProductionInsightApiStore } from '@/stores/modules/api/production/production-insight-api.js'
+import { formatRangeLabel } from '@/services/utils/range-presets.js'
 
 import InsightTabLayout from '@/components/insight/insight-tab-layout.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import DepartmentWipChart from '../components/department-wip-chart.vue'
 import DepartmentFlowChart from '../components/department-flow-chart.vue'
+import WipTrendPanel from '../components/wip-trend-panel.vue'
 import WipStalePlansPanel from '../components/wip-stale-plans-panel.vue'
 import WipDueRiskPanel from '../components/wip-due-risk-panel.vue'
 
@@ -62,6 +80,7 @@ export default {
     SectionCardGeneric,
     DepartmentWipChart,
     DepartmentFlowChart,
+    WipTrendPanel,
     WipStalePlansPanel,
     WipDueRiskPanel
   },
@@ -89,6 +108,22 @@ export default {
     }
   },
 
+  computed: {
+    flowTitle() {
+      return this.$t('view.productionInsight.wip.flowTitleRanged', { range: formatRangeLabel(this.filter.start, this.filter.end) })
+    },
+
+    // เสริม params ที่ finding เองไม่มี (staleDays/riskWindowDays/growthThresholdPercent มาจาก filter ปัจจุบัน)
+    // ให้ InsightTabLayout ใช้ resolve ข้อความคำอธิบาย (view.productionInsight.help.<CODE>)
+    helpParams() {
+      return {
+        staleDays: this.filter.staleDays,
+        riskWindowDays: this.filter.riskWindowDays,
+        thresholdPercent: this.filter.growthThresholdPercent
+      }
+    }
+  },
+
   watch: {
     filter: {
       handler() {
@@ -104,7 +139,10 @@ export default {
       this.loading = true
       const res = await this.productionInsightStore.fetchWip({
         staleDays: this.filter.staleDays,
-        riskWindowDays: this.filter.riskWindowDays
+        riskWindowDays: this.filter.riskWindowDays,
+        start: this.filter.start,
+        end: this.filter.end,
+        growthThresholdPercent: this.filter.growthThresholdPercent
       })
       this.status = res?.status || ''
       this.problems = res?.problems || []
@@ -164,5 +202,12 @@ export default {
 
 .wip-section__anchor {
   scroll-margin-top: calc(var(--mainbar-height) + 64px);
+}
+
+.wip-section__note {
+  margin: 0 0 var(--sp-sm);
+  font-size: var(--fs-sm);
+  color: var(--base-sub-color);
+  font-style: italic;
 }
 </style>

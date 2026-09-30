@@ -161,6 +161,7 @@
           :alignHeader="col.align || 'left'"
           :bodyStyle="{ textAlign: col.align || 'left' }"
           :class="col.className"
+          :headerClass="$slots[`header-${col.field}`] ? 'has-header-slot' : null"
         >
           <template #header v-if="$slots[`header-${col.field}`] || col.frozen">
             <slot :name="`header-${col.field}`">
@@ -820,6 +821,15 @@ export default {
       padding: 0.5rem 1rem !important;
       border: 1px solid #dee2e6 !important;
       color: #ffffff !important;
+
+      // resizableColumns (เปิดใน DataTable เสมอ) ทำให้ theme ตั้ง `.p-datatable-resizable-table th { overflow:
+      // hidden }` ให้ทุก th — ปกติไม่มีผลเพราะ header เป็นข้อความล้วน แต่คอลัมน์ที่มี custom header slot
+      // (เช่น label + InfoTipGeneric ⓘ) จะโดน tooltip bubble (position:absolute) ของตัวเองโดนตัดขาดไปด้วย
+      // — คืน overflow:visible เฉพาะ th ที่มี custom header slot จริง (ผ่าน class `has-header-slot` ที่ตั้ง
+      // จาก `:headerClass` เมื่อ parent ส่ง slot `#header-<field>` มา) ไม่กระทบ th อื่นที่ไม่มี slot นี้
+      &.has-header-slot {
+        overflow: visible !important;
+      }
 
       .p-column-header-content {
         display: flex !important;
