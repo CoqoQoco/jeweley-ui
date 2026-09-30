@@ -13,6 +13,8 @@ export const PERMISSIONS = {
   PRODUCTION_VIEW: 'production:view',
   PRODUCTION_CREATE: 'production:create',
   PRODUCTION_EDIT: 'production:edit',
+  // แก้ไขมาตรฐานเวลาผลิตต่อแผนก (wip lead-time) — Executive + Dev เท่านั้น
+  PRODUCTION_STANDARD_EDIT: 'production:standard-edit',
 
   // Pre-Plan (ใบสั่งผลิต)
   PRE_PLAN_VIEW: 'pre-plan:view',
@@ -114,6 +116,7 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.PRODUCTION_VIEW,
     PERMISSIONS.PRODUCTION_CREATE,
     PERMISSIONS.PRODUCTION_EDIT,
+    PERMISSIONS.PRODUCTION_STANDARD_EDIT,
 
     PERMISSIONS.PRE_PLAN_VIEW,
     PERMISSIONS.PRE_PLAN_CREATE,
@@ -299,5 +302,5 @@ export const ROLE_PERMISSIONS = {
 
   SaleManager: [PERMISSIONS.SALE_VIEW_MARGIN],
 
-  Executive: [PERMISSIONS.EXECUTIVE_VIEW]
+  Executive: [PERMISSIONS.EXECUTIVE_VIEW, PERMISSIONS.PRODUCTION_STANDARD_EDIT]
 }

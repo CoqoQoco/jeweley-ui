@@ -204,8 +204,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+// legend-style SectionCardGeneric ต้องการ margin-top var(--sp-2xl) เพื่อเผื่อชิป title ที่คร่อมขอบบน —
+// container sibling-spacing ที่นี่ต้อง >= ค่านั้นเสมอ (ห้ามเล็กกว่า) เพราะ specificity เท่ากับ
+// .section-card--legend ของ SectionCardGeneric เอง (class selector ทั้งคู่) ผลชนะขึ้นกับลำดับ bundle ไม่ใช่
+// specificity ล้วน — ใช้ค่าเดียวกันตัดปัญหาสูงไม่เท่ากันไปเลย (ดู Decision Log docs/design-system.md)
 .insight-tab-layout > * + * {
-  margin-top: var(--sp-lg);
+  margin-top: var(--sp-2xl);
 }
 
 .insight-tab-layout__header {

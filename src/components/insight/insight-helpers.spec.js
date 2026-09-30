@@ -122,11 +122,22 @@ describe('formatInsightPercent', () => {
 
 describe('resolveHelpKey', () => {
   it('returns the help i18n key for every known WIP code', () => {
-    ;['WIP_STALE', 'WIP_OVERDUE', 'WIP_DEPT_STALE_TOP', 'WIP_MELTED_OPEN', 'WIP_DEPT_GROWING', 'FC_BECOMING_STALE', 'FC_DUE_SOON_AT_RISK', 'FC_BOTTLENECK'].forEach(
-      (code) => {
-        expect(resolveHelpKey(code)).toBe(`view.productionInsight.help.${code}`)
-      }
-    )
+    ;[
+      'WIP_STALE',
+      'WIP_OVERDUE',
+      'WIP_DEPT_STALE_TOP',
+      'WIP_MELTED_OPEN',
+      'WIP_DEPT_GROWING',
+      'FC_BECOMING_STALE',
+      'FC_DUE_SOON_AT_RISK',
+      'FC_BOTTLENECK',
+      'STAGE_OVER_STANDARD',
+      'STAGE_ABNORMAL_DWELL',
+      'STAGE_WAIT_DOMINANT',
+      'FC_STAGE_LEADTIME_RISING'
+    ].forEach((code) => {
+      expect(resolveHelpKey(code)).toBe(`view.productionInsight.help.${code}`)
+    })
   })
 
   it('returns an empty string for a code without a defined help entry (e.g. placeholder/action codes)', () => {

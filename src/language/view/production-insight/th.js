@@ -96,7 +96,75 @@ export default {
     trendColChangePercent: '%',
     trendColInflow: 'งานเข้า',
     trendColOutflow: 'งานออก',
-    trendColNet: 'สุทธิ'
+    trendColNet: 'สุทธิ',
+
+    leadTimeTitle: 'เวลาผลิตรายแผนก',
+    leadTimeColDept: 'แผนก',
+    leadTimeColShareHeader: 'สัดส่วน',
+    leadTimeColStandard: 'มาตรฐาน',
+    leadTimeStandardDraftChip: 'ร่าง',
+    leadTimeColMedianTotal: 'ค่ากลาง (รวม)',
+    leadTimeColWait: 'รอ',
+    leadTimeColWork: 'ทำ',
+    leadTimeColP90: 'P90',
+    leadTimeColVsStandard: 'เทียบมาตรฐาน',
+    leadTimeChipPass: 'ผ่าน',
+    leadTimeChipOver: 'เกิน {percent}%',
+    leadTimeColExited: 'ใบที่ออก',
+    leadTimeColAbnormal: 'ค้างนานผิดปกติ',
+    leadTimeColCurrentWaiting: 'รออยู่ตอนนี้',
+    leadTimeColTrend: 'แนวโน้ม',
+    leadTimeDaysUnit: 'วัน',
+    leadTimeDetailTitle: 'แนวโน้ม lead time แผนก {name}',
+    leadTimeSeriesMedian: 'ค่ากลาง',
+    leadTimeSeriesP90: 'P90',
+    leadTimeSeriesStandard: 'มาตรฐาน',
+    leadTimeSeriesWait: 'รอ',
+    leadTimeSeriesWork: 'ทำ',
+    leadTimeSelectHint: 'คลิกแถวในตารางเพื่อดูแนวโน้มแผนกนั้น',
+    leadTimeNoSplitDataTip: 'ยังไม่มีข้อมูลแยกรอ/ทำ — ระบบเริ่มบันทึกเวลารับงานตั้งแต่ {date}',
+    leadTimeNoSplitDataTipUnknown: 'ยังไม่มีข้อมูลแยกรอ/ทำ — เริ่มบันทึกหลังอัปเดตระบบ',
+    leadTimeChartNoWaitWorkHint: 'ยังไม่มีข้อมูลแยกรอ/ทำในช่วงที่เลือก — ระบบเพิ่งเริ่มบันทึกเวลารับงานแยกรอ/ทำ',
+    planUnit: 'ใบ',
+
+    capacityTitle: 'ผลต่อกำลังการผลิต',
+    capacityColNow: 'ตอนนี้',
+    capacityColAtStandard: 'ถ้าได้ตามมาตรฐาน',
+    capacityTotalLeadDays: 'เวลาผลิตรวม (วัน)',
+    capacityThroughput: 'กำลังผลิต (ใบ/เดือน)',
+    capacityBottleneck: 'คอขวด',
+    capacityDeptTableTitle: 'รายละเอียดแยกแผนก',
+    capacityColDeptExited: 'ใบที่ออก',
+    capacityColDeptExitedPerDay: 'ออกจริง (ใบ/วัน)',
+    capacityColDeptMedianTotal: 'เวลาจริง (ค่ากลาง)',
+    capacityColDeptStandard: 'มาตรฐาน',
+    capacityColDeptAtStandardPerDay: 'ถ้าได้ตามมาตรฐาน (ใบ/วัน)',
+    capacityBottleneckChip: 'คอขวด',
+
+    abnormalDwellTitle: 'ใบที่อยู่ในแผนกนานผิดปกติ',
+    abnormalDwellColDays: 'อยู่ในแผนก (วัน)',
+    abnormalDwellColStandard: 'มาตรฐาน',
+    abnormalDwellFilterChip: 'กรองเฉพาะแผนก {name}',
+    abnormalDwellClearFilter: 'ล้างตัวกรองแผนก',
+    abnormalDwellStaleExcludedNote: 'ไม่รวมใบงานที่ไม่ขยับสถานะเกิน 180 วัน — ดูได้ที่ตาราง "ใบงานค้าง" ด้านบน',
+
+    standardsButton: 'กำหนดมาตรฐาน',
+    standardsPanelTitle: 'กำหนดมาตรฐานเวลาผลิต',
+    standardsReadOnlyNote: 'ดูค่ามาตรฐานปัจจุบันได้ทุกคน — ต้องมีสิทธิ์แก้ไขมาตรฐานจึงจะเปลี่ยนค่าได้',
+    standardsReferenceText: 'ค่ากลางจริง {median} วัน · P90 {p90} วัน',
+    standardsRemarkLabel: 'หมายเหตุการเปลี่ยนแปลง',
+    standardsRemarkPlaceholder: 'เช่น ปรับตามข้อมูลไตรมาสล่าสุด',
+    standardsRemarkRequired: 'กรุณาระบุหมายเหตุก่อนบันทึก',
+    standardsSaveBtn: 'บันทึกมาตรฐาน',
+    standardsCancelDraftBtn: 'ยกเลิกร่าง',
+    standardsSaveSuccess: 'บันทึกมาตรฐานสำเร็จ',
+    standardsHistoryLink: 'ประวัติ',
+    standardsHistoryTitle: 'ประวัติมาตรฐาน แผนก{name}',
+    standardsHistoryColDate: 'วันที่มีผล',
+    standardsHistoryColDays: 'จำนวนวัน',
+    standardsHistoryColBy: 'ผู้บันทึก',
+    standardsHistoryColRemark: 'หมายเหตุ',
+    standardsHistoryEmpty: 'ยังไม่มีประวัติการเปลี่ยนมาตรฐาน'
   },
 
   // code -> ข้อความเต็ม (พร้อม params) — ใช้กับ insight-tab-layout prop i18nPrefix (default namespace นี้)
@@ -113,6 +181,12 @@ export default {
     ACT_STAGE_SLA: 'กำหนด SLA ให้ชัดเจนสำหรับแผนก{deptKey}',
     ACT_CLOSE_MELTED: 'ปิดงานหลอมที่ค้างอยู่ {count} ใบ',
     WIP_DEPT_GROWING: 'งานค้างแผนก{deptKey} เพิ่มขึ้น {deltaPercent}% ({startWip}→{endWip}) เกินเกณฑ์ {thresholdPercent}%',
+    STAGE_OVER_STANDARD: 'แผนก{deptKey}ใช้เวลาเฉลี่ย {medianDays} วัน เกินมาตรฐาน {standardDays} วัน อยู่ {percent}%',
+    STAGE_ABNORMAL_DWELL: 'มีใบงานค้างในแผนก{deptKey}นานผิดปกติ {count} ใบ (เกิน {thresholdDays} วัน)',
+    STAGE_WAIT_DOMINANT: 'แผนก{deptKey}เวลาส่วนใหญ่หมดไปกับการรอ {waitDays} วัน เทียบเวลาทำจริง {workDays} วัน (รอ {waitShare}% ของเวลาทั้งหมด)',
+    FC_STAGE_LEADTIME_RISING: 'เวลาผลิตแผนก{deptKey}มีแนวโน้มเพิ่มขึ้นจาก {fromDays} เป็น {toDays} วัน ในช่วง {buckets} รอบล่าสุด',
+    ACT_REDUCE_WAIT: 'ลดเวลารอในแผนก{deptKey} เช่น จัดคิวงานใหม่หรือเพิ่มกำลังคน',
+    ACT_REVIEW_ABNORMAL: 'ตรวจสอบใบงานที่ค้างนานผิดปกติ {count} ใบ',
 
     // หมวดที่ยังไม่ implement — ใช้ code ชั่วคราวคู่กับ severity 'info' แสดงเป็น bullet ข้อความล้วน
     // (รอ API จริงของแต่ละหมวดแล้วเปลี่ยน code เป็นของจริงพร้อม params)
@@ -138,7 +212,11 @@ export default {
     FC_BECOMING_STALE: 'แนวโน้มงานค้างเพิ่ม',
     FC_DUE_SOON_AT_RISK: 'เสี่ยงเลยกำหนดส่ง',
     FC_BOTTLENECK: 'คอขวดการผลิต',
-    WIP_DEPT_GROWING: 'แผนกที่งานค้างโตเร็ว'
+    WIP_DEPT_GROWING: 'แผนกที่งานค้างโตเร็ว',
+    STAGE_OVER_STANDARD: 'เวลาผลิตเกินมาตรฐาน',
+    STAGE_ABNORMAL_DWELL: 'ค้างนานผิดปกติ',
+    STAGE_WAIT_DOMINANT: 'เวลาส่วนใหญ่หมดไปกับการรอ',
+    FC_STAGE_LEADTIME_RISING: 'แนวโน้มเวลาผลิตเพิ่มขึ้น'
   },
 
   placeholder: {
@@ -194,6 +272,35 @@ export default {
     dueRiskModeDueSoon: 'งานที่จะครบกำหนดส่งภายใน {days} วันข้างหน้า แต่ยังไม่เสร็จ',
 
     filterGrowthThreshold: 'ถ้างานค้างปลายช่วงเพิ่มจากต้นช่วงเกิน % นี้ จะแจ้งเป็นปัญหา',
-    filterCustomRange: 'กำหนดวันเริ่มต้น-สิ้นสุดเอง แทนปุ่มลัด 1M/3M/6M/1Y'
+    filterCustomRange: 'กำหนดวันเริ่มต้น-สิ้นสุดเอง แทนปุ่มลัด 1M/3M/6M/1Y',
+
+    STAGE_OVER_STANDARD: 'เทียบค่ากลางเวลาที่ใช้จริงในแผนกกับมาตรฐานที่ตั้งไว้\nด่วนเมื่อเกินมาตรฐาน ≥50%',
+    STAGE_ABNORMAL_DWELL: 'ใบงานที่อยู่ในแผนกนานเกินเกณฑ์ผิดปกติ (หลายเท่าของมาตรฐาน) ตอนนี้',
+    STAGE_WAIT_DOMINANT: 'เวลารอ (ยังไม่มีใครทำ) มากกว่าเวลาทำงานจริงในแผนกนี้\nด่วนเมื่อสัดส่วนรอสูงมาก',
+    FC_STAGE_LEADTIME_RISING: 'ประมาณการจากแนวโน้มค่ากลางเวลาผลิตที่เพิ่มขึ้นต่อเนื่องหลายช่วงล่าสุด',
+
+    leadTimeTitle: 'เวลารอ (สถานะ 49/59/69/79/89/94) เทียบเวลาทำจริง (สถานะ 50/60/70/80/90/95)\nแผนกออกแบบนับเป็นเวลาทำทั้งหมด',
+    leadTimeColDept: 'แผนกที่ใบงานอยู่ในตอนนี้ (7 แผนกหลักของสายการผลิต)',
+    leadTimeColStandard: 'จำนวนวันมาตรฐานที่ตั้งไว้ต่อแผนก (รวมเวลารอ+ทำ) · ชิป "ร่าง" = กำลังดูค่าที่ยังไม่บันทึก',
+    leadTimeColMedianTotal: 'ค่ากลาง (median) ของเวลาที่ใบงานอยู่ในแผนกนี้ทั้งหมด (รอ+ทำ)',
+    leadTimeColWait: 'เวลารอ — นับจากสถานะ 49/59/69/79/89/94 (ยังไม่มีใครทำ)',
+    leadTimeColWork: 'เวลาทำจริง — นับจากสถานะ 50/60/70/80/90/95',
+    leadTimeColP90: '90% ของใบงานใช้เวลาไม่เกินนี้ — ทนต่อรายที่นานผิดปกติได้ดีกว่าค่ากลาง',
+    leadTimeColVsStandard: 'ค่ากลางเทียบมาตรฐาน — ผ่าน = อยู่ในเกณฑ์ · เกิน % = เกินมาตรฐานเท่าไหร่',
+    leadTimeColExited: 'จำนวนใบงานที่ออกจากแผนกนี้ในช่วงที่เลือก (ใช้คำนวณค่ากลาง/P90)',
+    leadTimeColAbnormal: 'ใบงานที่ค้างอยู่ในแผนกนี้นานผิดปกติ ณ ตอนนี้ (ไม่ใช่ของช่วงที่เลือก)\nคลิกตัวเลขเพื่อดูรายชื่อด้านล่าง',
+    leadTimeColCurrentWaiting: 'จำนวนใบงานที่อยู่ในสถานะรอของแผนกนี้ ณ ตอนนี้ (ไม่ใช่ของช่วงที่เลือก)',
+    leadTimeColTrend: 'ค่ากลางเวลาผลิตของแผนกนี้ในแต่ละช่วงย่อยย้อนหลัง',
+    leadTimeColShare: 'แถบเข้ม = สัดส่วนเวลารอ · แถบอ่อน = สัดส่วนเวลาทำจริง ของแถวนี้',
+    leadTimeDetailChart: 'เส้นทึบ = ค่ากลาง · เส้นประ = P90 · เส้นระดับ = มาตรฐาน · แท่ง = งานเข้า/ออก',
+
+    capacityTitle: 'เปรียบเทียบผลลัพธ์ถ้าทุกแผนกทำได้ตามมาตรฐานที่ตั้งไว้ กับสถานการณ์จริงตอนนี้',
+    capacityModelExplanation: 'กำลังผลิตวัดจากจำนวนใบที่ออกจากแผนกจริงต่อวัน · ถ้าแผนกใช้เวลาเกินมาตรฐาน คาดว่าเร่งให้ได้ตามมาตรฐานจะปล่อยงานได้มากขึ้นตามสัดส่วน เวลาจริง ÷ มาตรฐาน · คอขวด = แผนกที่ปล่อยงานได้น้อยที่สุด',
+
+    abnormalDwellColDays: 'จำนวนวันที่ใบงานอยู่ในแผนกนี้ต่อเนื่อง นับถึงวันนี้',
+    abnormalDwellColStandard: 'มาตรฐานเวลาของแผนกนี้ — ใบนี้อยู่นานเกินหลายเท่าของค่านี้',
+
+    standardsButton: 'ตั้งจำนวนวันมาตรฐานต่อแผนก ใช้เป็นเกณฑ์เทียบทั้งหน้านี้',
+    standardsReferenceText: 'ค่ากลาง/P90 จริงจากข้อมูลช่วงที่เลือก ช่วยตัดสินใจตั้งมาตรฐาน'
   }
 }

@@ -44,8 +44,11 @@
         </div>
       </div>
 
+      <WipLeadTimePanel :start="filter.start" :end="filter.end" :bucket="filter.bucket" @focus-abnormal="onFocusAbnormalDwell" />
+
       <WipStalePlansPanel :departmentKeys="filter.departmentKeys" :minDays="filter.staleDays" />
       <WipDueRiskPanel :departmentKeys="filter.departmentKeys" :riskWindowDays="filter.riskWindowDays" />
+      <WipAbnormalDwellPanel :departmentKeys="filter.departmentKeys" :focusDeptKey="abnormalDwellFocusDeptKey" @clear-focus="abnormalDwellFocusDeptKey = ''" />
     </template>
   </InsightTabLayout>
 </template>
@@ -59,8 +62,10 @@ import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import DepartmentWipChart from '../components/department-wip-chart.vue'
 import DepartmentFlowChart from '../components/department-flow-chart.vue'
 import WipTrendPanel from '../components/wip-trend-panel.vue'
+import WipLeadTimePanel from '../components/wip-lead-time-panel.vue'
 import WipStalePlansPanel from '../components/wip-stale-plans-panel.vue'
 import WipDueRiskPanel from '../components/wip-due-risk-panel.vue'
+import WipAbnormalDwellPanel from '../components/wip-abnormal-dwell-panel.vue'
 
 const emptyReport = () => ({
   departments: [],
@@ -81,8 +86,10 @@ export default {
     DepartmentWipChart,
     DepartmentFlowChart,
     WipTrendPanel,
+    WipLeadTimePanel,
     WipStalePlansPanel,
-    WipDueRiskPanel
+    WipDueRiskPanel,
+    WipAbnormalDwellPanel
   },
 
   setup() {
@@ -104,7 +111,8 @@ export default {
       problems: [],
       forecasts: [],
       actions: [],
-      report: emptyReport()
+      report: emptyReport(),
+      abnormalDwellFocusDeptKey: ''
     }
   },
 
@@ -135,6 +143,10 @@ export default {
   },
 
   methods: {
+    onFocusAbnormalDwell(deptKey) {
+      this.abnormalDwellFocusDeptKey = deptKey
+    },
+
     async fetchWip() {
       this.loading = true
       const res = await this.productionInsightStore.fetchWip({

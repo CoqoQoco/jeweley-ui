@@ -152,8 +152,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+// legend-style SectionCardGeneric ต้องการ margin-top var(--sp-2xl) เสมอ (เผื่อชิป title คร่อมขอบบน) —
+// container sibling-spacing ห้ามเล็กกว่านี้ ดู insight-tab-layout.vue comment + Decision Log
 .executive-plan-detail > * + * {
-  margin-top: var(--sp-lg);
+  margin-top: var(--sp-2xl);
 }
 
 .executive-plan-detail__status-badge {

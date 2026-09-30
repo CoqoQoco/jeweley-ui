@@ -332,3 +332,82 @@ placeholder ทุกหมวดใช้โครง 4 ส่วนเดี�
 
 - verify: `npm run lint` + `npx vitest run` + `npm run build` (chrome-mcp รอ backend endpoint จริง — ตอนนี้เรียกแล้วจะ error เพราะ API ยังไม่มี ถือว่าปกติจนกว่า backend จะ deploy)
 - ห้ามกล่องเส้นสีหนาด้านซ้าย (Core Principle #14) · token/generic/i18n เท่านั้น · ห้าม try/catch ครอบ store call
+
+## Revision 2.1 (2026-09-30): Stage lead-time / มาตรฐานเวลาผลิต (wip tab, หลังกล่องพัฒนาการ)
+
+เพิ่ม 5 ส่วนใหม่ในหมวด `wip` ต่อจากกล่องพัฒนาการงานค้างแยกแผนก (WipTrendPanel): (1) ตาราง "เวลาผลิตรายแผนก"
+(2) กราฟรายละเอียดแนวโน้ม lead time ต่อแผนก (3) การ์ด "ผลต่อกำลังการผลิต" (Little's Law) (4) ตาราง "ใบที่อยู่
+ในแผนกนานผิดปกติ" (5) แผง "กำหนดมาตรฐาน" (เห็นได้ทุกคน แก้ไขได้เฉพาะสิทธิ์ใหม่ `production:standard-edit` —
+Executive + Dev) — แบ่งเวลาต่อแผนกเป็น "เวลารอ" (สถานะ 49/59/69/79/89/94) กับ "เวลาทำ" (สถานะ
+50/60/70/80/90/95 — แผนกออกแบบนับเป็นเวลาทำล้วน)
+
+### API contract เพิ่มเติม (`ProductionInsight/*`)
+
+- `StageLeadTime` POST `{start,end,bucket,draftStandards?:[{deptKey,standardDays}]}` → `{ departments:[{key,standardDays,standardSource:'saved'|'draft',standardEffectiveFrom,exitedCount,median:{total,wait,work},p90:{total,wait,work},overStandardPercent,currentCount,abnormalCount,series:[{bucketEnd,count,medianTotal,medianWait,medianWork,p90Total}]}], capacity:{current:{totalLeadDays,monthlyThroughput,bottleneckDept},atStandard:{…same},departments:[{key,wip,inflowPerDay,throughputPerDayCurrent,throughputPerDayAtStandard,expectedWipAtStandard}]} }` — `draftStandards` ส่งเฉพาะตอนแก้ไขในแผงมาตรฐานยังไม่บันทึก ให้ตาราง/การ์ดคำนวณ preview real-time (debounce ฝั่งแผง)
+- `AbnormalDwellPlans` POST DataSourceRequest + `{departmentKeys?, multiplier:2}` → item = StalePlans item + `deptKey,daysInDept,waitDays,workDays,standardDays`
+- `StageStandards` GET → `[{deptKey,standardDays,effectiveFrom,createBy,remark}]` · `StageStandardHistory?deptKey=` GET → แถวใหม่→เก่า
+- `SaveStageStandards` POST `{items:[{deptKey,standardDays}],remark}` — ต้องมีสิทธิ์ `production:standard-edit`
+
+Code ใหม่ (namespace เดิม `view.productionInsight.rules`/`help`, `reportRef` ใหม่ 2 ค่า `leadTime`/`abnormalDwell`):
+
+| กลุ่ม | code | params | reportRef | ownerRole |
+|---|---|---|---|---|
+| problems | `STAGE_OVER_STANDARD` | `deptKey, medianDays, standardDays, percent` | leadTime | — |
+| problems | `STAGE_ABNORMAL_DWELL` | `deptKey, count, thresholdDays` | abnormalDwell | — |
+| problems | `STAGE_WAIT_DOMINANT` | `deptKey, waitDays, workDays, waitShare` | leadTime | — |
+| forecasts | `FC_STAGE_LEADTIME_RISING` | `deptKey, fromDays, toDays, buckets` | leadTime | — |
+| actions | `ACT_REDUCE_WAIT` | `deptKey` | — | `productionManager` |
+| actions | `ACT_REVIEW_ABNORMAL` | `count` | — | `deptHead` |
+
+โค้ด 4 ตัวนี้มาจาก `ProductionInsight/Wip` เดิม (endpoint เดียวกับปัญหา/คาดการณ์/วิธีแก้ที่มีอยู่แล้ว — ไม่ใช่
+endpoint ใหม่) `InsightTabLayout`/`resolveHelpKey` เป็น generic อยู่แล้ว แก้แค่เพิ่ม whitelist + ข้อความ i18n
+ไม่ต้องแก้โค้ด resolve
+
+### Component ใหม่ (Revision 2.1)
+
+| Component | ไฟล์ | หน้าที่ |
+|---|---|---|
+| `WipLeadTimePanel` | `wip-lead-time-panel.vue` | orchestrator — ยิง `StageLeadTime`+`StageStandards`, คุม dept ที่เลือก/draft |
+| `WipLeadTimeTable` | `wip-lead-time-table.vue` | ตารางเวลาผลิตรายแผนก (chip เทียบมาตรฐาน, stacked bar รอ/ทำ, sparkline แนวโน้มย่อ) |
+| `WipLeadTimeChart` | `wip-lead-time-chart.vue` | เส้นค่ากลาง/P90 + เส้นระดับมาตรฐาน (annotation) + แท่ง stacked รอ/ทำ |
+| `WipCapacityPanel` | `wip-capacity-panel.vue` | การ์ด 2 คอลัมน์ ตอนนี้/ตามมาตรฐาน + ตารางย่อยต่อแผนก + ⓘ Little's Law |
+| `WipStandardsPanel` | `wip-standards-panel.vue` | ปุ่ม+`DrawerGeneric` ตั้งมาตรฐาน (draft/save/cancel, gate ด้วย `hasStandardEditAccess()`) |
+| `WipStandardHistoryModal` | `wip-standard-history-modal.vue` | ตารางประวัติมาตรฐานต่อแผนก |
+| `WipAbnormalDwellPanel` | `wip-abnormal-dwell-panel.vue` | ตารางใบค้างนานผิดปกติ — รับ `focusDeptKey` override จากตัวเลขในตาราง 1 |
+| `wip-lead-time-helpers.js` (+ spec) | `src/views/production/insight/components/` | pure: chip variant/token, wait/work share, capacity delta text, draft diff detection |
+| `hasStandardEditAccess()` | `src/services/permission/standard-edit-access.js` | เช็ค `production:standard-edit` ตรงๆ (ไม่ผูก route ให้อ่าน meta ได้แบบ `resolvePlanLinkState`) |
+
+### Mapping → โค้ด (Revision 2.1)
+
+| ไฟล์ | แก้อะไร | agent |
+|---|---|---|
+| `src/services/permission/config.js` | เพิ่ม `PRODUCTION_STANDARD_EDIT` (Dev + Executive) | @ui-implementer |
+| `src/services/permission/standard-edit-access.js` (ใหม่) | helper เช็คสิทธิ์แก้มาตรฐาน | @ui-implementer |
+| `src/stores/modules/api/production/production-insight-api.js` | เพิ่ม `fetchStageLeadTime/fetchAbnormalDwellPlans/fetchStageStandards/fetchStageStandardHistory/saveStageStandards` | @ui-implementer |
+| `src/components/insight/insight-helpers.js` (+ spec) | เพิ่ม 4 code ใหม่ใน `HELP_KEY_CODES` | @ui-implementer |
+| `src/views/production/insight/components/wip-lead-time-*.vue`, `wip-standards-panel.vue`, `wip-standard-history-modal.vue`, `wip-abnormal-dwell-panel.vue` (+ helpers/spec) (ใหม่ทั้งหมด) | ตาราง/กราฟ/การ์ด/แผงมาตรฐานใหม่ | @ui-implementer |
+| `src/views/production/insight/sections/wip-section.vue` | mount `WipLeadTimePanel`/`WipAbnormalDwellPanel` หลังกล่องพัฒนาการ + เชื่อม focus-abnormal | @ui-implementer |
+| `src/language/view/production-insight/{th,en}.js` | เพิ่ม namespace `leadTime*`/`capacity*`/`abnormalDwell*`/`standards*` ใต้ `wip` + rules/codeLabel/help ของ 4 code ใหม่ | @ui-implementer |
+| Backend `ProductionInsight/{StageLeadTime,AbnormalDwellPlans,StageStandards,StageStandardHistory,SaveStageStandards}` | ใหม่ทั้งหมด — "being built in parallel" | @api-implementer |
+
+- **Assumption**: `AbnormalDwellPlans` item ระบุ field `deptKey` เพิ่มจาก StalePlans เดิมที่มี `departmentKey` อยู่แล้ว — โค้ด FE อ่านทั้งคู่ (`data.deptKey || data.departmentKey`) กันชื่อ field ไม่ตรงกับที่ backend ส่งจริง
+- **Assumption**: คอลัมน์ "รอ/ทำ" ของตาราง `AbnormalDwellPlans` รวมเป็นคอลัมน์เดียว (ต่างจากตาราง lead-time หลักที่แยก 2 คอลัมน์) ตามที่ระบุไว้ในสเปค
+- verify: `npm run lint` + `npx vitest run` + `npm run build` (endpoint ใหม่ทั้ง 5 ยังไม่มีจริง เรียกแล้ว error ถือว่าปกติจนกว่า backend จะ deploy)
+
+### Note (2026-09-30, follow-up): null wait/work history + capacity model rework
+
+Contract เปลี่ยนก่อน backend deploy จริง (implement คู่ขนานกับ @api-implementer) — โค้ด FE อัปเดตตามนี้แล้ว:
+
+- `StageLeadTime.departments[].median.wait/work` และ `.p90.wait/work` **อาจเป็น `null`** (ประวัติเก่าไม่เคยบันทึกแยกรอ/ทำ ระบบเพิ่งเริ่มบันทึกผ่าน `receive_date` ใหม่) — เพิ่ม `departments[].splitSampleCount` (int) + `departments[].currentWaitingCount` (int, จำนวนใบที่อยู่ในสถานะรอ ณ ตอนนี้) และ top-level `splitDataSince` (ISO date หรือ null) ใน response — ห้าม render null เป็น 0 ที่ไหนทั้งสิ้น
+- series `medianWait`/`medianWork` เป็น `null` เมื่อไม่รู้ค่า (ช่องว่างของกราฟ ไม่ใช่ 0 จริง — ของเดิมมีอยู่แล้วผ่าน `mapSeriesField`)
+- `capacity.departments[]` เปลี่ยนโครงใหม่ทั้งหมด: `{key, exitedCount, exitedPerDay, medianTotal, standardDays, atStandardPerDay, isBottleneckCurrent, isBottleneckAtStandard}` (ตัดฟิลด์เดิม `wip`/`inflowPerDay`/`throughputPerDayCurrent`/`throughputPerDayAtStandard`/`expectedWipAtStandard` ทิ้งทั้งหมด — **ไม่ใช้ Little's Law อีกต่อไป**) — `capacity.current`/`capacity.atStandard` (สรุปด้านบน: `totalLeadDays`/`monthlyThroughput`/`bottleneckDept`) **ไม่เปลี่ยน**
+- โมเดลใหม่: กำลังผลิต = ใบที่ออกจากแผนกจริงต่อวัน (`exitedPerDay`) · ถ้าได้ตามมาตรฐาน = `exitedPerDay × (medianTotal ÷ standardDays)` เฉพาะแผนกที่ช้ากว่ามาตรฐาน (เร็วกว่าอยู่แล้วคงเดิม) · คอขวด = แผนกที่ปล่อยงานได้น้อยที่สุด (`isBottleneckCurrent`/`isBottleneckAtStandard` มาจาก backend ตรงๆ ไม่คำนวณซ้ำฝั่ง FE)
+- `AbnormalDwellPlans` item `waitDays`/`workDays` อาจเป็น `null` เช่นกัน — list/count ไม่รวมใบที่ไม่ขยับเกิน 180 วันอีกต่อไป (backend ตัดทิ้งให้ กันนับซ้ำกับตาราง "ใบงานค้าง")
+
+FE เปลี่ยนตาม:
+- `wip-lead-time-table.vue`: คอลัมน์รอ/ทำ/สัดส่วน โชว์ "—" + `InfoTipGeneric` เมื่อ null (ข้อความอ้างอิง `splitDataSince` ถ้ามี) + hint "(n ใบ)" เมื่อ `splitSampleCount` น้อย (0<n<10) + คอลัมน์ใหม่ "รออยู่ตอนนี้" (`currentWaitingCount`)
+- `wip-lead-time-chart.vue`: ซ่อน series รอ/ทำ + legend ทั้งคู่เมื่อทุกจุดในช่วงเป็น null (`hasAnySeriesValue`) + hint ใต้กราฟ
+- `wip-capacity-panel.vue`: ตารางย่อยต่อแผนกสร้างใหม่ทั้งตาราง (แผนก/ใบที่ออก/ออกจริง ใบ/วัน/เวลาจริง (ค่ากลาง)/มาตรฐาน/ถ้าได้ตามมาตรฐาน ใบ/วัน) + ชิปคอขวด (พื้นแดงเต็ม ไม่มี border-left) + ⓘ เปลี่ยนเนื้อหาทั้งหมด (`help.capacityModelExplanation`, key เดิม `capacityLittlesLaw` ลบทิ้ง)
+- `wip-abnormal-dwell-panel.vue`: waitWorkTemplate เดิม null-safe อยู่แล้ว (`?? '—'`) — เพิ่มบรรทัด note อธิบายการตัด >180 วันออก
+- `wip-lead-time-helpers.js`: `calcWaitWorkShare` คืน `hasData:false` เมื่อ wait/work เป็น null ทั้งคู่ (เดิม coerce เป็น 0) + helper ใหม่ `isSmallSplitSample`/`hasAnySeriesValue`
+- i18n th/en เพิ่ม key ใหม่ทั้งหมดใต้ `wip.*`/`help.*` ตามรายการข้างต้น — verify: `npx eslint` เฉพาะไฟล์ที่แก้ + `npx vitest run` (insight) + `npm run build`
