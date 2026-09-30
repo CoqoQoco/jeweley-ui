@@ -14,13 +14,21 @@ describe('report-routes — executive overview', () => {
     expect(executiveParent.meta.permissions).not.toContain(PERMISSIONS.REPORT_VIEW)
   })
 
-  it('has exactly one child route for the /executive page, gated the same way', () => {
-    expect(executiveParent.children).toHaveLength(1)
-
-    const child = executiveParent.children[0]
-    expect(child.name).toBe('executive')
+  it('has a child route for the /executive page, gated the same way', () => {
+    const child = executiveParent.children.find((r) => r.name === 'executive')
+    expect(child).toBeTruthy()
     expect(child.path).toBe('/executive')
     expect(child.meta.minorShow).toBe(true)
+    expect(child.meta.permissions).toEqual([PERMISSIONS.EXECUTIVE_VIEW])
+  })
+
+  it('has a read-only plan-detail child route, not shown in the menu, gated by executive:view only', () => {
+    expect(executiveParent.children).toHaveLength(2)
+
+    const child = executiveParent.children.find((r) => r.name === 'executive-plan-detail')
+    expect(child).toBeTruthy()
+    expect(child.path).toBe('/executive/plan-detail/:id')
+    expect(child.meta.minorShow).toBe(false)
     expect(child.meta.permissions).toEqual([PERMISSIONS.EXECUTIVE_VIEW])
   })
 

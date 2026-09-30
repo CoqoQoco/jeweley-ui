@@ -30,13 +30,16 @@ export function buildLastActionLine(lastUpdateBy, lastAction, createdFallbackLab
 }
 
 export const PLAN_DETAIL_ROUTE_NAME = 'plan-order-tracking-detail'
+export const EXECUTIVE_PLAN_DETAIL_ROUTE_NAME = 'executive-plan-detail'
 
 // ตัดสินใจว่าเลขที่ใบงานในตารางจะ render เป็นลิงก์เปิด detail (แท็บใหม่) หรือข้อความอ่านอย่างเดียว — pure
 // ล้วน ไม่พึ่ง Vue Router จริง (แค่คืน route location object ให้ caller ส่งเข้า `$router.resolve()` เอง)
-// เพื่อให้เทสได้โดยไม่ต้อง mock router — hasPermission ให้ caller เช็คจาก PermissionService มาก่อนแล้ว
-export function resolvePlanLinkState(planId, hasPermission) {
-  if (!planId || !hasPermission) {
-    return { canOpen: false, routeLocation: null }
-  }
-  return { canOpen: true, routeLocation: { name: PLAN_DETAIL_ROUTE_NAME, params: { id: planId } } }
+// เพื่อให้เทสได้โดยไม่ต้อง mock router — canEdit/canViewExecutive ให้ caller เช็คจาก PermissionService มาก่อนแล้ว
+// ลำดับความสำคัญ: มี production:edit → detail ตัวเต็ม (แก้ไขได้) ชนะเสมอ, ไม่มี edit แต่มี executive:view
+// (boss) → detail แบบอ่านอย่างเดียว, ไม่มีทั้งคู่ → ไม่มีลิงก์
+export function resolvePlanLinkState(planId, canEdit, canViewExecutive) {
+  if (!planId) return { canOpen: false, routeLocation: null }
+  if (canEdit) return { canOpen: true, routeLocation: { name: PLAN_DETAIL_ROUTE_NAME, params: { id: planId } } }
+  if (canViewExecutive) return { canOpen: true, routeLocation: { name: EXECUTIVE_PLAN_DETAIL_ROUTE_NAME, params: { id: planId } } }
+  return { canOpen: false, routeLocation: null }
 }

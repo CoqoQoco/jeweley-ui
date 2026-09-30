@@ -86,3 +86,14 @@ export function buildSparklineDiscreteMarkers(seriesLength, color) {
   if (seriesLength === 1) return [marker(0)]
   return [marker(0), marker(seriesLength - 1)]
 }
+
+// series[0] จาก backend คือ "สิ้นสุด bucket แรก" ไม่ใช่ "ต้นช่วงจริง" ทำให้จุดแรกที่โชว์ในการ์ด/กราฟ
+// รายละเอียด ไม่เท่ากับเลข "ต้นช่วง" ที่การ์ดโชว์ (เช่น ต้นช่วง 3,382 แต่จุดแรกในกราฟ 3,369) — เติมจุด
+// สังเคราะห์ { bucketEnd: rangeStart, wip: startWip } ไว้หน้าสุดเสมอ ให้จุดแรกในกราฟ = ตัวเลข "ต้นช่วง"
+// เป๊ะ — inflow/outflow ของจุดนี้เป็น null (ไม่มีข้อมูลจริงก่อนหน้าจุดนี้ ไม่ใช่ 0 จริงๆ — caller ที่ map
+// เป็นตัวเลขกราฟ (`p.inflow || 0`) จะกลาย 0 เองอยู่แล้วเวลาวาดแท่ง)
+export function prependRangeStartPoint(series, rangeStart, startWip) {
+  if (!rangeStart || !Number.isFinite(startWip)) return series || []
+  const synthetic = { bucketEnd: rangeStart, wip: startWip, inflow: null, outflow: null, isSynthetic: true }
+  return [synthetic, ...(series || [])]
+}

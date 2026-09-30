@@ -66,7 +66,7 @@ export default {
     colWorkers: 'ช่าง',
     lastActionCreated: 'สร้างใบงาน',
     planLinkTitle: 'เปิดรายละเอียดใบงาน (แท็บใหม่)',
-    planLinkNoPermission: 'ต้องมีสิทธิ์แก้ไขงานผลิตจึงเปิดรายละเอียดได้',
+    planLinkNoPermission: 'ต้องมีสิทธิ์แก้ไขงานผลิตหรือดูภาพรวมผู้บริหารจึงเปิดรายละเอียดได้',
 
     trendCardsTitle: 'พัฒนาการงานค้างแยกแผนก',
     trendCardsHint: 'คลิกการ์ดเพื่อดูงานเข้า-ออกของแผนกนั้นด้านล่าง',
@@ -74,6 +74,7 @@ export default {
     trendCardSelectedTag: 'กำลังดูรายละเอียด ↓',
     trendPointWeek: 'สัปดาห์ถึง {date}: {wip} ใบ',
     trendPointMonth: 'เดือน {date}: {wip} ใบ',
+    trendPointStart: 'ต้นช่วง {date}',
     bucketWeekly: 'รายสัปดาห์',
     bucketMonthly: 'รายเดือน',
     trendTotalLabel: 'รวม',

@@ -22,6 +22,7 @@
           :card="row"
           :selected="row.key === selectedDeptKey"
           :bucket="bucket"
+          :rangeStart="start"
           @select="onSelectDept(row.key)"
         />
       </div>
@@ -105,7 +106,9 @@ import {
   resolveDeltaColorToken,
   resolveDefaultSelectedDept,
   resolveTrendSummaryVariant,
-  sortDepartmentsByDeltaDesc
+  sortDepartmentsByDeltaDesc,
+  prependRangeStartPoint,
+  formatSparklineBucketDate
 } from './wip-trend-helpers.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
@@ -179,9 +182,16 @@ export default {
       return this.$t('view.productionInsight.wip.trendDetailTitleDept', { name: this.selectedRow.label, range: this.rangeLabel })
     },
 
-    detailSeries() {
+    // เติมจุดสังเคราะห์ต้นช่วง (bucketEnd=start, wip=selectedRow.startWip) หน้าสุดเสมอ — ใช้ร่วมกันทั้ง
+    // เส้นงานค้าง (detailSeries) และแกน x (detailOptions) ให้จุดแรกในกราฟ = ตัวเลข "ต้นช่วง" เป๊ะเหมือนการ์ด
+    // sparkline — inflow/outflow ของจุดนี้เป็น null (แผนที่เป็น 0 เองตอน map ด้านล่าง)
+    detailSeriesPoints() {
       if (!this.selectedRow) return []
-      const series = this.selectedRow.series || []
+      return prependRangeStartPoint(this.selectedRow.series, this.start, this.selectedRow.startWip)
+    },
+
+    detailSeries() {
+      const series = this.detailSeriesPoints
       return [
         { name: this.$t('view.productionInsight.wip.trendSeriesWip'), type: 'line', data: series.map((p) => p.wip || 0) },
         { name: this.$t('view.productionInsight.wip.trendSeriesInflow'), type: 'bar', data: series.map((p) => p.inflow || 0) },
@@ -190,7 +200,7 @@ export default {
     },
 
     detailOptions() {
-      const series = this.selectedRow?.series || []
+      const series = this.detailSeriesPoints
       return {
         chart: { type: 'line', toolbar: { show: false } },
         colors: [CHART_TOKENS.primary, CHART_TOKENS.green, CHART_TOKENS.red],
@@ -274,9 +284,12 @@ export default {
       return resolveDeltaColorToken(resolveDeltaVariant(delta))
     },
 
+    // จุดสังเคราะห์ต้นช่วง (bucketEnd เป็น Date ของ range start เอง) ไม่มีอยู่ใน this.buckets (มาจาก API
+    // เป็น bucket จริงเท่านั้น) — fallback format วันที่ตรงๆ กันแกน x โชว์ช่องว่าง
     bucketLabel(bucketEnd) {
       const match = this.buckets.find((b) => b.end === bucketEnd)
-      return match ? match.label : ''
+      if (match) return match.label
+      return formatSparklineBucketDate(bucketEnd, this.bucket)
     },
 
     onSelectDept(key) {

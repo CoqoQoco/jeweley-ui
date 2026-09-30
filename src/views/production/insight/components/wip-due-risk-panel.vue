@@ -42,7 +42,7 @@
               icon="bi-box-arrow-up-right"
               :label="data.woText || data.woNumber || data.wo"
               :title="$t('view.productionInsight.wip.planLinkTitle')"
-              @click="openPlanDetail(data.planId)"
+              @click="openPlanDetail(data)"
             />
             <span v-else class="wip-due-risk-panel__plan-no">
               {{ data.woText || data.woNumber || data.wo }}
@@ -97,7 +97,14 @@ import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { PermissionService } from '@/services/permission/permission.js'
 import { formatDate } from '@/services/utils/dayjs.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
-import { summarizeWorkers, resolveStatusLine, buildLastActionLine, resolvePlanLinkState, PLAN_DETAIL_ROUTE_NAME } from './wip-plan-table-helpers.js'
+import {
+  summarizeWorkers,
+  resolveStatusLine,
+  buildLastActionLine,
+  resolvePlanLinkState,
+  PLAN_DETAIL_ROUTE_NAME,
+  EXECUTIVE_PLAN_DETAIL_ROUTE_NAME
+} from './wip-plan-table-helpers.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import InfoTipGeneric from '@/components/generic/InfoTipGeneric.vue'
@@ -187,12 +194,21 @@ export default {
       return cols.map((col) => (fieldsWithCustomHeaderSlot.includes(col.field) ? { ...col, header: '' } : col))
     },
 
-    // สิทธิ์เปิดรายละเอียดใบงาน — อ่านจาก meta.permissions ของ route ปลายทางเอง (ไม่ hardcode
-    // PERMISSIONS.PRODUCTION_EDIT ซ้ำที่นี่ ผูกกับ route definition แหล่งเดียว)
+    // สิทธิ์เปิดรายละเอียดใบงาน (ตัวเต็ม แก้ไขได้) — อ่านจาก meta.permissions ของ route ปลายทางเอง (ไม่
+    // hardcode PERMISSIONS.PRODUCTION_EDIT ซ้ำที่นี่ ผูกกับ route definition แหล่งเดียว)
     canOpenPlanDetail() {
       const route = this.$router.resolve({ name: PLAN_DETAIL_ROUTE_NAME, params: { id: 0 } })
-      const permissionService = new PermissionService(this.authStore.getUser, this.authStore.permissions)
-      return permissionService.hasAnyPermission(route.meta.permissions)
+      return this.permissionService.hasAnyPermission(route.meta.permissions)
+    },
+
+    // สิทธิ์เปิดรายละเอียดใบงานแบบ boss (อ่านอย่างเดียว) — ใช้เมื่อไม่มีสิทธิ์แก้ไขงานผลิต
+    canOpenExecutivePlanDetail() {
+      const route = this.$router.resolve({ name: EXECUTIVE_PLAN_DETAIL_ROUTE_NAME, params: { id: 0 } })
+      return this.permissionService.hasAnyPermission(route.meta.permissions)
+    },
+
+    permissionService() {
+      return new PermissionService(this.authStore.getUser, this.authStore.permissions)
     }
   },
 
@@ -227,11 +243,13 @@ export default {
     },
 
     planLinkState(data) {
-      return resolvePlanLinkState(data.planId, this.canOpenPlanDetail)
+      return resolvePlanLinkState(data.planId, this.canOpenPlanDetail, this.canOpenExecutivePlanDetail)
     },
 
-    openPlanDetail(planId) {
-      const route = this.$router.resolve({ name: PLAN_DETAIL_ROUTE_NAME, params: { id: planId } })
+    openPlanDetail(data) {
+      const { routeLocation } = this.planLinkState(data)
+      if (!routeLocation) return
+      const route = this.$router.resolve(routeLocation)
       window.open(route.href, '_blank', 'noopener')
     },
 

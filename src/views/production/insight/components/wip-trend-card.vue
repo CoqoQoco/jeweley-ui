@@ -6,9 +6,11 @@
   ไปแสดงในกราฟรายละเอียด (การ์ดที่เลือกอยู่มีแท็ก "กำลังดูรายละเอียด ↓" เสริมจากกรอบสีแดงเข้ม)
 
   Props:
-    card     — { key, label, startWip, endWip, delta, deltaPercent, series: [{ bucketEnd, wip }] } (required)
-    selected — Boolean (false)
-    bucket   — 'week'|'month' (default 'week') — กำหนดรูปแบบวันที่ใน tooltip/แกน x (DD/MM หรือ YYYY-MM)
+    card       — { key, label, startWip, endWip, delta, deltaPercent, series: [{ bucketEnd, wip }] } (required)
+    selected   — Boolean (false)
+    bucket     — 'week'|'month' (default 'week') — กำหนดรูปแบบวันที่ใน tooltip/แกน x (DD/MM หรือ YYYY-MM)
+    rangeStart — Date (required) — ต้นช่วงจริงที่เลือก ใช้เติมจุดสังเคราะห์หน้าสุดของ sparkline ให้จุดแรก
+                 ในกราฟ = ตัวเลข "ต้นช่วง" เป๊ะ (series[0] จาก backend คือสิ้นสุด bucket แรก ไม่ใช่ต้นช่วงจริง)
 -->
 <template>
   <div
@@ -44,7 +46,8 @@ import {
   formatDeltaText,
   formatSparklineBucketDate,
   isSparklineEdgePoint,
-  buildSparklineDiscreteMarkers
+  buildSparklineDiscreteMarkers,
+  prependRangeStartPoint
 } from './wip-trend-helpers.js'
 
 import ChartGeneric from '@/components/prime-vue/ChartGeneric.vue'
@@ -69,6 +72,10 @@ export default {
     bucket: {
       type: String,
       default: 'week'
+    },
+    rangeStart: {
+      type: Date,
+      required: true
     }
   },
 
@@ -98,8 +105,10 @@ export default {
       })
     },
 
+    // เติมจุดสังเคราะห์ต้นช่วง (bucketEnd=rangeStart, wip=startWip) หน้าสุดเสมอ — series ดิบจาก backend
+    // ตัวแรกคือ "สิ้นสุด bucket แรก" ไม่ใช่ต้นช่วงจริง ทำให้จุดแรกที่โชว์ไม่ตรงกับเลข "ต้นช่วง" บนการ์ด
     series() {
-      return this.card.series || []
+      return prependRangeStartPoint(this.card.series, this.rangeStart, this.card.startWip)
     },
 
     sparklineSeries() {
@@ -119,9 +128,14 @@ export default {
           size: 0,
           discrete: buildSparklineDiscreteMarkers(length, CHART_TOKENS.sub)
         },
+        // grid.padding กันป้ายค่าโดนตัดที่ขอบ SVG (ขวา = เลขหลักพันกว้าง, บน = จุดที่ค่าสูงสุดอยู่ขอบบน) —
+        // ค่าต่ำสุดตามที่วัดจริงบนจอ: top 14 / right 24 / left 16
+        grid: {
+          padding: { top: 14, right: 24, left: 16 }
+        },
         dataLabels: {
           enabled: true,
-          offsetY: -6,
+          offsetY: -8,
           style: { fontSize: '9px', colors: [CHART_TOKENS.sub] },
           background: { enabled: false },
           formatter: (val, opts) => (isSparklineEdgePoint(opts.dataPointIndex, length) ? this.formatNumber(val) : '')
@@ -155,6 +169,9 @@ export default {
       const point = this.series[dataPointIndex]
       if (!point) return ''
       const dateText = formatSparklineBucketDate(point.bucketEnd, this.bucket)
+      if (point.isSynthetic) {
+        return this.$t('view.productionInsight.wip.trendPointStart', { date: dateText })
+      }
       const key = this.bucket === 'month' ? 'trendPointMonth' : 'trendPointWeek'
       return this.$t(`view.productionInsight.wip.${key}`, { date: dateText, wip: this.formatNumber(val) })
     }

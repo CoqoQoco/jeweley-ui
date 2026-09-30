@@ -10,7 +10,8 @@ import {
   sortDepartmentsByDeltaDesc,
   formatSparklineBucketDate,
   isSparklineEdgePoint,
-  buildSparklineDiscreteMarkers
+  buildSparklineDiscreteMarkers,
+  prependRangeStartPoint
 } from './wip-trend-helpers.js'
 
 describe('resolveDeltaVariant', () => {
@@ -162,5 +163,40 @@ describe('buildSparklineDiscreteMarkers', () => {
 
   it('returns [] for an empty series', () => {
     expect(buildSparklineDiscreteMarkers(0, '#393939')).toEqual([])
+  })
+})
+
+describe('prependRangeStartPoint', () => {
+  const series = [
+    { bucketEnd: '2026-09-07', wip: 3369 },
+    { bucketEnd: '2026-09-14', wip: 3401 }
+  ]
+
+  it('prepends a synthetic point with the true range-start value', () => {
+    const result = prependRangeStartPoint(series, '2026-09-01', 3382)
+    expect(result).toHaveLength(3)
+    expect(result[0]).toEqual({ bucketEnd: '2026-09-01', wip: 3382, inflow: null, outflow: null, isSynthetic: true })
+    expect(result[1]).toBe(series[0])
+    expect(result[2]).toBe(series[1])
+  })
+
+  it('does not mutate the original series', () => {
+    prependRangeStartPoint(series, '2026-09-01', 3382)
+    expect(series).toHaveLength(2)
+  })
+
+  it('returns the series untouched when rangeStart is missing', () => {
+    expect(prependRangeStartPoint(series, null, 3382)).toBe(series)
+  })
+
+  it('returns the series untouched when startWip is not a finite number', () => {
+    expect(prependRangeStartPoint(series, '2026-09-01', null)).toBe(series)
+    expect(prependRangeStartPoint(series, '2026-09-01', undefined)).toBe(series)
+    expect(prependRangeStartPoint(series, '2026-09-01', NaN)).toBe(series)
+  })
+
+  it('returns [] when series is empty/missing and inputs are invalid', () => {
+    expect(prependRangeStartPoint(null, null, 3382)).toEqual([])
+    expect(prependRangeStartPoint(undefined, '2026-09-01', null)).toEqual([])
   })
 })

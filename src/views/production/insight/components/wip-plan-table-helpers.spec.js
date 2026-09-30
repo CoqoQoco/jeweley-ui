@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest'
 
-import { summarizeWorkers, resolveStatusLine, buildLastActionLine, resolvePlanLinkState, PLAN_DETAIL_ROUTE_NAME } from './wip-plan-table-helpers.js'
+import {
+  summarizeWorkers,
+  resolveStatusLine,
+  buildLastActionLine,
+  resolvePlanLinkState,
+  PLAN_DETAIL_ROUTE_NAME,
+  EXECUTIVE_PLAN_DETAIL_ROUTE_NAME
+} from './wip-plan-table-helpers.js'
 
 describe('summarizeWorkers', () => {
   it('returns empty shape when workers is empty/missing', () => {
@@ -63,20 +70,32 @@ describe('buildLastActionLine', () => {
 })
 
 describe('resolvePlanLinkState', () => {
-  it('allows opening when planId is present and permission is granted', () => {
-    expect(resolvePlanLinkState(123, true)).toEqual({
+  it('routes to the full (editable) plan detail when the user has production:edit', () => {
+    expect(resolvePlanLinkState(123, true, false)).toEqual({
+      canOpen: true,
+      routeLocation: { name: PLAN_DETAIL_ROUTE_NAME, params: { id: 123 } }
+    })
+    // production:edit wins even when the user also happens to have executive:view
+    expect(resolvePlanLinkState(123, true, true)).toEqual({
       canOpen: true,
       routeLocation: { name: PLAN_DETAIL_ROUTE_NAME, params: { id: 123 } }
     })
   })
 
-  it('blocks opening when permission is not granted', () => {
-    expect(resolvePlanLinkState(123, false)).toEqual({ canOpen: false, routeLocation: null })
+  it('routes to the read-only executive plan detail when the user only has executive:view', () => {
+    expect(resolvePlanLinkState(123, false, true)).toEqual({
+      canOpen: true,
+      routeLocation: { name: EXECUTIVE_PLAN_DETAIL_ROUTE_NAME, params: { id: 123 } }
+    })
   })
 
-  it('blocks opening when planId is missing', () => {
-    expect(resolvePlanLinkState(null, true)).toEqual({ canOpen: false, routeLocation: null })
-    expect(resolvePlanLinkState(undefined, true)).toEqual({ canOpen: false, routeLocation: null })
-    expect(resolvePlanLinkState(0, true)).toEqual({ canOpen: false, routeLocation: null })
+  it('blocks opening when the user has neither permission', () => {
+    expect(resolvePlanLinkState(123, false, false)).toEqual({ canOpen: false, routeLocation: null })
+  })
+
+  it('blocks opening when planId is missing, regardless of permissions', () => {
+    expect(resolvePlanLinkState(null, true, true)).toEqual({ canOpen: false, routeLocation: null })
+    expect(resolvePlanLinkState(undefined, true, true)).toEqual({ canOpen: false, routeLocation: null })
+    expect(resolvePlanLinkState(0, true, true)).toEqual({ canOpen: false, routeLocation: null })
   })
 })

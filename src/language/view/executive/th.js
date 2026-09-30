@@ -181,5 +181,76 @@ export default {
       goldLossOverSlipCount: 'จำนวนใบเกินเกณฑ์ (เดือนล่าสุด)',
       goldLossOverAllowedGram: 'เกินเกณฑ์รวม (กรัม, เดือนล่าสุด)'
     }
+  },
+
+  planDetail: {
+    pageTitle: 'ใบงาน {wo}-{woNumber} · {mold}',
+    readOnlyTag: 'ดูอย่างเดียว',
+
+    sectionInfo: 'ข้อมูลใบงาน',
+    sectionHistory: 'ประวัติการเดินงาน',
+    sectionMaterial: 'วัตถุดิบ',
+    sectionCost: 'ต้นทุน',
+
+    fieldProductNumber: 'รหัสสินค้า',
+    fieldProductName: 'ชื่อสินค้า',
+    fieldCustomerName: 'ชื่อลูกค้า',
+    fieldCustomerCode: 'รหัสลูกค้า',
+    fieldQty: 'จำนวนสินค้า',
+    fieldUnit: 'หน่วย',
+    fieldGold: 'สีของทอง/เงิน',
+    fieldGoldSize: 'ประเภททอง/เงิน',
+    fieldRequestDate: 'วันส่งงานลูกค้า',
+    fieldCreateDate: 'วันที่สร้างใบงาน',
+    fieldLastUpdateBy: 'ผู้แก้ไขล่าสุด',
+    fieldLastUpdateDate: 'วันที่แก้ไขล่าสุด',
+
+    historyCurrentNote: 'แถวไฮไลต์ = สถานะปัจจุบันของใบงาน',
+    historyColDate: 'วันที่',
+    historyColStatus: 'ขั้นตอน',
+    historyColWho: 'ผู้ทำรายการ',
+    historyColWorker: 'ช่าง',
+    historyColGoldWeight: 'ทองส่ง/รับ (g)',
+    historyColWages: 'ค่าแรง',
+    historyColRemark: 'หมายเหตุ',
+
+    matColGoldType: 'ประเภททอง/เงิน',
+    matColGoldPercent: 'เปอร์เซ็นทอง',
+    matColGoldQty: 'จำนวนทอง',
+    matColGemType: 'ประเภทพลอย',
+    matColGemShape: 'รูปทรงพลอย',
+    matColGemQty: 'จำนวนพลอย',
+    matColGemWeight: 'น้ำหนักพลอย',
+    matColDiamondQty: 'จำนวนเพชร',
+    matColDiamondWeight: 'น้ำหนักเพชร',
+    matColDiamondSize: 'ขนาดเพชร',
+    matColDiamondQuality: 'คุณภาพเพชร',
+
+    goldLedgerTitle: 'ใบเบิกผสมทอง',
+    goldLedgerColGoldType: 'ประเภททอง/เงิน',
+    goldLedgerColGoldPercent: 'เปอร์เซ็นทอง',
+    goldLedgerColReceipt: 'สูตรผสมทอง',
+    goldLedgerColBookNo: 'เล่มที่',
+    goldLedgerColCode: 'รหัส',
+    goldLedgerColCost: 'ราคา',
+    goldLedgerColAssignDate: 'วันที่เบิก',
+
+    costColGroup: 'กลุ่ม',
+    costColDescription: 'รายการ',
+    costColQty: 'จำนวน',
+    costColQtyPrice: 'ราคา/จำนวน',
+    costColWeight: 'น้ำหนัก',
+    costColWeightPrice: 'ราคา/น้ำหนัก',
+    costColTotal: 'ราคารวม',
+    costTotalLabel: 'รวมต้นทุนทั้งหมด',
+
+    priceGroup: {
+      Gold: 'ทอง',
+      Gem: 'วัตถุดิบ',
+      Worker: 'งานช่าง',
+      Embed: 'งานฝัง',
+      ETC: 'เพิ่มเติม',
+      unknown: 'อื่นๆ'
+    }
   }
 }

@@ -181,5 +181,76 @@ export default {
       goldLossOverSlipCount: 'Slips over allowance (latest month)',
       goldLossOverAllowedGram: 'Total over allowance (g, latest month)'
     }
+  },
+
+  planDetail: {
+    pageTitle: 'Plan {wo}-{woNumber} · {mold}',
+    readOnlyTag: 'View only',
+
+    sectionInfo: 'Plan Info',
+    sectionHistory: 'Movement History',
+    sectionMaterial: 'Materials',
+    sectionCost: 'Cost',
+
+    fieldProductNumber: 'Product Code',
+    fieldProductName: 'Product Name',
+    fieldCustomerName: 'Customer Name',
+    fieldCustomerCode: 'Customer Code',
+    fieldQty: 'Quantity',
+    fieldUnit: 'Unit',
+    fieldGold: 'Gold/Silver Colour',
+    fieldGoldSize: 'Gold/Silver Type',
+    fieldRequestDate: 'Customer Due Date',
+    fieldCreateDate: 'Plan Created On',
+    fieldLastUpdateBy: 'Last Updated By',
+    fieldLastUpdateDate: 'Last Updated On',
+
+    historyCurrentNote: 'Highlighted row = the plan\'s current status',
+    historyColDate: 'Date',
+    historyColStatus: 'Stage',
+    historyColWho: 'Performed By',
+    historyColWorker: 'Worker',
+    historyColGoldWeight: 'Gold Sent/Received (g)',
+    historyColWages: 'Wages',
+    historyColRemark: 'Remark',
+
+    matColGoldType: 'Gold/Silver Type',
+    matColGoldPercent: 'Gold %',
+    matColGoldQty: 'Gold Qty',
+    matColGemType: 'Gem Type',
+    matColGemShape: 'Gem Shape',
+    matColGemQty: 'Gem Qty',
+    matColGemWeight: 'Gem Weight',
+    matColDiamondQty: 'Diamond Qty',
+    matColDiamondWeight: 'Diamond Weight',
+    matColDiamondSize: 'Diamond Size',
+    matColDiamondQuality: 'Diamond Quality',
+
+    goldLedgerTitle: 'Gold Requisition Ledger',
+    goldLedgerColGoldType: 'Gold/Silver Type',
+    goldLedgerColGoldPercent: 'Gold %',
+    goldLedgerColReceipt: 'Gold Formula',
+    goldLedgerColBookNo: 'Book No.',
+    goldLedgerColCode: 'Code',
+    goldLedgerColCost: 'Cost',
+    goldLedgerColAssignDate: 'Assigned On',
+
+    costColGroup: 'Group',
+    costColDescription: 'Item',
+    costColQty: 'Qty',
+    costColQtyPrice: 'Price/Qty',
+    costColWeight: 'Weight',
+    costColWeightPrice: 'Price/Weight',
+    costColTotal: 'Total',
+    costTotalLabel: 'Total Cost',
+
+    priceGroup: {
+      Gold: 'Gold',
+      Gem: 'Material',
+      Worker: 'Worker',
+      Embed: 'Setting',
+      ETC: 'Other',
+      unknown: 'Other'
+    }
   }
 }

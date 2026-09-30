@@ -66,7 +66,7 @@ export default {
     colWorkers: 'Workers',
     lastActionCreated: 'Plan created',
     planLinkTitle: 'Open plan detail (new tab)',
-    planLinkNoPermission: 'You need production edit permission to open the detail',
+    planLinkNoPermission: 'You need production edit or executive overview permission to open the detail',
 
     trendCardsTitle: 'Department WIP Trend',
     trendCardsHint: 'Click a card to see that department\'s inflow/outflow below',
@@ -74,6 +74,7 @@ export default {
     trendCardSelectedTag: 'Viewing details below ↓',
     trendPointWeek: 'Week ending {date}: {wip} plans',
     trendPointMonth: 'Month {date}: {wip} plans',
+    trendPointStart: 'Start of range {date}',
     bucketWeekly: 'Weekly',
     bucketMonthly: 'Monthly',
     trendTotalLabel: 'Total',

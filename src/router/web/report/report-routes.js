@@ -2,6 +2,7 @@ const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 
 // ---- executive overview (boss-only) ----
 const ExecutiveOverview = () => import('@/views/report/executive/index-view.vue')
+const ExecutivePlanDetail = () => import('@/views/report/executive/plan-detail/index-view.vue')
 
 // ---- production reports ----
 const ProductionDashboard = () => import('@/views/production/dashboard/index-view.vue')
@@ -84,6 +85,21 @@ const routes = [
             th: 'ภาพรวมผู้บริหาร'
           },
           minorShow: true,
+          permissions: [PERMISSIONS.EXECUTIVE_VIEW]
+        }
+      },
+      {
+        // read-only plan detail สำหรับ boss (executive:view) ที่ไม่มี production:edit — เปิดจากลิงก์เลขที่
+        // ใบงานในตาราง insight (wip-plan-table-helpers resolvePlanLinkState) ไม่อยู่ในเมนู (minorShow:false)
+        path: '/executive/plan-detail/:id',
+        name: 'executive-plan-detail',
+        component: ExecutivePlanDetail,
+        meta: {
+          Displayname: {
+            en: 'Plan Detail (Read-only)',
+            th: 'รายละเอียดใบงาน (ดูอย่างเดียว)'
+          },
+          minorShow: false,
           permissions: [PERMISSIONS.EXECUTIVE_VIEW]
         }
       }
