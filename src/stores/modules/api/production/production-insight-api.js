@@ -111,6 +111,72 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // ต้องมีสิทธิ์ production:standard-edit — เช็คฝั่ง UI ก่อนเรียกเสมอ (ดู delivery-target-panel.vue)
     async saveDeliveryTarget({ targetPercent, remark }) {
       return await api.jewelry.post('ProductionInsight/SaveDeliveryTarget', { targetPercent, remark })
+    },
+
+    // หมวด "ทองและ Loss" — workerTypes เป็นเลขรหัสประเภทช่าง (50=ช่างแต่ง/80=ช่างฝัง) — metal 'GOLD'|'SILVER'
+    // (default 'GOLD') กรองที่ request ทั้งก้อน kpi/series/targets/workers ของ response จึงเป็นของโลหะเดียวนั้น
+    // เสมอ (ไม่ผสมทอง/เงินในตัวเลขเดียวกัน ราคาเงินคงที่ 40 ฿/กรัม ต่างจากทองที่แยกราคาตามกะรัต) — kpi[]/
+    // targets[] มี metal แนบมาด้วยต่อแถว (ค่าเดียวกับที่ขอ ไม่มีผสมข้ามโลหะ) ส่วน series[]/workers[] ไม่มี
+    // (ยืนยันแล้วจาก API agent 2026-10-01) — draftTargets items = {workerType,metal,targetPercent} ส่งเฉพาะ
+    // ตอนกำลังแก้ไขเป้าในแผง "ตั้งเป้า Loss" (ยังไม่บันทึก) ให้ kpi/series คำนวณ preview แบบ real-time
+    async fetchGold({ start, end, bucket = 'week', workerTypes = [], workerCodes = [], metal = 'GOLD', draftTargets } = {}) {
+      return await api.jewelry.post('ProductionInsight/Gold', {
+        start: start ? formatISOString(start) : null,
+        end: end ? formatISOString(end) : null,
+        bucket,
+        workerTypes: (workerTypes || []).map(Number),
+        workerCodes,
+        metal,
+        draftTargets: draftTargets && draftTargets.length ? draftTargets : undefined
+      })
+    },
+
+    // DataSourceRequest + workerTypes/workerCodes/metal/start/end — items = GoldOverSlips (slipId,documentNo,...)
+    // — start/end ต้องส่งเสมอ (ช่วงเดียวกับ Gold) กัน request ไม่มีช่วงเวลาแล้วได้ 0 แถวเงียบๆ
+    async fetchGoldOverSlips({ take = 50, skip = 0, sort = [], workerTypes = [], workerCodes = [], metal = 'GOLD', start, end } = {}) {
+      return await api.jewelry.post('ProductionInsight/GoldOverSlips', {
+        take,
+        skip,
+        sort,
+        workerTypes: (workerTypes || []).map(Number),
+        workerCodes,
+        metal,
+        start: start ? formatISOString(start) : null,
+        end: end ? formatISOString(end) : null
+      })
+    },
+
+    // DataSourceRequest + workerTypes/workerCodes/olderThanDays/metal/start/end — items = GoldUncoveredJobs
+    // — start/end เป็น required (ช่วงเดียวกับ Gold, range-scoped ฝั่ง backend แล้ว กันโชว์งานเก่าเกินช่วงที่
+    // เลือก) olderThanDays เป็นตัวกรองเสริมแยกต่างหาก ไม่ใช่ตัวกำหนดช่วงเวลาหลัก
+    async fetchGoldUncoveredJobs({ take = 50, skip = 0, sort = [], workerTypes = [], workerCodes = [], olderThanDays = 14, metal = 'GOLD', start, end } = {}) {
+      return await api.jewelry.post('ProductionInsight/GoldUncoveredJobs', {
+        take,
+        skip,
+        sort,
+        workerTypes: (workerTypes || []).map(Number),
+        workerCodes,
+        olderThanDays,
+        metal,
+        start: start ? formatISOString(start) : null,
+        end: end ? formatISOString(end) : null
+      })
+    },
+
+    // คืน [{workerType,metal,targetPercent,effectiveFrom,createBy,remark}] ครบทั้ง 4 ชุด (ไม่กรองตาม metal
+    // ที่กำลังดูอยู่ — ใช้เติมแผง "ตั้งเป้า Loss" ที่แก้ได้ทั้ง 4 แถวพร้อมกัน)
+    async fetchGoldLossTargets() {
+      return await api.jewelry.get('ProductionInsight/GoldLossTargets')
+    },
+
+    async fetchGoldLossTargetHistory(workerType, metal = 'GOLD') {
+      return await api.jewelry.get('ProductionInsight/GoldLossTargetHistory', { workerType, metal })
+    },
+
+    // items = [{workerType,metal,targetPercent}] — ต้องมีสิทธิ์ production:standard-edit — เช็คฝั่ง UI ก่อน
+    // เรียกเสมอ (ดู gold-target-panel.vue)
+    async saveGoldLossTargets({ items, remark }) {
+      return await api.jewelry.post('ProductionInsight/SaveGoldLossTargets', { items, remark })
     }
   }
 })

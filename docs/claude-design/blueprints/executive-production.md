@@ -483,3 +483,100 @@ whitelist เพิ่มใน `insight-helpers.js HELP_KEY_CODES` เหมื
 - **Decision**: 2 กราฟ (%ตรงเวลา, วางแผน vs ใช้จริง) ใช้ `Delivery.series` ชุดเดียวกัน คนละฟิลด์ — สแต็กเป็น 2 กล่อง legend แนวตั้งใต้ `DeliveryTrendPanel` เดียว (ไม่ใช่ side-by-side charts-row) หลีกเลี่ยงความซับซ้อนของ container-padding-top pattern โดยไม่จำเป็น เพราะทั้งคู่ใช้ reportRef เดียวกัน (`deliveryTrend`)
 - **Decision**: `index-view.vue` เดิม hardcode `filters.wip`/`draftWipFilter` ทุกจุด (range/filter-panel/chip handlers) — ขยายเป็น section-aware (`this.filters[this.activeSection]`/if-else ตาม `activeSection`) ตอนเพิ่ม delivery แทนการ duplicate state คนละชุดแบบเดิม เพราะ `RangePresetGeneric` ในแถบเครื่องมือใช้ร่วมกันทุกหมวดที่มี filter (URL query key `range/start/end` ไม่มี prefix ยังคงเป็น global slot เดียว สะท้อนเฉพาะหมวดที่เปิดอยู่ ณ ขณะนั้น)
 - verify: `npx eslint` เฉพาะไฟล์ที่แก้ + `npx vitest run` (insight) + `npm run build` (endpoint ใหม่ทั้ง 7 ยังไม่มีจริง เรียกแล้ว error ถือว่าปกติจนกว่า backend จะ deploy)
+
+## Revision 4 (2026-10-01): หมวด "ทองและ Loss" (gold tab)
+
+หมวด `gold` ย้ายจาก placeholder (`topic-placeholder-section.vue`, เดิมฝัง `gold-loss-trend-view.vue` ของ
+`/executive` เป็นรายงานเสริม) เป็นเนื้อหาจริงเต็มรูปแบบ (แบบ `wip`/`delivery`) — orchestrator ใหม่
+`sections/gold-section.vue` ยิง `ProductionInsight/Gold` ครั้งเดียวได้ทั้ง problems/forecasts/actions/
+status + kpi/series/targets/workers/asOf (endpoint เดียว เหมือน `Delivery` ไม่แยกเหมือน `Wip`) — จุดต่าง
+จาก delivery: เป้า (%Loss) เป็น **รายประเภทช่าง** (50=ช่างแต่ง/80=ช่างฝัง, 2 ค่าคงที่) ไม่ใช่ค่าเดียวระดับ
+บริษัท และ "เป้า % ตรงเวลา vs ตรงเวลาจริง" ของ delivery กลายเป็น **3 ค่าต้องโชว์คู่กันเสมอ**: Loss จริง / %
+ที่ยอมให้ตาม slip / เป้าที่ตั้งไว้ (จุดประสงค์หลักของหมวดนี้ตามที่ user ขอ — ไม่ใช่แค่ 2 ค่าเหมือน delivery)
+
+### API contract (`ProductionInsight/*`, endpoint ใหม่ทั้งหมด — final contract จาก API agent 2026-10-01)
+
+- `Gold` POST `{start,end,bucket,workerTypes?,workerCodes?,draftTargets?:[{workerType,targetPercent}]}` → `{asOf,status,problems[],forecasts[],actions[] (shape เดียวกับ Wip/Delivery), targets:[{workerType,targetPercent,source:'saved'|'draft',effectiveFrom}], kpi:[{workerType,slipCount,workerCount,receivedGram,rawLossGram,allowedGram,lossPercent,allowedPercent,targetPercent,excessGram,excessMoney,netMoney,overCount,workersOverCount,coverageJobs,coverageTotalJobs,coveragePercent}], series:[{bucketEnd,workerType,slipCount,rawLossGram|null,allowedGram|null,lossPercent|null,allowedPercent|null}], workers:[{workerType,workerCode,workerName,slipCount,receivedGram,lossPercent,allowedPercent,targetPercent,excessGram,excessMoney,netMoney,overBuckets,qualifyingBuckets}]}` — `draftTargets` ส่งเฉพาะตอนกำลังแก้ไขเป้าในแผง "ตั้งเป้า Loss" (ยังไม่บันทึก) เหมือน `draftStandards`/`draftTargetPercent` เดิม — `kpi`/`targets` เป็น **array ต่อประเภทช่าง** (ไม่ใช่ object เดี่ยวแบบ delivery) — percent base = received gram
+- `GoldOverSlips` POST DataSourceRequest + `{workerTypes,workerCodes}` → `{slipId,documentNo,workerType,workerCode,workerName,requestDateStart,requestDateEnd,rawLossGram,allowedGram,excessGram,excessMoney,netMoney}` — **ช่างแต่ง (50) = 1 แถวต่อ 1 ใบ slip จริง, ช่างฝัง (80) = 1 แถวต่อ 1 รายการที่เกินเกณฑ์ (job) ภายใต้ slip เดียวกัน** (documentNo ซ้ำกันได้หลายแถว) — FE โชว์ `InfoTipGeneric` กำกับเฉพาะแถว workerType 80 กันเข้าใจผิดว่านับซ้ำใบ
+- `GoldUncoveredJobs` POST DataSourceRequest + `{workerTypes,workerCodes,olderThanDays}` → `{planId,wo,woNumber,woText,deptKey,workerCode,workerName,jobDate,sendGram,checkGram,diffGram,daysSince}` (link ผ่าน `resolvePlanLinkState` เดิม) — `workerName` เป็นค่าประมาณ (best-effort จากช่างหลักของงาน ไม่ใช่ข้อมูลยืนยันแน่นอนแบบ slip จริง) — FE โชว์ `workerCode` คู่กันเสมอ + `InfoTipGeneric` กำกับ
+- `GoldLossTargets` GET → `[{workerType,targetPercent,effectiveFrom,createBy,remark}]` (array ต่อประเภทช่าง ไม่ใช่ object เดี่ยว) / `GoldLossTargetHistory?workerType=` GET → shape เดียวกัน filtered ต่อประเภท / `SaveGoldLossTargets` POST `{items:[{workerType,targetPercent}],remark}` (คืน 200 ไม่มี body) — ต้องมีสิทธิ์ `production:standard-edit` (reuse `hasStandardEditAccess()` เดิม)
+- ตารางทั้ง 2 (`GoldOverSlips`/`GoldUncoveredJobs`) คืน Kendo DataSourceResult แบบเดียวกับ `StalePlans`/`DeliveryAtRiskPlans` เดิม (`{data,total}`)
+
+**Money/sign semantics (สำคัญ — ห้ามคำนวณเงินเองฝั่ง FE เพราะราคาทองต่างกันตามกะรัต)**: `netMoney` บวก =
+"ช่างได้คืน", ลบ = "หักช่าง" (**ห้ามเรียกว่า loss ทั้งคู่**) · `excessMoney` เป็นค่า ≥0 เสมอ (มูลค่าทองที่เกิน
+เกณฑ์) — FE ใช้ 2 ค่านี้ตรงๆ จาก response ไม่มี derive/คำนวณเองที่ไหนเลย
+
+**workerType resolution**: เป็นเลข (50/80) เสมอ — ห้าม render ดิบ ต้องแปลผ่าน `translateWorkerType` ใน
+`insight-tab-layout.vue` (เพิ่มคู่กับ `translateDept` เดิมใน `resolveFindingParams` — ขยาย signature เป็น
+`resolveFindingParams(params, translateDept, translateWorkerType)`) resolve เป็น
+`view.productionInsight.gold.workerType.<n>` (เก็บเป็น **nested object** `gold.workerType: {50:'ช่างแต่ง',
+80:'ช่างฝัง'}` ใน th.js/en.js ตามที่ API agent ระบุ ไม่ใช่ flat key `workerType50`/`workerType80`) — ใช้
+mechanism เดียวกันทุกจุดที่ต้องแปล (components, insight-tab-layout, i18n interpolation spec)
+
+Code ใหม่ (namespace เดิม `view.productionInsight.rules`/`help`, `reportRef` ใหม่ 5 ค่า
+`goldKpi`/`goldTrend`/`goldWorkers`/`goldOverSlips`/`goldUncovered`):
+
+| กลุ่ม | code | params (ชื่อสุดท้ายจาก API agent) | reportRef | ownerRole |
+|---|---|---|---|---|
+| problems | `GOLD_EXCESS_OVER_ALLOWANCE` | `workerType,excessGram,excessMoney` | goldOverSlips | — |
+| problems | `GOLD_LOSS_ABOVE_TARGET` | `workerType,lossPercent,targetPercent` | goldKpi | — |
+| problems | `GOLD_ALLOWANCE_ABOVE_TARGET` | `workerType,allowedPercent,targetPercent` | goldKpi | — |
+| problems | `GOLD_MOST_WORKERS_OVER` | `workerType,overCount,workerCount,percent` | goldWorkers | — |
+| problems | `GOLD_REPEAT_OFFENDER` | `workerType,workerCode,workerName,buckets` | goldWorkers | — |
+| problems | `GOLD_SLIP_COVERAGE_LOW` | `workerType,coveragePercent,coverageJobs,coverageTotalJobs` | goldUncovered | — |
+| forecasts | `FC_GOLD_EXCESS_PROJECTED` | `workerType,avgMonthlyExcessGram,avgMonthlyExcessMoney` | goldTrend | — |
+| forecasts | `FC_GOLD_LOSS_RISING` | `workerType,fromPercent,toPercent,buckets` | goldTrend | — |
+| actions | `ACT_COMPLETE_SLIPS` | `workerType,uncoveredCount` | — | `goldControl` |
+| actions | `ACT_TALK_WORKER` | `workerType,workerCode,workerName` | — | `deptHead` |
+| actions | `ACT_REVIEW_ALLOWANCE` | `workerType,allowedPercent,targetPercent` | — | `productionManager` |
+| actions | `ACT_CHECK_WEIGHING` | `workerType,excessGram` | — | `goldControl` |
+
+โค้ดเหล่านี้มาจาก `ProductionInsight/Gold` โดยตรง — whitelist เพิ่มใน `insight-helpers.js HELP_KEY_CODES`
+เหมือนรอบก่อนๆ — **ทุกชื่อ param ตรวจแล้วตรงกับที่ th.js/en.js/`gold-i18n.spec.js` ใช้จริง** (บทเรียนจากรอบ
+delivery ที่ตรวจไม่ครบจนมี param หลุด sync 3 จุด — รอบนี้ API agent ส่ง final contract มาก่อนเขียนข้อความเสร็จ
+จึงตรวจพร้อมกันได้เลยไม่ต้องแก้ย้อนหลัง)
+
+### Component ใหม่ (Revision 4)
+
+| Component | ไฟล์ | หน้าที่ |
+|---|---|---|
+| `ProductionInsightGoldSection` | `sections/gold-section.vue` | orchestrator — ยิง `Gold`+`GoldLossTargets`, คุม draftTargets, emit `workers-loaded` ให้ index-view.vue ทำ options ตัวกรอง workerCodes |
+| `GoldKpiGroup` | `components/gold-kpi-group.vue` | กล่อง KPI 2 แถว (ช่างฝัง/ช่างแต่ง) × 3 การ์ด (`headerStyle="dashboard"` + `StatCardGeneric` ×6, โชว์ 3 ค่า Loss จริง/ยอมให้/เป้าในการ์ดเดียว) |
+| `GoldTrendPanel` | `components/gold-trend-panel.vue` | orchestrator ย่อย reportRef `goldTrend` — `ToggleGroupGeneric` เลือกประเภทช่าง + กราฟ + ปุ่มตั้งเป้า |
+| `GoldTrendChart` | `components/gold-trend-chart.vue` | presentational dual-axis (แท่งกรัม แกนซ้าย, เส้น% แกนขวา + เส้นเป้า annotation) รับ `series` ที่กรองแล้วเป็น prop |
+| `GoldTargetPanel` / `GoldTargetHistoryModal` | `components/gold-target-{panel,history-modal}.vue` | ปุ่ม+`DrawerGeneric` ตั้งเป้า 2 แถวคงที่ (ช่างฝัง/ช่างแต่ง — ไม่ใช่ N แผนกแบบ wip หรือค่าเดียวแบบ delivery) + ประวัติแยกตาม workerType |
+| `GoldWorkerRankingPanel` | `components/gold-worker-ranking-panel.vue` | ตารางอันดับช่าง (reportRef `goldWorkers`, มาจาก `Gold.workers` ตรงๆ ไม่ paginate) |
+| `GoldOverSlipsPanel` / `GoldUncoveredJobsPanel` | `components/gold-{over-slips,uncovered-jobs}-panel.vue` | ตาราง paginate อิสระ 2 ตัว ยิง endpoint ของตัวเอง — `GoldUncoveredJobsPanel` reuse `wip-plan-table-helpers.js` (plan link) |
+| `gold-helpers.js` (+ spec) | `components/` | pure: loss-vs-target stat variant, net-money variant, draft-target-chip diff check (ต่อ workerType), series field mapper, over-buckets ratio formatter |
+
+### Mapping → โค้ด (Revision 4)
+
+| ไฟล์ | แก้อะไร | agent |
+|---|---|---|
+| `src/stores/modules/api/production/production-insight-api.js` | เพิ่ม `fetchGold/fetchGoldOverSlips/fetchGoldUncoveredJobs/fetchGoldLossTargets/fetchGoldLossTargetHistory/saveGoldLossTargets` | @ui-implementer |
+| `src/components/insight/insight-helpers.js` (+ spec) | เพิ่ม 8 code ใหม่ใน `HELP_KEY_CODES`, ขยาย `resolveFindingParams` รับ `translateWorkerType` (param ที่ 3) | @ui-implementer |
+| `src/components/insight/insight-tab-layout.vue` | เพิ่ม method `translateWorkerType` ส่งเป็น translator ตัวที่ 2 ให้ `resolveText`/`resolveHelpText` | @ui-implementer |
+| `src/views/production/insight/insight-filters.js` (+ spec) | เพิ่ม `buildDefaultGoldFilter/parseGoldFilterQuery/goldFilterToQuery/clearedGoldFilterQueryKeys` (query prefix `gld*`) | @ui-implementer |
+| `src/views/production/insight/components/gold-*.vue` (+ helpers/spec) (ใหม่ทั้งหมด) | KPI/กราฟ/ตาราง/แผงตั้งเป้าใหม่ | @ui-implementer |
+| `src/views/production/insight/sections/gold-section.vue` (ใหม่) | mount ทุก component ข้างต้น เชื่อม draft-target-change/target-saved/workers-loaded | @ui-implementer |
+| `src/views/production/insight/sections/topic-placeholder-section.vue` | ลบ entry `gold` ออกจาก `TOPIC_LINK`/`TOPIC_CODES` + ลบการฝัง `gold-loss-trend-view.vue` (ย้ายไป section จริงแล้ว — ไฟล์เดิมยังอยู่ ใช้ที่ `/executive` ต่อ ไม่ได้ลบ) | @ui-implementer |
+| `src/views/production/insight/index-view.vue` | mount `GoldSection`, ขยาย `hasFilterableFields`/`activeChips`/filter-panel handlers เป็น 3-way (wip/delivery/gold), เพิ่ม `goldWorkerOptions` (populate จาก emit `workers-loaded`) | @ui-implementer |
+| `src/language/view/production-insight/{th,en}.js` | เพิ่ม namespace `gold.*` เต็ม (รวม nested `workerType` object) + rules/codeLabel/help ของ 8 code ใหม่ — ลบ `GOLD_PLACEHOLDER_*`/`placeholder.link.gold` (dead, ย้ายไป section จริงแล้ว) | @ui-implementer |
+| `src/language/view/production-insight/gold-i18n.spec.js` (ใหม่) | ขยาย pattern เดียวกับ `delivery-i18n.spec.js` มาตรวจ param ของ gold codes | @ui-implementer |
+| Backend `ProductionInsight/{Gold,GoldOverSlips,GoldUncoveredJobs,GoldLossTargets,GoldLossTargetHistory,SaveGoldLossTargets}` | ใหม่ทั้งหมด — final contract ส่งมาแล้ว (2026-10-01) | @api-implementer |
+
+- **Decision**: เป้า % Loss เป็นรายประเภทช่าง (2 ค่าคงที่ 50/80) ไม่ใช่รายแผนกแบบ `StageLeadTime`/ไม่ใช่ค่าเดียวแบบ `Delivery` — `GoldTargetPanel` เลยอยู่กึ่งกลางระหว่าง `wip-standards-panel.vue` (per-item map, N แถว) กับ `delivery-target-panel.vue` (scalar เดียว) — ใช้ per-item map pattern ของ wip แต่ fix `ROW_ORDER = [80, 50]` แทนที่จะ loop departments แบบ dynamic
+- **Decision**: `translateWorkerType` เพิ่มเป็น translator ตัวที่ 2 ของ `resolveFindingParams` (เดิมรับแค่ `translateDept`) แทนการสร้าง resolver แยกต่างหาก — เพราะ mechanism resolve ของ `insight-tab-layout.vue` (ที่ใช้ร่วมทุกหมวด) ออกแบบไว้แล้วให้ขยาย translator เพิ่มได้ง่ายโดยไม่กระทบ code เดิมของ wip/delivery (ไม่มี param `workerType` อยู่แล้ว)
+- **Decision**: `gold.workerType` เก็บเป็น nested object (`{50:'...',80:'...'}`) ไม่ใช่ flat key (`workerType50`) ตามที่ API agent ระบุชัดเจน — ยืนยันแล้วว่า vue-i18n resolve `$t('...gold.workerType.50')` ได้ปกติ (object key ตัวเลขถูก JS coerce เป็น string key โดยอัตโนมัติ)
+- verify: `npx eslint` เฉพาะไฟล์ที่แก้ + `npx vitest run` (insight) + `npm run build` (endpoint ใหม่ทั้ง 6 ยังไม่มีจริง เรียกแล้ว error ถือว่าปกติจนกว่า backend จะ deploy)
+
+### Note (2026-10-01, follow-up): metal dimension (ทอง/เงิน) + param formatting fixes
+
+User verified บน prod แล้วสั่งแก้เพิ่ม 4 เรื่อง — contract สุดท้ายจาก API agent:
+
+- **metal 'GOLD'|'SILVER' (default 'GOLD')** เป็น request param ใหม่บน `Gold`/`GoldOverSlips`/`GoldUncoveredJobs` ทั้งก้อน — คุมทั้งหมวด (KPI/กราฟ/ตารางทุกจุด follow ค่านี้ ไม่ผสมทอง/เงินในตัวเลขเดียวกัน เพราะราคาเงินคงที่ 40 ฿/กรัม ต่างจากทองที่แยกตามกะรัต) — `Gold.draftTargets`/`SaveGoldLossTargets` items เป็น `{workerType,metal,targetPercent}`, response `targets[]`/`kpi[]` มี `metal` แนบมาด้วยต่อแถว (ค่าเดียวกับที่ขอเสมอ) ส่วน `series[]`/`workers[]` ไม่มี (ยืนยันจาก API agent) — `GoldUncoveredJobs.start/end` เปลี่ยนจาก optional เป็น **required** (ช่วงเดียวกับ `Gold`) `olderThanDays` เป็นตัวกรองเสริมแยกต่างหาก — **แก้บั๊ก**: `GoldOverSlips` ไม่เคยส่ง `start`/`end` มาตั้งแต่แรก (ไม่อยู่ใน draft contract รอบก่อน) backend สงสัยว่าทำให้ query ไม่มีช่วงเวลาแล้วได้ 0 แถว — เพิ่ม `start`/`end` เป็น required props เข้า `gold-over-slips-panel.vue`/`fetchGoldOverSlips` ด้วย
+- UI: เพิ่ม `metal` เข้า gold filter (`insight-filters.js` key `gldMetal`) + `ToggleGroupGeneric` ทอง|เงิน 2 จุด **state เดียวกัน** — ในแผง `FilterPanelGeneric` (field ปกติ) และข้างหัวข้อ `GoldKpiGroup` (prop `metal`/emit `update:metal` ส่งขึ้นผ่าน `gold-section.vue`'s `metal-change` ให้ `index-view.vue` เป็นคนแก้ `filters.gold.metal` จริง — pattern เดียวกับ `onRangePresetChange` คือใช้ทันทีไม่ผ่าน draft/apply) — `GoldKpiGroup`'s title เปลี่ยนเป็น `nav.gold + ' — ' + metalLabel` ("ทองและ Loss — ทอง") ตามที่สั่ง (ลบ i18n key `kpiGroupTitle` เดิมทิ้งเพราะกลายเป็น dead code)
+- **เป้าแยกตาม (ประเภทช่าง, โลหะ) 4 ชุดคงที่** (80/50 × GOLD/SILVER) — `GoldTargetPanel` ใช้ composite key `"workerType-metal"` (helper ใหม่ `buildGoldTargetKey`) จัดกลุ่ม UI เป็น 2 กลุ่มโลหะ × 2 แถวประเภทช่าง ในแผงเดียว (เลือกแบบ "4 inputs grouped" ตามตัวเลือกแรกที่ user ให้ไว้ ไม่ใช่ 2 inputs+note) — ข้อความอ้างอิง "% Loss จริงตอนนี้" โชว์เฉพาะแถวที่ตรงกับ `activeMetal` (kpi prop เป็นของโลหะที่กำลังดูอยู่เพียงโลหะเดียว แถวโลหะอื่นไม่มีข้อมูลให้โชว์ ไม่ใช่เอาเลขโลหะอื่นมาแทน) — `shouldShowGoldDraftChip`/`buildGoldDraftTargetsPayload` ขยายรับ `metal` คู่กับ `workerType` ด้วย — ประวัติ (`GoldLossTargetHistory`) filter ทั้ง `workerType`+`metal`
+- **i18n param audit รอบ 3**: `GOLD_MOST_WORKERS_OVER`/`GOLD_REPEAT_OFFENDER` เปลี่ยนคำจาก "เกินเป้า" เป็น "เกินเกณฑ์" (เทียบกับ allowance ของ slip ไม่ใช่เป้าที่ตั้งเอง) — `GOLD_REPEAT_OFFENDER`/`ACT_TALK_WORKER` รวมช่างหลายคนเป็น finding/action **เดียว** ต่อประเภทช่าง (ไม่ใช่ 1 finding ต่อ 1 คนแบบเดิม) ด้วย param `workers:[{workerCode,workerName}]` + `count` — เพิ่ม **`formatWorkerNameList`** (`insight-helpers.js`, ตัวใหม่) ต่อท้าย "และอีก N คน" เมื่อเกิน maxNames (default 3, `ACT_TALK_WORKER` ขอ 5 — ส่งผ่าน `resolveMaxWorkerNames(code)` ใน `insight-tab-layout.vue`) ไม่มี overflow ใช้ "และ" คั่นคนสุดท้ายตามไวยากรณ์ไทย — เพิ่ม **numeric-suffix auto-formatter** ใน `resolveFindingParams` (param ที่ชื่อลงท้าย `Money`=0 ตำแหน่ง, `Gram`/`Percent`=ไม่เกิน 2 ตำแหน่ง ใส่ตัวคั่นหลักพันเสมอ, case-sensitive กันชนกับ param ชื่อสั้นเดิมของ wip เช่น `percent`/`count`) — **ทุก code เพิ่ม `metal` param** (translate ผ่าน `translateMetal` ใหม่ ตัวที่ 3 ของ `resolveFindingParams` คู่กับ `translateDept`/`translateWorkerType` เดิม, reuse namespace `gold.metalLabel` เดียวกับ UI toggle) ข้อความทุกตัวแปะ `({metal})` ต่อท้าย `{workerType}`
+- `GoldUncoveredJobsPanel` เพิ่ม note "ตามช่วงวันที่งานที่เลือก" (`uncoveredRangeNote`) ตามที่สั่ง เพราะตารางนี้ range-scoped แล้วฝั่ง backend (ตัดแถวข้อมูลทดสอบ/ปีเก่าออกไปเอง)
+- verify: `npx eslint` เฉพาะไฟล์ที่แก้ + `npx vitest run` (insight, 251 ผ่านทั้งหมด) + `npm run build`

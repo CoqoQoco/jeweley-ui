@@ -1,9 +1,9 @@
 <!--
-  topic-placeholder-section — ใช้ร่วมกัน 4 topic tab ที่ยังไม่ implement จริง (capacity/gold/workers/
-  materials — delivery ย้ายไป delivery-section.vue จริงแล้ว) — แสดง 4-part layout เดียวกับ wip-section (insight-tab-layout) แต่ problems/forecasts
-  เป็น bullet ข้อความล้วน (severity 'info', ไม่มี params จริง — รอ API ของหมวดนั้นแล้วเปลี่ยน code เป็นของจริง)
-  ไม่มี actions (ยังไม่มีวิธีแก้ให้แนะนำจนกว่าจะมีข้อมูลจริง) ส่วนรายงาน = ลิงก์กลับไปหน้าเดิมที่ข้อมูลยังอยู่
-  (เฉพาะหมวด "ทอง" ฝัง gold-loss-trend-view.vue เดิมเป็นรายงานเสริมด้วย ตามที่ยังใช้งานได้จริงอยู่แล้ว)
+  topic-placeholder-section — ใช้ร่วมกัน 3 topic tab ที่ยังไม่ implement จริง (capacity/workers/materials —
+  delivery/gold ย้ายไป delivery-section.vue/gold-section.vue จริงแล้ว) — แสดง 4-part layout เดียวกับ
+  wip-section (insight-tab-layout) แต่ problems/forecasts เป็น bullet ข้อความล้วน (severity 'info', ไม่มี
+  params จริง — รอ API ของหมวดนั้นแล้วเปลี่ยน code เป็นของจริง) ไม่มี actions (ยังไม่มีวิธีแก้ให้แนะนำจนกว่าจะ
+  มีข้อมูลจริง) ส่วนรายงาน = ลิงก์กลับไปหน้าเดิมที่ข้อมูลยังอยู่
 -->
 <template>
   <InsightTabLayout :title="$t(`view.productionInsight.nav.${topicKey}`)" :problems="content.problems" :forecasts="content.forecasts" :actions="[]">
@@ -17,8 +17,6 @@
           </router-link>
         </SectionCardGeneric>
       </div>
-
-      <goldLossTrendView v-if="topicKey === 'gold'" :refreshToken="0" v-model:rankingRange="goldRankingRange" />
     </template>
   </InsightTabLayout>
 </template>
@@ -26,12 +24,10 @@
 <script>
 import InsightTabLayout from '@/components/insight/insight-tab-layout.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
-import goldLossTrendView from '@/views/report/executive/components/gold-loss-trend-view.vue'
 
 // link ไปหน้าเดิมที่ข้อมูลของหมวดนั้นยังอยู่จนกว่าจะมี ProductionInsight endpoint ของหมวดนั้นจริง
 const TOPIC_LINK = {
   capacity: '/production-dashboard',
-  gold: '/gold-loss-dashboard',
   workers: '/report-production-worker-wages',
   materials: '/stock-gem-dashboard'
 }
@@ -42,10 +38,6 @@ const TOPIC_LINK = {
 // ตามรูปแบบเดียวกับ WIP problem+forecast — materials ทั้ง 2 ข้อเป็นปัญหาปัจจุบันล้วน จึงไม่มี forecast)
 const TOPIC_CODES = {
   capacity: { problems: ['CAPACITY_PLACEHOLDER_BELOW_AVG'], forecasts: ['CAPACITY_PLACEHOLDER_MONTH_END_FORECAST'] },
-  gold: {
-    problems: ['GOLD_PLACEHOLDER_OVER_ALLOWED_WORKER', 'GOLD_PLACEHOLDER_UNRETURNED_CASTING'],
-    forecasts: ['GOLD_PLACEHOLDER_RISING_TREND']
-  },
   workers: { problems: ['WORKERS_PLACEHOLDER_NO_WAGE'], forecasts: ['WORKERS_PLACEHOLDER_RISING_COST_PER_PIECE'] },
   materials: { problems: ['MATERIALS_PLACEHOLDER_GEM_LOW_STOCK', 'MATERIALS_PLACEHOLDER_NEGATIVE_GOLD'], forecasts: [] }
 }
@@ -55,20 +47,13 @@ export default {
 
   components: {
     InsightTabLayout,
-    SectionCardGeneric,
-    goldLossTrendView
+    SectionCardGeneric
   },
 
   props: {
     topicKey: {
       type: String,
       required: true
-    }
-  },
-
-  data() {
-    return {
-      goldRankingRange: '3m'
     }
   },
 

@@ -242,6 +242,100 @@ export default {
     stuckCostCardColDays: 'Days Stuck'
   },
 
+  gold: {
+    filterSectionTitle: 'Gold tab only',
+    filterWorkerType: 'Worker Type',
+    filterWorkerCode: 'Worker',
+    filterOlderThan: 'Missing slip over (days)',
+    filterMetal: 'Metal',
+    filterCustomRangeLabel: 'Custom range',
+
+    workerType: {
+      50: 'Trim Workers',
+      80: 'Setting Workers'
+    },
+
+    metalLabel: {
+      GOLD: 'Gold',
+      SILVER: 'Silver'
+    },
+    metalToggleAriaLabel: 'Select metal',
+
+    kpiLossPercent: 'Actual % Loss',
+    kpiLossPercentSub: 'Allowed {allowed}% · Target {target}%',
+    kpiExcessGram: 'Excess {metal} (g)',
+    kpiExcessGramSub: '≈ ฿{money}',
+    kpiCoveragePercent: 'Slip Coverage (%)',
+    kpiCoveragePercentSub: '{jobs}/{total} jobs',
+
+    trendTitle: 'Gold & Loss Trend',
+    trendHint: 'The set target is shown as a level line on the chart',
+    trendToggleAriaLabel: 'Select worker type',
+    seriesRawLoss: '{metal} Actual Loss',
+    seriesAllowedLoss: '{metal} Allowed Loss',
+    seriesLossPercent: 'Actual % Loss',
+    seriesAllowedPercent: '% Allowed',
+    seriesTarget: 'Target',
+    gramUnit: 'g',
+
+    targetButton: 'Set Loss Target',
+    targetPanelTitle: 'Set % Loss Target per Worker Type',
+    targetReadOnlyNote: 'Everyone can view the current target — you need edit permission to change it',
+    targetReferenceText: 'Actual % loss in the selected range right now: {percent}',
+    targetRemarkRequired: 'Please enter a remark before saving',
+    targetSaveBtn: 'Save Target',
+    targetCancelDraftBtn: 'Discard Draft',
+    targetSaveSuccess: 'Target saved successfully',
+    targetDraftChip: 'Draft',
+    targetHistoryLink: 'History',
+    targetHistoryTitle: 'Loss Target History — {name}',
+    targetHistoryColDate: 'Effective Date',
+    targetHistoryColPercent: 'Target %',
+    targetHistoryColBy: 'Changed By',
+    targetHistoryColRemark: 'Remark',
+    targetHistoryEmpty: 'No target changes recorded yet',
+
+    workersTitle: 'Worker Ranking',
+    workersColWorkerType: 'Worker Type',
+    workersColWorkerCode: 'Worker Code',
+    workersColWorkerName: 'Worker Name',
+    workersColSlipCount: 'Slips',
+    workersColReceivedGram: 'Received (g)',
+    workersColLossPercent: 'Actual % Loss',
+    workersColAllowedPercent: '% Allowed',
+    workersColTargetPercent: 'Target %',
+    workersColExcessGram: 'Excess (g)',
+    workersColExcessMoney: 'Excess Value (฿)',
+    workersColNetMoney: 'Net',
+    workersColOverRatio: 'Over Target',
+    workersEmpty: 'No worker data in this range',
+    netMoneyPositive: 'Refunded {amount}',
+    netMoneyNegative: 'Deducted {amount}',
+
+    overSlipsTitle: 'Slips Over Allowance',
+    overSlipsColDocumentNo: 'Document No.',
+    overSlipsColWorkerType: 'Worker Type',
+    overSlipsColWorker: 'Worker',
+    overSlipsColRequestRange: 'Request Date Range',
+    overSlipsColRawLoss: 'Actual Loss (g)',
+    overSlipsColAllowedLoss: 'Allowed (g)',
+    overSlipsColExcessGram: 'Excess (g)',
+    overSlipsColExcessMoney: 'Excess Value (฿)',
+    overSlipsColNetMoney: 'Net',
+    overSlipsSettingRowHint: 'Setting workers are counted per over-allowance item — the same slip may appear on multiple rows',
+
+    uncoveredTitle: 'Jobs Without a Slip Yet',
+    uncoveredColDept: 'Department',
+    uncoveredColWorker: 'Worker',
+    uncoveredColJobDate: 'Job Date',
+    uncoveredColSendGram: 'Sent (g)',
+    uncoveredColCheckGram: 'Checked (g)',
+    uncoveredColDiffGram: 'Diff (g)',
+    uncoveredColDaysSince: 'Days Pending',
+    uncoveredWorkerHint: 'Worker name is best-effort (the job\'s main worker) — not yet confirmed like a real slip',
+    uncoveredRangeNote: 'Within the selected date range'
+  },
+
   rules: {
     WIP_STALE: '{count} plans have been stale too long ({percent}% of {openCount} open plans)',
     WIP_OVERDUE: '{count} plans are already overdue ({percent}% of {openCount} open plans)',
@@ -271,12 +365,21 @@ export default {
     ACT_EXPEDITE_AT_RISK: 'Expedite {atRisk} plans at risk of becoming late and {overdue} already overdue',
     ACT_CLOSE_COSTCARD: 'Close {count} plans stuck after the cost card',
     ACT_FIX_BOTTLENECK: 'Fix the bottleneck in {deptKey} that is slowing deliveries',
+    GOLD_EXCESS_OVER_ALLOWANCE: '{workerType} ({metal}) has a combined {excessGram}g of {metal} over the allowance, worth ฿{excessMoney}',
+    GOLD_LOSS_ABOVE_TARGET: '{workerType} ({metal}) averages {lossPercent}% actual loss, above the {targetPercent}% target',
+    GOLD_ALLOWANCE_ABOVE_TARGET: '{workerType} ({metal})\'s average allowed-loss setting of {allowedPercent}% is above the {targetPercent}% target',
+    GOLD_MOST_WORKERS_OVER: '{workerType} ({metal}) has {overCount} of {workerCount} workers over the slip allowance ({percent}%)',
+    GOLD_REPEAT_OFFENDER: '{workerType} ({metal}) has workers over the allowance for at least {buckets} consecutive periods: {workers}',
+    GOLD_SLIP_COVERAGE_LOW: '{workerType} ({metal}) has only {coveragePercent}% of jobs turned into a slip ({coverageJobs}/{coverageTotalJobs} jobs)',
+    FC_GOLD_EXCESS_PROJECTED: '{workerType} ({metal}) is projected to average {avgMonthlyExcessGram}g of excess {metal} per month (≈ ฿{avgMonthlyExcessMoney})',
+    FC_GOLD_LOSS_RISING: '{workerType} ({metal})\'s % loss is trending up from {fromPercent}% to {toPercent}% over the last {buckets} periods',
+    ACT_COMPLETE_SLIPS: 'Follow up on {uncoveredCount} {workerType} ({metal}) jobs still missing a slip',
+    ACT_TALK_WORKER: 'Talk to {workerType} ({metal}) {workers} about repeatedly exceeding the {metal} allowance',
+    ACT_REVIEW_ALLOWANCE: 'Review {workerType} ({metal})\'s allowed-loss setting: actual loss {lossPercent}% · allowed {allowedPercent}% · target {targetPercent}%',
+    ACT_CHECK_WEIGHING: 'Check the weighing process for {workerType} ({metal}) — {excessGram}g of {metal} over allowance',
 
     CAPACITY_PLACEHOLDER_BELOW_AVG: 'This month\'s completions are below average',
     CAPACITY_PLACEHOLDER_MONTH_END_FORECAST: 'Estimated completions by month end',
-    GOLD_PLACEHOLDER_OVER_ALLOWED_WORKER: 'Workers exceeding the allowed gold loss',
-    GOLD_PLACEHOLDER_UNRETURNED_CASTING: 'Casting books with gold not yet returned',
-    GOLD_PLACEHOLDER_RISING_TREND: 'Workers whose loss % has risen for 3 months straight',
     WORKERS_PLACEHOLDER_NO_WAGE: 'Items with no wage recorded',
     WORKERS_PLACEHOLDER_RISING_COST_PER_PIECE: 'Rising wage cost per piece',
     MATERIALS_PLACEHOLDER_GEM_LOW_STOCK: 'Low gem stock vs. pending sorting work',
@@ -301,7 +404,15 @@ export default {
     DLV_OPEN_OVERDUE: 'Overdue plans',
     DLV_STUCK_AFTER_COSTCARD: 'Stuck after cost card',
     FC_DLV_AT_RISK: 'Rising at-risk count',
-    FC_DLV_ONTIME_DECLINING: 'Declining % on-time trend'
+    FC_DLV_ONTIME_DECLINING: 'Declining % on-time trend',
+    GOLD_EXCESS_OVER_ALLOWANCE: '{metal} over allowance',
+    GOLD_LOSS_ABOVE_TARGET: '% loss above target',
+    GOLD_ALLOWANCE_ABOVE_TARGET: '% allowed above target',
+    GOLD_MOST_WORKERS_OVER: 'Many workers over allowance',
+    GOLD_REPEAT_OFFENDER: 'Repeatedly over allowance',
+    GOLD_SLIP_COVERAGE_LOW: 'Missing slips',
+    FC_GOLD_EXCESS_PROJECTED: 'Rising excess {metal} count',
+    FC_GOLD_LOSS_RISING: 'Rising % loss trend'
   },
 
   placeholder: {
@@ -309,7 +420,6 @@ export default {
     reportTitle: 'Data is on the previous page',
     link: {
       capacity: 'Go to production dashboard',
-      gold: 'Go to Gold Loss dashboard',
       workers: 'Go to worker wages report',
       materials: 'Go to gem stock dashboard'
     }
@@ -396,6 +506,21 @@ export default {
     DLV_OPEN_OVERDUE: 'Plans past their due date and not yet done',
     DLV_STUCK_AFTER_COSTCARD: 'Plans with a cost card issued but not yet closed for an abnormally long time',
     FC_DLV_AT_RISK: 'Estimated from time left in the current department compared to the due date',
-    FC_DLV_ONTIME_DECLINING: 'The % on time trend has been declining over the recent periods'
+    FC_DLV_ONTIME_DECLINING: 'The % on time trend has been declining over the recent periods',
+
+    goldMoneySemantics: 'Net is positive = refunded to the worker · negative = deducted from the worker (not a "loss") · excess value is calculated from the {metal} price at the time (gold varies by karat, silver is a flat rate)',
+    kpiLossPercent: 'Compares 3 figures: actual % loss · % allowed per the slip · the set target',
+    kpiExcessGram: 'Weight of {metal} actually lost beyond the allowance, with an approximate value (price differs by karat)',
+    kpiCoveragePercent: 'Share of jobs already turned into a slip vs. all jobs sent/checked in',
+    filterOlderThan: 'Used by the "Jobs Without a Slip Yet" table — how many days pending counts',
+    workersColOverRatio: 'Number of periods over target vs. periods with enough data to judge (e.g. 2/3)',
+    GOLD_EXCESS_OVER_ALLOWANCE: 'Slips where the actual {metal} loss exceeds the allowance',
+    GOLD_LOSS_ABOVE_TARGET: 'Compares a worker type\'s actual median % loss against the set target',
+    GOLD_ALLOWANCE_ABOVE_TARGET: 'The allowed-loss setting per slip is higher than it should be',
+    GOLD_MOST_WORKERS_OVER: 'Number of workers over the slip allowance vs. all workers of that type',
+    GOLD_REPEAT_OFFENDER: 'Workers over the slip allowance for multiple consecutive periods (shows up to 3 names, the rest summarized as "and N more")',
+    GOLD_SLIP_COVERAGE_LOW: 'Jobs sent/checked in but not yet turned into a slip',
+    FC_GOLD_EXCESS_PROJECTED: 'Estimated from the recent trend of slips going over the {metal} allowance',
+    FC_GOLD_LOSS_RISING: 'Estimated from a continuous rise in median % loss over the recent periods'
   }
 }

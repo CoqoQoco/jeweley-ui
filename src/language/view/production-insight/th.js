@@ -242,6 +242,100 @@ export default {
     stuckCostCardColDays: 'ค้างมา (วัน)'
   },
 
+  gold: {
+    filterSectionTitle: 'เฉพาะหมวด "ทองและ Loss"',
+    filterWorkerType: 'ประเภทช่าง',
+    filterWorkerCode: 'ช่าง',
+    filterOlderThan: 'ไม่ครบ slip เกิน (วัน)',
+    filterMetal: 'โลหะ',
+    filterCustomRangeLabel: 'ช่วงเวลากำหนดเอง',
+
+    workerType: {
+      50: 'ช่างแต่ง',
+      80: 'ช่างฝัง'
+    },
+
+    metalLabel: {
+      GOLD: 'ทอง',
+      SILVER: 'เงิน'
+    },
+    metalToggleAriaLabel: 'เลือกโลหะ',
+
+    kpiLossPercent: '% Loss จริง',
+    kpiLossPercentSub: 'ยอมให้ {allowed}% · เป้า {target}%',
+    kpiExcessGram: '{metal}เกินเกณฑ์ (กรัม)',
+    kpiExcessGramSub: '≈ ฿ {money}',
+    kpiCoveragePercent: 'งานเข้า slip (%)',
+    kpiCoveragePercentSub: '{jobs}/{total} งาน',
+
+    trendTitle: 'แนวโน้มทองและ Loss',
+    trendHint: 'เป้าที่ตั้งไว้แสดงเป็นเส้นระดับในกราฟ',
+    trendToggleAriaLabel: 'เลือกประเภทช่าง',
+    seriesRawLoss: '{metal}เสียจริง',
+    seriesAllowedLoss: '{metal}ที่ยอมให้เสีย',
+    seriesLossPercent: '% Loss จริง',
+    seriesAllowedPercent: '% ยอมให้',
+    seriesTarget: 'เป้า',
+    gramUnit: 'กรัม',
+
+    targetButton: 'ตั้งเป้า Loss',
+    targetPanelTitle: 'ตั้งเป้า % Loss ต่อประเภทช่าง',
+    targetReadOnlyNote: 'ดูเป้าปัจจุบันได้ทุกคน — ต้องมีสิทธิ์แก้ไขมาตรฐานจึงจะเปลี่ยนค่าได้',
+    targetReferenceText: '% Loss จริงในช่วงที่เลือกตอนนี้ {percent}',
+    targetRemarkRequired: 'กรุณาระบุหมายเหตุก่อนบันทึก',
+    targetSaveBtn: 'บันทึกเป้า',
+    targetCancelDraftBtn: 'ยกเลิกร่าง',
+    targetSaveSuccess: 'บันทึกเป้าสำเร็จ',
+    targetDraftChip: 'ร่าง',
+    targetHistoryLink: 'ประวัติ',
+    targetHistoryTitle: 'ประวัติเป้า Loss {name}',
+    targetHistoryColDate: 'วันที่มีผล',
+    targetHistoryColPercent: 'เป้า %',
+    targetHistoryColBy: 'ผู้บันทึก',
+    targetHistoryColRemark: 'หมายเหตุ',
+    targetHistoryEmpty: 'ยังไม่มีประวัติการเปลี่ยนเป้า',
+
+    workersTitle: 'อันดับช่าง',
+    workersColWorkerType: 'ประเภทช่าง',
+    workersColWorkerCode: 'รหัสช่าง',
+    workersColWorkerName: 'ชื่อช่าง',
+    workersColSlipCount: 'จำนวนใบ',
+    workersColReceivedGram: 'รับเข้า (กรัม)',
+    workersColLossPercent: '% Loss จริง',
+    workersColAllowedPercent: '% ยอมให้',
+    workersColTargetPercent: 'เป้า %',
+    workersColExcessGram: 'เกิน (กรัม)',
+    workersColExcessMoney: 'มูลค่าเกิน (บาท)',
+    workersColNetMoney: 'ยอดสุทธิ',
+    workersColOverRatio: 'เกินเกณฑ์',
+    workersEmpty: 'ไม่พบข้อมูลช่างในช่วงนี้',
+    netMoneyPositive: 'ได้คืน {amount}',
+    netMoneyNegative: 'หัก {amount}',
+
+    overSlipsTitle: 'ใบงานที่{metal}เกินเกณฑ์',
+    overSlipsColDocumentNo: 'เลขที่ใบ',
+    overSlipsColWorkerType: 'ประเภทช่าง',
+    overSlipsColWorker: 'ช่าง',
+    overSlipsColRequestRange: 'ช่วงวันที่เบิก',
+    overSlipsColRawLoss: 'เสียจริง (กรัม)',
+    overSlipsColAllowedLoss: 'ยอมให้ (กรัม)',
+    overSlipsColExcessGram: 'เกิน (กรัม)',
+    overSlipsColExcessMoney: 'มูลค่าเกิน (บาท)',
+    overSlipsColNetMoney: 'ยอดสุทธิ',
+    overSlipsSettingRowHint: 'ช่างฝังนับเป็นรายรายการที่เกินเกณฑ์ — ใบเดียวกันอาจมีได้หลายแถว',
+
+    uncoveredTitle: 'งานที่ยังไม่ครบ slip',
+    uncoveredColDept: 'แผนก',
+    uncoveredColWorker: 'ช่าง',
+    uncoveredColJobDate: 'วันที่ทำงาน',
+    uncoveredColSendGram: 'ส่งเข้า (กรัม)',
+    uncoveredColCheckGram: 'ตรวจนับ (กรัม)',
+    uncoveredColDiffGram: 'ผลต่าง (กรัม)',
+    uncoveredColDaysSince: 'ค้างมา (วัน)',
+    uncoveredWorkerHint: 'ชื่อช่างเป็นค่าประมาณ (ช่างหลักของงาน) ยังไม่ใช่ข้อมูลยืนยันแน่นอนแบบใบ slip',
+    uncoveredRangeNote: 'ตามช่วงวันที่งานที่เลือก'
+  },
+
   // code -> ข้อความเต็ม (พร้อม params) — ใช้กับ insight-tab-layout prop i18nPrefix (default namespace นี้)
   rules: {
     WIP_STALE: 'งานค้างไม่ขยับนานเกินกำหนด {count} ใบ ({percent}% จากงานเปิดอยู่ {openCount} ใบ)',
@@ -272,14 +366,23 @@ export default {
     ACT_EXPEDITE_AT_RISK: 'เร่งงานที่เสี่ยงเลยกำหนดส่ง {atRisk} ใบ และที่เลยกำหนดแล้ว {overdue} ใบ',
     ACT_CLOSE_COSTCARD: 'ปิดงานที่ค้างหลังบัตรต้นทุน {count} ใบ',
     ACT_FIX_BOTTLENECK: 'แก้ปัญหาคอขวดที่แผนก{deptKey}ซึ่งทำให้ส่งงานช้า',
+    GOLD_EXCESS_OVER_ALLOWANCE: '{workerType} ({metal}) มี{metal}เกินเกณฑ์รวม {excessGram} กรัม มูลค่า ฿{excessMoney}',
+    GOLD_LOSS_ABOVE_TARGET: '{workerType} ({metal}) มี % Loss จริงเฉลี่ย {lossPercent}% เกินเป้า {targetPercent}%',
+    GOLD_ALLOWANCE_ABOVE_TARGET: '{workerType} ({metal}) ตั้งค่ายอมให้เสียเฉลี่ย {allowedPercent}% สูงกว่าเป้า {targetPercent}%',
+    GOLD_MOST_WORKERS_OVER: '{workerType} ({metal}) มีช่างที่เสีย{metal}เกินเกณฑ์ {overCount} จาก {workerCount} คน ({percent}%)',
+    GOLD_REPEAT_OFFENDER: '{workerType} ({metal}) มีช่างที่เกินเกณฑ์ต่อเนื่องอย่างน้อย {buckets} ช่วงล่าสุด: {workers}',
+    GOLD_SLIP_COVERAGE_LOW: '{workerType} ({metal}) มีสัดส่วนงานที่สร้างเป็นใบ slip แล้วเพียง {coveragePercent}% ({coverageJobs}/{coverageTotalJobs} งาน)',
+    FC_GOLD_EXCESS_PROJECTED: 'คาดว่า{workerType} ({metal}) จะมี{metal}เกินเกณฑ์เฉลี่ยเดือนละ {avgMonthlyExcessGram} กรัม (≈ ฿{avgMonthlyExcessMoney})',
+    FC_GOLD_LOSS_RISING: '% Loss ของ{workerType} ({metal}) มีแนวโน้มเพิ่มขึ้นจาก {fromPercent}% เป็น {toPercent}% ในช่วง {buckets} รอบล่าสุด',
+    ACT_COMPLETE_SLIPS: 'ตามให้ปิด slip ที่ยังไม่ครบของ{workerType} ({metal}) {uncoveredCount} งาน',
+    ACT_TALK_WORKER: 'พูดคุยกับ{workerType} ({metal}) {workers} เรื่องการเสีย{metal}เกินเกณฑ์ต่อเนื่อง',
+    ACT_REVIEW_ALLOWANCE: 'ทบทวนค่ายอมให้เสียของ{workerType} ({metal}): Loss จริง {lossPercent}% · ยอมให้ {allowedPercent}% · เป้า {targetPercent}%',
+    ACT_CHECK_WEIGHING: 'ตรวจสอบการชั่งน้ำหนักของ{workerType} ({metal}) — {metal}เกินเกณฑ์รวม {excessGram} กรัม',
 
     // หมวดที่ยังไม่ implement — ใช้ code ชั่วคราวคู่กับ severity 'info' แสดงเป็น bullet ข้อความล้วน
     // (รอ API จริงของแต่ละหมวดแล้วเปลี่ยน code เป็นของจริงพร้อม params)
     CAPACITY_PLACEHOLDER_BELOW_AVG: 'ปิดงานเดือนนี้ต่ำกว่าค่าเฉลี่ย',
     CAPACITY_PLACEHOLDER_MONTH_END_FORECAST: 'ประมาณการปิดงานสิ้นเดือน',
-    GOLD_PLACEHOLDER_OVER_ALLOWED_WORKER: 'ช่างที่เสียทองเกินเกณฑ์',
-    GOLD_PLACEHOLDER_UNRETURNED_CASTING: 'เล่มหล่อที่ยังไม่คืนทอง',
-    GOLD_PLACEHOLDER_RISING_TREND: 'ช่างที่ % loss สูงขึ้น 3 เดือนติด',
     WORKERS_PLACEHOLDER_NO_WAGE: 'รายการที่ไม่มีค่าแรง',
     WORKERS_PLACEHOLDER_RISING_COST_PER_PIECE: 'ค่าแรงต่อชิ้นสูงขึ้น',
     MATERIALS_PLACEHOLDER_GEM_LOW_STOCK: 'พลอยใกล้หมดเทียบงานที่รอคัดพลอย',
@@ -305,7 +408,15 @@ export default {
     DLV_OPEN_OVERDUE: 'ใบงานเลยกำหนดส่ง',
     DLV_STUCK_AFTER_COSTCARD: 'ค้างหลังบัตรต้นทุน',
     FC_DLV_AT_RISK: 'เสี่ยงเลยกำหนดส่งเพิ่ม',
-    FC_DLV_ONTIME_DECLINING: 'แนวโน้ม % ตรงเวลาลดลง'
+    FC_DLV_ONTIME_DECLINING: 'แนวโน้ม % ตรงเวลาลดลง',
+    GOLD_EXCESS_OVER_ALLOWANCE: '{metal}เกินเกณฑ์',
+    GOLD_LOSS_ABOVE_TARGET: '% Loss เกินเป้า',
+    GOLD_ALLOWANCE_ABOVE_TARGET: '% ยอมให้สูงกว่าเป้า',
+    GOLD_MOST_WORKERS_OVER: 'ช่างเกินเกณฑ์หลายคน',
+    GOLD_REPEAT_OFFENDER: 'เกินเกณฑ์ต่อเนื่อง',
+    GOLD_SLIP_COVERAGE_LOW: 'slip ไม่ครบ',
+    FC_GOLD_EXCESS_PROJECTED: 'คาดว่า{metal}เกินเกณฑ์เพิ่ม',
+    FC_GOLD_LOSS_RISING: 'แนวโน้ม % Loss เพิ่มขึ้น'
   },
 
   placeholder: {
@@ -313,7 +424,6 @@ export default {
     reportTitle: 'ข้อมูลอยู่ที่หน้าเดิม',
     link: {
       capacity: 'ไปที่แดชบอร์ดงานผลิต',
-      gold: 'ไปที่แดชบอร์ด Gold Loss',
       workers: 'ไปที่รายงานค่าแรงช่าง',
       materials: 'ไปที่แดชบอร์ดคลังอัญมณี'
     }
@@ -402,6 +512,21 @@ export default {
     DLV_OPEN_OVERDUE: 'ใบงานที่เลยวันกำหนดส่งแล้วและยังไม่เสร็จ',
     DLV_STUCK_AFTER_COSTCARD: 'ใบงานที่ออกบัตรต้นทุนแล้วแต่ยังไม่ปิดงานนานผิดปกติ',
     FC_DLV_AT_RISK: 'คาดการณ์จากเวลาที่เหลือในแผนกปัจจุบันเทียบกับวันกำหนดส่ง',
-    FC_DLV_ONTIME_DECLINING: 'แนวโน้ม % ตรงเวลาลดลงต่อเนื่องหลายช่วงล่าสุด'
+    FC_DLV_ONTIME_DECLINING: 'แนวโน้ม % ตรงเวลาลดลงต่อเนื่องหลายช่วงล่าสุด',
+
+    goldMoneySemantics: 'ยอดสุทธิ บวก = ช่างได้คืน · ลบ = หักช่าง (ไม่ใช่ "loss") · มูลค่า{metal}เกินเกณฑ์คำนวณจากราคา{metal} ณ ขณะนั้น (ทองแยกตามกะรัต เงินราคาคงที่)',
+    kpiLossPercent: 'เทียบ 3 ค่า: % Loss จริง · % ที่ยอมให้ตาม slip · เป้าที่ตั้งไว้',
+    kpiExcessGram: 'น้ำหนัก{metal}ที่เสียจริงเกินกว่าที่ยอมให้ตามเกณฑ์ รวมมูลค่าโดยประมาณ (ราคาต่างกันตามกะรัต)',
+    kpiCoveragePercent: 'สัดส่วนงานที่ถูกสร้างเป็นใบ slip แล้วเทียบกับงานที่ส่ง/ตรวจนับเข้ามาทั้งหมด',
+    filterOlderThan: 'ใช้คำนวณตาราง "งานที่ยังไม่ครบ slip" — ค้างมากี่วันถึงจะถูกนับ',
+    workersColOverRatio: 'จำนวนช่วงเวลาที่ Loss เกินเป้า เทียบกับช่วงที่มีข้อมูลพอจะตัดสินได้ (เช่น 2/3)',
+    GOLD_EXCESS_OVER_ALLOWANCE: 'ใบงานที่{metal}ที่เสียจริงเกินกว่าที่ยอมให้ตามเกณฑ์',
+    GOLD_LOSS_ABOVE_TARGET: 'เทียบค่ากลาง % Loss จริงของช่างกับเป้าที่ตั้งไว้',
+    GOLD_ALLOWANCE_ABOVE_TARGET: 'ค่ายอมให้เสียที่ตั้งไว้ต่อใบสูงกว่าเป้าที่ควรจะเป็น',
+    GOLD_MOST_WORKERS_OVER: 'จำนวนช่างที่เสีย{metal}เกินเกณฑ์ที่ยอมให้ตาม slip เทียบกับช่างทั้งหมดในประเภทนั้น',
+    GOLD_REPEAT_OFFENDER: 'ช่างที่เสีย{metal}เกินเกณฑ์ที่ยอมให้ตาม slip ต่อเนื่องหลายช่วงเวลาติดกัน (โชว์สูงสุด 3 คน ที่เหลือสรุปเป็น "และอีก N คน")',
+    GOLD_SLIP_COVERAGE_LOW: 'งานที่ส่ง/ตรวจนับแล้วแต่ยังไม่ถูกสร้างเป็นใบ slip',
+    FC_GOLD_EXCESS_PROJECTED: 'ประมาณการจากแนวโน้มใบงาน{metal}เกินเกณฑ์ที่ผ่านมา',
+    FC_GOLD_LOSS_RISING: 'ประมาณการจากแนวโน้มค่ากลาง % Loss ที่เพิ่มขึ้นต่อเนื่องหลายช่วงล่าสุด'
   }
 }

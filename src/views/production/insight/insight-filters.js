@@ -130,6 +130,65 @@ export function clearedDeliveryFilterQueryKeys(filter = {}) {
   return keys
 }
 
+// ---- Gold tab filter (workerTypes / workerCodes / olderThanDays / metal / range) ----
+// workerCodes options มาจาก Gold.workers (ข้อมูลที่เพิ่งโหลดมา) ไม่ใช่ list คงที่แบบ department ของ wip/
+// delivery — index-view.vue เก็บ options ที่ gold-section.vue emit ขึ้นมาหลังยิง Gold สำเร็จ — metal คุมทั้ง
+// หมวด (KPI/กราฟ/ตารางทั้งหมด) แก้ได้ทั้งจากแผงตัวกรองนี้และ ToggleGroupGeneric ข้างหัวข้อ KPI (state เดียวกัน)
+
+export const GOLD_DEFAULT_OLDER_THAN_DAYS = 14
+export const GOLD_DEFAULT_METAL = 'GOLD'
+export const GOLD_METAL_VALUES = ['GOLD', 'SILVER']
+
+function resolveMetal(value) {
+  return GOLD_METAL_VALUES.includes(value) ? value : GOLD_DEFAULT_METAL
+}
+
+export function buildDefaultGoldFilter() {
+  const range = buildDefaultRangeState()
+  return {
+    workerTypes: [],
+    workerCodes: [],
+    olderThanDays: GOLD_DEFAULT_OLDER_THAN_DAYS,
+    metal: GOLD_DEFAULT_METAL,
+    rangePreset: range.preset,
+    start: range.start,
+    end: range.end,
+    bucket: range.bucket
+  }
+}
+
+export function parseGoldFilterQuery(query = {}) {
+  const range = parseRangeQuery(query)
+  return {
+    workerTypes: parseArrayParam(query.gldWorkerType),
+    workerCodes: parseArrayParam(query.gldWorkerCode),
+    olderThanDays: parsePositiveIntOr(query.gldOlderThan, GOLD_DEFAULT_OLDER_THAN_DAYS),
+    metal: resolveMetal(query.gldMetal),
+    rangePreset: range.preset,
+    start: range.start,
+    end: range.end,
+    bucket: range.bucket
+  }
+}
+
+export function goldFilterToQuery(filter = {}) {
+  const query = { ...rangeToQuery({ preset: filter.rangePreset, start: filter.start, end: filter.end }) }
+  if (filter.workerTypes && filter.workerTypes.length) query.gldWorkerType = filter.workerTypes.join(',')
+  if (filter.workerCodes && filter.workerCodes.length) query.gldWorkerCode = filter.workerCodes.join(',')
+  if (filter.olderThanDays && filter.olderThanDays !== GOLD_DEFAULT_OLDER_THAN_DAYS) query.gldOlderThan = String(filter.olderThanDays)
+  if (filter.metal && filter.metal !== GOLD_DEFAULT_METAL) query.gldMetal = filter.metal
+  return query
+}
+
+export function clearedGoldFilterQueryKeys(filter = {}) {
+  const keys = [...clearedRangeQueryKeys({ preset: filter.rangePreset, start: filter.start, end: filter.end })]
+  if (!filter.workerTypes || !filter.workerTypes.length) keys.push('gldWorkerType')
+  if (!filter.workerCodes || !filter.workerCodes.length) keys.push('gldWorkerCode')
+  if (!filter.olderThanDays || filter.olderThanDays === GOLD_DEFAULT_OLDER_THAN_DAYS) keys.push('gldOlderThan')
+  if (!filter.metal || filter.metal === GOLD_DEFAULT_METAL) keys.push('gldMetal')
+  return keys
+}
+
 // ---- Active filter chips (ActiveFilterChipsGeneric) ----
 // items: Array<{ key, label, value, alwaysShow? }> — value/label ต้อง resolve เป็นข้อความจริงมาก่อนแล้ว
 // (i18n resolution เป็นหน้าที่ของ component ผู้เรียก ไม่ใช่ไฟล์นี้) — ไม่มี concept "dimmed" ข้ามหมวดอีก

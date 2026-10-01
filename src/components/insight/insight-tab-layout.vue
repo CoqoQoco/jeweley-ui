@@ -156,7 +156,7 @@ export default {
         key: buildFindingKey(action.code, action.params),
         text: this.resolveText(action.code, action.params),
         ownerRoleLabel: action.ownerRole ? this.$t(`view.productionInsight.ownerRole.${action.ownerRole}`) : '',
-        relatedText: this.buildRelatedText(action.relatedCodes)
+        relatedText: this.buildRelatedText(action.relatedCodes, action.params)
       }))
     }
   },
@@ -166,8 +166,28 @@ export default {
       return this.$t(`view.executive.department.${key}`)
     },
 
+    // workerType = เลขรหัสประเภทช่าง (50=ช่างแต่ง/80=ช่างฝัง) — ใช้โดย finding/action ของหมวด "ทองและ Loss"
+    translateWorkerType(workerType) {
+      return this.$t(`view.productionInsight.gold.workerType.${workerType}`)
+    },
+
+    // metal = 'GOLD'|'SILVER' — ใช้โดย finding/action ของหมวด "ทองและ Loss" (reuse namespace เดียวกับที่
+    // ToggleGroupGeneric ทอง/เงิน ใช้อยู่แล้วใน gold-kpi-group.vue — ไม่สร้างคำแปลซ้ำ)
+    translateMetal(metal) {
+      return this.$t(`view.productionInsight.gold.metalLabel.${metal}`)
+    },
+
+    // ACT_TALK_WORKER โชว์รายชื่อได้ถึง 5 คน (ตามที่สั่ง) ส่วน code อื่นที่มี workers[] (เช่น
+    // GOLD_REPEAT_OFFENDER) ใช้ default 3 คนของ formatWorkerNameList เอง
+    resolveMaxWorkerNames(code) {
+      return code === 'ACT_TALK_WORKER' ? 5 : undefined
+    },
+
     resolveText(code, params) {
-      return this.$t(`${this.i18nPrefix}.${code}`, resolveFindingParams(params, this.translateDept))
+      return this.$t(
+        `${this.i18nPrefix}.${code}`,
+        resolveFindingParams(params, this.translateDept, this.translateWorkerType, this.translateMetal, this.resolveMaxWorkerNames(code))
+      )
     },
 
     // คำอธิบาย "วิธีคำนวณ/เกณฑ์ด่วน" ของ finding — คืนค่าว่างเมื่อ code นั้นยังไม่มีคำอธิบาย (resolveHelpKey)
@@ -176,7 +196,10 @@ export default {
     resolveHelpText(code, params) {
       const helpKey = resolveHelpKey(code)
       if (!helpKey) return ''
-      return this.$t(helpKey, { ...this.helpParams, ...resolveFindingParams(params, this.translateDept) })
+      return this.$t(helpKey, {
+        ...this.helpParams,
+        ...resolveFindingParams(params, this.translateDept, this.translateWorkerType, this.translateMetal, this.resolveMaxWorkerNames(code))
+      })
     },
 
     resolveFindings(items) {
@@ -189,9 +212,13 @@ export default {
       }))
     },
 
-    buildRelatedText(relatedCodes) {
+    // params มาจาก action เดิมที่เป็นเจ้าของ relatedCodes — ใช้ metal (ถ้ามี) แปลผ่าน translateMetal ให้
+    // codeLabel.* ของหมวด "ทองและ Loss" ที่มี {metal} param (เช่น GOLD_EXCESS_OVER_ALLOWANCE) — หมวดอื่นไม่มี
+    // {metal} ใน codeLabel ของตัวเอง ส่ง undefined ไปเฉยๆ ไม่กระทบ
+    buildRelatedText(relatedCodes, params = {}) {
       if (!relatedCodes || !relatedCodes.length) return ''
-      const labels = relatedCodes.map((code) => this.$t(`view.productionInsight.codeLabel.${code}`))
+      const metal = params.metal != null ? this.translateMetal(params.metal) : undefined
+      const labels = relatedCodes.map((code) => this.$t(`view.productionInsight.codeLabel.${code}`, { metal }))
       return `${this.$t('view.productionInsight.relatedPrefix')} ${labels.join(', ')}`
     },
 

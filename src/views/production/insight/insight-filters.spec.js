@@ -16,7 +16,13 @@ import {
   parseDeliveryFilterQuery,
   deliveryFilterToQuery,
   clearedDeliveryFilterQueryKeys,
-  DELIVERY_DEFAULT_RISK_HORIZON_DAYS
+  DELIVERY_DEFAULT_RISK_HORIZON_DAYS,
+  buildDefaultGoldFilter,
+  parseGoldFilterQuery,
+  goldFilterToQuery,
+  clearedGoldFilterQueryKeys,
+  GOLD_DEFAULT_OLDER_THAN_DAYS,
+  GOLD_DEFAULT_METAL
 } from './insight-filters.js'
 
 describe('resolveActiveSection', () => {
@@ -190,6 +196,91 @@ describe('clearedDeliveryFilterQueryKeys', () => {
   it('excludes keys that are still non-default', () => {
     const keys = clearedDeliveryFilterQueryKeys({ ...buildDefaultDeliveryFilter(), riskHorizonDays: 14 })
     expect(keys).not.toContain('dlvRiskHorizon')
+  })
+})
+
+describe('buildDefaultGoldFilter', () => {
+  it('defaults to no worker-type/worker-code filter, 14-day older-than, GOLD metal, 3m range', () => {
+    const filter = buildDefaultGoldFilter()
+    expect(filter.workerTypes).toEqual([])
+    expect(filter.workerCodes).toEqual([])
+    expect(filter.olderThanDays).toBe(14)
+    expect(filter.metal).toBe('GOLD')
+    expect(filter.rangePreset).toBe('3m')
+    expect(filter.bucket).toBe('week')
+    expect(filter.start).toBeInstanceOf(Date)
+    expect(filter.end).toBeInstanceOf(Date)
+  })
+})
+
+describe('parseGoldFilterQuery / goldFilterToQuery round-trip', () => {
+  it('parses query strings back into filter shape', () => {
+    const filter = parseGoldFilterQuery({ gldWorkerType: '50,80', gldWorkerCode: 'W01,W02', gldOlderThan: '7', gldMetal: 'SILVER', range: '1y' })
+    expect(filter.workerTypes).toEqual(['50', '80'])
+    expect(filter.workerCodes).toEqual(['W01', 'W02'])
+    expect(filter.olderThanDays).toBe(7)
+    expect(filter.metal).toBe('SILVER')
+    expect(filter.rangePreset).toBe('1y')
+    expect(filter.bucket).toBe('month')
+  })
+
+  it('falls back to defaults when the query is empty', () => {
+    const filter = parseGoldFilterQuery({})
+    const defaults = buildDefaultGoldFilter()
+    expect(filter.workerTypes).toEqual(defaults.workerTypes)
+    expect(filter.workerCodes).toEqual(defaults.workerCodes)
+    expect(filter.olderThanDays).toBe(defaults.olderThanDays)
+    expect(filter.metal).toBe(defaults.metal)
+    expect(filter.rangePreset).toBe(defaults.rangePreset)
+  })
+
+  it('ignores invalid non-positive numeric query values and falls back to defaults', () => {
+    const filter = parseGoldFilterQuery({ gldOlderThan: '0' })
+    expect(filter.olderThanDays).toBe(GOLD_DEFAULT_OLDER_THAN_DAYS)
+  })
+
+  it('falls back to GOLD for an invalid/unknown metal value', () => {
+    expect(parseGoldFilterQuery({ gldMetal: 'BOGUS' }).metal).toBe(GOLD_DEFAULT_METAL)
+    expect(parseGoldFilterQuery({}).metal).toBe(GOLD_DEFAULT_METAL)
+  })
+
+  it('goldFilterToQuery only emits keys that differ from default', () => {
+    expect(goldFilterToQuery(buildDefaultGoldFilter())).toEqual({})
+    expect(goldFilterToQuery({ ...buildDefaultGoldFilter(), workerTypes: ['80'] })).toEqual({ gldWorkerType: '80' })
+    expect(goldFilterToQuery({ ...buildDefaultGoldFilter(), olderThanDays: 7 })).toEqual({ gldOlderThan: '7' })
+    expect(goldFilterToQuery({ ...buildDefaultGoldFilter(), metal: 'SILVER' })).toEqual({ gldMetal: 'SILVER' })
+  })
+
+  it('round-trips through parseGoldFilterQuery -> goldFilterToQuery -> parseGoldFilterQuery', () => {
+    const original = {
+      workerTypes: ['50', '80'],
+      workerCodes: ['W01'],
+      olderThanDays: 7,
+      metal: 'SILVER',
+      rangePreset: '1y',
+      start: new Date('2025-09-29'),
+      end: new Date('2026-09-29'),
+      bucket: 'month'
+    }
+    const roundTripped = parseGoldFilterQuery(goldFilterToQuery(original))
+    expect(roundTripped.workerTypes).toEqual(original.workerTypes)
+    expect(roundTripped.workerCodes).toEqual(original.workerCodes)
+    expect(roundTripped.olderThanDays).toBe(original.olderThanDays)
+    expect(roundTripped.metal).toBe(original.metal)
+    expect(roundTripped.rangePreset).toBe(original.rangePreset)
+  })
+})
+
+describe('clearedGoldFilterQueryKeys', () => {
+  it('returns query keys that are back to default', () => {
+    const keys = clearedGoldFilterQueryKeys(buildDefaultGoldFilter())
+    expect(keys.sort()).toEqual(['range', 'start', 'end', 'gldWorkerType', 'gldWorkerCode', 'gldOlderThan', 'gldMetal'].sort())
+  })
+
+  it('excludes keys that are still non-default', () => {
+    const keys = clearedGoldFilterQueryKeys({ ...buildDefaultGoldFilter(), olderThanDays: 7, metal: 'SILVER' })
+    expect(keys).not.toContain('gldOlderThan')
+    expect(keys).not.toContain('gldMetal')
   })
 })
 
