@@ -167,6 +167,81 @@ export default {
     standardsHistoryEmpty: 'No standard changes recorded yet'
   },
 
+  delivery: {
+    filterSectionTitle: 'Delivery tab only',
+    filterDept: 'Department',
+    filterRiskHorizon: 'Risk horizon (days)',
+    filterCustomRangeLabel: 'Custom range',
+
+    kpiGroupTitle: 'Delivery Metrics',
+    kpiOnTimePercent: '% On Time',
+    kpiOnTimeSubTarget: 'Target {target}% · {completed} completed · {onTime} on time',
+    kpiOnTimeSubNoTarget: '{completed} completed · {onTime} on time',
+    kpiLateMedianDays: 'Median Days Late',
+    kpiLeadCompare: 'Actual Lead Time (Median)',
+    kpiLeadCompareSub: 'Planned {planned} days · Suggested {suggested} days',
+    kpiOpenOverdue: 'Overdue Plans (Active)',
+    kpiOpenOverdueSub: '{all} overdue total · {open} open',
+    kpiAtRisk: 'At Risk of Late',
+    kpiStuckCostCard: 'Stuck After Cost Card',
+    daysUnit: 'days',
+
+    trendTitle: 'On-Time Delivery Trend',
+    trendHint: 'The set target is shown as a level line on the chart',
+    ontimeChartTitle: '% On Time by Period',
+    seriesOnTime: '% On Time',
+    seriesTarget: 'Target',
+    leadChartTitle: 'Planned vs. Actual Lead Time',
+    seriesPlanned: 'Planned',
+    seriesActual: 'Actual',
+
+    targetButton: 'Set On-Time Target',
+    targetPanelTitle: 'Set On-Time % Target',
+    targetLabel: 'On-Time % Target',
+    targetReadOnlyNote: 'Everyone can view the current target — you need edit permission to change it',
+    targetReferenceText: 'Actual on-time % in the selected range right now: {percent}',
+    targetRemarkLabel: 'Change Remark',
+    targetRemarkPlaceholder: 'e.g. adjusted per new policy',
+    targetRemarkRequired: 'Please enter a remark before saving',
+    targetSaveBtn: 'Save Target',
+    targetCancelDraftBtn: 'Discard Draft',
+    targetSaveSuccess: 'Target saved successfully',
+    targetDraftChip: 'Draft',
+    targetHistoryLink: 'History',
+    targetHistoryTitle: 'On-Time Target History',
+    targetHistoryColDate: 'Effective Date',
+    targetHistoryColPercent: 'Target %',
+    targetHistoryColBy: 'Changed By',
+    targetHistoryColRemark: 'Remark',
+    targetHistoryEmpty: 'No target changes recorded yet',
+
+    lateCustomersTitle: 'Customers With Frequent Late Deliveries',
+    lateCustomersColCode: 'Customer Code',
+    lateCustomersColName: 'Customer Name',
+    lateCustomersColCompleted: 'Total Completed',
+    lateCustomersColLateCount: 'Late',
+    lateCustomersColLatePercent: '% Late',
+    lateCustomersColLateMedianDays: 'Median Days Late',
+    lateCustomersEmpty: 'No late customers in this range',
+
+    atRiskTitle: 'At Risk of Late',
+    atRiskColCurrentDept: 'Current Dept.',
+    atRiskColDaysInDept: 'Days in Dept.',
+    atRiskColRequestDate: 'Requested',
+    atRiskColRemainingDays: 'Remaining (days)',
+    atRiskColProjectedFinish: 'Projected Finish',
+    atRiskColProjectedLate: 'Projected Late (days)',
+
+    latePlansTitle: 'Late This Range',
+    latePlansColRequestDate: 'Requested',
+    latePlansColDoneDate: 'Done',
+    latePlansColLateDays: 'Late (days)',
+
+    stuckCostCardTitle: 'Stuck After Cost Card',
+    stuckCostCardColDate: 'Cost Card Date',
+    stuckCostCardColDays: 'Days Stuck'
+  },
+
   rules: {
     WIP_STALE: '{count} plans have been stale too long ({percent}% of {openCount} open plans)',
     WIP_OVERDUE: '{count} plans are already overdue ({percent}% of {openCount} open plans)',
@@ -186,9 +261,17 @@ export default {
     FC_STAGE_LEADTIME_RISING: '{deptKey} lead time is trending up from {fromDays} to {toDays} days over the last {buckets} periods',
     ACT_REDUCE_WAIT: 'Reduce wait time in {deptKey}, e.g. re-queue work or add staff',
     ACT_REVIEW_ABNORMAL: 'Review {count} plans with abnormally long dwell time',
+    DLV_ONTIME_BELOW_TARGET: '% on time is {onTimePercent}%, below the {targetPercent}% target',
+    DLV_LEAD_UNDERESTIMATED: 'Actual lead time averages {actual} days vs. {planned} days planned (suggest setting {suggested} days)',
+    DLV_OPEN_OVERDUE: '{count} plans are already past their due date ({percent}% of {openCount} open plans)',
+    DLV_STUCK_AFTER_COSTCARD: '{count} plans have been stuck after the cost card for an abnormally long time',
+    FC_DLV_AT_RISK: 'An estimated {count} more plans will be at risk of becoming late within the next {days} days',
+    FC_DLV_ONTIME_DECLINING: '% on time is trending down from {fromPercent}% to {toPercent}% over the last {buckets} periods',
+    ACT_SET_REALISTIC_DUE: 'Set more realistic due dates based on actual lead time (suggested {suggestedLeadDays} days)',
+    ACT_EXPEDITE_AT_RISK: 'Expedite {atRisk} plans at risk of becoming late and {overdue} already overdue',
+    ACT_CLOSE_COSTCARD: 'Close {count} plans stuck after the cost card',
+    ACT_FIX_BOTTLENECK: 'Fix the bottleneck in {deptKey} that is slowing deliveries',
 
-    DELIVERY_PLACEHOLDER_OVERDUE: 'Overdue deliveries',
-    DELIVERY_PLACEHOLDER_DUE_SOON: 'Due within 14 days but still in an early stage',
     CAPACITY_PLACEHOLDER_BELOW_AVG: 'This month\'s completions are below average',
     CAPACITY_PLACEHOLDER_MONTH_END_FORECAST: 'Estimated completions by month end',
     GOLD_PLACEHOLDER_OVER_ALLOWED_WORKER: 'Workers exceeding the allowed gold loss',
@@ -212,14 +295,19 @@ export default {
     STAGE_OVER_STANDARD: 'Lead time over standard',
     STAGE_ABNORMAL_DWELL: 'Abnormally long dwell time',
     STAGE_WAIT_DOMINANT: 'Mostly wait time',
-    FC_STAGE_LEADTIME_RISING: 'Rising lead time trend'
+    FC_STAGE_LEADTIME_RISING: 'Rising lead time trend',
+    DLV_ONTIME_BELOW_TARGET: '% on time below target',
+    DLV_LEAD_UNDERESTIMATED: 'Lead time underestimated',
+    DLV_OPEN_OVERDUE: 'Overdue plans',
+    DLV_STUCK_AFTER_COSTCARD: 'Stuck after cost card',
+    FC_DLV_AT_RISK: 'Rising at-risk count',
+    FC_DLV_ONTIME_DECLINING: 'Declining % on-time trend'
   },
 
   placeholder: {
     message: 'Being built — data is still available on the previous page.',
     reportTitle: 'Data is on the previous page',
     link: {
-      delivery: 'Go to production dashboard',
       capacity: 'Go to production dashboard',
       gold: 'Go to Gold Loss dashboard',
       workers: 'Go to worker wages report',
@@ -295,6 +383,19 @@ export default {
     abnormalDwellColStandard: 'The standard time for this department — this plan has stayed multiple times longer',
 
     standardsButton: 'Set the standard day count per department, used as the comparison baseline throughout this page',
-    standardsReferenceText: 'Actual median/P90 from the selected range data, to help decide on a standard'
+    standardsReferenceText: 'Actual median/P90 from the selected range data, to help decide on a standard',
+
+    deliveryDefinitions: 'Completed = the date first moved into the "done" status · On time = completed by the due date (Thai time)',
+    kpiOnTimePercent: 'Completed = the date first moved into the "done" status · On time = completed by the due date (Thai time)',
+    kpiOpenOverdue: '"Active" = overdue plans that are still genuinely open, excluding plans that are already closed',
+    filterRiskHorizon: 'Used by the "At Risk" table — how few days remaining counts as at risk',
+    atRiskColProjectedLate: 'Estimated from time left in the current department + median time of the remaining departments (simplified fixed order)\nPositive = projected to be late',
+    atRiskColDaysInDept: 'Number of consecutive days this plan has been in its current department, as of today',
+    DLV_ONTIME_BELOW_TARGET: 'Actual % on time is below the set target for the selected range',
+    DLV_LEAD_UNDERESTIMATED: 'Actual lead time (median) exceeds what was planned — consider setting more realistic due dates',
+    DLV_OPEN_OVERDUE: 'Plans past their due date and not yet done',
+    DLV_STUCK_AFTER_COSTCARD: 'Plans with a cost card issued but not yet closed for an abnormally long time',
+    FC_DLV_AT_RISK: 'Estimated from time left in the current department compared to the due date',
+    FC_DLV_ONTIME_DECLINING: 'The % on time trend has been declining over the recent periods'
   }
 }

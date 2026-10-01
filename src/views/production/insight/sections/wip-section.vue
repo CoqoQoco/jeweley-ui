@@ -3,6 +3,12 @@
   ยิง ProductionInsight/Wip ครั้งเดียวได้ทั้ง problems/forecasts/actions/status + ข้อมูลกราฟ departments/flow
   ส่วนตาราง stalePlans/dueRisk เป็น panel แยก (ยิง endpoint ของตัวเอง, paginate อิสระ) — ตัวกรองแผนก/
   ไม่ขยับเกิน (วัน)/เตือนล่วงหน้า (วัน) มาจาก props.filter (คุมจาก FilterPanelGeneric ของ ProductionInsightView)
+
+  Props:
+    filter — Object (required)
+    active — Boolean (true) — false เมื่อ mounted ค้างไว้แต่ไม่ใช่หมวดที่เปิดอยู่ (v-show ซ่อน) — ตัวกรอง
+             เปลี่ยนตอนไม่ active ไม่ยิง endpoint ทันที แค่ติดธง needsRefetch ไว้ยิงใหม่ตอนกลับมา active
+             (index-view.vue mount แบบ v-if เมื่อเคย visit หมวดนี้แล้วเท่านั้น ไม่ mount ค้างทุกหมวดตั้งแต่แรก)
 -->
 <template>
   <InsightTabLayout
@@ -101,6 +107,12 @@ export default {
     filter: {
       type: Object,
       required: true
+    },
+    // false เมื่อหมวดนี้ไม่ใช่หมวดที่เปิดอยู่ตอนนี้ (ถูก v-show ซ่อนอยู่แต่ยัง mounted ค้างไว้ตาม
+    // visitedSections) — กันยิง endpoint ซ้ำตอนไม่มีใครเห็น (ดู watch.filter/watch.active ด้านล่าง)
+    active: {
+      type: Boolean,
+      default: true
     }
   },
 
@@ -112,7 +124,8 @@ export default {
       forecasts: [],
       actions: [],
       report: emptyReport(),
-      abnormalDwellFocusDeptKey: ''
+      abnormalDwellFocusDeptKey: '',
+      needsRefetch: false
     }
   },
 
@@ -135,10 +148,19 @@ export default {
   watch: {
     filter: {
       handler() {
-        this.fetchWip()
+        if (this.active) this.fetchWip()
+        else this.needsRefetch = true
       },
       deep: true,
       immediate: true
+    },
+
+    // กลับมาเป็นหมวดที่เปิดอยู่หลังตัวกรองเปลี่ยนตอนถูกซ่อน (needsRefetch ติดไว้) — ยิงรอบเดียวตอนนี้แทน
+    active(value) {
+      if (value && this.needsRefetch) {
+        this.needsRefetch = false
+        this.fetchWip()
+      }
     }
   },
 

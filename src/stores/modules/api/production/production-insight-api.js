@@ -64,6 +64,53 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // ต้องมีสิทธิ์ production:standard-edit — เช็คฝั่ง UI ก่อนเรียกเสมอ (ดู wip-standards-panel.vue)
     async saveStageStandards({ items, remark }) {
       return await api.jewelry.post('ProductionInsight/SaveStageStandards', { items, remark })
+    },
+
+    // หมวด "ส่งงานตรงเวลา" — draftTargetPercent ส่งเฉพาะตอนกำลังแก้ไขเป้าในแผง "ตั้งเป้าส่งตรงเวลา" (ยังไม่
+    // บันทึก) ให้ kpi/series คำนวณ preview แบบ real-time (เหมือน draftStandards ของ StageLeadTime)
+    async fetchDelivery({ start, end, bucket = 'week', riskHorizonDays = 30, draftTargetPercent } = {}) {
+      return await api.jewelry.post('ProductionInsight/Delivery', {
+        start: start ? formatISOString(start) : null,
+        end: end ? formatISOString(end) : null,
+        bucket,
+        riskHorizonDays,
+        draftTargetPercent: draftTargetPercent ?? undefined
+      })
+    },
+
+    // DataSourceRequest — items = stale-plan base fields + requestDate/currentDeptKey/daysInCurrentDept/
+    // remainingDays/projectedFinishDate/projectedLateDays
+    async fetchDeliveryAtRiskPlans({ take = 50, skip = 0, sort = [], riskHorizonDays = 30, departmentKeys = [] } = {}) {
+      return await api.jewelry.post('ProductionInsight/DeliveryAtRiskPlans', { take, skip, sort, riskHorizonDays, departmentKeys })
+    },
+
+    // DataSourceRequest + ช่วงเวลา — items = base + requestDate/doneDate/lateDays
+    async fetchDeliveryLatePlans({ start, end, take = 50, skip = 0, sort = [] } = {}) {
+      return await api.jewelry.post('ProductionInsight/DeliveryLatePlans', {
+        start: start ? formatISOString(start) : null,
+        end: end ? formatISOString(end) : null,
+        take,
+        skip,
+        sort
+      })
+    },
+
+    // DataSourceRequest — items = base + costCardDate/daysSinceCostCard
+    async fetchStuckAfterCostCardPlans({ take = 50, skip = 0, sort = [] } = {}) {
+      return await api.jewelry.post('ProductionInsight/StuckAfterCostCardPlans', { take, skip, sort })
+    },
+
+    async fetchDeliveryTarget() {
+      return await api.jewelry.get('ProductionInsight/DeliveryTarget')
+    },
+
+    async fetchDeliveryTargetHistory() {
+      return await api.jewelry.get('ProductionInsight/DeliveryTargetHistory')
+    },
+
+    // ต้องมีสิทธิ์ production:standard-edit — เช็คฝั่ง UI ก่อนเรียกเสมอ (ดู delivery-target-panel.vue)
+    async saveDeliveryTarget({ targetPercent, remark }) {
+      return await api.jewelry.post('ProductionInsight/SaveDeliveryTarget', { targetPercent, remark })
     }
   }
 })

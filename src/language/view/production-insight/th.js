@@ -167,6 +167,81 @@ export default {
     standardsHistoryEmpty: 'ยังไม่มีประวัติการเปลี่ยนมาตรฐาน'
   },
 
+  delivery: {
+    filterSectionTitle: 'เฉพาะหมวด "ส่งงานตรงเวลา"',
+    filterDept: 'แผนก',
+    filterRiskHorizon: 'เตือนล่วงหน้า (วัน)',
+    filterCustomRangeLabel: 'ช่วงเวลากำหนดเอง',
+
+    kpiGroupTitle: 'ตัวชี้วัดการส่งงาน',
+    kpiOnTimePercent: '% ตรงเวลา',
+    kpiOnTimeSubTarget: 'เป้า {target}% · เสร็จ {completed} ใบ ตรงเวลา {onTime} ใบ',
+    kpiOnTimeSubNoTarget: 'เสร็จ {completed} ใบ ตรงเวลา {onTime} ใบ',
+    kpiLateMedianDays: 'ช้าเฉลี่ย (ค่ากลาง)',
+    kpiLeadCompare: 'เวลาผลิตจริง (ค่ากลาง)',
+    kpiLeadCompareSub: 'วางแผน {planned} วัน · แนะนำ {suggested} วัน',
+    kpiOpenOverdue: 'ใบเลยกำหนด (กำลังทำ)',
+    kpiOpenOverdueSub: 'เลยกำหนดทั้งหมด {all} ใบ · เปิดอยู่ {open} ใบ',
+    kpiAtRisk: 'เสี่ยงเลยกำหนด',
+    kpiStuckCostCard: 'ค้างหลังบัตรต้นทุน',
+    daysUnit: 'วัน',
+
+    trendTitle: 'แนวโน้มส่งงานตรงเวลา',
+    trendHint: 'เป้าที่ตั้งไว้แสดงเป็นเส้นระดับในกราฟ',
+    ontimeChartTitle: '% ตรงเวลารายช่วง',
+    seriesOnTime: '% ตรงเวลา',
+    seriesTarget: 'เป้า',
+    leadChartTitle: 'วางแผน vs ใช้จริง (เวลาผลิต)',
+    seriesPlanned: 'วางแผน',
+    seriesActual: 'ใช้จริง',
+
+    targetButton: 'ตั้งเป้าส่งตรงเวลา',
+    targetPanelTitle: 'ตั้งเป้า % ส่งตรงเวลา',
+    targetLabel: 'เป้า % ตรงเวลา',
+    targetReadOnlyNote: 'ดูเป้าปัจจุบันได้ทุกคน — ต้องมีสิทธิ์แก้ไขมาตรฐานจึงจะเปลี่ยนค่าได้',
+    targetReferenceText: '% ตรงเวลาจริงในช่วงที่เลือกตอนนี้ {percent}',
+    targetRemarkLabel: 'หมายเหตุการเปลี่ยนแปลง',
+    targetRemarkPlaceholder: 'เช่น ปรับตามนโยบายใหม่',
+    targetRemarkRequired: 'กรุณาระบุหมายเหตุก่อนบันทึก',
+    targetSaveBtn: 'บันทึกเป้า',
+    targetCancelDraftBtn: 'ยกเลิกร่าง',
+    targetSaveSuccess: 'บันทึกเป้าสำเร็จ',
+    targetDraftChip: 'ร่าง',
+    targetHistoryLink: 'ประวัติ',
+    targetHistoryTitle: 'ประวัติเป้า % ตรงเวลา',
+    targetHistoryColDate: 'วันที่มีผล',
+    targetHistoryColPercent: 'เป้า %',
+    targetHistoryColBy: 'ผู้บันทึก',
+    targetHistoryColRemark: 'หมายเหตุ',
+    targetHistoryEmpty: 'ยังไม่มีประวัติการเปลี่ยนเป้า',
+
+    lateCustomersTitle: 'ลูกค้าที่ได้รับของช้าบ่อย',
+    lateCustomersColCode: 'รหัสลูกค้า',
+    lateCustomersColName: 'ชื่อลูกค้า',
+    lateCustomersColCompleted: 'เสร็จทั้งหมด',
+    lateCustomersColLateCount: 'ช้า',
+    lateCustomersColLatePercent: '% ช้า',
+    lateCustomersColLateMedianDays: 'ช้าเฉลี่ย (วัน)',
+    lateCustomersEmpty: 'ไม่พบลูกค้าที่ส่งช้าในช่วงนี้',
+
+    atRiskTitle: 'เสี่ยงเลยกำหนด',
+    atRiskColCurrentDept: 'แผนกปัจจุบัน',
+    atRiskColDaysInDept: 'อยู่ในแผนกนี้ (วัน)',
+    atRiskColRequestDate: 'วันที่ขอ',
+    atRiskColRemainingDays: 'เหลือ (วัน)',
+    atRiskColProjectedFinish: 'คาดว่าเสร็จ',
+    atRiskColProjectedLate: 'คาดว่าช้า (วัน)',
+
+    latePlansTitle: 'ส่งช้าในช่วงนี้',
+    latePlansColRequestDate: 'วันที่ขอ',
+    latePlansColDoneDate: 'วันที่เสร็จ',
+    latePlansColLateDays: 'ช้า (วัน)',
+
+    stuckCostCardTitle: 'ค้างหลังบัตรต้นทุน',
+    stuckCostCardColDate: 'วันที่ออกบัตรต้นทุน',
+    stuckCostCardColDays: 'ค้างมา (วัน)'
+  },
+
   // code -> ข้อความเต็ม (พร้อม params) — ใช้กับ insight-tab-layout prop i18nPrefix (default namespace นี้)
   rules: {
     WIP_STALE: 'งานค้างไม่ขยับนานเกินกำหนด {count} ใบ ({percent}% จากงานเปิดอยู่ {openCount} ใบ)',
@@ -187,11 +262,19 @@ export default {
     FC_STAGE_LEADTIME_RISING: 'เวลาผลิตแผนก{deptKey}มีแนวโน้มเพิ่มขึ้นจาก {fromDays} เป็น {toDays} วัน ในช่วง {buckets} รอบล่าสุด',
     ACT_REDUCE_WAIT: 'ลดเวลารอในแผนก{deptKey} เช่น จัดคิวงานใหม่หรือเพิ่มกำลังคน',
     ACT_REVIEW_ABNORMAL: 'ตรวจสอบใบงานที่ค้างนานผิดปกติ {count} ใบ',
+    DLV_ONTIME_BELOW_TARGET: '% ตรงเวลา {onTimePercent}% ต่ำกว่าเป้า {targetPercent}%',
+    DLV_LEAD_UNDERESTIMATED: 'เวลาผลิตจริงเฉลี่ย {actual} วัน มากกว่าที่วางแผนไว้ {planned} วัน (แนะนำตั้ง {suggested} วัน)',
+    DLV_OPEN_OVERDUE: 'มีใบงานเลยกำหนดส่งแล้ว {count} ใบ ({percent}% จากงานเปิดอยู่ {openCount} ใบ)',
+    DLV_STUCK_AFTER_COSTCARD: 'มีใบงานค้างหลังออกบัตรต้นทุนนานผิดปกติ {count} ใบ',
+    FC_DLV_AT_RISK: 'คาดว่าจะมีใบงานเสี่ยงเลยกำหนดส่งเพิ่ม {count} ใบ ภายใน {days} วันข้างหน้า',
+    FC_DLV_ONTIME_DECLINING: '% ตรงเวลามีแนวโน้มลดลงจาก {fromPercent}% เหลือ {toPercent}% ในช่วง {buckets} รอบล่าสุด',
+    ACT_SET_REALISTIC_DUE: 'ปรับวันกำหนดส่งให้สมจริงขึ้นตามเวลาผลิตจริง (แนะนำ {suggestedLeadDays} วัน)',
+    ACT_EXPEDITE_AT_RISK: 'เร่งงานที่เสี่ยงเลยกำหนดส่ง {atRisk} ใบ และที่เลยกำหนดแล้ว {overdue} ใบ',
+    ACT_CLOSE_COSTCARD: 'ปิดงานที่ค้างหลังบัตรต้นทุน {count} ใบ',
+    ACT_FIX_BOTTLENECK: 'แก้ปัญหาคอขวดที่แผนก{deptKey}ซึ่งทำให้ส่งงานช้า',
 
     // หมวดที่ยังไม่ implement — ใช้ code ชั่วคราวคู่กับ severity 'info' แสดงเป็น bullet ข้อความล้วน
     // (รอ API จริงของแต่ละหมวดแล้วเปลี่ยน code เป็นของจริงพร้อม params)
-    DELIVERY_PLACEHOLDER_OVERDUE: 'เลยกำหนดส่ง',
-    DELIVERY_PLACEHOLDER_DUE_SOON: 'ครบกำหนดใน 14 วันแต่ยังอยู่ขั้นต้น',
     CAPACITY_PLACEHOLDER_BELOW_AVG: 'ปิดงานเดือนนี้ต่ำกว่าค่าเฉลี่ย',
     CAPACITY_PLACEHOLDER_MONTH_END_FORECAST: 'ประมาณการปิดงานสิ้นเดือน',
     GOLD_PLACEHOLDER_OVER_ALLOWED_WORKER: 'ช่างที่เสียทองเกินเกณฑ์',
@@ -216,14 +299,19 @@ export default {
     STAGE_OVER_STANDARD: 'เวลาผลิตเกินมาตรฐาน',
     STAGE_ABNORMAL_DWELL: 'ค้างนานผิดปกติ',
     STAGE_WAIT_DOMINANT: 'เวลาส่วนใหญ่หมดไปกับการรอ',
-    FC_STAGE_LEADTIME_RISING: 'แนวโน้มเวลาผลิตเพิ่มขึ้น'
+    FC_STAGE_LEADTIME_RISING: 'แนวโน้มเวลาผลิตเพิ่มขึ้น',
+    DLV_ONTIME_BELOW_TARGET: '% ตรงเวลาต่ำกว่าเป้า',
+    DLV_LEAD_UNDERESTIMATED: 'ประเมินเวลาผลิตต่ำไป',
+    DLV_OPEN_OVERDUE: 'ใบงานเลยกำหนดส่ง',
+    DLV_STUCK_AFTER_COSTCARD: 'ค้างหลังบัตรต้นทุน',
+    FC_DLV_AT_RISK: 'เสี่ยงเลยกำหนดส่งเพิ่ม',
+    FC_DLV_ONTIME_DECLINING: 'แนวโน้ม % ตรงเวลาลดลง'
   },
 
   placeholder: {
     message: 'กำลังจัดทำ — ยังดูข้อมูลได้ที่หน้าเดิมครับ',
     reportTitle: 'ข้อมูลอยู่ที่หน้าเดิม',
     link: {
-      delivery: 'ไปที่แดชบอร์ดงานผลิต',
       capacity: 'ไปที่แดชบอร์ดงานผลิต',
       gold: 'ไปที่แดชบอร์ด Gold Loss',
       workers: 'ไปที่รายงานค่าแรงช่าง',
@@ -301,6 +389,19 @@ export default {
     abnormalDwellColStandard: 'มาตรฐานเวลาของแผนกนี้ — ใบนี้อยู่นานเกินหลายเท่าของค่านี้',
 
     standardsButton: 'ตั้งจำนวนวันมาตรฐานต่อแผนก ใช้เป็นเกณฑ์เทียบทั้งหน้านี้',
-    standardsReferenceText: 'ค่ากลาง/P90 จริงจากข้อมูลช่วงที่เลือก ช่วยตัดสินใจตั้งมาตรฐาน'
+    standardsReferenceText: 'ค่ากลาง/P90 จริงจากข้อมูลช่วงที่เลือก ช่วยตัดสินใจตั้งมาตรฐาน',
+
+    deliveryDefinitions: 'เสร็จ = วันที่โอนเข้าสถานะสำเร็จครั้งแรก · ตรงเวลา = เสร็จไม่เกินวันกำหนดส่ง (เวลาไทย)',
+    kpiOnTimePercent: 'เสร็จ = วันที่โอนเข้าสถานะสำเร็จครั้งแรก · ตรงเวลา = เสร็จไม่เกินวันกำหนดส่ง (เวลาไทย)',
+    kpiOpenOverdue: '"กำลังทำ" = ใบที่เลยกำหนดและยังเปิดอยู่จริง ไม่รวมใบที่ปิดงานแล้ว',
+    filterRiskHorizon: 'ใช้คำนวณตาราง "เสี่ยงเลยกำหนด" — เหลือเวลาน้อยกว่ากี่วันถึงจะถูกนับว่าเสี่ยง',
+    atRiskColProjectedLate: 'คาดการณ์จากเวลาที่เหลือในแผนกปัจจุบัน + ค่ากลางเวลาของแผนกที่เหลือ (เรียงลำดับคงที่แบบง่าย)\nค่าบวก = คาดว่าจะช้า',
+    atRiskColDaysInDept: 'จำนวนวันที่ใบงานอยู่ในแผนกปัจจุบันต่อเนื่อง นับถึงวันนี้',
+    DLV_ONTIME_BELOW_TARGET: '% ตรงเวลาจริงต่ำกว่าเป้าที่ตั้งไว้ในช่วงที่เลือก',
+    DLV_LEAD_UNDERESTIMATED: 'เวลาผลิตจริง (ค่ากลาง) มากกว่าที่วางแผนไว้ — พิจารณาปรับวันกำหนดส่งให้สมจริงขึ้น',
+    DLV_OPEN_OVERDUE: 'ใบงานที่เลยวันกำหนดส่งแล้วและยังไม่เสร็จ',
+    DLV_STUCK_AFTER_COSTCARD: 'ใบงานที่ออกบัตรต้นทุนแล้วแต่ยังไม่ปิดงานนานผิดปกติ',
+    FC_DLV_AT_RISK: 'คาดการณ์จากเวลาที่เหลือในแผนกปัจจุบันเทียบกับวันกำหนดส่ง',
+    FC_DLV_ONTIME_DECLINING: 'แนวโน้ม % ตรงเวลาลดลงต่อเนื่องหลายช่วงล่าสุด'
   }
 }

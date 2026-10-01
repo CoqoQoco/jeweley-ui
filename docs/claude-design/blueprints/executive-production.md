@@ -411,3 +411,75 @@ FE เปลี่ยนตาม:
 - `wip-abnormal-dwell-panel.vue`: waitWorkTemplate เดิม null-safe อยู่แล้ว (`?? '—'`) — เพิ่มบรรทัด note อธิบายการตัด >180 วันออก
 - `wip-lead-time-helpers.js`: `calcWaitWorkShare` คืน `hasData:false` เมื่อ wait/work เป็น null ทั้งคู่ (เดิม coerce เป็น 0) + helper ใหม่ `isSmallSplitSample`/`hasAnySeriesValue`
 - i18n th/en เพิ่ม key ใหม่ทั้งหมดใต้ `wip.*`/`help.*` ตามรายการข้างต้น — verify: `npx eslint` เฉพาะไฟล์ที่แก้ + `npx vitest run` (insight) + `npm run build`
+
+## Revision 3 (2026-09-30): หมวด "ส่งงานตรงเวลา" (delivery tab)
+
+หมวด `delivery` ย้ายจาก placeholder (`topic-placeholder-section.vue`) เป็นเนื้อหาจริงเต็มรูปแบบ (แบบ `wip`)
+— orchestrator ใหม่ `sections/delivery-section.vue` ยิง `ProductionInsight/Delivery` ครั้งเดียวได้ทั้ง
+problems/forecasts/actions/status (ใช้ `InsightTabLayout` เหมือนเดิม) + kpi/series/targetPercent/
+targetSource/lateCustomers ในก้อนเดียว (endpoint เดียว ไม่แยกเหมือน wip ที่มี `Wip`+`StageLeadTime` 2
+endpoint) — ตาราง 3 ตัวแยก endpoint ของตัวเอง paginate อิสระ (`DeliveryAtRiskPlans`/`DeliveryLatePlans`/
+`StuckAfterCostCardPlans`) ตามรูปแบบ `wip-stale-plans-panel.vue`/`wip-due-risk-panel.vue` เดิม
+
+### API contract (`ProductionInsight/*`, endpoint ใหม่ทั้งหมด "being built in parallel")
+
+- `Delivery` POST `{start,end,bucket,riskHorizonDays=30,draftTargetPercent?}` → `{status,problems[],forecasts[],actions[] (shape เดียวกับ Wip), targetPercent,targetSource:'saved'|'draft',targetEffectiveFrom,asOf, kpi:{completedCount,onTimeCount,onTimePercent|null,lateMedianDays,plannedLeadMedianDays,actualLeadMedianDays,suggestedLeadDays,openCount,openOverdueCount,openOverdueActiveCount,atRiskCount,stuckAfterCostCardCount}, series:[{bucketEnd,completedCount,onTimeCount,onTimePercent|null,plannedLeadMedianDays|null,actualLeadMedianDays|null}], lateCustomers:[{customerCode,customerName,completedCount,lateCount,latePercent,lateMedianDays}]}` — `draftTargetPercent` ส่งเฉพาะตอนกำลังแก้ไขเป้าในแผง "ตั้งเป้าส่งตรงเวลา" (ยังไม่บันทึก) เหมือน `draftStandards` ของ `StageLeadTime` · `asOf` แสดงเป็น subtitle เล็กมุมขวาบนของกล่อง KPI (`DeliveryKpiGroup` `#header-actions`, reuse i18n key `view.executive.asOf` เดิม ไม่สร้างคำแปลซ้ำ) · `DLV_OPEN_OVERDUE` ใช้ `reportRef: atRisk` (ตารางเดียวกับเสี่ยงเลยกำหนด ไม่ใช่ตารางแยก)
+- `DeliveryAtRiskPlans` POST DataSourceRequest + `{riskHorizonDays,departmentKeys}` → item = stale-plan base fields (มี `lastUpdateBy/lastAction/workers`) + `requestDate,currentDeptKey,daysInCurrentDept,remainingDays,projectedFinishDate,projectedLateDays` — ครอบคลุมทั้งใบที่เสี่ยงจะเลยกำหนดและใบที่เลยไปแล้วแต่ยังเปิดอยู่ (`remainingDays` ติดลบ)
+- `DeliveryLatePlans` POST DataSourceRequest + `{start,end}` → base + `requestDate,doneDate,lateDays` — **ไม่มี** `lastUpdateBy/lastAction/workers` (null/[] เสมอ) ต่าง จาก `DeliveryAtRiskPlans` ที่มี — FE ไม่แสดงคอลัมน์ "อัปเดตล่าสุด"/"ช่าง" ในตารางนี้เลย (ซ่อนคอลัมน์ ไม่ใช่โชว์ "—")
+- `StuckAfterCostCardPlans` POST DataSourceRequest → base + `costCardDate,daysSinceCostCard` (ไม่มีตัวกรองแผนก/ช่วงเวลา — เหมือนตาราง "ใบงานค้าง"/"ใบค้างนานผิดปกติ") — **ไม่มี** `lastUpdateBy/lastAction/workers` เช่นเดียวกับ `DeliveryLatePlans` (ซ่อนคอลัมน์)
+- `DeliveryTarget` GET / `DeliveryTargetHistory` GET (ไม่มี `deptKey` — เป้าเดียวระดับทั้งบริษัท ต่างจาก `StageStandards` ที่เป็นรายแผนก) / `SaveDeliveryTarget` POST `{targetPercent,remark}` (คืน 200 ไม่มี body — FE ไม่อ่าน response) — ต้องมีสิทธิ์ `production:standard-edit` (reuse `hasStandardEditAccess()` เดิม ไม่สร้าง permission ใหม่) — ตารางทั้ง 3 endpoint คืน Kendo DataSourceResult แบบเดียวกับ `StalePlans` เดิม (`{data,total}`)
+
+นิยามที่ระบุไว้ใน titleTip ของกล่อง "% ตรงเวลารายช่วง": "เสร็จ = วันที่โอนเข้าสถานะสำเร็จครั้งแรก" ·
+"ตรงเวลา = เสร็จไม่เกินวันกำหนดส่ง (เวลาไทย)" — at-risk projection = เวลาที่เหลือในแผนกปัจจุบัน +
+ค่ากลางเวลาของแผนกที่เหลือ (เรียงลำดับคงที่แบบง่าย)
+
+Code ใหม่ (namespace เดิม `view.productionInsight.rules`/`help`, `reportRef` ใหม่ 5 ค่า
+`deliveryTrend`/`atRisk`/`latePlans`/`stuckCostCard`/`lateCustomers`):
+
+| กลุ่ม | code | params | reportRef | ownerRole |
+|---|---|---|---|---|
+| problems | `DLV_ONTIME_BELOW_TARGET` | `percent,target` | deliveryTrend | — |
+| problems | `DLV_LEAD_UNDERESTIMATED` | `planned,actual,suggested` | deliveryTrend | — |
+| problems | `DLV_OPEN_OVERDUE` | `count` | atRisk | — |
+| problems | `DLV_STUCK_AFTER_COSTCARD` | `count` | stuckCostCard | — |
+| forecasts | `FC_DLV_AT_RISK` | `count,days` | atRisk | — |
+| forecasts | `FC_DLV_ONTIME_DECLINING` | `from,to,buckets` | deliveryTrend | — |
+| actions | `ACT_SET_REALISTIC_DUE` | — | — | `productionManager` |
+| actions | `ACT_EXPEDITE_AT_RISK` | `count` | — | `deptHead` |
+| actions | `ACT_CLOSE_COSTCARD` | `count` | — | `deptHead` |
+| actions | `ACT_FIX_BOTTLENECK` | — | — | `productionManager` |
+
+โค้ดเหล่านี้มาจาก `ProductionInsight/Delivery` โดยตรง (endpoint เดียวกับปัญหา/คาดการณ์/วิธีแก้) —
+whitelist เพิ่มใน `insight-helpers.js HELP_KEY_CODES` เหมือนรอบก่อนๆ ไม่ต้องแก้ resolve mechanism
+
+### Component ใหม่ (Revision 3)
+
+| Component | ไฟล์ | หน้าที่ |
+|---|---|---|
+| `ProductionInsightDeliverySection` | `sections/delivery-section.vue` | orchestrator — ยิง `Delivery`+`DeliveryTarget`, คุม draftTargetPercent |
+| `DeliveryKpiGroup` | `components/delivery-kpi-group.vue` | กล่อง KPI 6 ช่อง (`headerStyle="dashboard"` + `StatCardGeneric` ×6, กดได้เลื่อนไปรายงาน) |
+| `DeliveryTrendPanel` | `components/delivery-trend-panel.vue` | orchestrator ย่อย reportRef `deliveryTrend` — กราฟ %ตรงเวลา (+ปุ่มตั้งเป้า) + กราฟวางแผน vs ใช้จริง สแต็กกัน |
+| `DeliveryOntimeChart` / `DeliveryLeadChart` | `components/delivery-{ontime,lead}-chart.vue` | presentational ล้วน รับ `series` เป็น prop (ไม่ยิง endpoint เอง) |
+| `DeliveryTargetPanel` / `DeliveryTargetHistoryModal` | `components/delivery-target-{panel,history-modal}.vue` | ปุ่ม+`DrawerGeneric` ตั้งเป้า % เดียว (ไม่ใช่รายแผนกแบบ `wip-standards-panel.vue`) + ประวัติ |
+| `DeliveryLateCustomersPanel` | `components/delivery-late-customers-panel.vue` | ตารางลูกค้าที่ส่งช้าบ่อย (reportRef `lateCustomers`, มาจาก `Delivery.lateCustomers` ตรงๆ ไม่ paginate) |
+| `DeliveryAtRiskPanel` / `DeliveryLatePlansPanel` / `DeliveryStuckCostcardPanel` | `components/delivery-{at-risk,late-plans,stuck-costcard}-panel.vue` | ตาราง paginate อิสระ 3 ตัว ยิง endpoint ของตัวเอง — reuse `wip-plan-table-helpers.js` (plan link/workers/lastAction) |
+| `delivery-helpers.js` (+ spec) | `components/` | pure: on-time stat variant, draft-target-chip diff check, series field mapper |
+
+### Mapping → โค้ด (Revision 3)
+
+| ไฟล์ | แก้อะไร | agent |
+|---|---|---|
+| `src/stores/modules/api/production/production-insight-api.js` | เพิ่ม `fetchDelivery/fetchDeliveryAtRiskPlans/fetchDeliveryLatePlans/fetchStuckAfterCostCardPlans/fetchDeliveryTarget/fetchDeliveryTargetHistory/saveDeliveryTarget` | @ui-implementer |
+| `src/components/insight/insight-helpers.js` (+ spec) | เพิ่ม 6 code ใหม่ใน `HELP_KEY_CODES` | @ui-implementer |
+| `src/views/production/insight/insight-filters.js` (+ spec) | เพิ่ม `buildDefaultDeliveryFilter/parseDeliveryFilterQuery/deliveryFilterToQuery/clearedDeliveryFilterQueryKeys` (query prefix `dlv*`, คนละ namespace จาก `wip*`) | @ui-implementer |
+| `src/views/production/insight/components/delivery-*.vue` (+ helpers/spec) (ใหม่ทั้งหมด) | KPI/กราฟ/ตาราง/แผงตั้งเป้าใหม่ | @ui-implementer |
+| `src/views/production/insight/sections/delivery-section.vue` (ใหม่) | mount ทุก component ข้างต้น เชื่อม draft-target-change/target-saved | @ui-implementer |
+| `src/views/production/insight/sections/topic-placeholder-section.vue` | ลบ entry `delivery` ออกจาก `TOPIC_LINK`/`TOPIC_CODES` (ย้ายไป section จริงแล้ว) | @ui-implementer |
+| `src/views/production/insight/index-view.vue` | mount `DeliverySection` แทน placeholder, ขยาย `hasFilterableFields`/`activeChips`/`rangeModelValue`/filter-panel handlers ให้ section-aware (ไม่ hardcode `filters.wip` อีกต่อไป) | @ui-implementer |
+| `src/language/view/production-insight/{th,en}.js` | เพิ่ม namespace `delivery.*` เต็ม + rules/codeLabel/help ของ 6 code ใหม่ — ลบ `DELIVERY_PLACEHOLDER_OVERDUE`/`DELIVERY_PLACEHOLDER_DUE_SOON`/`placeholder.link.delivery` (dead, ย้ายไป section จริงแล้ว) | @ui-implementer |
+| Backend `ProductionInsight/{Delivery,DeliveryAtRiskPlans,DeliveryLatePlans,StuckAfterCostCardPlans,DeliveryTarget,DeliveryTargetHistory,SaveDeliveryTarget}` | ใหม่ทั้งหมด — "being built in parallel" | @api-implementer |
+
+- **Decision**: เป้า % ตรงเวลาเป็นค่าเดียวระดับทั้งบริษัท (ไม่ใช่รายแผนกแบบมาตรฐานเวลาผลิต) — `DeliveryTargetPanel`/`DeliveryTargetHistoryModal` เลยง่ายกว่า `wip-standards-panel.vue`/`wip-standard-history-modal.vue` (ไม่มี per-dept map/deptKey loop)
+- **Decision**: 2 กราฟ (%ตรงเวลา, วางแผน vs ใช้จริง) ใช้ `Delivery.series` ชุดเดียวกัน คนละฟิลด์ — สแต็กเป็น 2 กล่อง legend แนวตั้งใต้ `DeliveryTrendPanel` เดียว (ไม่ใช่ side-by-side charts-row) หลีกเลี่ยงความซับซ้อนของ container-padding-top pattern โดยไม่จำเป็น เพราะทั้งคู่ใช้ reportRef เดียวกัน (`deliveryTrend`)
+- **Decision**: `index-view.vue` เดิม hardcode `filters.wip`/`draftWipFilter` ทุกจุด (range/filter-panel/chip handlers) — ขยายเป็น section-aware (`this.filters[this.activeSection]`/if-else ตาม `activeSection`) ตอนเพิ่ม delivery แทนการ duplicate state คนละชุดแบบเดิม เพราะ `RangePresetGeneric` ในแถบเครื่องมือใช้ร่วมกันทุกหมวดที่มี filter (URL query key `range/start/end` ไม่มี prefix ยังคงเป็น global slot เดียว สะท้อนเฉพาะหมวดที่เปิดอยู่ ณ ขณะนั้น)
+- verify: `npx eslint` เฉพาะไฟล์ที่แก้ + `npx vitest run` (insight) + `npm run build` (endpoint ใหม่ทั้ง 7 ยังไม่มีจริง เรียกแล้ว error ถือว่าปกติจนกว่า backend จะ deploy)

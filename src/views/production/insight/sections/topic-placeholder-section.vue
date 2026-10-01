@@ -1,6 +1,6 @@
 <!--
-  topic-placeholder-section — ใช้ร่วมกัน 5 topic tab ที่ยังไม่ implement จริง (delivery/capacity/gold/
-  workers/materials) — แสดง 4-part layout เดียวกับ wip-section (insight-tab-layout) แต่ problems/forecasts
+  topic-placeholder-section — ใช้ร่วมกัน 4 topic tab ที่ยังไม่ implement จริง (capacity/gold/workers/
+  materials — delivery ย้ายไป delivery-section.vue จริงแล้ว) — แสดง 4-part layout เดียวกับ wip-section (insight-tab-layout) แต่ problems/forecasts
   เป็น bullet ข้อความล้วน (severity 'info', ไม่มี params จริง — รอ API ของหมวดนั้นแล้วเปลี่ยน code เป็นของจริง)
   ไม่มี actions (ยังไม่มีวิธีแก้ให้แนะนำจนกว่าจะมีข้อมูลจริง) ส่วนรายงาน = ลิงก์กลับไปหน้าเดิมที่ข้อมูลยังอยู่
   (เฉพาะหมวด "ทอง" ฝัง gold-loss-trend-view.vue เดิมเป็นรายงานเสริมด้วย ตามที่ยังใช้งานได้จริงอยู่แล้ว)
@@ -30,7 +30,6 @@ import goldLossTrendView from '@/views/report/executive/components/gold-loss-tre
 
 // link ไปหน้าเดิมที่ข้อมูลของหมวดนั้นยังอยู่จนกว่าจะมี ProductionInsight endpoint ของหมวดนั้นจริง
 const TOPIC_LINK = {
-  delivery: '/production-dashboard',
   capacity: '/production-dashboard',
   gold: '/gold-loss-dashboard',
   workers: '/report-production-worker-wages',
@@ -42,7 +41,6 @@ const TOPIC_LINK = {
 // ค่อยเปลี่ยนเป็น code จริงพร้อม params — เนื้อหาตามที่ user ระบุไว้ในแผน (แบ่งปัญหาที่เกิดแล้ว/คาดการณ์
 // ตามรูปแบบเดียวกับ WIP problem+forecast — materials ทั้ง 2 ข้อเป็นปัญหาปัจจุบันล้วน จึงไม่มี forecast)
 const TOPIC_CODES = {
-  delivery: { problems: ['DELIVERY_PLACEHOLDER_OVERDUE'], forecasts: ['DELIVERY_PLACEHOLDER_DUE_SOON'] },
   capacity: { problems: ['CAPACITY_PLACEHOLDER_BELOW_AVG'], forecasts: ['CAPACITY_PLACEHOLDER_MONTH_END_FORECAST'] },
   gold: {
     problems: ['GOLD_PLACEHOLDER_OVER_ALLOWED_WORKER', 'GOLD_PLACEHOLDER_UNRETURNED_CASTING'],

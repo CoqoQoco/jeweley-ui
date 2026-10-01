@@ -88,6 +88,48 @@ export function clearedWipFilterQueryKeys(filter = {}) {
   return keys
 }
 
+// ---- Delivery tab filter (departmentKeys / riskHorizonDays / range) ----
+
+export const DELIVERY_DEFAULT_RISK_HORIZON_DAYS = 30
+
+export function buildDefaultDeliveryFilter() {
+  const range = buildDefaultRangeState()
+  return {
+    departmentKeys: [],
+    riskHorizonDays: DELIVERY_DEFAULT_RISK_HORIZON_DAYS,
+    rangePreset: range.preset,
+    start: range.start,
+    end: range.end,
+    bucket: range.bucket
+  }
+}
+
+export function parseDeliveryFilterQuery(query = {}) {
+  const range = parseRangeQuery(query)
+  return {
+    departmentKeys: parseArrayParam(query.dlvDept),
+    riskHorizonDays: parsePositiveIntOr(query.dlvRiskHorizon, DELIVERY_DEFAULT_RISK_HORIZON_DAYS),
+    rangePreset: range.preset,
+    start: range.start,
+    end: range.end,
+    bucket: range.bucket
+  }
+}
+
+export function deliveryFilterToQuery(filter = {}) {
+  const query = { ...rangeToQuery({ preset: filter.rangePreset, start: filter.start, end: filter.end }) }
+  if (filter.departmentKeys && filter.departmentKeys.length) query.dlvDept = filter.departmentKeys.join(',')
+  if (filter.riskHorizonDays && filter.riskHorizonDays !== DELIVERY_DEFAULT_RISK_HORIZON_DAYS) query.dlvRiskHorizon = String(filter.riskHorizonDays)
+  return query
+}
+
+export function clearedDeliveryFilterQueryKeys(filter = {}) {
+  const keys = [...clearedRangeQueryKeys({ preset: filter.rangePreset, start: filter.start, end: filter.end })]
+  if (!filter.departmentKeys || !filter.departmentKeys.length) keys.push('dlvDept')
+  if (!filter.riskHorizonDays || filter.riskHorizonDays === DELIVERY_DEFAULT_RISK_HORIZON_DAYS) keys.push('dlvRiskHorizon')
+  return keys
+}
+
 // ---- Active filter chips (ActiveFilterChipsGeneric) ----
 // items: Array<{ key, label, value, alwaysShow? }> — value/label ต้อง resolve เป็นข้อความจริงมาก่อนแล้ว
 // (i18n resolution เป็นหน้าที่ของ component ผู้เรียก ไม่ใช่ไฟล์นี้) — ไม่มี concept "dimmed" ข้ามหมวดอีก

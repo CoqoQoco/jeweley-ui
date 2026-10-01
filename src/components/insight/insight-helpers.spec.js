@@ -134,7 +134,13 @@ describe('resolveHelpKey', () => {
       'STAGE_OVER_STANDARD',
       'STAGE_ABNORMAL_DWELL',
       'STAGE_WAIT_DOMINANT',
-      'FC_STAGE_LEADTIME_RISING'
+      'FC_STAGE_LEADTIME_RISING',
+      'DLV_ONTIME_BELOW_TARGET',
+      'DLV_LEAD_UNDERESTIMATED',
+      'DLV_OPEN_OVERDUE',
+      'DLV_STUCK_AFTER_COSTCARD',
+      'FC_DLV_AT_RISK',
+      'FC_DLV_ONTIME_DECLINING'
     ].forEach((code) => {
       expect(resolveHelpKey(code)).toBe(`view.productionInsight.help.${code}`)
     })

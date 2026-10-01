@@ -11,7 +11,12 @@ import {
   buildActiveChips,
   WIP_DEFAULT_STALE_DAYS,
   WIP_DEFAULT_RISK_WINDOW_DAYS,
-  WIP_DEFAULT_GROWTH_THRESHOLD_PERCENT
+  WIP_DEFAULT_GROWTH_THRESHOLD_PERCENT,
+  buildDefaultDeliveryFilter,
+  parseDeliveryFilterQuery,
+  deliveryFilterToQuery,
+  clearedDeliveryFilterQueryKeys,
+  DELIVERY_DEFAULT_RISK_HORIZON_DAYS
 } from './insight-filters.js'
 
 describe('resolveActiveSection', () => {
@@ -117,6 +122,74 @@ describe('clearedWipFilterQueryKeys', () => {
     expect(keys).not.toContain('wipStaleDays')
     expect(keys).not.toContain('wipGrowth')
     expect(keys).toContain('wipRiskWindow')
+  })
+})
+
+describe('buildDefaultDeliveryFilter', () => {
+  it('defaults to no department filter, 30-day risk horizon, 3m range', () => {
+    const filter = buildDefaultDeliveryFilter()
+    expect(filter.departmentKeys).toEqual([])
+    expect(filter.riskHorizonDays).toBe(30)
+    expect(filter.rangePreset).toBe('3m')
+    expect(filter.bucket).toBe('week')
+    expect(filter.start).toBeInstanceOf(Date)
+    expect(filter.end).toBeInstanceOf(Date)
+  })
+})
+
+describe('parseDeliveryFilterQuery / deliveryFilterToQuery round-trip', () => {
+  it('parses query strings back into filter shape', () => {
+    const filter = parseDeliveryFilterQuery({ dlvDept: 'setting,trim', dlvRiskHorizon: '14', range: '1y' })
+    expect(filter.departmentKeys).toEqual(['setting', 'trim'])
+    expect(filter.riskHorizonDays).toBe(14)
+    expect(filter.rangePreset).toBe('1y')
+    expect(filter.bucket).toBe('month')
+  })
+
+  it('falls back to defaults when the query is empty', () => {
+    const filter = parseDeliveryFilterQuery({})
+    const defaults = buildDefaultDeliveryFilter()
+    expect(filter.departmentKeys).toEqual(defaults.departmentKeys)
+    expect(filter.riskHorizonDays).toBe(defaults.riskHorizonDays)
+    expect(filter.rangePreset).toBe(defaults.rangePreset)
+  })
+
+  it('ignores invalid non-positive numeric query values and falls back to defaults', () => {
+    const filter = parseDeliveryFilterQuery({ dlvRiskHorizon: '0' })
+    expect(filter.riskHorizonDays).toBe(DELIVERY_DEFAULT_RISK_HORIZON_DAYS)
+  })
+
+  it('deliveryFilterToQuery only emits keys that differ from default', () => {
+    expect(deliveryFilterToQuery(buildDefaultDeliveryFilter())).toEqual({})
+    expect(deliveryFilterToQuery({ ...buildDefaultDeliveryFilter(), departmentKeys: ['setting'] })).toEqual({ dlvDept: 'setting' })
+    expect(deliveryFilterToQuery({ ...buildDefaultDeliveryFilter(), riskHorizonDays: 14 })).toEqual({ dlvRiskHorizon: '14' })
+  })
+
+  it('round-trips through parseDeliveryFilterQuery -> deliveryFilterToQuery -> parseDeliveryFilterQuery', () => {
+    const original = {
+      departmentKeys: ['setting', 'trim'],
+      riskHorizonDays: 14,
+      rangePreset: '1y',
+      start: new Date('2025-09-29'),
+      end: new Date('2026-09-29'),
+      bucket: 'month'
+    }
+    const roundTripped = parseDeliveryFilterQuery(deliveryFilterToQuery(original))
+    expect(roundTripped.departmentKeys).toEqual(original.departmentKeys)
+    expect(roundTripped.riskHorizonDays).toBe(original.riskHorizonDays)
+    expect(roundTripped.rangePreset).toBe(original.rangePreset)
+  })
+})
+
+describe('clearedDeliveryFilterQueryKeys', () => {
+  it('returns query keys that are back to default', () => {
+    const keys = clearedDeliveryFilterQueryKeys(buildDefaultDeliveryFilter())
+    expect(keys.sort()).toEqual(['range', 'start', 'end', 'dlvDept', 'dlvRiskHorizon'].sort())
+  })
+
+  it('excludes keys that are still non-default', () => {
+    const keys = clearedDeliveryFilterQueryKeys({ ...buildDefaultDeliveryFilter(), riskHorizonDays: 14 })
+    expect(keys).not.toContain('dlvRiskHorizon')
   })
 })
 
