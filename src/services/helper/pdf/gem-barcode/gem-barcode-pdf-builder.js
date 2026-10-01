@@ -50,6 +50,20 @@ export class GemBarcodePdfBuilder {
   }
 
   /**
+   * Pick description font size by text length so Row 3 stays on one line.
+   * Label height budget leaves no room for a 2-line wrap (would overflow to
+   * a 2nd page) — verified against ChakraPetch-Bold widths at usable
+   * width ~162.7pt: <=22 -> 12, <=26 -> 11, <=29 -> 10, else -> 9 (unchanged).
+   */
+  getDescriptionFontSize() {
+    const len = this.description.length
+    if (len <= 22) return 12
+    if (len <= 26) return 11
+    if (len <= 29) return 10
+    return 9
+  }
+
+  /**
    * Get PDF document definition
    * Paper size: 2.36 x 0.98 inches (59.944 x 24.892 mm)
    * Exposed Liner: Left 0.05, Right 0.05 inches (1.27 mm each)
@@ -102,7 +116,7 @@ export class GemBarcodePdfBuilder {
             // Row 3: Description (gem name)
             {
               text: this.description,
-              fontSize: 9,
+              fontSize: this.getDescriptionFontSize(),
               bold: true,
               alignment: 'left',
               margin: [0, 0, 0, 1]
