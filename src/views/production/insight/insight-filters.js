@@ -189,6 +189,59 @@ export function clearedGoldFilterQueryKeys(filter = {}) {
   return keys
 }
 
+// ---- Capacity tab filter (unit / departments / range) ----
+// departmentKeys เป็น client-side filter ล้วน — Capacity endpoint ไม่รับพารามิเตอร์นี้ (ยืนยันจาก API agent)
+// capacity-section.vue เป็นคนกรอง departments[] เองก่อนส่งต่อให้ตารางรายแผนก/แผงจำลอง/กราฟรายละเอียด เท่านั้น
+
+export const CAPACITY_DEFAULT_UNIT = 'plan'
+export const CAPACITY_UNIT_VALUES = ['plan', 'piece']
+
+function resolveCapacityUnit(value) {
+  return CAPACITY_UNIT_VALUES.includes(value) ? value : CAPACITY_DEFAULT_UNIT
+}
+
+// bucket ของหมวดนี้เป็นรายเดือนเสมอ (ยืนยันจาก API agent) ไม่ผันตาม preset แบบ wip/delivery/gold — สัปดาห์
+// ไม่มีความหมายกับเลข "ใบออก/เดือน" ของ Capacity
+const CAPACITY_BUCKET = 'month'
+
+export function buildDefaultCapacityFilter() {
+  const range = buildDefaultRangeState()
+  return {
+    departmentKeys: [],
+    unit: CAPACITY_DEFAULT_UNIT,
+    rangePreset: range.preset,
+    start: range.start,
+    end: range.end,
+    bucket: CAPACITY_BUCKET
+  }
+}
+
+export function parseCapacityFilterQuery(query = {}) {
+  const range = parseRangeQuery(query)
+  return {
+    departmentKeys: parseArrayParam(query.capDept),
+    unit: resolveCapacityUnit(query.capUnit),
+    rangePreset: range.preset,
+    start: range.start,
+    end: range.end,
+    bucket: CAPACITY_BUCKET
+  }
+}
+
+export function capacityFilterToQuery(filter = {}) {
+  const query = { ...rangeToQuery({ preset: filter.rangePreset, start: filter.start, end: filter.end }) }
+  if (filter.departmentKeys && filter.departmentKeys.length) query.capDept = filter.departmentKeys.join(',')
+  if (filter.unit && filter.unit !== CAPACITY_DEFAULT_UNIT) query.capUnit = filter.unit
+  return query
+}
+
+export function clearedCapacityFilterQueryKeys(filter = {}) {
+  const keys = [...clearedRangeQueryKeys({ preset: filter.rangePreset, start: filter.start, end: filter.end })]
+  if (!filter.departmentKeys || !filter.departmentKeys.length) keys.push('capDept')
+  if (!filter.unit || filter.unit === CAPACITY_DEFAULT_UNIT) keys.push('capUnit')
+  return keys
+}
+
 // ---- Active filter chips (ActiveFilterChipsGeneric) ----
 // items: Array<{ key, label, value, alwaysShow? }> — value/label ต้อง resolve เป็นข้อความจริงมาก่อนแล้ว
 // (i18n resolution เป็นหน้าที่ของ component ผู้เรียก ไม่ใช่ไฟล์นี้) — ไม่มี concept "dimmed" ข้ามหมวดอีก

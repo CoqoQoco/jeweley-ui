@@ -1,12 +1,16 @@
 <!--
-  gold-target-history-modal — ประวัติการเปลี่ยนเป้า % Loss ของ 1 คู่ (ประเภทช่าง, โลหะ) (ProductionInsight/
-  GoldLossTargetHistory?workerType=&metal=) — เปิดจากลิงก์ "ประวัติ" ต่อแถวใน gold-target-panel.vue
+  gold-target-history-modal — ประวัติการเปลี่ยนเป้าของ 1 แถว (ProductionInsight/GoldLossTargetHistory?
+  workerType=&metal=&scope=) — เปิดจากลิงก์ "ประวัติ" ต่อแถวใน gold-target-panel.vue (ใช้ร่วมกันทั้ง 2 กลุ่ม
+  scope='SLIP' (ประเภทช่าง) / scope='STAGE' (แผนก, เลข 60/80/90) — ทั้ง 2 scope ใช้ field ชื่อ `workerType`
+  เดียวกันเสมอ (ยืนยันจาก API agent) ไม่มี field แยกชื่อ deptKey ใน target record
 
   Props:
     show       — Boolean (required) — เปิด/ปิด modal
-    workerType — Number|null (null) — ประเภทช่างที่ดูประวัติ
+    scope      — String ('SLIP') — 'SLIP'|'STAGE' (ส่งต่อให้ query ?scope= เฉยๆ ไม่ได้ใช้เลือก field)
+    workerType — Number|null (null) — รหัสของแถวที่ดูประวัติ (ประเภทช่าง 50/80 เมื่อ scope='SLIP', รหัสแผนก
+                 60/80/90 เมื่อ scope='STAGE')
     metal      — String ('GOLD') — 'GOLD'|'SILVER'
-    label      — String ('') — ชื่อประเภทช่าง + โลหะที่แปลแล้ว (ใช้ในหัวข้อ)
+    label      — String ('') — ชื่อแถว + โลหะที่แปลแล้ว (ใช้ในหัวข้อ)
 
   Emits: closeModal
 -->
@@ -59,6 +63,10 @@ export default {
       type: Boolean,
       required: true
     },
+    scope: {
+      type: String,
+      default: 'SLIP'
+    },
     workerType: {
       type: Number,
       default: null
@@ -102,7 +110,7 @@ export default {
     formatDate,
 
     async fetchHistory() {
-      const res = await this.productionInsightStore.fetchGoldLossTargetHistory(this.workerType, this.metal)
+      const res = await this.productionInsightStore.fetchGoldLossTargetHistory(this.workerType, this.metal, this.scope)
       this.rows = res || []
     }
   }

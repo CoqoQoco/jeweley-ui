@@ -134,11 +134,14 @@ export default {
     capacityThroughput: 'Throughput (plans/month)',
     capacityBottleneck: 'Bottleneck',
     capacityDeptTableTitle: 'Department Detail',
+    capacityColDeptActiveWip: 'Active WIP (plans)',
     capacityColDeptExited: 'Exited Plans',
     capacityColDeptExitedPerDay: 'Actual Throughput (plans/day)',
+    capacityColDeptQueueDaysCurrent: 'Current Queue (days)',
     capacityColDeptMedianTotal: 'Actual Time (Median)',
     capacityColDeptStandard: 'Standard',
     capacityColDeptAtStandardPerDay: 'At Standard (plans/day)',
+    capacityColDeptQueueDaysAtStandard: 'Queue At Standard (days)',
     capacityBottleneckChip: 'Bottleneck',
 
     abnormalDwellTitle: 'Plans with Abnormally Long Dwell Time',
@@ -242,6 +245,82 @@ export default {
     stuckCostCardColDays: 'Days Stuck'
   },
 
+  capacity: {
+    filterSectionTitle: '"Capacity" tab only',
+    filterUnit: 'Inflow unit',
+    filterDept: 'Department',
+    filterCustomRangeLabel: 'Custom date range',
+    unitToggleAriaLabel: 'Select inflow unit',
+    unitLabel: {
+      plan: 'Plans',
+      piece: 'Pieces'
+    },
+
+    kpiGroupTitle: 'Capacity KPIs',
+    kpiInflow: 'Inflow / month',
+    kpiInflowSub: '+ {pieces} pieces',
+    kpiCompleted: 'Completed / month',
+    kpiNetSubUp: 'Net +{amount} plans',
+    kpiNetSubDown: 'Net -{amount} plans',
+    kpiNetSubUnknown: 'No net figure yet',
+    kpiBacklog: 'Backlog (months)',
+    kpiBacklogSub: '{activeWip} plans',
+    kpiBottleneck: 'Bottleneck',
+    kpiBottleneckSubNone: 'No clear bottleneck in this range',
+    kpiBottleneckDeptItem: '{name} ~{days} days',
+    kpiCostCard: 'Cost card → done (median)',
+    kpiCostCardSub: 'P90 {p90} days · {pending} pending',
+    monthsUnit: 'months',
+    daysUnit: 'days',
+    workersUnit: 'workers',
+    planUnit: 'plans',
+
+    trendTitle: 'Inflow / Completed / Output Trend',
+    trendPieceUnitHint: 'The "inflow" bar is in pieces — completed/output/backlog are still always in plans (no piece-level figure from the system)',
+    seriesInflow: 'Inflow (plans)',
+    seriesInflowPieces: 'Inflow (pieces)',
+    seriesCompleted: 'Completed',
+    seriesOutput: 'Output',
+    seriesActiveWip: 'Backlog at period end',
+    seriesExits: 'Exits',
+    seriesWorkers: 'Workers',
+
+    deptTitle: 'Capacity by Department',
+    deptSelectHint: 'Click a row to see that department\'s exits/workers trend',
+    deptDetailTitle: '{name} trend',
+    deptColDept: 'Department',
+    deptColExitsPerMonth: 'Exits/month',
+    deptColWorkers: 'Workers (median)',
+    deptColPlansPerWorker: 'Plans/worker',
+    deptColWaiting: 'Waiting',
+    deptColWorking: 'Working',
+    deptColQueueDays: 'Queue (days)',
+    deptBottleneckChip: 'Bottleneck',
+    deptBottleneckCostCardChip: 'Bottleneck·Paperwork',
+
+    costCardTitle: 'Cost Card → Done',
+    costCardMedian: 'Median',
+    costCardP90: 'P90',
+    costCardPendingNow: 'Pending now',
+    costCardPendingBreakdown: 'Still moving {active} · Stale over 180d {stale}',
+    costCardPendingOver30d: 'Pending over 30 days',
+    costCardSeriesCount: 'Plans entering cost card',
+    costCardPendingTableTitle: 'Plans still awaiting a cost card',
+    costCardPendingColDate: 'Cost Card Date',
+    costCardPendingColDays: 'Days Pending',
+
+    whatIfTitle: 'Simulate Adding/Reducing Workers',
+    whatIfAssumptionNote: 'Assumes output per worker stays the same — not accounting for equipment/skill',
+    whatIfColWorkersNow: 'Workers now',
+    whatIfColWorkersNew: 'Simulated workers',
+    whatIfColExits: 'Exits/month (now → new)',
+    whatIfColQueueDays: 'Queue days (now → new)',
+    whatIfTotalQueueDays: 'Total queue across departments (≈ lead time): {now} → {new}',
+    whatIfTotalBottleneck: 'Bottleneck: {now} → {new}',
+    whatIfInflowNote: 'Inflow ≈ output → adding workers helps queue/lead time more than it raises volume',
+    whatIfExcludedNote: 'Excludes {depts} from the simulation (no worker data to compute from)'
+  },
+
   gold: {
     filterSectionTitle: 'Gold tab only',
     filterWorkerType: 'Worker Type',
@@ -333,7 +412,45 @@ export default {
     uncoveredColDiffGram: 'Diff (g)',
     uncoveredColDaysSince: 'Days Pending',
     uncoveredWorkerHint: 'Worker name is best-effort (the job\'s main worker) — not yet confirmed like a real slip',
-    uncoveredRangeNote: 'Within the selected date range'
+    uncoveredRangeNote: 'Within the selected date range',
+
+    targetSlipSectionTitle: 'Slip % Loss targets',
+    targetStageSectionTitle: 'Stage targets (sent − received)',
+
+    stageTitle: 'Loss by Stage (Sent − Received)',
+    stageColDept: 'Department',
+    stageColSend: 'Sent (g)',
+    stageColReceived: 'Received (g)',
+    stageColDiffGram: 'Diff (g)',
+    stageColDiffPercent: '%',
+    stageColTarget: 'Target %',
+    stageColSlipPercent: '% from Slip',
+    stageColPending: 'Pending Return',
+    stageTrimScrapNote: 'Includes stems/scrap trimmed off for melting — see % from slip for the true loss figure',
+    stageNotWeighed: 'Not weighed',
+
+    stageWorkerTitle: 'Top workers in this department',
+    stageWorkerColRows: 'Rows',
+    stageWorkerColReturned: 'Returned (g)',
+    stageDetailTitle: '{name} Trend',
+
+    stageTrendTitle: 'Monthly % Diff (Sent-Received) Trend, All Departments',
+    stageTrendTrimHiddenNote: 'The "Trim" line is hidden by default — scrap/stems trimmed off make its % swing much more than other departments, crowding them out on the same chart. Click the legend to show it.',
+    stageSeriesDiffPercent: '% Diff',
+    stageSeriesTarget: 'Target',
+
+    stageOutlierTitle: 'Outlier Jobs (Sent-Received)',
+    stageOutlierCriteriaNote: 'Criteria: % over 3x the department median, and diff ≥ 0.20g',
+    stageOutlierColDate: 'Date',
+    stageOutlierColCheck: 'Checked (g)',
+    stageOutlierColDeptMedian: 'Dept Median (%)',
+
+    stagePendingTitle: 'Pending Return',
+    stagePendingColSentDate: 'Sent Date',
+    stagePendingColDaysSince: 'Days Pending',
+    stagePendingIncludeQueueToggle: 'Show jobs not yet assigned to a worker (queued)',
+    stagePendingWithWorker: 'With worker {count} · {gram}g',
+    stagePendingQueue: 'Queued {count} · {gram}g'
   },
 
   rules: {
@@ -378,8 +495,25 @@ export default {
     ACT_REVIEW_ALLOWANCE: 'Review {workerType} ({metal})\'s allowed-loss setting: actual loss {lossPercent}% · allowed {allowedPercent}% · target {targetPercent}%',
     ACT_CHECK_WEIGHING: 'Check the weighing process for {workerType} ({metal}) — {excessGram}g of {metal} over allowance',
 
-    CAPACITY_PLACEHOLDER_BELOW_AVG: 'This month\'s completions are below average',
-    CAPACITY_PLACEHOLDER_MONTH_END_FORECAST: 'Estimated completions by month end',
+    GOLD_STAGE_ABOVE_TARGET: '{deptKey} ({metal}) averages a {diffPercent}% diff (sent-received), above the {targetPercent}% target',
+    GOLD_STAGE_PENDING_RETURN: '{metal} has {count} jobs pending return ({gram}g), mostly in {topDeptKey}',
+    GOLD_STAGE_OUTLIER_JOBS: '{metal} has {count} outlier jobs (sent-received)',
+    FC_GOLD_STAGE_RISING: '{deptKey} ({metal})\'s % diff is trending up from {fromPercent}% to {toPercent}%',
+    GOLD_STAGE_QUEUED: '{metal} has {count} jobs queued, not yet assigned to a worker ({gram}g), mostly in {topDeptKey}',
+    ACT_RECEIVE_PENDING: 'Follow up on {count} jobs pending gold return ({gram}g)',
+    ACT_CHECK_STAGE: 'Check {deptKey} — {diffPercent}% diff (sent-received), above the {targetPercent}% target',
+
+    CAP_BACKLOG_MONTHS: 'Backlog is equivalent to {backlogMonths} months ({activeWip} plans, producing {outputPerMonth} plans/month)',
+    CAP_QUEUE_BOTTLENECK: 'Bottleneck departments: {depts}',
+    CAP_INFLOW_OVER_OUTPUT: 'Inflow exceeded output in {overloadMonths} of the last {monthsInRange} months — peaked in {peakMonth} with {peakInflow} plans in (output is {outputPerMonth} plans/month)',
+    CAP_COSTCARD_SLOW: 'Cost card → done takes a median of {medianDays} days (P90 {p90Days} days), {pendingActive} plans still moving are pending ({pendingNow} pending in total)',
+    FC_BACKLOG_PROJECTED: 'Backlog is projected to reach {projectedWip} plans in {months} months (net {netPerMonth} plans/month)',
+    FC_PEAK_RISK: '{peakMonth} previously peaked at {peakInflow} plans in — expected to add about {extraQueueDays} more days to the queue',
+    ACT_ADD_WORKER: 'Consider adding a worker to {deptKey} (currently {workersNow}) — queue is {queueDaysNow} days now, {queueDaysPlusOne} days with one more worker',
+    ACT_SPEED_COSTCARD: 'Speed up the {pendingActive} still-moving plans pending a cost card (out of {pendingNow} total) — median {medianDays} days',
+    ACT_CLEAN_STALE: 'Review {staleWip} plans that have been stale for over 180 days',
+    ACT_SMOOTH_INFLOW: 'Smooth out inflow timing (averaging {outputPerMonth} plans/month of output)',
+
     WORKERS_PLACEHOLDER_NO_WAGE: 'Items with no wage recorded',
     WORKERS_PLACEHOLDER_RISING_COST_PER_PIECE: 'Rising wage cost per piece',
     MATERIALS_PLACEHOLDER_GEM_LOW_STOCK: 'Low gem stock vs. pending sorting work',
@@ -412,14 +546,24 @@ export default {
     GOLD_REPEAT_OFFENDER: 'Repeatedly over allowance',
     GOLD_SLIP_COVERAGE_LOW: 'Missing slips',
     FC_GOLD_EXCESS_PROJECTED: 'Rising excess {metal} count',
-    FC_GOLD_LOSS_RISING: 'Rising % loss trend'
+    FC_GOLD_LOSS_RISING: 'Rising % loss trend',
+    GOLD_STAGE_ABOVE_TARGET: 'Stage diff above target',
+    GOLD_STAGE_PENDING_RETURN: 'Pending return',
+    GOLD_STAGE_OUTLIER_JOBS: 'Stage outlier jobs',
+    FC_GOLD_STAGE_RISING: 'Rising stage diff trend',
+    GOLD_STAGE_QUEUED: 'Queued for a worker',
+    CAP_BACKLOG_MONTHS: 'Backlog equivalent to several months',
+    CAP_QUEUE_BOTTLENECK: 'Long-queue bottleneck',
+    CAP_INFLOW_OVER_OUTPUT: 'Inflow exceeding output',
+    CAP_COSTCARD_SLOW: 'Slow cost card processing',
+    FC_BACKLOG_PROJECTED: 'Backlog projected to grow',
+    FC_PEAK_RISK: 'Risk of an inflow spike'
   },
 
   placeholder: {
     message: 'Being built — data is still available on the previous page.',
     reportTitle: 'Data is on the previous page',
     link: {
-      capacity: 'Go to production dashboard',
       workers: 'Go to worker wages report',
       materials: 'Go to gem stock dashboard'
     }
@@ -487,7 +631,7 @@ export default {
     leadTimeDetailChart: 'Solid line = median · Dashed line = P90 · Flat line = standard · Bars = inflow/outflow',
 
     capacityTitle: 'Compares the outcome if every department met its standard against the actual situation now',
-    capacityModelExplanation: 'Throughput is measured from the actual number of plans exiting a department per day · if a department takes longer than standard, meeting standard is assumed to raise throughput by the ratio actual time ÷ standard · bottleneck = the department with the lowest throughput',
+    capacityModelExplanation: 'Throughput is measured from the actual number of plans exiting a department per day · if a department takes longer than standard, meeting standard is assumed to raise throughput by the ratio actual time ÷ standard · bottleneck = the department with the longest queue (active WIP still moving ÷ plans exiting per day), not the one with the lowest throughput, since work does not pass through every department equally',
 
     abnormalDwellColDays: 'Number of consecutive days this plan has been in this department, as of today',
     abnormalDwellColStandard: 'The standard time for this department — this plan has stayed multiple times longer',
@@ -521,6 +665,26 @@ export default {
     GOLD_REPEAT_OFFENDER: 'Workers over the slip allowance for multiple consecutive periods (shows up to 3 names, the rest summarized as "and N more")',
     GOLD_SLIP_COVERAGE_LOW: 'Jobs sent/checked in but not yet turned into a slip',
     FC_GOLD_EXCESS_PROJECTED: 'Estimated from the recent trend of slips going over the {metal} allowance',
-    FC_GOLD_LOSS_RISING: 'Estimated from a continuous rise in median % loss over the recent periods'
+    FC_GOLD_LOSS_RISING: 'Estimated from a continuous rise in median % loss over the recent periods',
+
+    goldStageSendGram: 'Only includes jobs that have already been returned — pending jobs are shown in the "pending return" column',
+    goldStageDiffPercent: 'Compares 3 figures: actual % diff (sent-received) · the set target · % loss from the slip for the same department',
+    goldStageDefinition: 'Calculated from returned jobs only (pending ones excluded) · Trim includes stems/scrap sent for melting · Gem Sort is not weighed',
+    GOLD_STAGE_ABOVE_TARGET: 'A department\'s average diff (sent-received) against the set target (returned jobs only, pending excluded)',
+    GOLD_STAGE_PENDING_RETURN: 'Jobs where gold was sent to a worker but not yet returned',
+    GOLD_STAGE_OUTLIER_JOBS: 'Jobs where the % diff exceeds 3x the department median, and the diff is ≥ 0.20g',
+    FC_GOLD_STAGE_RISING: 'Estimated from a continuous rise in median % diff over the recent periods',
+
+    capacityKpiDefinitions: 'Completed = first entered a cost card (craftsman\'s work is done) · bottleneck = the department with the longest queue, not the one with the lowest output, since work does not pass through every department · backlog excludes plans stale for over 180 days',
+    capacityQueueDays: 'Queue (days) = active WIP still moving in the department (waiting + working) ÷ exits per day',
+    capacityCostCardDefinition: 'Completed = first entered a cost card (craftsman\'s work is done) — measured from the date it should have entered to the date it actually did',
+    capacityWhatIf: 'Simulated from a single assumption: plans per worker stays the same as today — not saved, no API call',
+    capacityFilterDept: 'Only filters the department table',
+    CAP_BACKLOG_MONTHS: 'Backlog (months) = unfinished work (active WIP) divided by the average monthly output rate — excludes plans stale for over 180 days',
+    CAP_QUEUE_BOTTLENECK: 'Queue (days) = active WIP still moving in the department (waiting + working) ÷ exits per day · bottleneck = the department with the longest queue, not the one with the lowest output, since work does not pass through every department',
+    CAP_INFLOW_OVER_OUTPUT: 'Compares how many months inflow exceeded output against the total number of months in the selected range',
+    CAP_COSTCARD_SLOW: 'Completed = first entered a cost card (craftsman\'s work is done) — measured from the date it should have entered to the date it actually did',
+    FC_BACKLOG_PROJECTED: 'Estimated from the recent net rate (inflow − output) per month',
+    FC_PEAK_RISK: 'Estimated from the month with the highest inflow in the recent period'
   }
 }

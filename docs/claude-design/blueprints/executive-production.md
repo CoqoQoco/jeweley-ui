@@ -580,3 +580,239 @@ User verified บน prod แล้วสั่งแก้เพิ่ม 4 เ
 - **i18n param audit รอบ 3**: `GOLD_MOST_WORKERS_OVER`/`GOLD_REPEAT_OFFENDER` เปลี่ยนคำจาก "เกินเป้า" เป็น "เกินเกณฑ์" (เทียบกับ allowance ของ slip ไม่ใช่เป้าที่ตั้งเอง) — `GOLD_REPEAT_OFFENDER`/`ACT_TALK_WORKER` รวมช่างหลายคนเป็น finding/action **เดียว** ต่อประเภทช่าง (ไม่ใช่ 1 finding ต่อ 1 คนแบบเดิม) ด้วย param `workers:[{workerCode,workerName}]` + `count` — เพิ่ม **`formatWorkerNameList`** (`insight-helpers.js`, ตัวใหม่) ต่อท้าย "และอีก N คน" เมื่อเกิน maxNames (default 3, `ACT_TALK_WORKER` ขอ 5 — ส่งผ่าน `resolveMaxWorkerNames(code)` ใน `insight-tab-layout.vue`) ไม่มี overflow ใช้ "และ" คั่นคนสุดท้ายตามไวยากรณ์ไทย — เพิ่ม **numeric-suffix auto-formatter** ใน `resolveFindingParams` (param ที่ชื่อลงท้าย `Money`=0 ตำแหน่ง, `Gram`/`Percent`=ไม่เกิน 2 ตำแหน่ง ใส่ตัวคั่นหลักพันเสมอ, case-sensitive กันชนกับ param ชื่อสั้นเดิมของ wip เช่น `percent`/`count`) — **ทุก code เพิ่ม `metal` param** (translate ผ่าน `translateMetal` ใหม่ ตัวที่ 3 ของ `resolveFindingParams` คู่กับ `translateDept`/`translateWorkerType` เดิม, reuse namespace `gold.metalLabel` เดียวกับ UI toggle) ข้อความทุกตัวแปะ `({metal})` ต่อท้าย `{workerType}`
 - `GoldUncoveredJobsPanel` เพิ่ม note "ตามช่วงวันที่งานที่เลือก" (`uncoveredRangeNote`) ตามที่สั่ง เพราะตารางนี้ range-scoped แล้วฝั่ง backend (ตัดแถวข้อมูลทดสอบ/ปีเก่าออกไปเอง)
 - verify: `npx eslint` เฉพาะไฟล์ที่แก้ + `npx vitest run` (insight, 251 ผ่านทั้งหมด) + `npm run build`
+
+## Revision 5 (2026-10-01): หมวด "กำลังการผลิต" (capacity tab) + อัปเดต capacity ของ wip tab
+
+หมวด `capacity` ("กำลังการผลิต") ย้ายจาก placeholder เป็นเนื้อหาจริงเต็มรูปแบบ ตาม pattern `wip`/`delivery`/
+`gold` — orchestrator ใหม่ `sections/capacity-section.vue` ยิง `ProductionInsight/Capacity` ครั้งเดียวได้ทั้ง
+problems/forecasts/actions/status + kpi/series/departments/costCardToDone — **bucket เป็นรายเดือนเสมอ** (ไม่
+ผันตาม range preset แบบหมวดอื่นที่ใช้ weekสำหรับ ≤6m — ยืนยันจาก API agent เพราะตัวเลข "ใบออก/เดือน" ไม่มี
+ความหมายเป็นรายสัปดาห์) — `unit:'plan'|'piece'` คุมแค่ตัวเลข "งานเข้า" ในกราฟแนวโน้มเท่านั้น (ผลิตเสร็จ/
+ปิดสำเร็จ/งานค้างยังนับเป็นใบเสมอ ไม่มีหน่วยชิ้นให้จากฝั่ง API) — KPI card ทั้ง 5 ช่องไม่ผันตาม unit เลย (โชว์
+ทั้งใบและชิ้นคู่กันเสมอ)
+
+**5 ส่วนตามที่ user ระบุ**: (1) `CapacityKpiGroup` 5 StatCards (งานเข้า+ชิ้น, ผลิตเสร็จ+สุทธิ±, งานค้างเทียบเท่า
+เดือน+ใบ, คอขวด+คิววัน, บัตรต้นทุน→สำเร็จค่ากลาง+P90+ค้างอยู่) ต้อง cross-reference `departments[]` เพื่อดึง
+queueDays ของแผนกคอขวด (kpi.bottleneckDepts เป็นแค่ array ของ key ไม่มี queueDays ติดมา) — เลยรับ prop
+`departments` เพิ่มเข้ามานอกจาก `kpi` เอง (2) `CapacityTrendChart` dual-axis (แท่งงานเข้า/ผลิตเสร็จ/ปิดสำเร็จ
+แกนซ้าย + เส้นงานค้างปลายงวด แกนขวา) ตาม pattern `gold-trend-chart.vue` (3) `CapacityDepartmentPanel`
+(table+detail chart รวมไว้ orchestrator เดียว ตาม pattern `wip-lead-time-panel.vue` เป๊ะ — คลิกแถว = เลือก
+แผนกไปโชว์กราฟ "ใบออก vs จำนวนช่าง" รายเดือนของแผนกนั้น) — ชิปคอขวดของแผนก "บัตรต้นทุน" ใช้ข้อความ
+"คอขวด·เอกสาร" แยกจากคอขวดสายการผลิตทั่วไป (4) `CapacityCostcardPanel` (กล่องใหม่ที่ user ขอเพิ่ม — KPI
+line ค่ากลาง/P90/ค้างอยู่/ค้างเกิน 30 วัน + กราฟรายเดือน + ตาราง `CapacityCostcardPendingPanel` แยก ยิง
+`CostCardPendingPlans` เอง paginate อิสระ ไม่มีตัวกรองนอกจาก paging ตามคอนแทรค — reuse pattern
+`delivery-stuck-costcard-panel.vue` เป๊ะ รวม `resolvePlanLinkState`) (5) `CapacityWhatIfPanel` — **client-side
+ล้วน ไม่มี API ไม่มีการบันทึก** (ปิดหน้าแล้วหาย) จำลองเพิ่ม/ลดช่างต่อแผนก (ไม่รวมแผนก "บัตรต้นทุน" — วิเคราะห์
+แยกที่กล่อง 4) สมมติ `plansPerWorker` คงที่เท่าปัจจุบัน คำนวณ `exits`/`queueDays` ใหม่ล้วนๆ ฝั่ง client
+(`capacity-helpers.js`: `calcWhatIfExits`/`calcWhatIfQueueDays`/`buildWhatIfRows`/`sumWhatIfField`/
+`resolveWhatIfBottleneck`) — ตารางใช้ `BaseDataTable :paginator="false"` พร้อม custom cell template สำหรับ
+ช่อง input (lint บังคับ ห้าม `<table>` ดิบใน views ตาม skill `generic-components`)
+
+**mapping คำไทย ↔ field ที่ชวนสับสน (บันทึกไว้กันงง)**: "ผลิตเสร็จ" = field `completed` (เข้าบัตรต้นทุน
+ครั้งแรก งานช่างจบ — ตามนิยามที่ user ให้ตรงๆ) ใช้คำนี้สม่ำเสมอทั้ง KPI card และแท่งที่ 2 ของกราฟแนวโน้ม —
+"ปิดสำเร็จ" = field `output` (ปิดงานเต็มขั้นตอนหลังบัตรต้นทุน, ใช้คำนวณ `netPerMonth = inflow − output` ด้วย
+ตามที่ API agent ยืนยัน) ใช้เฉพาะแท่งที่ 3 ของกราฟแนวโน้ม ไม่มี KPI card แยก — การตัดสินใจนี้ยึดตามนิยาม
+"ผลิตเสร็จ" ที่ user ให้ตรงๆ เป็นหลัก (ไม่ใช่ตามลำดับ field ใน draft contract) เพราะ KPI card "ผลิตเสร็จ/เดือน"
+ต้องใช้คำเดียวกับที่ user นิยามไว้แน่นอน — ยังไม่ได้ยืนยันกับ API agent โดยตรงว่าการแมปนี้ถูกต้อง 100%
+(ไม่มี field ไหนชื่อ "completed"/"output" ที่ระบุชัดว่าคำไหนคู่กับคำไหน) ถ้าผิดสลับกันง่ายมาก แค่สลับ field ใน
+`capacity-trend-chart.vue`'s `chartSeries` + สลับ primary value ของ KPI card 2 ใน `capacity-kpi-group.vue`
+
+**findings/actions**: 6 problem/forecast code (`CAP_BACKLOG_MONTHS`/`CAP_QUEUE_BOTTLENECK`/
+`CAP_INFLOW_OVER_OUTPUT`/`CAP_COSTCARD_SLOW`/`FC_BACKLOG_PROJECTED`/`FC_PEAK_RISK`) + 4 action
+(`ACT_ADD_WORKER`/`ACT_SPEED_COSTCARD`/`ACT_CLEAN_STALE`/`ACT_SMOOTH_INFLOW`) — param ตรงกับ final contract
+ที่ API agent ยืนยันเป๊ะ — เพิ่ม generic mechanism ใหม่ 2 ตัวใน `insight-helpers.js` (ใช้ร่วมได้กับหมวดอื่น
+ในอนาคต ไม่ผูกกับ capacity เฉพาะ): **`formatDeptQueueList(depts, translateDept)`** จัดการ param array รูปแบบ
+ใหม่ `depts:[{deptKey,queueDays,waitingNow}]` ของ `CAP_QUEUE_BOTTLENECK` (ต่างจาก `workers[]` เดิมของ gold
+ตรงที่ต้องประกอบเป็นวลีเต็มต่อรายการ ไม่ใช่แค่รวมชื่อ) ต่อ "{ชื่อแผนก} ~{คิว} วัน (รอ {งาน} ใบ)" คั่นด้วย ", "
+ตามตัวอย่างที่ API agent ให้ตรงๆ — **`formatThaiMonthYear(yyyyMm)`** แปลง `"2026-06"` → `"มิ.ย. 2026"` (ปี ค.ศ.
+ตรงๆ ไม่ใช้ `Intl.DateTimeFormat('th-TH')` ที่แปลงเป็น พ.ศ. อัตโนมัติ ซึ่งไม่ตรงกับตัวอย่างที่ API agent ให้)
+ใช้กับ param `peakMonth` ของ `CAP_INFLOW_OVER_OUTPUT`/`FC_PEAK_RISK` — ทั้งคู่ผูกเข้า `resolveFindingParams`
+อัตโนมัติเมื่อ param ชื่อ `depts`/`peakMonth` ปรากฏ (เหมือนกลไก `workers`/`deptKey`/`workerType`/`metal` เดิม)
+
+**อัปเดต `wip-capacity-panel.vue`** (กล่อง "ผลต่อกำลังการผลิต" ของ wip tab เดิม) ตาม delta ที่ API agent ส่งมา
+พร้อมกัน: `StageLeadTime.departments[]` เพิ่ม `activeWip`/`queueDaysCurrent`/`queueDaysAtStandard` และ
+`bottleneckDept` สรุปด้านบนเปลี่ยนความหมายเป็น "แผนกที่คิวยาวที่สุด" (ไม่ใช่ "แผนกที่ปล่อยงานได้น้อยที่สุด"
+แบบเดิม) — ย้ายชิปคอขวด (`isBottleneckCurrent`/`isBottleneckAtStandard`) จากคอลัมน์ "ออกจริง (ใบ/วัน)"/
+"ถ้าได้ตามมาตรฐาน (ใบ/วัน)" เดิม ไปผูกกับคอลัมน์ใหม่ "คิวเทียบเท่าตอนนี้ (วัน)"/"คิวเทียบเท่าถ้าได้มาตรฐาน
+(วัน)" แทน (คอลัมน์เก่ากลายเป็นตัวเลขล้วนไม่มีชิปแล้ว) + เพิ่มคอลัมน์ "งานค้าง (ใบ)" (activeWip) + แก้
+`help.capacityModelExplanation` ให้ตรงนิยามใหม่ตรงๆ
+
+**ลบ dead code**: `topic-placeholder-section.vue` TOPIC_LINK/TOPIC_CODES entry `capacity` + i18n
+`CAPACITY_PLACEHOLDER_BELOW_AVG`/`CAPACITY_PLACEHOLDER_MONTH_END_FORECAST`/`placeholder.link.capacity`
+
+### ไฟล์ที่แตะ
+
+| ไฟล์ | สรุป | เจ้าของ |
+|---|---|---|
+| `src/views/production/insight/components/capacity-*.vue` (+ helpers/spec) (ใหม่ทั้งหมด) | KPI/กราฟ/ตารางแผนก/บัตรต้นทุน/what-if | @ui-implementer |
+| `src/views/production/insight/sections/capacity-section.vue` (ใหม่) | mount ทุก component ข้างต้น | @ui-implementer |
+| `src/views/production/insight/components/wip-capacity-panel.vue` | เพิ่มคอลัมน์ activeWip/queueDaysCurrent/queueDaysAtStandard ย้ายชิปคอขวดไปผูกคอลัมน์คิว + แก้ tip | @ui-implementer |
+| `src/views/production/insight/sections/topic-placeholder-section.vue` | ลบ entry `capacity` | @ui-implementer |
+| `src/views/production/insight/index-view.vue` | mount `CapacitySection`, ขยาย `hasFilterableFields`/`activeChips`/filter-panel handlers เป็น 4-way, `bucket` บังคับ 'month' เฉพาะ capacity | @ui-implementer |
+| `src/views/production/insight/insight-filters.js` | เพิ่มชุดฟังก์ชัน capacity filter คู่ขนานกับ gold/delivery (`CAPACITY_BUCKET` คงที่ 'month') | @ui-implementer |
+| `src/components/insight/insight-helpers.js` | เพิ่ม `formatDeptQueueList`/`formatThaiMonthYear` + ผูกเข้า `resolveFindingParams` | @ui-implementer |
+| `src/language/view/production-insight/{th,en}.js` | เพิ่ม namespace `capacity.*` เต็ม + rules/codeLabel/help ของ 10 code ใหม่ + อัปเดต wip.capacity* 3 key ใหม่ | @ui-implementer |
+| `src/language/view/production-insight/capacity-i18n.spec.js` (ใหม่) | ขยาย pattern เดียวกับ `gold-i18n.spec.js` | @ui-implementer |
+| Backend `ProductionInsight/{Capacity,CostCardPendingPlans}` + `StageLeadTime` delta | ใหม่/แก้ — final contract ยืนยันแล้ว (2026-10-01) | @api-implementer |
+
+- **Decision**: what-if panel ไม่ auto-reset ค่าที่ผู้ใช้กำลังจำลองอยู่ทุกครั้งที่ `departments` prop เปลี่ยน
+  (เช่น ตัวกรองเปลี่ยนแล้ว fetch ใหม่) — init ค่าเริ่มต้นแค่ครั้งแรกที่มีข้อมูลจริงเท่านั้น มีปุ่ม "รีเซ็ต" ให้
+  กดเองตอนอยากเริ่มใหม่ (กันค่าที่กำลังทดลองอยู่หายไปเฉยๆ โดยผู้ใช้ไม่ได้ตั้งใจ)
+- verify: `npx eslint` เฉพาะไฟล์ที่แก้ (clean) + `npx vitest run` (insight, 364 ผ่านทั้งหมด) + `npm run build`
+  (สำเร็จ) + grep `border-left` ไฟล์ที่เปลี่ยนทั้งหมด (เจอแค่ในคอมเมนต์ที่บอกว่า "ห้ามใช้" ไม่ใช่ CSS จริง)
+
+### Note (2026-10-01, follow-up): แก้ 3 จุดที่ยังค้างจาก Revision 5 — contract สุดท้ายจาก API agent
+
+1. **mapping "ผลิตเสร็จ"/"ปิดสำเร็จ" สลับกัน** — ของจริง: `output` = เข้าบัตรต้นทุนครั้งแรก (งานช่างจบ) =
+   "ผลิตเสร็จ" (KPI card 2 ใช้ `kpi.outputPerMonth`, กราฟแนวโน้มแท่งที่ 2, `netPerMonth = inflow − output`,
+   `backlogMonths` หารด้วย output) — `completed` = "ปิดสำเร็จ" ขั้นถัดไป ใช้แค่กราฟแนวโน้มแท่งที่ 3 ไม่มี KPI
+   card ของตัวเอง — ย้าย field name 2 ตัวนี้ไปเป็นค่าคงที่ใหม่ `CAPACITY_PRODUCED_FIELD`('output')/
+   `CAPACITY_CLOSED_FIELD`('completed') ใน `capacity-helpers.js` (import ใช้ตรงใน `capacity-kpi-group.vue`/
+   `capacity-trend-chart.vue` แทน hardcode ชื่อ field เอง) พร้อม spec ยืนยันค่าคงที่ 2 ตัวนี้ตรงๆ กันสลับผิด
+   อีกรอบ
+2. **`exitsSeries` แยก array จาก `workersSeries`** — ยืนยันแล้วว่า `departments[]` item มี
+   `exitsSeries:[{bucketEnd,exits}]` เพิ่มมาต่างหาก (ไม่ได้ฝังใน `workersSeries` point เดียวกัน) — เพิ่ม helper
+   ใหม่ `alignSeriesByBucket(points, series, field)` (+ spec) จับคู่ 2 array ที่แกน x เดียวกันด้วย `bucketEnd`
+   (bucket หาคู่ไม่เจอ = null ช่องว่าง ไม่ coerce เป็น 0) ใช้ใน `capacity-department-chart.vue` แทนการอ่าน
+   `point.exits` จาก `workersSeries` ตรงๆ แบบเดิม — ลบ comment "⚠️ สมมติฐานที่รอยืนยัน" ทิ้งเพราะยืนยันแล้ว
+3. **`departmentKeys` ไม่ส่งไป `ProductionInsight/Capacity`** (API ไม่รับ ยืนยันแล้ว) — ลบออกจาก
+   `fetchCapacity` store action + `capacity-section.vue` เปลี่ยนจาก deep-watch ทั้ง `filter` เป็น watch เฉพาะ
+   `unit`/`start`/`end`/`bucket` (field ที่ endpoint รับจริง) ไม่ watch `departmentKeys` อีกต่อไป (กัน refetch
+   โดยไม่จำเป็นเมื่อแก้แค่ตัวกรองแผนก) — เพิ่ม computed `filteredDepartments` กรอง client-side เอง ใช้แค่กับ
+   `CapacityDepartmentPanel`/`CapacityWhatIfPanel` (ตาราง/แผงจำลอง/กราฟรายละเอียด) ส่วน `CapacityKpiGroup`
+   ยังรับ `departments` เต็มไม่กรอง (คอขวดภาพรวมทั้งบริษัทต้องถูกต้องเสมอ ไม่ขึ้นกับตัวกรองตาราง) — เพิ่ม tip
+   "กรองเฉพาะตารางรายแผนก" (`help.capacityFilterDept`) ใต้ field ตัวกรองแผนกใน filter panel ตามที่สั่งเป๊ะ
+
+verify: `npx eslint` เฉพาะไฟล์ที่แก้ (clean) + `npx vitest run` (insight, 370 ผ่านทั้งหมด) + `npm run build`
+(สำเร็จ) + grep `border-left` ไฟล์ที่เปลี่ยนทั้งหมด (เจอแค่ในคอมเมนต์ "ห้ามใช้")
+
+## Revision 4.1 (2026-10-01): เพิ่มส่วน "Loss ตามใบงานรายแผนก (จ่าย − รับ)" เข้าหมวด "ทองและ Loss" (gold tab)
+
+เพิ่มส่วนใหม่ "Loss ตามใบงานรายแผนก (จ่าย − รับ)" ลงในหมวด `gold` เดิม (Revision 4) — วางไว้ **ขวาง**
+`GoldKpiGroup` (KPI ของ slip) กับ `GoldTrendPanel` (แนวโน้ม slip + ปุ่มตั้งเป้า) ตามที่ user ระบุ "right after
+the slip KPI group" — ใช้ metal state เดียวกับทั้งหมวด (`filter.metal` เดิม ไม่เพิ่ม toggle ใหม่) — ยิง
+`ProductionInsight/GoldByStage` เป็น endpoint ที่สอง **แยกจาก** `Gold` (คนละ response แต่ยิงพร้อมกันเสมอทุกครั้ง
+ที่ filter เปลี่ยน/แก้เป้า — ดู `fetchAll`/`onTargetDraftChange`/`onTargetSaved` ใน `gold-section.vue`) —
+GoldByStage **ไม่มี** problems/forecasts/actions ของตัวเอง (findings ของส่วนนี้มาทาง `Gold()` ปนกับของ slip
+ตามที่ API agent ยืนยัน — ใช้ `InsightTabLayout`/`resolveFindingParams` กลไกเดิมได้ทันที ไม่ต้องแก้ layout)
+
+### โครงสร้าง component ใหม่ (6 ไฟล์ + helpers)
+
+- `gold-stage-panel.vue` — orchestrator รวมทั้งหมด (department-panel + trend-chart + outlier + pending) วาง
+  ไว้ที่เดียวใน `gold-section.vue`
+- `gold-stage-department-panel.vue` + `gold-stage-table.vue` + `gold-stage-detail-chart.vue` +
+  `gold-stage-worker-table.vue` — ตาราง 8 คอลัมน์ (แผนก/จ่าย/รับ/ส่วนต่าง/%/เป้า %/% จาก slip/ค้างไม่รับคืน)
+  คลิกแถว = กราฟรายเดือน + ตารางช่าง (ตาม pattern `capacity-department-panel.vue`/`wip-lead-time-panel.vue`
+  เป๊ะ — ตารางช่างไม่ยิง endpoint แยก ใช้ `departments[].workers[]` ที่ซ้อนมาในตัวอยู่แล้ว) — reportRef เดียว
+  `goldStage` ครอบทั้งตาราง+รายละเอียด
+- `gold-stage-trend-chart.vue` — กราฟรวมทุกแผนก (เส้นละแผนก, `CHART_PALETTE`) — ซ่อนเส้น "ช่างแต่ง" (trim)
+  เป็นค่าเริ่มต้นด้วย `chart.events.mounted → chartContext.hideSeries(name)` (ยังกดเปิดจาก legend ได้) พร้อม
+  note อธิบายเหตุผล (เศษ/ก้านทำให้ % แกว่งแรงบดบังแผนกอื่น)
+- `gold-stage-outlier-jobs-panel.vue`/`gold-stage-pending-return-panel.vue` — paged table แยก ยิง
+  `GoldStageOutlierJobs`/`GoldStagePendingReturn` เอง (reuse `resolvePlanLinkState`/`wip-plan-table-helpers.js`
+  เหมือนตารางอื่นทุกตัวในโปรเจกต์) — pending ใช้ `filter.olderThanDays` ตัวเดียวกับ `GoldUncoveredJobsPanel`
+- `gold-stage-helpers.js` (+ spec) — pure logic: `mapGoldStageSeriesField`/`filterStageSeriesByDept`/
+  `collectStageBuckets`/`alignStageSeriesToBuckets` (ประกอบกราฟรวมจาก series แบนรวมทุกแผนกปนกัน — ต่างจาก
+  `GoldByStage.series` ของทุกหมวดก่อนหน้าที่แยก array ต่อมิติให้แล้ว), `resolveStageDiffVariant`,
+  `formatPendingSummary`, `buildGoldStageDraftTargetsPayload`, `resolveDefaultStageDeptKey`
+
+### แผงตั้งเป้า (point 5) — ขยาย `gold-target-panel.vue` เดิมเป็น 2 กลุ่ม ไม่สร้างปุ่ม/แผงใหม่
+
+ปุ่ม "ตั้งเป้า Loss" เดิม (อยู่ใน toolbar ของ `GoldTrendPanel`) เปิดแผงเดียวที่ตอนนี้มี **2 กลุ่ม**: "เป้า %
+Loss ตามใบ slip" (เดิม 4 แถว 80/50 × GOLD/SILVER) + "เป้าตามแผนก (จ่าย − รับ)" (ใหม่ 6 แถว 60/80/90 ×
+GOLD/SILVER) — draft ของทั้ง 2 กลุ่มรวมเป็น array เดียว ส่งให้ทั้ง `Gold` (ขับเคลื่อน slip rules + stage rules
+พร้อมกัน — API agent ยืนยันให้ส่งทั้ง 2 scope ไปที่ endpoint นี้เสมอ) และ `GoldByStage` (ขับเคลื่อน
+`departments[]` preview) **พร้อมกันทุกครั้ง** ไม่แยกว่าผู้ใช้แก้กลุ่มไหน (ง่ายกว่า ไม่ error-prone ตามที่ user
+ให้ freedom เลือกเอง) — `GoldTargetHistoryModal` ขยายรับ prop `scope`/`deptKey` คู่กับ `workerType` เดิม เลือก
+query ตาม scope ที่เปิดมา
+
+### ⚠️ field name ที่ตอนแรกเข้าใจผิด แก้แล้ว (บทเรียนสำคัญ)
+
+Draft contract แรกไม่ได้สะกด field ของ **target record** (draftTargets/GoldLossTargets items/History
+query/Save items) ชัดเจนว่าใช้ชื่ออะไรฝั่ง STAGE — ตอนแรกสันนิษฐานว่าใช้ `deptKey` คู่กับ SLIP ที่ใช้
+`workerType` (ให้เหตุผลในแง่ชื่อที่ "ตรงความหมาย" กว่า) — **ผิด**: API agent ยืนยันว่า target record (ทุก
+endpoint: `GoldLossTargets` GET, `GoldLossTargetHistory` query, `SaveGoldLossTargets` items, `Gold`/
+`GoldByStage` draftTargets) ใช้ field ชื่อ **`workerType` เสมอไม่ว่า scope ไหน** (STAGE ส่งรหัสแผนก 60/80/90
+ใต้ key `workerType` เหมือนกัน) — มีแค่ `GoldByStage.departments[]`/`series[]` และตาราง
+outlier/pending (`GoldStageOutlierJobs`/`GoldStagePendingReturn`) เท่านั้นที่ใช้ `deptKey` จริง — แก้
+`buildGoldStageDraftTargetsPayload`/`gold-target-panel.vue`'s `stageSavedMap`/store action
+`fetchGoldLossTargetHistory` ให้ส่ง `workerType` ตรงตามนี้แล้ว (ดู comment `⚠️` ในแต่ละไฟล์)
+
+### resolveFindingParams ขยาย translator ตัวที่ 5 แบบไม่เพิ่ม parameter ใหม่ (reuse translateDept เดิม)
+
+Code ใหม่ 2 ตัว (`GOLD_STAGE_ABOVE_TARGET`/`FC_GOLD_STAGE_RISING`) มี param `deptKey` และ
+`GOLD_STAGE_PENDING_RETURN` มี `topDeptKey` — แต่ `deptKey` เป็น **รหัสตัวเลข** (60/80/90, namespace
+`gold.stageKey`) ต่างจาก `deptKey` เดิมของ wip/capacity ที่เป็น **string key** (`'trim'`/`'setting'`,
+namespace `view.executive.department`) — ชนกันที่ชื่อ param เดียวกันเป๊ะ แก้โดยไม่เพิ่ม parameter ใหม่ให้
+`resolveFindingParams` (ยังรับแค่ `translateDept` ตัวเดียวเหมือนเดิม) แต่ทำให้ `translateDept` ที่
+`insight-tab-layout.vue` ฉีดเข้ามา **แยกตาม `typeof` ค่าที่ได้รับ** (`number` → `gold.stageKey.<n>`, `string`
+→ `view.executive.department.<key>`) — ปลอดภัย 100% เพราะ wip/capacity ไม่มี deptKey เป็นตัวเลขอยู่แล้ว —
+`topDeptKey` เพิ่ม branch ใหม่ใน `resolveFindingParams` ที่ reuse `translateDept` ตัวเดียวกันตามที่ API agent
+สั่ง "extend the resolver to *DeptKey / topDeptKey"
+
+### ไฟล์ที่แตะ
+
+| ไฟล์ | สรุป | เจ้าของ |
+|---|---|---|
+| `src/views/production/insight/components/gold-stage-*.vue` (+ helpers/spec) (ใหม่ทั้งหมด) | ตาราง/กราฟ/outlier/pending ของส่วนใหม่ | @ui-implementer |
+| `src/views/production/insight/sections/gold-section.vue` | ยิง `GoldByStage` คู่ขนานกับ `Gold` เสมอ, mount `GoldStagePanel`, รวม draft 2 scope เป็น array เดียว | @ui-implementer |
+| `src/views/production/insight/components/gold-target-panel.vue` | ขยาย 2 กลุ่ม (SLIP เดิม + STAGE ใหม่), prop `stageDepartments` ใหม่, draft-change payload เปลี่ยนจาก array แบนเป็น `{slip,stage}` | @ui-implementer |
+| `src/views/production/insight/components/gold-target-history-modal.vue` | เพิ่ม prop `scope`/`deptKey` ใช้ร่วมกับ `workerType` เดิม | @ui-implementer |
+| `src/views/production/insight/components/gold-trend-panel.vue` | ส่งต่อ `stageDepartments` เข้า `GoldTargetPanel`, relay draft payload ชนิดใหม่ | @ui-implementer |
+| `src/views/production/insight/components/gold-helpers.js`(+spec) | `buildGoldDraftTargetsPayload` เติม `scope:'SLIP'` ทุก item, `shouldShowGoldDraftChip` เช็ค scope กันชนกับ STAGE | @ui-implementer |
+| `src/components/insight/insight-helpers.js`(+spec) | เพิ่ม `topDeptKey` handling (reuse translateDept) | @ui-implementer |
+| `src/components/insight/insight-tab-layout.vue` | `translateDept` แยก type-aware (number→gold.stageKey, string→executive.department) | @ui-implementer |
+| `src/stores/modules/api/production/production-insight-api.js` | เพิ่ม `fetchGoldByStage`/`fetchGoldStageOutlierJobs`/`fetchGoldStagePendingReturnJobs`, แก้ `fetchGoldLossTargetHistory` ส่ง `workerType`+`scope` | @ui-implementer |
+| `src/language/view/production-insight/{th,en}.js` | เพิ่ม `gold.stage*` namespace เต็ม + rules/codeLabel/help ของ 6 code ใหม่ | @ui-implementer |
+| `src/language/view/production-insight/gold-i18n.spec.js` | เพิ่ม 8 เคสใหม่ (6 rule code + stageDetailTitle) | @ui-implementer |
+| Backend `ProductionInsight/{GoldByStage,GoldStageOutlierJobs,GoldStagePendingReturn}` + `Gold`/`GoldLossTargets*` delta | ใหม่/แก้ — final contract ยืนยันแล้ว (2026-10-01) | @api-implementer |
+
+- **Decision**: `GoldStageTrendChart` ไม่มี target-line overlay (จุดที่ระบุว่า "optional" ในโจทย์) — ตัดออก
+  เพื่อประหยัดเวลา เพราะกราฟรายละเอียดราย 1 แผนก (`GoldStageDetailChart`) มี target line อยู่แล้วและเป็นจุดที่
+  ผู้ใช้เข้าถึงบ่อยกว่า (ต้องการดูแผนกเดียวชัดๆ มากกว่าดูเป้าซ้อนทุกเส้นพร้อมกัน)
+- **Decision**: `GoldByStage.departments[].notWeighed=true` (gemSort/คัดพลอย) โชว์เป็นข้อความ "ไม่ได้ชั่งน้ำหนัก"
+  แทนตัวเลขทุกคอลัมน์ทีละเซลล์ (ไม่ใช่ colspan จริงแบบ merge cell เดียว — BaseDataTable/PrimeVue wrapper ของ
+  โปรเจกต์ไม่รองรับ colspan ง่ายๆ) — เป็นการลดรูปที่ยอมรับได้ ผลลัพธ์ที่ผู้ใช้เห็นเหมือนกัน (ไม่มีตัวเลขให้เข้าใจ
+  ผิด) แค่ implementation ไม่ได้ merge cell จริง
+- verify: `npx eslint` เฉพาะไฟล์ที่แก้ (clean) + `npx vitest run` (insight, 416 ผ่านทั้งหมด) + `npm run build`
+  (สำเร็จ) + grep `border-left` ไฟล์ที่เปลี่ยนทั้งหมด (เจอแค่ในคอมเมนต์ "ห้ามใช้")
+
+### Note (2026-10-01, follow-up): แก้ deptKey/topDeptKey กลับเป็น string key — ยืนยันจาก source code จริง
+
+API agent ตรวจสอบจาก `ProductionInsightRuleEngine.cs` ฝั่ง backend ตรงๆ แล้วแจ้งกลับ 2 จุดที่ Revision 4.1
+เข้าใจผิด:
+
+1. **param `deptKey`/`topDeptKey` ของ finding/action (GOLD_STAGE_ABOVE_TARGET/FC_GOLD_STAGE_RISING/
+   ACT_CHECK_STAGE/GOLD_STAGE_PENDING_RETURN) เป็น string dept key เดียวกับ wip/capacity**
+   ('trim'/'rawPolish'/'gemSort'/'setting'/'plating') **ไม่ใช่รหัสตัวเลข 60/80/90 แยกชุดแบบที่เข้าใจผิดตอน
+   แรก** — ลบ type-aware branch (`typeof key === 'number'`) ออกจาก `translateDept` ใน
+   `insight-tab-layout.vue` กลับไปเป็น `view.executive.department.${key}` ตรงๆ เหมือนเดิมทุกหมวด (ของเดิม
+   ก่อน Revision 4.1 ถูกต้องอยู่แล้ว ไม่ต้องแก้อะไรเพิ่มนอกจากลบ branch ที่เพิ่งเพิ่มไป) — ลบ i18n namespace
+   `gold.stageKey` (นัมเบอร์-อินเด็กซ์) ทิ้งทั้งหมด เพราะกลายเป็น dead code
+2. **ป้ายชื่อตัวเลขที่เดาไว้ผิดอยู่แล้ว**: status 50=แต่ง, **60=ขัดดิบ, 70=คัดพลอย, 80=ฝัง, 90=ขัดชุบ**
+   (ไม่ใช่ 60=ช่างแต่ง/90=ช่างขัด ตามที่เดาไว้ — เลขเดิมเป็นเลขสถานะที่มีอยู่แล้วทั้งระบบ ตรงกับ
+   `view.executive.department.{rawPolish,setting,plating}` เป๊ะ) — **target record (scope='STAGE') ยังคงใช้
+   field `workerType` เป็นตัวเลข 60/80/90 จริง** (ไม่เปลี่ยน ยืนยันซ้ำแล้ว) เพียงแต่ label ต้องแปลงเป็น string
+   deptKey ก่อนด้วย mapping ใหม่ `STAGE_TARGET_WORKER_TYPE_DEPT_KEY = {60:'rawPolish',80:'setting',90:'plating'}`
+   (`gold-stage-helpers.js`) แล้วแปลผ่าน `view.executive.department.*` ตัวเดียวกับทุกหมวด (ไม่สร้างคำแปลซ้ำ) —
+   `gold-target-panel.vue`'s `stageRows` เปลี่ยนจากไล่ `STAGE_DEPT_ORDER` (เลข, ชื่อตัวแปรเดิม) เป็น
+   `STAGE_TARGET_WORKER_TYPE_ORDER` (เลขเดิม [60,80,90] แค่เปลี่ยนชื่อให้ชัดว่าเป็น "เลข workerType ของ target
+   record" ไม่ใช่ "deptKey ของตารางหลัก") — `gold-target-history-modal.vue` เรียบง่ายขึ้นด้วย: ลบ prop
+   `deptKey` แยกทิ้ง เหลือแค่ `workerType` ตัวเดียว (ทั้ง SLIP/STAGE row ใช้ field เดียวกันแล้ว ไม่ต้องแยกตาม
+   scope อีกต่อไป)
+
+**sub-note ที่สลับกันไปด้วย** (เพราะตอนแรกคิดว่า 80="gemSort" ซึ่งผิด — "gemSort" ในคำสั่งแปลว่าแผนกคัดพลอยจริง
+ไม่ใช่ "ฝัง"): โชคดีที่ `gold-stage-table.vue`/`gold-stage-trend-chart.vue` เช็ค sub-note (scrap/not-weighed)
+จาก **flag `includesScrap`/`notWeighed` ตรงๆ อยู่แล้ว** ไม่ได้ hardcode เทียบ deptKey เลย — พฤติกรรมจริงจึง
+**ไม่เคยผิด** มีแค่ **doc comment**/**help text** (`goldStageDefinition`, `stageTrendTrimHiddenNote`) ที่เขียน
+ชื่อแผนกผิด ("ช่างฝัง"/"ช่างแต่ง" แทนที่จะเป็น "คัดพลอย"/"แต่ง") ต้องแก้ข้อความให้ตรง
+
+**Decision ที่เคยเปิดไว้ปิดแล้ว**: ป้ายชื่อ deptKey/workerType เดิม "ยังไม่ยืนยันกับ API agent" — ตอนนี้ยืนยัน
+แล้วจากการตรวจ source code ฝั่ง backend ตรงๆ ไม่ใช่แค่การสื่อสารผ่านข้อความ — เพิ่ม spec ใหม่ใน
+`gold-stage-helpers.spec.js` (`resolveStageTargetDeptKey`) + `gold-i18n.spec.js` (describe block
+"STAGE target workerType (60/80/90) label resolution end-to-end" — ยืม i18n instance ของ
+`src/language/view/executive/th.js` เข้ามาตรวจ end-to-end ว่า 60/80/90 → ขัดดิบ/ฝัง/ขัดชุบ จริง ไม่ใช่แค่ตรวจ
+ว่า mapping function คืนค่าตรงกับตัวเองเฉยๆ)
+
+verify: `npx eslint` เฉพาะไฟล์ที่แก้ (clean) + `npx vitest run` (insight, 422 ผ่านทั้งหมด) + `npm run build`
+(สำเร็จ) + grep `border-left` ไฟล์ที่เปลี่ยนทั้งหมด (เจอแค่ในคอมเมนต์ "ห้ามใช้")

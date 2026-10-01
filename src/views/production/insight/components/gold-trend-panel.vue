@@ -8,16 +8,19 @@
   shouldShowGoldDraftChip ใน gold-helpers.js)
 
   Props:
-    series        — Array (required) จาก Gold.series (ของโลหะที่กำลังดูอยู่ — กรองเฉพาะประเภทช่างที่เลือกเอง)
-    targets       — Array (required) จาก Gold.targets (ของโลหะที่กำลังดูอยู่ ต่อประเภทช่าง — อาจเป็น draft)
-    savedTargets  — Array (required) จาก GoldLossTargets (ค่าที่บันทึกไว้จริงครบทั้ง 4 ชุด ประเภทช่าง×โลหะ)
-    kpi           — Array (required) จาก Gold.kpi (ของโลหะที่กำลังดูอยู่ — ส่งต่อให้ GoldTargetPanel ทำข้อความ
-                    อ้างอิง เฉพาะแถวโลหะที่ตรงกัน)
-    metal         — String ('GOLD') — โลหะที่กำลังดูอยู่ตอนนี้
-    rangeLabel    — String ('') — ช่วงเวลาที่เลือก
-    loading       — Boolean (false)
+    series           — Array (required) จาก Gold.series (ของโลหะที่กำลังดูอยู่ — กรองเฉพาะประเภทช่างที่เลือกเอง)
+    targets          — Array (required) จาก Gold.targets (ของโลหะที่กำลังดูอยู่ ต่อประเภทช่าง — อาจเป็น draft)
+    savedTargets     — Array (required) จาก GoldLossTargets (ค่าที่บันทึกไว้จริงครบทั้ง SLIP+STAGE ปนกัน —
+                       ส่งต่อให้ GoldTargetPanel กรอง scope เอง)
+    kpi              — Array (required) จาก Gold.kpi (ของโลหะที่กำลังดูอยู่ — ส่งต่อให้ GoldTargetPanel ทำ
+                       ข้อความอ้างอิงกลุ่ม SLIP เฉพาะแถวโลหะที่ตรงกัน)
+    stageDepartments — Array (required) จาก GoldByStage.departments (ของโลหะที่กำลังดูอยู่ — ส่งต่อให้
+                       GoldTargetPanel ทำข้อความอ้างอิงกลุ่ม STAGE)
+    metal            — String ('GOLD') — โลหะที่กำลังดูอยู่ตอนนี้
+    rangeLabel       — String ('') — ช่วงเวลาที่เลือก
+    loading          — Boolean (false)
 
-  Emits: draft-target-change(items), target-saved
+  Emits: draft-target-change({slip,stage}), target-saved
 -->
 <template>
   <div id="insight-report-goldTrend" class="gold-trend-panel">
@@ -35,7 +38,14 @@
             {{ $t('view.productionInsight.gold.trendHint') }}
             <span v-if="showDraftChip" class="gold-trend-panel__draft-chip">{{ $t('view.productionInsight.gold.targetDraftChip') }}</span>
           </p>
-          <GoldTargetPanel :targets="savedTargets" :kpi="kpi" :activeMetal="metal" @draft-change="onTargetDraftChange" @saved="onTargetSaved" />
+          <GoldTargetPanel
+            :targets="savedTargets"
+            :kpi="kpi"
+            :stageDepartments="stageDepartments"
+            :activeMetal="metal"
+            @draft-change="onTargetDraftChange"
+            @saved="onTargetSaved"
+          />
         </div>
       </div>
       <GoldTrendChart :series="filteredSeries" :targetPercent="selectedTarget.targetPercent" :metal="metal" :loading="loading" />
@@ -75,6 +85,10 @@ export default {
       required: true
     },
     kpi: {
+      type: Array,
+      required: true
+    },
+    stageDepartments: {
       type: Array,
       required: true
     },
@@ -123,8 +137,8 @@ export default {
   },
 
   methods: {
-    onTargetDraftChange(items) {
-      this.$emit('draft-target-change', items)
+    onTargetDraftChange(payload) {
+      this.$emit('draft-target-change', payload)
     },
 
     onTargetSaved() {

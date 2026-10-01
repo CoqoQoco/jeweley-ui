@@ -1,13 +1,16 @@
 <!--
-  gold-section — หมวด "ทองและ Loss" ของ ProductionInsightView — ยิง ProductionInsight/Gold ครั้งเดียวได้ทั้ง
-  problems/forecasts/actions/status + kpi/series/targets/workers/asOf — draftTargets ส่งไปพร้อมกันเฉพาะตอน
-  กำลังแก้ไขเป้าในแผง "ตั้งเป้า Loss" (ยังไม่กดบันทึก) ให้ KPI/กราฟ preview ค่าใหม่แบบ real-time (เหมือน
-  draftStandards ของ wip-lead-time-panel.vue / draftTargetPercent ของ delivery-section.vue)
+  gold-section — หมวด "ทองและ Loss" ของ ProductionInsightView — ยิง ProductionInsight/Gold +
+  ProductionInsight/GoldByStage ครั้งเดียวต่อครั้ง (2 endpoint แยกกัน ยิงพร้อมกันเสมอ) — Gold ได้ทั้ง
+  problems/forecasts/actions/status + kpi/series/targets/workers/asOf (ส่วน slip) — GoldByStage ได้
+  departments/series (ส่วน "Loss ตามใบงานรายแผนก (จ่าย − รับ)") — draftTargets ส่งไปพร้อมกันเฉพาะตอนกำลังแก้ไข
+  เป้าในแผง "ตั้งเป้า Loss" (ยังไม่กดบันทึก) ให้ preview ค่าใหม่แบบ real-time (เหมือน draftStandards ของ
+  wip-lead-time-panel.vue / draftTargetPercent ของ delivery-section.vue) — แก้เป้ากลุ่มไหนก็ refetch ทั้ง 2
+  endpoint พร้อมกันเสมอ (ไม่แยกว่าใครแก้กลุ่มไหน ง่ายกว่า ไม่ error-prone — ดู gold-target-panel.vue)
 
-  ส่วนตาราง overSlips/uncovered เป็น panel แยก (ยิง endpoint ของตัวเอง, paginate อิสระ) — ตัวกรองประเภทช่าง/
-  ช่าง/ไม่ครบเกิน (วัน) มาจาก props.filter (คุมจาก FilterPanelGeneric ของ ProductionInsightView) — workerCodes
-  ตัวเลือกใน filter panel มาจาก Gold.workers (ไม่ใช่ list คงที่) — emit `workers-loaded` ขึ้นไปให้
-  index-view.vue เก็บเป็น options ทุกครั้งที่ยิง Gold สำเร็จ
+  ส่วนตาราง overSlips/uncovered/goldStageOutliers/goldStagePending เป็น panel แยก (ยิง endpoint ของตัวเอง,
+  paginate อิสระ) — ตัวกรองประเภทช่าง/ช่าง/ไม่ครบเกิน (วัน) มาจาก props.filter (คุมจาก FilterPanelGeneric ของ
+  ProductionInsightView) — workerCodes ตัวเลือกใน filter panel มาจาก Gold.workers (ไม่ใช่ list คงที่) — emit
+  `workers-loaded` ขึ้นไปให้ index-view.vue เก็บเป็น options ทุกครั้งที่ยิง Gold สำเร็จ
 
   Props:
     filter — Object (required) — รวม metal ('GOLD'|'SILVER', default 'GOLD') คุมทั้งหมวด (KPI/กราฟ/ตารางทุก
@@ -32,11 +35,22 @@
     <template #report>
       <GoldKpiGroup :kpi="kpi" :asOf="asOf" :metal="filter.metal" :loading="loading" @goto-report="scrollToReport" @update:metal="onMetalChange" />
 
+      <GoldStagePanel
+        :departments="stageDepartments"
+        :series="stageSeries"
+        :metal="filter.metal"
+        :olderThanDays="filter.olderThanDays"
+        :start="filter.start"
+        :end="filter.end"
+        :loading="stageLoading"
+      />
+
       <GoldTrendPanel
         :series="series"
         :targets="targets"
         :savedTargets="savedTargets"
         :kpi="kpi"
+        :stageDepartments="stageDepartments"
         :metal="filter.metal"
         :rangeLabel="rangeLabel"
         :loading="loading"
@@ -71,6 +85,7 @@ import { formatRangeLabel } from '@/services/utils/range-presets.js'
 
 import InsightTabLayout from '@/components/insight/insight-tab-layout.vue'
 import GoldKpiGroup from '../components/gold-kpi-group.vue'
+import GoldStagePanel from '../components/gold-stage-panel.vue'
 import GoldTrendPanel from '../components/gold-trend-panel.vue'
 import GoldWorkerRankingPanel from '../components/gold-worker-ranking-panel.vue'
 import GoldOverSlipsPanel from '../components/gold-over-slips-panel.vue'
@@ -82,6 +97,7 @@ export default {
   components: {
     InsightTabLayout,
     GoldKpiGroup,
+    GoldStagePanel,
     GoldTrendPanel,
     GoldWorkerRankingPanel,
     GoldOverSlipsPanel,
@@ -118,7 +134,12 @@ export default {
       targets: [],
       workers: [],
       asOf: null,
+      stageLoading: false,
+      stageDepartments: [],
+      stageSeries: [],
       savedTargets: [],
+      // draft ของแผง "ตั้งเป้า Loss" — รวม 2 scope ไว้ array เดียว (ไม่แยก) ส่งให้ทั้ง Gold (ขับเคลื่อน slip
+      // rules + stage rules พร้อมกัน ตามที่ API agent ยืนยัน) และ GoldByStage (ขับเคลื่อน departments[] preview)
       draftTargets: [],
       needsRefetch: false
     }
@@ -141,7 +162,7 @@ export default {
   watch: {
     filter: {
       handler() {
-        if (this.active) this.fetchGold()
+        if (this.active) this.fetchAll()
         else this.needsRefetch = true
       },
       deep: true
@@ -151,7 +172,7 @@ export default {
     active(value) {
       if (value && this.needsRefetch) {
         this.needsRefetch = false
-        this.fetchGold()
+        this.fetchAll()
       }
     }
   },
@@ -168,17 +189,24 @@ export default {
       this.$emit('metal-change', value)
     },
 
-    // ผู้ใช้แก้ค่าในแผงตั้งเป้า (ยังไม่บันทึก) — เก็บ draft ไว้ยิง Gold ใหม่ให้ KPI/กราฟ preview แบบ
-    // real-time (แผงตั้งเป้าเป็นคน debounce การยิง event นี้เองแล้ว)
-    onTargetDraftChange(items) {
-      this.draftTargets = items
+    // ผู้ใช้แก้ค่าในแผงตั้งเป้า (ยังไม่บันทึก) — รวม 2 scope จาก payload เป็น draftTargets array เดียว ยิงทั้ง
+    // Gold (ขับเคลื่อน slip rules + stage rules — API agent ยืนยันให้ส่งทั้ง 2 scope ไปที่ endpoint นี้) และ
+    // GoldByStage (ขับเคลื่อน departments[] preview) ใหม่พร้อมกันให้ preview แบบ real-time (แผงตั้งเป้าเป็นคน
+    // debounce การยิง event นี้เองแล้ว)
+    onTargetDraftChange(payload) {
+      this.draftTargets = [...(payload?.slip || []), ...(payload?.stage || [])]
       this.fetchGold()
+      this.fetchGoldByStage()
     },
 
-    // บันทึกเป้าสำเร็จ — เคลียร์ draft แล้วโหลดทั้งคู่ใหม่ด้วยค่าที่บันทึกจริง
+    // บันทึกเป้าสำเร็จ — เคลียร์ draft แล้วโหลดทุกอย่างใหม่ด้วยค่าที่บันทึกจริง
     async onTargetSaved() {
       this.draftTargets = []
-      await Promise.all([this.fetchGold(), this.fetchSavedTargets()])
+      await Promise.all([this.fetchGold(), this.fetchGoldByStage(), this.fetchSavedTargets()])
+    },
+
+    async fetchAll() {
+      await Promise.all([this.fetchGold(), this.fetchGoldByStage()])
     },
 
     async fetchGold() {
@@ -205,6 +233,21 @@ export default {
       this.$emit('workers-loaded', this.workers)
     },
 
+    // ส่วน "Loss ตามใบงานรายแผนก" — ไม่มี problems/forecasts/actions ของตัวเอง (findings มาทาง Gold() ปนกับ
+    // ของ slip แล้ว) ยิงแยก endpoint แต่ parallel กับ fetchGold เสมอ (ดู fetchAll/onTargetDraftChange/onTargetSaved)
+    async fetchGoldByStage() {
+      this.stageLoading = true
+      const res = await this.productionInsightStore.fetchGoldByStage({
+        start: this.filter.start,
+        end: this.filter.end,
+        metal: this.filter.metal,
+        draftTargets: this.draftTargets
+      })
+      this.stageDepartments = res?.departments || []
+      this.stageSeries = res?.series || []
+      this.stageLoading = false
+    },
+
     async fetchSavedTargets() {
       this.savedTargets = (await this.productionInsightStore.fetchGoldLossTargets()) || []
     }
@@ -212,6 +255,7 @@ export default {
 
   created() {
     this.fetchGold()
+    this.fetchGoldByStage()
     this.fetchSavedTargets()
   }
 }

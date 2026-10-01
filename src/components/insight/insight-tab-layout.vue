@@ -162,6 +162,9 @@ export default {
   },
 
   methods: {
+    // deptKey/topDeptKey ของทุกหมวด (wip/capacity/ส่วน "Loss ตามใบงานรายแผนก" ในหมวด gold) เป็น string key
+    // เดียวกันหมด ('trim'/'rawPolish'/'gemSort'/'setting'/'plating') — ยืนยันจาก API agent แล้ว (เดิมเข้าใจ
+    // ผิดว่าของ gold-stage เป็นรหัสตัวเลขแยกชุด แก้แล้ว 2026-10-01)
     translateDept(key) {
       return this.$t(`view.executive.department.${key}`)
     },

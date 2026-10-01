@@ -22,7 +22,12 @@ import {
   goldFilterToQuery,
   clearedGoldFilterQueryKeys,
   GOLD_DEFAULT_OLDER_THAN_DAYS,
-  GOLD_DEFAULT_METAL
+  GOLD_DEFAULT_METAL,
+  buildDefaultCapacityFilter,
+  parseCapacityFilterQuery,
+  capacityFilterToQuery,
+  clearedCapacityFilterQueryKeys,
+  CAPACITY_DEFAULT_UNIT
 } from './insight-filters.js'
 
 describe('resolveActiveSection', () => {
@@ -281,6 +286,72 @@ describe('clearedGoldFilterQueryKeys', () => {
     const keys = clearedGoldFilterQueryKeys({ ...buildDefaultGoldFilter(), olderThanDays: 7, metal: 'SILVER' })
     expect(keys).not.toContain('gldOlderThan')
     expect(keys).not.toContain('gldMetal')
+  })
+})
+
+describe('buildDefaultCapacityFilter', () => {
+  it('defaults to no department filter, plan unit, 3m range', () => {
+    const filter = buildDefaultCapacityFilter()
+    expect(filter.departmentKeys).toEqual([])
+    expect(filter.unit).toBe(CAPACITY_DEFAULT_UNIT)
+    expect(filter.rangePreset).toBe('3m')
+    expect(filter.start).toBeInstanceOf(Date)
+    expect(filter.end).toBeInstanceOf(Date)
+  })
+})
+
+describe('parseCapacityFilterQuery / capacityFilterToQuery round-trip', () => {
+  it('parses query strings back into filter shape', () => {
+    const filter = parseCapacityFilterQuery({ capDept: 'design,setting', capUnit: 'piece', range: '1y' })
+    expect(filter.departmentKeys).toEqual(['design', 'setting'])
+    expect(filter.unit).toBe('piece')
+    expect(filter.rangePreset).toBe('1y')
+  })
+
+  it('falls back to defaults when the query is empty', () => {
+    const filter = parseCapacityFilterQuery({})
+    const defaults = buildDefaultCapacityFilter()
+    expect(filter.departmentKeys).toEqual(defaults.departmentKeys)
+    expect(filter.unit).toBe(defaults.unit)
+    expect(filter.rangePreset).toBe(defaults.rangePreset)
+  })
+
+  it('falls back to plan for an invalid/unknown unit value', () => {
+    expect(parseCapacityFilterQuery({ capUnit: 'BOGUS' }).unit).toBe(CAPACITY_DEFAULT_UNIT)
+    expect(parseCapacityFilterQuery({}).unit).toBe(CAPACITY_DEFAULT_UNIT)
+  })
+
+  it('capacityFilterToQuery only emits keys that differ from default', () => {
+    expect(capacityFilterToQuery(buildDefaultCapacityFilter())).toEqual({})
+    expect(capacityFilterToQuery({ ...buildDefaultCapacityFilter(), departmentKeys: ['design'] })).toEqual({ capDept: 'design' })
+    expect(capacityFilterToQuery({ ...buildDefaultCapacityFilter(), unit: 'piece' })).toEqual({ capUnit: 'piece' })
+  })
+
+  it('round-trips through parseCapacityFilterQuery -> capacityFilterToQuery -> parseCapacityFilterQuery', () => {
+    const original = {
+      departmentKeys: ['design', 'setting'],
+      unit: 'piece',
+      rangePreset: '1y',
+      start: new Date('2025-09-29'),
+      end: new Date('2026-09-29'),
+      bucket: 'month'
+    }
+    const roundTripped = parseCapacityFilterQuery(capacityFilterToQuery(original))
+    expect(roundTripped.departmentKeys).toEqual(original.departmentKeys)
+    expect(roundTripped.unit).toBe(original.unit)
+    expect(roundTripped.rangePreset).toBe(original.rangePreset)
+  })
+})
+
+describe('clearedCapacityFilterQueryKeys', () => {
+  it('returns query keys that are back to default', () => {
+    const keys = clearedCapacityFilterQueryKeys(buildDefaultCapacityFilter())
+    expect(keys.sort()).toEqual(['range', 'start', 'end', 'capDept', 'capUnit'].sort())
+  })
+
+  it('excludes keys that are still non-default', () => {
+    const keys = clearedCapacityFilterQueryKeys({ ...buildDefaultCapacityFilter(), unit: 'piece' })
+    expect(keys).not.toContain('capUnit')
   })
 })
 

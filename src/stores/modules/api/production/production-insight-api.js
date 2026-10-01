@@ -117,8 +117,9 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // (default 'GOLD') กรองที่ request ทั้งก้อน kpi/series/targets/workers ของ response จึงเป็นของโลหะเดียวนั้น
     // เสมอ (ไม่ผสมทอง/เงินในตัวเลขเดียวกัน ราคาเงินคงที่ 40 ฿/กรัม ต่างจากทองที่แยกราคาตามกะรัต) — kpi[]/
     // targets[] มี metal แนบมาด้วยต่อแถว (ค่าเดียวกับที่ขอ ไม่มีผสมข้ามโลหะ) ส่วน series[]/workers[] ไม่มี
-    // (ยืนยันแล้วจาก API agent 2026-10-01) — draftTargets items = {workerType,metal,targetPercent} ส่งเฉพาะ
-    // ตอนกำลังแก้ไขเป้าในแผง "ตั้งเป้า Loss" (ยังไม่บันทึก) ให้ kpi/series คำนวณ preview แบบ real-time
+    // (ยืนยันแล้วจาก API agent 2026-10-01) — draftTargets items = {workerType,metal,targetPercent,scope:'SLIP'}
+    // (scope เพิ่มมาพร้อมฟีเจอร์ "Loss รายแผนก" — targets แยก scope SLIP/STAGE แล้ว) ส่งเฉพาะตอนกำลังแก้ไขเป้า
+    // ในแผง "ตั้งเป้า Loss" (ยังไม่บันทึก) ให้ kpi/series คำนวณ preview แบบ real-time
     async fetchGold({ start, end, bucket = 'week', workerTypes = [], workerCodes = [], metal = 'GOLD', draftTargets } = {}) {
       return await api.jewelry.post('ProductionInsight/Gold', {
         start: start ? formatISOString(start) : null,
@@ -128,6 +129,53 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
         workerCodes,
         metal,
         draftTargets: draftTargets && draftTargets.length ? draftTargets : undefined
+      })
+    },
+
+    // ส่วน "Loss ตามใบงานรายแผนก (จ่าย − รับ)" ของหมวด "ทองและ Loss" — metal เดียวกับ Gold (คุมทั้งก้อนแบบ
+    // เดียวกัน) — departments[] มี workers[] ซ้อนอยู่ในตัว (ไม่ต้องยิง endpoint แยกสำหรับตาราง "ช่างในแผนก") +
+    // targetSource 'saved'|'draft' ต่อแผนก — draftTargets items = {scope:'STAGE',workerType,metal,targetPercent}
+    // (field ชื่อ workerType ไม่ใช่ deptKey — ยืนยันจาก API agent) ส่งเฉพาะตอนกำลังแก้ไขเป้าในแผง "ตั้งเป้า
+    // Loss" (ยังไม่บันทึก) ให้ departments[] คำนวณ preview แบบ real-time — ไม่มี problems/forecasts/actions ใน
+    // response นี้เลย (findings ของ stage มาทาง Gold() ปนกับของ slip)
+    async fetchGoldByStage({ start, end, metal = 'GOLD', draftTargets } = {}) {
+      return await api.jewelry.post('ProductionInsight/GoldByStage', {
+        start: start ? formatISOString(start) : null,
+        end: end ? formatISOString(end) : null,
+        metal,
+        draftTargets: draftTargets && draftTargets.length ? draftTargets : undefined
+      })
+    },
+
+    // DataSourceRequest + metal/start/end/departmentKeys — items = GoldStageOutlierJobs (planId,wo,...,
+    // deptMedianPercent) — เกณฑ์ outlier: % เกิน 3 เท่าของค่ากลางแผนก และส่วนต่าง ≥ 0.20 g (คำนวณฝั่ง backend)
+    async fetchGoldStageOutlierJobs({ take = 50, skip = 0, sort = [], metal = 'GOLD', start, end, departmentKeys = [] } = {}) {
+      return await api.jewelry.post('ProductionInsight/GoldStageOutlierJobs', {
+        take,
+        skip,
+        sort,
+        metal,
+        start: start ? formatISOString(start) : null,
+        end: end ? formatISOString(end) : null,
+        departmentKeys
+      })
+    },
+
+    // DataSourceRequest + metal/start/end/departmentKeys/olderThanDays/includeQueue — items = GoldStagePendingReturn
+    // (planId,wo,...,sentDate,sendGram,daysSince,workerName,isQueue) — olderThanDays ใช้ตัวเดียวกับ
+    // filter.olderThanDays ของหมวด gold (เหมือน GoldUncoveredJobs) — includeQueue default false (เซิร์ฟเวอร์
+    // กรองแถวคิวรอจ่ายช่างออกให้เองถ้าไม่ส่ง true — gold-stage-pending-return-panel.vue มีสวิตช์เปิดดูแยก)
+    async fetchGoldStagePendingReturnJobs({ take = 50, skip = 0, sort = [], metal = 'GOLD', start, end, departmentKeys = [], olderThanDays = 14, includeQueue = false } = {}) {
+      return await api.jewelry.post('ProductionInsight/GoldStagePendingReturn', {
+        take,
+        skip,
+        sort,
+        metal,
+        start: start ? formatISOString(start) : null,
+        end: end ? formatISOString(end) : null,
+        departmentKeys,
+        olderThanDays,
+        includeQueue
       })
     },
 
@@ -163,20 +211,45 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
       })
     },
 
-    // คืน [{workerType,metal,targetPercent,effectiveFrom,createBy,remark}] ครบทั้ง 4 ชุด (ไม่กรองตาม metal
-    // ที่กำลังดูอยู่ — ใช้เติมแผง "ตั้งเป้า Loss" ที่แก้ได้ทั้ง 4 แถวพร้อมกัน)
+    // คืน [{scope,workerType,metal,targetPercent,effectiveFrom,createBy,remark}] ครบทั้ง SLIP(4, workerType
+    // 50/80) + STAGE(6, workerType 60/80/90) = 10 ชุด (ไม่กรองตาม metal ที่กำลังดูอยู่ — ใช้เติมแผง "ตั้งเป้า
+    // Loss" ที่แก้ได้ทุกแถวพร้อมกันทั้ง 2 กลุ่ม) — field ชื่อ `workerType` เสมอไม่ว่า scope ไหน (ยืนยันจาก API
+    // agent — STAGE ไม่ได้ใช้ field ชื่อ deptKey ในนี้ ต่างจาก GoldByStage.departments/series/outlier/pending)
     async fetchGoldLossTargets() {
       return await api.jewelry.get('ProductionInsight/GoldLossTargets')
     },
 
-    async fetchGoldLossTargetHistory(workerType, metal = 'GOLD') {
-      return await api.jewelry.get('ProductionInsight/GoldLossTargetHistory', { workerType, metal })
+    // ?workerType=&metal=&scope= — field ชื่อ workerType เสมอไม่ว่า scope ไหน (STAGE ส่งรหัสแผนก 60/80/90 ใต้
+    // key workerType เหมือนกัน ไม่ใช่ deptKey)
+    async fetchGoldLossTargetHistory(workerType, metal = 'GOLD', scope = 'SLIP') {
+      return await api.jewelry.get('ProductionInsight/GoldLossTargetHistory', { workerType, metal, scope })
     },
 
-    // items = [{workerType,metal,targetPercent}] — ต้องมีสิทธิ์ production:standard-edit — เช็คฝั่ง UI ก่อน
-    // เรียกเสมอ (ดู gold-target-panel.vue)
+    // items = [{scope:'SLIP',workerType,metal,targetPercent}, {scope:'STAGE',workerType,metal,targetPercent}]
+    // ในอาร์เรย์เดียวกัน (workerType ของ STAGE คือรหัสแผนก 60/80/90) — ต้องมีสิทธิ์ production:standard-edit —
+    // เช็คฝั่ง UI ก่อนเรียกเสมอ (ดู gold-target-panel.vue)
     async saveGoldLossTargets({ items, remark }) {
       return await api.jewelry.post('ProductionInsight/SaveGoldLossTargets', { items, remark })
+    },
+
+    // หมวด "กำลังการผลิต" — unit 'plan'|'piece' (default 'plan') คุมเฉพาะเลข "งานเข้า" ของกราฟแนวโน้ม (ผลิต
+    // เสร็จ/ปิดสำเร็จ/งานค้างยังนับเป็นใบเสมอ ไม่มีหน่วยชิ้นให้ — ดู capacity-trend-chart.vue) — endpoint นี้
+    // ไม่รับ departmentKeys (ยืนยันจาก API agent) — KPI/กราฟแนวโน้ม/ปัญหาที่พบเป็นภาพรวมทั้งบริษัทเสมอ ตัวกรอง
+    // แผนกใน filter panel เอาไปกรอง client-side เฉพาะตารางรายแผนก/แผงจำลอง/กราฟรายละเอียด (ดู capacity-section.vue)
+    async fetchCapacity({ start, end, bucket = 'month', unit = 'plan' } = {}) {
+      return await api.jewelry.post('ProductionInsight/Capacity', {
+        start: start ? formatISOString(start) : null,
+        end: end ? formatISOString(end) : null,
+        bucket,
+        unit
+      })
+    },
+
+    // DataSourceRequest — items = base plan fields + costCardDate/daysSinceCostCard (เหมือน
+    // StuckAfterCostCardPlans ของหมวด delivery แต่เป็นใบที่ "ยังไม่เข้าบัตรต้นทุน" ไม่ใช่ "เข้าบัตรแล้วแต่ยังไม่
+    // ปิดงาน" — ไม่มีตัวกรองเพิ่มนอกจาก paging ตามคอนแทรค)
+    async fetchCostCardPendingPlans({ take = 50, skip = 0, sort = [] } = {}) {
+      return await api.jewelry.post('ProductionInsight/CostCardPendingPlans', { take, skip, sort })
     }
   }
 })

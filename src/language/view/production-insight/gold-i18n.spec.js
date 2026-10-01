@@ -10,11 +10,13 @@ import { describe, it, expect } from 'vitest'
 import { createI18n } from 'vue-i18n'
 
 import th from './th.js'
+import executiveTh from '../executive/th.js'
+import { STAGE_TARGET_WORKER_TYPE_ORDER, resolveStageTargetDeptKey } from '../../../views/production/insight/components/gold-stage-helpers.js'
 
 const i18n = createI18n({
   legacy: false,
   locale: 'th',
-  messages: { th: { view: { productionInsight: th } } }
+  messages: { th: { view: { productionInsight: th, executive: executiveTh } } }
 })
 
 const t = i18n.global.t
@@ -45,6 +47,23 @@ const cases = [
   // API ส่ง lossPercent มาด้วยเสมอแล้ว (contract follow-up) — ข้อความโชว์ครบ 3 ค่า Loss จริง/ยอมให้/เป้า
   ['rules.ACT_REVIEW_ALLOWANCE', { workerType: 'ช่างแต่ง', metal: 'เงิน', lossPercent: 2.5, allowedPercent: 2.2, targetPercent: 2 }],
   ['rules.ACT_CHECK_WEIGHING', { workerType: 'ช่างฝัง', metal: 'ทอง', excessGram: 3.5 }],
+  // ส่วน "Loss ตามใบงานรายแผนก (จ่าย − รับ)" — deptKey/topDeptKey เป็น string dept key เดียวกับ wip/capacity
+  // ('trim'/'rawPolish'/'gemSort'/'setting'/'plating') resolve ผ่าน translateDept → view.executive.department.*
+  // ตัวเดียวกับหมวดอื่นทุกประการ (ยืนยันจาก API agent — ไม่ใช่รหัสตัวเลขแยกชุดแบบที่เข้าใจผิดตอนแรก) — เทสนี้
+  // จำลองค่าหลังแปลแล้วตรงๆ ใช้ label จริงจาก view.executive.department (ดู describe block ท้ายไฟล์ที่ตรวจ
+  // end-to-end ว่า view.executive.department.rawPolish/setting/plating = ขัดดิบ/ฝัง/ขัดชุบ จริง)
+  ['rules.GOLD_STAGE_ABOVE_TARGET', { deptKey: 'ฝัง', metal: 'ทอง', diffPercent: 2.5, targetPercent: 2 }],
+  ['rules.GOLD_STAGE_PENDING_RETURN', { metal: 'ทอง', count: 5, gram: 12.5, topDeptKey: 'แต่ง' }],
+  ['rules.GOLD_STAGE_OUTLIER_JOBS', { metal: 'เงิน', count: 3 }],
+  ['rules.FC_GOLD_STAGE_RISING', { deptKey: 'ขัดชุบ', metal: 'ทอง', fromPercent: 1.2, toPercent: 2.1 }],
+  // finding severity 'info' ใหม่ — ยืนยัน param จาก API agent 2026-10-01: metal/count/gram/topDeptKey
+  ['rules.GOLD_STAGE_QUEUED', { metal: 'ทอง', count: 5, gram: 1.2, topDeptKey: 'ขัดชุบ' }],
+  ['rules.ACT_RECEIVE_PENDING', { count: 5, gram: 12.5 }],
+  ['rules.ACT_CHECK_STAGE', { deptKey: 'ขัดดิบ', diffPercent: 2.5, targetPercent: 2 }],
+  // คอลัมน์ "ค้างไม่รับคืน" ของ gold-stage-table.vue แยก 2 บรรทัด — count/gram format เป็นสตริงมาจาก
+  // formatCount/formatGram ของ component เองก่อนเข้า $t() แล้ว (เหมือน ACT_RECEIVE_PENDING)
+  ['gold.stagePendingWithWorker', { count: '3', gram: '1.23' }],
+  ['gold.stagePendingQueue', { count: '2', gram: '0.45' }],
   // KPI subtitle templates ของ gold-kpi-group.vue (ไม่ใช่ rule code จาก backend)
   ['gold.kpiLossPercentSub', { allowed: 2.5, target: 2 }],
   ['gold.kpiExcessGram', { metal: 'เงิน' }],
@@ -65,7 +84,16 @@ const cases = [
   ['help.FC_GOLD_EXCESS_PROJECTED', { metal: 'เงิน' }],
   // codeLabel ของ action "เกี่ยวข้องกับ" — metal มาจาก params ของ action ที่ relatedCodes สังกัดอยู่
   ['codeLabel.GOLD_EXCESS_OVER_ALLOWANCE', { metal: 'เงิน' }],
-  ['codeLabel.FC_GOLD_EXCESS_PROJECTED', { metal: 'เงิน' }]
+  ['codeLabel.FC_GOLD_EXCESS_PROJECTED', { metal: 'เงิน' }],
+  // help.* ของ 4 code ใหม่ส่วน "Loss ตามใบงานรายแผนก" (ไม่มี metal — GOLD_STAGE_OUTLIER_JOBS/PENDING_RETURN
+  // ไม่ส่ง deptKey มาด้วย แต่ resolveHelpText ก็ยังส่ง metal ที่มากับ finding params ปกติถ้ามี — เคสนี้ help
+  // text ไม่ได้ใช้ {metal}/{deptKey} เลยจึงไม่ต้องใส่ params)
+  ['help.GOLD_STAGE_ABOVE_TARGET', {}],
+  ['help.GOLD_STAGE_PENDING_RETURN', {}],
+  ['help.GOLD_STAGE_OUTLIER_JOBS', {}],
+  ['help.FC_GOLD_STAGE_RISING', {}],
+  // gold-stage-department-panel.vue detail title (ไม่ใช่ rule code จาก backend)
+  ['gold.stageDetailTitle', { name: 'ฝัง' }]
 ]
 
 describe('gold i18n param interpolation (vue-i18n ตัวจริง)', () => {
@@ -89,6 +117,21 @@ describe('gold i18n param interpolation (vue-i18n ตัวจริง)', () =>
       placeholdersIn(template).forEach((name) => {
         expect(rendered).toContain(String(params[name]))
       })
+    })
+  })
+})
+
+// ยืนยัน end-to-end ว่า target record (scope='STAGE', workerType 60/80/90) แปลเป็นชื่อแผนกที่ถูกต้องจริง —
+// ยืนยันจาก API agent (ตรวจ ProductionInsightRuleEngine.cs): 60=rawPolish(ขัดดิบ)/80=setting(ฝัง)/
+// 90=plating(ขัดชุบ) — resolveStageTargetDeptKey แปลงเป็น string key แล้ว view.executive.department.* (ที่
+// ยืม i18n instance ของ executive th.js เข้ามาในเทสนี้) แปลเป็นชื่อไทยสุดท้าย
+describe('STAGE target workerType (60/80/90) label resolution end-to-end', () => {
+  const expected = { 60: 'ขัดดิบ', 80: 'ฝัง', 90: 'ขัดชุบ' }
+
+  STAGE_TARGET_WORKER_TYPE_ORDER.forEach((workerType) => {
+    it(`workerType ${workerType} resolves to "${expected[workerType]}"`, () => {
+      const deptKey = resolveStageTargetDeptKey(workerType)
+      expect(t(`view.executive.department.${deptKey}`)).toBe(expected[workerType])
     })
   })
 })

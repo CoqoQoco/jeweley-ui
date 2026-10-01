@@ -24,7 +24,9 @@ export function resolveNetMoneyVariant(netMoney) {
 // โลหะด้วย (ทอง/เงิน คนละเป้ากัน) จึงต้องเทียบทั้ง workerType และ metal พร้อมกัน
 export function shouldShowGoldDraftChip(workerType, metal, targetPercent, source, savedTargets) {
   if (source !== 'draft') return false
-  const saved = (savedTargets || []).find((t) => t.workerType === workerType && t.metal === metal)
+  // savedTargets อาจมีทั้ง scope SLIP/STAGE ปนกัน (GoldLossTargets คืนมารวมกัน) — STAGE item ไม่มี field
+  // workerType เลย (มีแต่ deptKey) จึงไม่ match โดยธรรมชาติอยู่แล้ว แต่เช็ค scope ตรงๆ ไว้กันความชัดเจน
+  const saved = (savedTargets || []).find((t) => (t.scope ?? 'SLIP') === 'SLIP' && t.workerType === workerType && t.metal === metal)
   const savedPercent = saved ? saved.targetPercent : null
   return (targetPercent ?? null) !== (savedPercent ?? null)
 }
@@ -44,13 +46,14 @@ export function formatOverBucketsRatio(overBuckets, qualifyingBuckets) {
 
 // draft map { "workerType-metal": percent } -> payload array ที่ Gold(draftTargets)/SaveGoldLossTargets(items)
 // ต้องการ — key ผสม (composite) เพราะเป้าแยกทั้งตามประเภทช่างและโลหะ (4 ชุดคงที่ 80/50 × GOLD/SILVER) — กรอง
-// entry ที่ percent ไม่ใช่ตัวเลขจริงออก (ช่องว่าง/กำลังพิมพ์อยู่)
+// entry ที่ percent ไม่ใช่ตัวเลขจริงออก (ช่องว่าง/กำลังพิมพ์อยู่) — scope:'SLIP' แปะทุก item เสมอ (targets
+// แยก scope SLIP/STAGE แล้ว ตั้งแต่เพิ่มฟีเจอร์ "Loss รายแผนก" — ดู gold-stage-helpers.js ของฝั่ง STAGE)
 export function buildGoldDraftTargetsPayload(draftMap) {
   return Object.entries(draftMap || {})
     .filter(([, percent]) => Number.isFinite(percent))
     .map(([key, targetPercent]) => {
       const [workerType, metal] = key.split('-')
-      return { workerType: Number(workerType), metal, targetPercent }
+      return { scope: 'SLIP', workerType: Number(workerType), metal, targetPercent }
     })
 }
 

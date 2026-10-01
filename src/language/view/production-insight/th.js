@@ -134,11 +134,14 @@ export default {
     capacityThroughput: 'กำลังผลิต (ใบ/เดือน)',
     capacityBottleneck: 'คอขวด',
     capacityDeptTableTitle: 'รายละเอียดแยกแผนก',
+    capacityColDeptActiveWip: 'งานค้าง (ใบ)',
     capacityColDeptExited: 'ใบที่ออก',
     capacityColDeptExitedPerDay: 'ออกจริง (ใบ/วัน)',
+    capacityColDeptQueueDaysCurrent: 'คิวเทียบเท่าตอนนี้ (วัน)',
     capacityColDeptMedianTotal: 'เวลาจริง (ค่ากลาง)',
     capacityColDeptStandard: 'มาตรฐาน',
     capacityColDeptAtStandardPerDay: 'ถ้าได้ตามมาตรฐาน (ใบ/วัน)',
+    capacityColDeptQueueDaysAtStandard: 'คิวเทียบเท่าถ้าได้มาตรฐาน (วัน)',
     capacityBottleneckChip: 'คอขวด',
 
     abnormalDwellTitle: 'ใบที่อยู่ในแผนกนานผิดปกติ',
@@ -242,6 +245,82 @@ export default {
     stuckCostCardColDays: 'ค้างมา (วัน)'
   },
 
+  capacity: {
+    filterSectionTitle: 'เฉพาะหมวด "กำลังการผลิต"',
+    filterUnit: 'หน่วยงานเข้า',
+    filterDept: 'แผนก',
+    filterCustomRangeLabel: 'ช่วงเวลากำหนดเอง',
+    unitToggleAriaLabel: 'เลือกหน่วยงานเข้า',
+    unitLabel: {
+      plan: 'ใบ',
+      piece: 'ชิ้น'
+    },
+
+    kpiGroupTitle: 'ตัวชี้วัดกำลังการผลิต',
+    kpiInflow: 'งานเข้า/เดือน',
+    kpiInflowSub: '+ {pieces} ชิ้น',
+    kpiCompleted: 'ผลิตเสร็จ/เดือน',
+    kpiNetSubUp: 'สุทธิ +{amount} ใบ',
+    kpiNetSubDown: 'สุทธิ -{amount} ใบ',
+    kpiNetSubUnknown: 'ยังไม่มีข้อมูลสุทธิ',
+    kpiBacklog: 'งานค้างเทียบเท่า (เดือน)',
+    kpiBacklogSub: '{activeWip} ใบ',
+    kpiBottleneck: 'คอขวด',
+    kpiBottleneckSubNone: 'ไม่มีคอขวดเด่นชัดในช่วงนี้',
+    kpiBottleneckDeptItem: '{name} ~{days} วัน',
+    kpiCostCard: 'บัตรต้นทุน → สำเร็จ (ค่ากลาง)',
+    kpiCostCardSub: 'P90 {p90} วัน · ค้างอยู่ {pending} ใบ',
+    monthsUnit: 'เดือน',
+    daysUnit: 'วัน',
+    workersUnit: 'คน',
+    planUnit: 'ใบ',
+
+    trendTitle: 'แนวโน้มงานเข้า/ผลิตเสร็จ/ปิดสำเร็จ',
+    trendPieceUnitHint: 'แท่ง "งานเข้า" นับเป็นชิ้น ส่วนผลิตเสร็จ/ปิดสำเร็จ/งานค้างยังนับเป็นใบเสมอ (ไม่มีหน่วยชิ้นให้จากฝั่งระบบ)',
+    seriesInflow: 'งานเข้า (ใบ)',
+    seriesInflowPieces: 'งานเข้า (ชิ้น)',
+    seriesCompleted: 'ผลิตเสร็จ',
+    seriesOutput: 'ปิดสำเร็จ',
+    seriesActiveWip: 'งานค้างปลายงวด',
+    seriesExits: 'ใบออก',
+    seriesWorkers: 'จำนวนช่าง',
+
+    deptTitle: 'กำลังการผลิตรายแผนก',
+    deptSelectHint: 'คลิกแถวเพื่อดูแนวโน้มใบออก/จำนวนช่างของแผนกนั้น',
+    deptDetailTitle: 'แนวโน้มแผนก{name}',
+    deptColDept: 'แผนก',
+    deptColExitsPerMonth: 'ใบออก/เดือน',
+    deptColWorkers: 'ช่าง (ค่ากลาง)',
+    deptColPlansPerWorker: 'ใบ/ช่าง',
+    deptColWaiting: 'รอ',
+    deptColWorking: 'ทำ',
+    deptColQueueDays: 'คิวเทียบเท่า (วัน)',
+    deptBottleneckChip: 'คอขวด',
+    deptBottleneckCostCardChip: 'คอขวด·เอกสาร',
+
+    costCardTitle: 'บัตรต้นทุน → สำเร็จ',
+    costCardMedian: 'ค่ากลาง',
+    costCardP90: 'P90',
+    costCardPendingNow: 'ค้างอยู่ตอนนี้',
+    costCardPendingBreakdown: 'ยังขยับ {active} · นิ่งเกิน 180 วัน {stale}',
+    costCardPendingOver30d: 'ค้างเกิน 30 วัน',
+    costCardSeriesCount: 'จำนวนใบที่เข้าบัตร',
+    costCardPendingTableTitle: 'ใบงานที่ยังไม่เข้าบัตรต้นทุน',
+    costCardPendingColDate: 'วันที่เข้าบัตรต้นทุน',
+    costCardPendingColDays: 'ค้างมา (วัน)',
+
+    whatIfTitle: 'ลองจำลองเพิ่ม/ลดคน',
+    whatIfAssumptionNote: 'สมมติงานต่อช่างเท่าเดิม ไม่คิดอุปกรณ์/ความชำนาญ',
+    whatIfColWorkersNow: 'ช่างตอนนี้',
+    whatIfColWorkersNew: 'จำลองช่าง',
+    whatIfColExits: 'ใบออก/เดือน (เดิม → ใหม่)',
+    whatIfColQueueDays: 'คิวเทียบเท่า (เดิม → ใหม่)',
+    whatIfTotalQueueDays: 'รวมคิวเทียบเท่าทุกแผนก (≈ เวลาผลิต): {now} → {new}',
+    whatIfTotalBottleneck: 'คอขวด: {now} → {new}',
+    whatIfInflowNote: 'งานเข้า ≈ ผลิตออก → เพิ่มคนช่วยลดคิว/เวลาผลิตมากกว่าเพิ่มยอด',
+    whatIfExcludedNote: 'ไม่รวมแผนก {depts} ในการจำลอง (ไม่มีข้อมูลช่างให้คำนวณ)'
+  },
+
   gold: {
     filterSectionTitle: 'เฉพาะหมวด "ทองและ Loss"',
     filterWorkerType: 'ประเภทช่าง',
@@ -333,7 +412,45 @@ export default {
     uncoveredColDiffGram: 'ผลต่าง (กรัม)',
     uncoveredColDaysSince: 'ค้างมา (วัน)',
     uncoveredWorkerHint: 'ชื่อช่างเป็นค่าประมาณ (ช่างหลักของงาน) ยังไม่ใช่ข้อมูลยืนยันแน่นอนแบบใบ slip',
-    uncoveredRangeNote: 'ตามช่วงวันที่งานที่เลือก'
+    uncoveredRangeNote: 'ตามช่วงวันที่งานที่เลือก',
+
+    targetSlipSectionTitle: 'เป้า % Loss ตามใบ slip',
+    targetStageSectionTitle: 'เป้าตามแผนก (จ่าย − รับ)',
+
+    stageTitle: 'Loss ตามใบงานรายแผนก (จ่าย − รับ)',
+    stageColDept: 'แผนก',
+    stageColSend: 'จ่าย (g)',
+    stageColReceived: 'รับ (g)',
+    stageColDiffGram: 'ส่วนต่าง (g)',
+    stageColDiffPercent: '%',
+    stageColTarget: 'เป้า %',
+    stageColSlipPercent: '% จาก slip',
+    stageColPending: 'ค้างไม่รับคืน',
+    stageTrimScrapNote: 'รวมก้าน/เศษที่ตัดออกส่งหลอม — ดู % จาก slip เป็นตัวเลข loss จริง',
+    stageNotWeighed: 'ไม่ได้ชั่งน้ำหนัก',
+
+    stageWorkerTitle: 'อันดับช่างในแผนกนี้',
+    stageWorkerColRows: 'จำนวนใบ',
+    stageWorkerColReturned: 'รับคืนแล้ว (g)',
+    stageDetailTitle: 'แนวโน้มแผนก{name}',
+
+    stageTrendTitle: 'แนวโน้ม % ส่วนต่าง (จ่าย-รับ) ทุกแผนก',
+    stageTrendTrimHiddenNote: 'ซ่อนเส้น "แต่ง" ไว้เป็นค่าเริ่มต้น เพราะเศษ/ก้านที่ตัดส่งหลอมทำให้ % แกว่งแรงกว่าแผนกอื่นมาก บดบังเส้นอื่นในกราฟเดียวกัน — กดที่ legend เพื่อแสดง',
+    stageSeriesDiffPercent: '% ส่วนต่าง',
+    stageSeriesTarget: 'เป้า',
+
+    stageOutlierTitle: 'ใบงานผิดปกติ (จ่าย-รับ)',
+    stageOutlierCriteriaNote: 'เกณฑ์: % เกิน 3 เท่าของค่ากลางแผนก และส่วนต่าง ≥ 0.20 กรัม',
+    stageOutlierColDate: 'วันที่',
+    stageOutlierColCheck: 'ตรวจนับ (g)',
+    stageOutlierColDeptMedian: 'ค่ากลางแผนก (%)',
+
+    stagePendingTitle: 'ค้างไม่รับคืน',
+    stagePendingColSentDate: 'วันที่จ่าย',
+    stagePendingColDaysSince: 'ค้างมา (วัน)',
+    stagePendingIncludeQueueToggle: 'แสดงงานที่ยังไม่จ่ายช่าง (รอจ่าย)',
+    stagePendingWithWorker: 'ค้างที่ช่าง {count} · {gram} g',
+    stagePendingQueue: 'รอจ่าย {count} · {gram} g'
   },
 
   // code -> ข้อความเต็ม (พร้อม params) — ใช้กับ insight-tab-layout prop i18nPrefix (default namespace นี้)
@@ -379,10 +496,25 @@ export default {
     ACT_REVIEW_ALLOWANCE: 'ทบทวนค่ายอมให้เสียของ{workerType} ({metal}): Loss จริง {lossPercent}% · ยอมให้ {allowedPercent}% · เป้า {targetPercent}%',
     ACT_CHECK_WEIGHING: 'ตรวจสอบการชั่งน้ำหนักของ{workerType} ({metal}) — {metal}เกินเกณฑ์รวม {excessGram} กรัม',
 
-    // หมวดที่ยังไม่ implement — ใช้ code ชั่วคราวคู่กับ severity 'info' แสดงเป็น bullet ข้อความล้วน
-    // (รอ API จริงของแต่ละหมวดแล้วเปลี่ยน code เป็นของจริงพร้อม params)
-    CAPACITY_PLACEHOLDER_BELOW_AVG: 'ปิดงานเดือนนี้ต่ำกว่าค่าเฉลี่ย',
-    CAPACITY_PLACEHOLDER_MONTH_END_FORECAST: 'ประมาณการปิดงานสิ้นเดือน',
+    GOLD_STAGE_ABOVE_TARGET: 'แผนก{deptKey} ({metal}) มีส่วนต่าง (จ่าย-รับ) เฉลี่ย {diffPercent}% เกินเป้า {targetPercent}%',
+    GOLD_STAGE_PENDING_RETURN: '{metal} มีงานค้างไม่รับคืน {count} ใบ ({gram} กรัม) ส่วนใหญ่อยู่ที่แผนก{topDeptKey}',
+    GOLD_STAGE_OUTLIER_JOBS: '{metal} มีใบงานผิดปกติ (จ่าย-รับ) {count} ใบ',
+    FC_GOLD_STAGE_RISING: '% ส่วนต่างของแผนก{deptKey} ({metal}) มีแนวโน้มเพิ่มขึ้นจาก {fromPercent}% เป็น {toPercent}%',
+    GOLD_STAGE_QUEUED: '{metal} รอจ่ายช่างอยู่ {count} ใบ ({gram} กรัม) ส่วนใหญ่ที่แผนก{topDeptKey}',
+    ACT_RECEIVE_PENDING: 'ตามรับคืนทองที่ค้างอยู่ {count} ใบ ({gram} กรัม)',
+    ACT_CHECK_STAGE: 'ตรวจสอบแผนก{deptKey} — ส่วนต่าง (จ่าย-รับ) {diffPercent}% เกินเป้า {targetPercent}%',
+
+    CAP_BACKLOG_MONTHS: 'งานค้างเทียบเท่า {backlogMonths} เดือน ({activeWip} ใบ ที่ผลิตได้ {outputPerMonth} ใบ/เดือน)',
+    CAP_QUEUE_BOTTLENECK: 'แผนกคอขวด: {depts}',
+    CAP_INFLOW_OVER_OUTPUT: 'งานเข้ามากกว่าที่ผลิตได้ {overloadMonths} จาก {monthsInRange} เดือนที่ผ่านมา สูงสุดเดือน {peakMonth} เข้า {peakInflow} ใบ (ผลิตได้ {outputPerMonth} ใบ/เดือน)',
+    CAP_COSTCARD_SLOW: 'บัตรต้นทุน → สำเร็จ ใช้เวลาค่ากลาง {medianDays} วัน (P90 {p90Days} วัน) ค้างอยู่ {pendingActive} ใบที่ยังขยับ (รวมทั้งหมด {pendingNow})',
+    FC_BACKLOG_PROJECTED: 'คาดว่างานค้างจะเพิ่มเป็น {projectedWip} ใบ ใน {months} เดือนข้างหน้า (สุทธิ {netPerMonth} ใบ/เดือน)',
+    FC_PEAK_RISK: 'เดือน {peakMonth} เคยมีงานเข้าสูงสุด {peakInflow} ใบ คาดว่าจะทำให้คิวยาวขึ้นอีก {extraQueueDays} วัน',
+    ACT_ADD_WORKER: 'พิจารณาเพิ่มช่างแผนก{deptKey} (ตอนนี้ {workersNow} คน) คิวตอนนี้ {queueDaysNow} วัน ถ้าเพิ่ม 1 คนเหลือ {queueDaysPlusOne} วัน',
+    ACT_SPEED_COSTCARD: 'เร่งเข้าบัตรต้นทุนที่ค้างอยู่ {pendingActive} ใบที่ยังขยับ (รวม {pendingNow}) ค่ากลาง {medianDays} วัน',
+    ACT_CLEAN_STALE: 'ตรวจสอบงานค้างนิ่งนาน {staleWip} ใบ (เกิน 180 วันไม่ขยับ)',
+    ACT_SMOOTH_INFLOW: 'กระจายงานเข้าให้สม่ำเสมอขึ้น (ผลิตได้เฉลี่ย {outputPerMonth} ใบ/เดือน)',
+
     WORKERS_PLACEHOLDER_NO_WAGE: 'รายการที่ไม่มีค่าแรง',
     WORKERS_PLACEHOLDER_RISING_COST_PER_PIECE: 'ค่าแรงต่อชิ้นสูงขึ้น',
     MATERIALS_PLACEHOLDER_GEM_LOW_STOCK: 'พลอยใกล้หมดเทียบงานที่รอคัดพลอย',
@@ -416,14 +548,24 @@ export default {
     GOLD_REPEAT_OFFENDER: 'เกินเกณฑ์ต่อเนื่อง',
     GOLD_SLIP_COVERAGE_LOW: 'slip ไม่ครบ',
     FC_GOLD_EXCESS_PROJECTED: 'คาดว่า{metal}เกินเกณฑ์เพิ่ม',
-    FC_GOLD_LOSS_RISING: 'แนวโน้ม % Loss เพิ่มขึ้น'
+    FC_GOLD_LOSS_RISING: 'แนวโน้ม % Loss เพิ่มขึ้น',
+    GOLD_STAGE_ABOVE_TARGET: 'ส่วนต่างรายแผนกเกินเป้า',
+    GOLD_STAGE_PENDING_RETURN: 'ค้างไม่รับคืน',
+    GOLD_STAGE_OUTLIER_JOBS: 'ใบงานผิดปกติรายแผนก',
+    FC_GOLD_STAGE_RISING: 'แนวโน้มส่วนต่างรายแผนกเพิ่มขึ้น',
+    GOLD_STAGE_QUEUED: 'รอจ่ายช่าง',
+    CAP_BACKLOG_MONTHS: 'งานค้างเทียบเท่าหลายเดือน',
+    CAP_QUEUE_BOTTLENECK: 'คอขวดคิวยาว',
+    CAP_INFLOW_OVER_OUTPUT: 'งานเข้ามากกว่าที่ผลิตได้',
+    CAP_COSTCARD_SLOW: 'บัตรต้นทุนช้า',
+    FC_BACKLOG_PROJECTED: 'คาดว่างานค้างจะเพิ่ม',
+    FC_PEAK_RISK: 'เสี่ยงงานเข้าพุ่งสูง'
   },
 
   placeholder: {
     message: 'กำลังจัดทำ — ยังดูข้อมูลได้ที่หน้าเดิมครับ',
     reportTitle: 'ข้อมูลอยู่ที่หน้าเดิม',
     link: {
-      capacity: 'ไปที่แดชบอร์ดงานผลิต',
       workers: 'ไปที่รายงานค่าแรงช่าง',
       materials: 'ไปที่แดชบอร์ดคลังอัญมณี'
     }
@@ -493,7 +635,7 @@ export default {
     leadTimeDetailChart: 'เส้นทึบ = ค่ากลาง · เส้นประ = P90 · เส้นระดับ = มาตรฐาน · แท่ง = งานเข้า/ออก',
 
     capacityTitle: 'เปรียบเทียบผลลัพธ์ถ้าทุกแผนกทำได้ตามมาตรฐานที่ตั้งไว้ กับสถานการณ์จริงตอนนี้',
-    capacityModelExplanation: 'กำลังผลิตวัดจากจำนวนใบที่ออกจากแผนกจริงต่อวัน · ถ้าแผนกใช้เวลาเกินมาตรฐาน คาดว่าเร่งให้ได้ตามมาตรฐานจะปล่อยงานได้มากขึ้นตามสัดส่วน เวลาจริง ÷ มาตรฐาน · คอขวด = แผนกที่ปล่อยงานได้น้อยที่สุด',
+    capacityModelExplanation: 'กำลังผลิตวัดจากจำนวนใบที่ออกจากแผนกจริงต่อวัน · ถ้าแผนกใช้เวลาเกินมาตรฐาน คาดว่าเร่งให้ได้ตามมาตรฐานจะปล่อยงานได้มากขึ้นตามสัดส่วน เวลาจริง ÷ มาตรฐาน · คอขวด = แผนกที่คิวยาวที่สุด (งานค้างที่ยังขยับ ÷ ใบออกต่อวัน) ไม่ใช่แผนกที่ปล่อยงานได้น้อยที่สุด เพราะงานไม่ได้ผ่านทุกแผนกเท่ากัน',
 
     abnormalDwellColDays: 'จำนวนวันที่ใบงานอยู่ในแผนกนี้ต่อเนื่อง นับถึงวันนี้',
     abnormalDwellColStandard: 'มาตรฐานเวลาของแผนกนี้ — ใบนี้อยู่นานเกินหลายเท่าของค่านี้',
@@ -527,6 +669,26 @@ export default {
     GOLD_REPEAT_OFFENDER: 'ช่างที่เสีย{metal}เกินเกณฑ์ที่ยอมให้ตาม slip ต่อเนื่องหลายช่วงเวลาติดกัน (โชว์สูงสุด 3 คน ที่เหลือสรุปเป็น "และอีก N คน")',
     GOLD_SLIP_COVERAGE_LOW: 'งานที่ส่ง/ตรวจนับแล้วแต่ยังไม่ถูกสร้างเป็นใบ slip',
     FC_GOLD_EXCESS_PROJECTED: 'ประมาณการจากแนวโน้มใบงาน{metal}เกินเกณฑ์ที่ผ่านมา',
-    FC_GOLD_LOSS_RISING: 'ประมาณการจากแนวโน้มค่ากลาง % Loss ที่เพิ่มขึ้นต่อเนื่องหลายช่วงล่าสุด'
+    FC_GOLD_LOSS_RISING: 'ประมาณการจากแนวโน้มค่ากลาง % Loss ที่เพิ่มขึ้นต่อเนื่องหลายช่วงล่าสุด',
+
+    goldStageSendGram: 'เฉพาะรายการที่รับคืนแล้ว — ใบที่ยังค้างไม่รับคืนดูได้ที่คอลัมน์ "ค้างไม่รับคืน"',
+    goldStageDiffPercent: 'เทียบ 3 ค่า: % ส่วนต่างจริง (จ่าย-รับ) · เป้าที่ตั้งไว้ · % Loss จาก slip ของแผนกเดียวกัน',
+    goldStageDefinition: 'คำนวณจากใบที่รับคืนแล้วเท่านั้น (ไม่นับใบที่ยังค้าง) · แผนกแต่งรวมก้าน/เศษส่งหลอม · แผนกคัดพลอยไม่ได้ชั่งน้ำหนัก',
+    GOLD_STAGE_ABOVE_TARGET: 'ส่วนต่าง (จ่าย-รับ) เฉลี่ยของแผนกเทียบกับเป้าที่ตั้งไว้ (เฉพาะใบที่รับคืนแล้ว ไม่นับใบค้าง)',
+    GOLD_STAGE_PENDING_RETURN: 'ใบที่จ่ายทองให้ช่างแล้วแต่ยังไม่รับคืน',
+    GOLD_STAGE_OUTLIER_JOBS: 'ใบงานที่ % ส่วนต่างเกิน 3 เท่าของค่ากลางแผนก และส่วนต่าง ≥ 0.20 กรัม',
+    FC_GOLD_STAGE_RISING: 'ประมาณการจากแนวโน้มค่ากลาง % ส่วนต่างที่เพิ่มขึ้นต่อเนื่องหลายช่วงล่าสุด',
+
+    capacityKpiDefinitions: 'ผลิตเสร็จ = เข้าบัตรต้นทุนครั้งแรก (งานช่างจบ) · คอขวด = แผนกที่คิวยาวที่สุด ไม่ใช่แผนกที่ออกน้อยที่สุด เพราะงานไม่ได้ผ่านทุกแผนก · งานค้างเทียบเท่าไม่นับใบงานนิ่งเกิน 180 วัน',
+    capacityQueueDays: 'คิวเทียบเท่า = งานค้างที่ยังขยับในแผนก (รอ + ทำ) ÷ ใบออกต่อวัน',
+    capacityCostCardDefinition: 'ผลิตเสร็จ = เข้าบัตรต้นทุนครั้งแรก (งานช่างจบ) — เวลาที่ใช้นับจากวันที่ควรเข้าบัตรถึงวันที่เข้าจริง',
+    capacityWhatIf: 'จำลองจากสมมติฐานเดียว: ใบ/ช่าง (plansPerWorker) คงที่เท่าปัจจุบัน ไม่บันทึก ไม่ส่ง API',
+    capacityFilterDept: 'กรองเฉพาะตารางรายแผนก',
+    CAP_BACKLOG_MONTHS: 'งานค้างเทียบเท่า = งานที่ยังไม่เสร็จ (activeWip) หารด้วยอัตราผลิตเฉลี่ยต่อเดือน ไม่นับใบงานนิ่งเกิน 180 วัน',
+    CAP_QUEUE_BOTTLENECK: 'คิวเทียบเท่า = งานค้างที่ยังขยับในแผนก (รอ + ทำ) ÷ ใบออกต่อวัน · คอขวด = แผนกที่คิวยาวที่สุด ไม่ใช่แผนกที่ออกน้อยที่สุด เพราะงานไม่ได้ผ่านทุกแผนก',
+    CAP_INFLOW_OVER_OUTPUT: 'เทียบจำนวนเดือนที่งานเข้ามากกว่าที่ผลิตได้ กับจำนวนเดือนทั้งหมดในช่วงที่เลือก',
+    CAP_COSTCARD_SLOW: 'ผลิตเสร็จ = เข้าบัตรต้นทุนครั้งแรก (งานช่างจบ) — เวลาที่ใช้นับจากวันที่ควรเข้าบัตรถึงวันที่เข้าจริง',
+    FC_BACKLOG_PROJECTED: 'ประมาณการจากอัตราสุทธิ (งานเข้า − ผลิตออก) ต่อเดือนที่ผ่านมา',
+    FC_PEAK_RISK: 'ประมาณการจากเดือนที่เคยมีงานเข้าสูงสุดในช่วงที่ผ่านมา'
   }
 }

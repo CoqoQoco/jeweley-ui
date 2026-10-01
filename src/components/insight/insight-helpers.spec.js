@@ -8,6 +8,9 @@ import {
   worstStatus,
   resolveFindingParams,
   formatWorkerNameList,
+  formatDeptQueueList,
+  formatThaiMonthYear,
+  formatBucketMonthLabels,
   buildFindingKey,
   formatInsightNumber,
   formatInsightPercent,
@@ -67,6 +70,20 @@ describe('resolveFindingParams', () => {
       deptKey: 'แผนก-setting',
       count: 3
     })
+  })
+
+  // topDeptKey (GOLD_STAGE_PENDING_RETURN) reuses the same translateDept injector as deptKey — the caller's
+  // translateDept is responsible for disambiguating wip string keys vs gold-stage numeric codes
+  it('translates topDeptKey via the same translateDept function used for deptKey', () => {
+    const translateDept = (key) => `แผนก-${key}`
+    expect(resolveFindingParams({ topDeptKey: 80, count: 3 }, translateDept)).toEqual({
+      topDeptKey: 'แผนก-80',
+      count: 3
+    })
+  })
+
+  it('leaves topDeptKey as-is when no translateDept function is given', () => {
+    expect(resolveFindingParams({ topDeptKey: 80 })).toEqual({ topDeptKey: 80 })
   })
 
   it('returns an empty object when params is null/undefined', () => {
@@ -154,6 +171,21 @@ describe('resolveFindingParams', () => {
   it('does not reformat short lowercase param names that happen to end in the same letters (e.g. "percent"/"count")', () => {
     expect(resolveFindingParams({ percent: 12.3456, count: 5 })).toEqual({ percent: 12.3456, count: 5 })
   })
+
+  it('formats a depts[] param into a single list string via formatDeptQueueList, translating deptKey', () => {
+    const translateDept = (key) => `แผนก-${key}`
+    const depts = [
+      { deptKey: 'trim', queueDays: 37, waitingNow: 180 },
+      { deptKey: 'costCard', queueDays: 35, waitingNow: 105 }
+    ]
+    expect(resolveFindingParams({ depts }, translateDept)).toEqual({
+      depts: 'แผนก-trim ~37 วัน (รอ 180 ใบ), แผนก-costCard ~35 วัน (รอ 105 ใบ)'
+    })
+  })
+
+  it('formats a peakMonth param ("YYYY-MM") into a Thai month/year string', () => {
+    expect(resolveFindingParams({ peakMonth: '2026-06' })).toEqual({ peakMonth: 'มิ.ย. 2026' })
+  })
 })
 
 describe('formatWorkerNameList', () => {
@@ -178,6 +210,70 @@ describe('formatWorkerNameList', () => {
   it('respects a custom maxNames', () => {
     const workers = [{ workerName: 'เอ' }, { workerName: 'บี' }, { workerName: 'ซี' }]
     expect(formatWorkerNameList(workers, 3, 2)).toBe('เอ, บี และอีก 1 คน')
+  })
+})
+
+describe('formatDeptQueueList', () => {
+  it('joins every dept into "{name} ~{queueDays} วัน (รอ {waitingNow} ใบ)" (API already sends top N, no further truncation)', () => {
+    const translateDept = (key) => `แผนก-${key}`
+    const depts = [
+      { deptKey: 'trim', queueDays: 37, waitingNow: 180 },
+      { deptKey: 'costCard', queueDays: 35, waitingNow: 105 }
+    ]
+    expect(formatDeptQueueList(depts, translateDept)).toBe('แผนก-trim ~37 วัน (รอ 180 ใบ), แผนก-costCard ~35 วัน (รอ 105 ใบ)')
+  })
+
+  it('falls back to the raw deptKey when no translateDept function is given', () => {
+    expect(formatDeptQueueList([{ deptKey: 'trim', queueDays: 37, waitingNow: 180 }])).toBe('trim ~37 วัน (รอ 180 ใบ)')
+  })
+
+  it('shows "—" for a missing queueDays/waitingNow instead of a misleading 0', () => {
+    expect(formatDeptQueueList([{ deptKey: 'trim', queueDays: null, waitingNow: null }])).toBe('trim ~— วัน (รอ — ใบ)')
+  })
+
+  it('returns an empty string for empty/missing input', () => {
+    expect(formatDeptQueueList([])).toBe('')
+    expect(formatDeptQueueList(null)).toBe('')
+  })
+})
+
+describe('formatThaiMonthYear', () => {
+  it('converts a "YYYY-MM" string into a Thai month abbreviation + Gregorian year', () => {
+    expect(formatThaiMonthYear('2026-06')).toBe('มิ.ย. 2026')
+    expect(formatThaiMonthYear('2026-01')).toBe('ม.ค. 2026')
+    expect(formatThaiMonthYear('2026-12')).toBe('ธ.ค. 2026')
+  })
+
+  it('returns the original value unchanged when it does not match the "YYYY-MM" shape', () => {
+    expect(formatThaiMonthYear('2026-06-01')).toBe('2026-06-01')
+    expect(formatThaiMonthYear(null)).toBeNull()
+    expect(formatThaiMonthYear(undefined)).toBeUndefined()
+  })
+})
+
+describe('formatBucketMonthLabels', () => {
+  it('labels a run of full-month buckets by their own month (first point falls back to end-minus-1-day)', () => {
+    // เม.ย., พ.ค., มิ.ย., ก.ค. — bucketEnd แต่ละจุดเป็น exclusive boundary (วันที่ 1 ของเดือนถัดไป)
+    const buckets = ['2026-05-01', '2026-06-01', '2026-07-01', '2026-08-01']
+    expect(formatBucketMonthLabels(buckets)).toEqual(['เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.'])
+  })
+
+  // บั๊กจริงที่เจอบน prod: ช่วง 6 เดือนที่ตัดวันนี้ (1 ต.ค.) bucket สุดท้ายเป็นช่วงไม่เต็มเดือน ได้ bucketEnd
+  // ตรงกับ exclusive end ของเดือนก่อนหน้าพอดี (ทั้งคู่ "2026-10-01") ทำให้วิธีเดิม (ลบ 1 วันจาก bucketEnd ของ
+  // ตัวเอง) ได้ป้ายซ้ำกันเป็น "ก.ย. | ก.ย." — ต้องใช้ bucketEnd ของจุดก่อนหน้าเป็นจุดเริ่มของจุดถัดไปแทน
+  it('gives the trailing partial bucket its own distinct month label, fixing the "ก.ย. | ก.ย." duplicate on prod', () => {
+    const buckets = ['2026-07-01', '2026-08-01', '2026-09-01', '2026-10-01', '2026-10-01']
+    expect(formatBucketMonthLabels(buckets)).toEqual(['มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.'])
+  })
+
+  it('returns [] for empty/missing input', () => {
+    expect(formatBucketMonthLabels([])).toEqual([])
+    expect(formatBucketMonthLabels(null)).toEqual([])
+    expect(formatBucketMonthLabels(undefined)).toEqual([])
+  })
+
+  it('returns an empty string per invalid/missing entry instead of throwing (each label anchors off the previous raw entry, not a cleaned one)', () => {
+    expect(formatBucketMonthLabels([null, '2026-06-01', 'not-a-date'])).toEqual(['', '', 'มิ.ย.'])
   })
 })
 
@@ -251,7 +347,17 @@ describe('resolveHelpKey', () => {
       'GOLD_REPEAT_OFFENDER',
       'GOLD_SLIP_COVERAGE_LOW',
       'FC_GOLD_EXCESS_PROJECTED',
-      'FC_GOLD_LOSS_RISING'
+      'FC_GOLD_LOSS_RISING',
+      'CAP_BACKLOG_MONTHS',
+      'CAP_QUEUE_BOTTLENECK',
+      'CAP_INFLOW_OVER_OUTPUT',
+      'CAP_COSTCARD_SLOW',
+      'FC_BACKLOG_PROJECTED',
+      'FC_PEAK_RISK',
+      'GOLD_STAGE_ABOVE_TARGET',
+      'GOLD_STAGE_PENDING_RETURN',
+      'GOLD_STAGE_OUTLIER_JOBS',
+      'FC_GOLD_STAGE_RISING'
     ].forEach((code) => {
       expect(resolveHelpKey(code)).toBe(`view.productionInsight.help.${code}`)
     })

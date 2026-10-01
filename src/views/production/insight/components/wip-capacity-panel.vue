@@ -1,10 +1,12 @@
 <!--
   wip-capacity-panel — กล่อง "ผลต่อกำลังการผลิต" (ส่วนที่ 3 ของ reportRef: leadTime) — เทียบ 2 คอลัมน์
   "ตอนนี้" vs "ถ้าได้ตามมาตรฐาน" (เวลาผลิตรวม/กำลังผลิต ใบ/เดือน/คอขวด สรุปด้านบน ไม่เปลี่ยนจากเดิม) +
-  ตารางย่อยต่อแผนก (ใบที่ออก/ออกจริง ใบ/วัน/เวลาจริง/มาตรฐาน/ถ้าได้ตามมาตรฐาน ใบ/วัน) — กำลังผลิต = ใบที่ออก
-  จากแผนกจริงต่อวัน, ถ้าได้ตามมาตรฐาน = exitsPerDay × (เวลาจริง ÷ มาตรฐาน) เฉพาะแผนกที่ช้ากว่ามาตรฐาน (ไม่งั้น
-  คงเดิม) — ไม่ใช้ Little's Law อีกต่อไป (ⓘ อธิบายโมเดลใหม่ไว้ที่หัวข้อ) — ชิปคอขวดมาจาก isBottleneckCurrent/
-  isBottleneckAtStandard ต่อแถว (แผนกที่ปล่อยงานได้น้อยที่สุด)
+  ตารางย่อยต่อแผนก (งานค้าง/ใบที่ออก/ออกจริง ใบ/วัน/คิวเทียบเท่าตอนนี้/เวลาจริง/มาตรฐาน/ถ้าได้ตามมาตรฐาน ใบ/วัน/
+  คิวเทียบเท่าถ้าได้มาตรฐาน) — กำลังผลิต = ใบที่ออกจากแผนกจริงต่อวัน, ถ้าได้ตามมาตรฐาน = exitsPerDay ×
+  (เวลาจริง ÷ มาตรฐาน) เฉพาะแผนกที่ช้ากว่ามาตรฐาน (ไม่งั้นคงเดิม) — ไม่ใช้ Little's Law อีกต่อไป (ⓘ อธิบาย
+  โมเดลใหม่ไว้ที่หัวข้อ) — คอขวด = **แผนกที่คิวยาวที่สุด** (activeWip ÷ exitsPerDay ไม่ใช่แผนกที่ปล่อยงานได้
+  น้อยที่สุด เพราะงานไม่ได้ผ่านทุกแผนกเท่ากัน) ชิปคอขวดมาจาก isBottleneckCurrent/isBottleneckAtStandard ต่อแถว
+  ผูกกับคอลัมน์คิวเทียบเท่า (ไม่ใช่คอลัมน์ออกจริง/ใบต่อวันอีกต่อไป)
 
   Props:
     capacity — Object (required) จาก StageLeadTime.capacity { current, atStandard, departments[] }
@@ -53,12 +55,18 @@
     <p class="wip-capacity-panel__dept-title">{{ $t('view.productionInsight.wip.capacityDeptTableTitle') }}</p>
     <div class="responsive-table-wrapper">
       <BaseDataTable :items="deptRows" :columns="deptColumns" :paginator="false" dataKey="key">
+        <template #activeWipTemplate="{ data }">
+          <div class="text-right">{{ formatCount(data.activeWip) }}</div>
+        </template>
         <template #exitedCountTemplate="{ data }">
           <div class="text-right">{{ formatCount(data.exitedCount) }}</div>
         </template>
         <template #exitedPerDayTemplate="{ data }">
+          <div class="text-right">{{ formatDecimal(data.exitedPerDay) }}</div>
+        </template>
+        <template #queueDaysCurrentTemplate="{ data }">
           <div class="text-right wip-capacity-panel__dept-cell">
-            {{ formatDecimal(data.exitedPerDay) }}
+            {{ formatDays(data.queueDaysCurrent) }}
             <span v-if="data.isBottleneckCurrent" class="wip-capacity-panel__bottleneck-chip">{{ $t('view.productionInsight.wip.capacityBottleneckChip') }}</span>
           </div>
         </template>
@@ -69,8 +77,11 @@
           <div class="text-right">{{ formatDays(data.standardDays) }}</div>
         </template>
         <template #atStandardPerDayTemplate="{ data }">
+          <div class="text-right">{{ formatDecimal(data.atStandardPerDay) }}</div>
+        </template>
+        <template #queueDaysAtStandardTemplate="{ data }">
           <div class="text-right wip-capacity-panel__dept-cell">
-            {{ formatDecimal(data.atStandardPerDay) }}
+            {{ formatDays(data.queueDaysAtStandard) }}
             <span v-if="data.isBottleneckAtStandard" class="wip-capacity-panel__bottleneck-chip">{{ $t('view.productionInsight.wip.capacityBottleneckChip') }}</span>
           </div>
         </template>
@@ -120,11 +131,14 @@ export default {
     deptColumns() {
       return [
         { field: 'label', header: this.$t('view.productionInsight.wip.leadTimeColDept'), sortable: false, minWidth: '110px' },
+        { field: 'activeWip', header: this.$t('view.productionInsight.wip.capacityColDeptActiveWip'), sortable: false, minWidth: '100px', align: 'right' },
         { field: 'exitedCount', header: this.$t('view.productionInsight.wip.capacityColDeptExited'), sortable: false, minWidth: '100px', align: 'right' },
         { field: 'exitedPerDay', header: this.$t('view.productionInsight.wip.capacityColDeptExitedPerDay'), sortable: false, minWidth: '140px', align: 'right' },
+        { field: 'queueDaysCurrent', header: this.$t('view.productionInsight.wip.capacityColDeptQueueDaysCurrent'), sortable: false, minWidth: '160px', align: 'right' },
         { field: 'medianTotal', header: this.$t('view.productionInsight.wip.capacityColDeptMedianTotal'), sortable: false, minWidth: '130px', align: 'right' },
         { field: 'standardDays', header: this.$t('view.productionInsight.wip.capacityColDeptStandard'), sortable: false, minWidth: '110px', align: 'right' },
-        { field: 'atStandardPerDay', header: this.$t('view.productionInsight.wip.capacityColDeptAtStandardPerDay'), sortable: false, minWidth: '170px', align: 'right' }
+        { field: 'atStandardPerDay', header: this.$t('view.productionInsight.wip.capacityColDeptAtStandardPerDay'), sortable: false, minWidth: '170px', align: 'right' },
+        { field: 'queueDaysAtStandard', header: this.$t('view.productionInsight.wip.capacityColDeptQueueDaysAtStandard'), sortable: false, minWidth: '180px', align: 'right' }
       ]
     }
   },

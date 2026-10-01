@@ -50,6 +50,69 @@ export function formatWorkerNameList(workers, count, maxNames = DEFAULT_MAX_WORK
   return `${list.slice(0, -1).join(', ')} และ ${list[list.length - 1]}`
 }
 
+// รวมแผนกคอขวดหลายแผนก (CAP_QUEUE_BOTTLENECK.depts[] ของหมวด "กำลังการผลิต") เป็นสตริงเดียวฝังใน finding
+// text — API ส่งมาตัดเหลือ top 2 แล้ว (ไม่ต้องตัดซ้ำฝั่งนี้เหมือน workers[]) รูปแบบต่อแผนก: "{ชื่อแผนก} ~{คิว
+// เทียบเท่า} วัน (รอ {งานรออยู่} ใบ)" ตามตัวอย่างที่ API agent ให้ไว้ตรงๆ
+export function formatDeptQueueList(depts, translateDept) {
+  const list = (depts || []).filter(Boolean)
+  if (!list.length) return ''
+  return list
+    .map((d) => {
+      const name = typeof translateDept === 'function' ? translateDept(d.deptKey) : d.deptKey
+      const days = d.queueDays != null ? formatThaiNumber(d.queueDays, 0) : '—'
+      const waiting = d.waitingNow != null ? formatThaiNumber(d.waitingNow, 0) : '—'
+      return `${name} ~${days} วัน (รอ ${waiting} ใบ)`
+    })
+    .join(', ')
+}
+
+const THAI_MONTH_ABBR = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.']
+
+// "2026-06" -> "มิ.ย. 2026" (ปี ค.ศ. ตรงๆ ไม่แปลงเป็น พ.ศ. — Intl.DateTimeFormat('th-TH') เริ่มต้นจะแปลงเป็น
+// พ.ศ. ให้อัตโนมัติซึ่งไม่ตรงกับตัวอย่างที่ API agent ให้ไว้) — ค่าที่ parse ไม่ได้คืนค่าเดิมกลับไปเฉยๆ
+export function formatThaiMonthYear(yyyyMm) {
+  const match = typeof yyyyMm === 'string' ? /^(\d{4})-(\d{2})$/.exec(yyyyMm) : null
+  if (!match) return yyyyMm
+  const [, year, month] = match
+  const index = Number(month) - 1
+  if (index < 0 || index > 11) return yyyyMm
+  return `${THAI_MONTH_ABBR[index]} ${year}`
+}
+
+// ชื่อเดือนไทยย่อของ Date ตัวเดียว (internal, ไม่ export) — คืนค่าว่างเมื่อ parse ไม่ได้
+function thaiMonthAbbrOf(value) {
+  if (!value) return ''
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return ''
+  return THAI_MONTH_ABBR[d.getMonth()]
+}
+
+// bucketEnds (array ของ string/Date ที่ `new Date()` parse ได้ เรียงตามลำดับเวลาเดิม) -> array ชื่อเดือนไทยย่อ
+// เท่าความยาวเดิม — ใช้เป็น label แกน x ของกราฟรายเดือนทุกจุดในหมวด "กำลังการผลิต"/"ทองและ Loss" แทนรูปแบบ
+// วัน/เดือนเดิม (`02-digit day + 02-digit month`)
+//
+// ⚠️ ต้องรับ "ทั้ง array" ไม่ใช่ bucketEnd ทีละจุด — เพราะ bucketEnd จาก API เป็น exclusive boundary (วันที่ 1
+// ของเดือนถัดไป) การอ่านเดือนของแต่ละจุดต้องอิง bucketEnd ของ "จุดก่อนหน้า" (= จุดเริ่มของ bucket นี้จริงๆ) ไม่
+// ใช่ลบ 1 วันจาก bucketEnd ของตัวเอง — วิธีลบ 1 วันใช้ได้กับ bucket เต็มเดือนทั่วไปเท่านั้น แต่พังกับ bucket
+// สุดท้ายที่เป็นช่วงไม่เต็มเดือน (เช่น ถูกตัดที่วันนี้ = วันที่ 1 ของเดือนใหม่พอดี) เพราะ bucketEnd ของมันจะดัน
+// ไปตรงกับ exclusive end ของเดือนก่อนหน้าโดยบังเอิญ ทำให้ได้ป้ายซ้ำกัน (ตัวอย่างจริงที่เจอบน prod: ช่วง 6
+// เดือน จุดสุดท้ายตัดที่วันที่ 1 ตุลาคม ได้ป้าย "ก.ย. | ก.ย." ซ้ำกันทั้งคู่) — ใช้ bucketEnd ของจุดก่อนหน้าเป็น
+// จุดเริ่มแทน ทำให้จุดสุดท้ายได้ป้ายเป็นเดือนของตัวเอง ("ต.ค.") แยกจากจุดก่อนหน้าอย่างถูกต้อง — จุดแรกไม่มีจุด
+// ก่อนหน้าให้อิง จึงลบ 1 วันจาก bucketEnd ของตัวเอง (ใช้ได้แม่นยำเพราะจุดแรกมักเป็น bucket เต็มเดือนเสมอ) — ปี
+// ไม่ใส่กำกับเพราะช่วงที่ดูมักไม่ข้ามปี (การ์ด/กราฟที่ต้องกำกับปีมี formatThaiMonthYear แยกอยู่แล้ว)
+export function formatBucketMonthLabels(bucketEnds) {
+  const list = bucketEnds || []
+  return list.map((bucketEnd, index) => {
+    if (index === 0) {
+      if (!bucketEnd) return ''
+      const end = new Date(bucketEnd)
+      if (Number.isNaN(end.getTime())) return ''
+      return thaiMonthAbbrOf(new Date(end.getTime() - 86400000))
+    }
+    return thaiMonthAbbrOf(list[index - 1])
+  })
+}
+
 // param ตัวเลขที่ชื่อ key ลงท้ายด้วยคำเหล่านี้ (case-sensitive ตรงตัว — กันชนกับ param ชื่อสั้นเดิมของ wip เช่น
 // "percent"/"count" ที่ไม่ขึ้นต้นด้วยตัวพิมพ์ใหญ่) ต้องใส่ตัวคั่นหลักพัน/ปัดทศนิยมอัตโนมัติก่อนฝังใน
 // finding/action text เสมอ — ตาราง/การ์ด KPI จัด format ค่าเองอยู่แล้วคนละจุด ไม่เกี่ยวกับฟังก์ชันนี้
@@ -73,9 +136,10 @@ function applyNumericSuffixFormatting(resolved) {
   return resolved
 }
 
-// เตรียม params ก่อนส่งเข้า $t() — resolve deptKey/workerType/metal (ถ้ามี) เป็นชื่อที่แปลแล้ว ผ่าน
+// เตรียม params ก่อนส่งเข้า $t() — resolve deptKey/topDeptKey/workerType/metal (ถ้ามี) เป็นชื่อที่แปลแล้ว ผ่าน
 // translateDept/translateWorkerType/translateMetal ที่ caller (component) ส่งมา (เช่น
-// key => this.$t('view.executive.department.' + key)) รวม workers[] (ถ้ามี) เป็นสตริงรายชื่อเดียว
+// key => this.$t('view.executive.department.' + key)) — deptKey/topDeptKey ใช้ translator ตัวเดียวกัน
+// (translateDept ต้องแยกแยะเองว่าเป็น string key ของ wip หรือรหัสตัวเลขของ gold stage) รวม workers[] (ถ้ามี) เป็นสตริงรายชื่อเดียว
 // (maxWorkerNames ต่าง code กันได้ เช่น ACT_TALK_WORKER โชว์ได้ถึง 5 คน ส่วน finding ทั่วไปโชว์แค่ 3) แล้วใส่
 // ตัวคั่นหลักพัน/ปัดทศนิยมให้ param ที่ชื่อลงท้าย Money/Gram/Percent อัตโนมัติ — ค่า param อื่น (count/days/...)
 // ปล่อยผ่านตรงๆ
@@ -85,6 +149,13 @@ export function resolveFindingParams(params, translateDept, translateWorkerType,
   if (resolved.deptKey !== undefined && typeof translateDept === 'function') {
     resolved.deptKey = translateDept(resolved.deptKey)
   }
+  // topDeptKey (GOLD_STAGE_PENDING_RETURN) ใช้ translator ตัวเดียวกับ deptKey เป๊ะ (ตามที่ API agent สั่ง
+  // "extend the resolver to *DeptKey / topDeptKey") — translateDept ที่ caller ส่งมาต้องแยกแยะเองว่าเป็น
+  // deptKey ตัวหนังสือของ wip (string) หรือรหัสแผนกตัวเลขของ gold stage (number) — ดู
+  // insight-tab-layout.vue translateDept
+  if (resolved.topDeptKey !== undefined && typeof translateDept === 'function') {
+    resolved.topDeptKey = translateDept(resolved.topDeptKey)
+  }
   if (resolved.workerType !== undefined && typeof translateWorkerType === 'function') {
     resolved.workerType = translateWorkerType(resolved.workerType)
   }
@@ -93,6 +164,12 @@ export function resolveFindingParams(params, translateDept, translateWorkerType,
   }
   if (resolved.workers !== undefined) {
     resolved.workers = formatWorkerNameList(resolved.workers, resolved.count, maxWorkerNames)
+  }
+  if (resolved.depts !== undefined) {
+    resolved.depts = formatDeptQueueList(resolved.depts, translateDept)
+  }
+  if (resolved.peakMonth !== undefined) {
+    resolved.peakMonth = formatThaiMonthYear(resolved.peakMonth)
   }
   return applyNumericSuffixFormatting(resolved)
 }
@@ -140,7 +217,17 @@ const HELP_KEY_CODES = new Set([
   'GOLD_REPEAT_OFFENDER',
   'GOLD_SLIP_COVERAGE_LOW',
   'FC_GOLD_EXCESS_PROJECTED',
-  'FC_GOLD_LOSS_RISING'
+  'FC_GOLD_LOSS_RISING',
+  'CAP_BACKLOG_MONTHS',
+  'CAP_QUEUE_BOTTLENECK',
+  'CAP_INFLOW_OVER_OUTPUT',
+  'CAP_COSTCARD_SLOW',
+  'FC_BACKLOG_PROJECTED',
+  'FC_PEAK_RISK',
+  'GOLD_STAGE_ABOVE_TARGET',
+  'GOLD_STAGE_PENDING_RETURN',
+  'GOLD_STAGE_OUTLIER_JOBS',
+  'FC_GOLD_STAGE_RISING'
 ])
 
 export function resolveHelpKey(code) {

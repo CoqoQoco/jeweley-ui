@@ -115,12 +115,12 @@ describe('formatOverBucketsRatio', () => {
 })
 
 describe('buildGoldDraftTargetsPayload', () => {
-  it('converts a composite-key draft map into an array of {workerType,metal,targetPercent}, dropping non-finite entries', () => {
+  it('converts a composite-key draft map into an array of {scope:"SLIP",workerType,metal,targetPercent}, dropping non-finite entries', () => {
     const draft = { '50-GOLD': 2, '80-GOLD': NaN, '50-SILVER': 3, '80-SILVER': 2.5 }
     expect(buildGoldDraftTargetsPayload(draft)).toEqual([
-      { workerType: 50, metal: 'GOLD', targetPercent: 2 },
-      { workerType: 50, metal: 'SILVER', targetPercent: 3 },
-      { workerType: 80, metal: 'SILVER', targetPercent: 2.5 }
+      { scope: 'SLIP', workerType: 50, metal: 'GOLD', targetPercent: 2 },
+      { scope: 'SLIP', workerType: 50, metal: 'SILVER', targetPercent: 3 },
+      { scope: 'SLIP', workerType: 80, metal: 'SILVER', targetPercent: 2.5 }
     ])
   })
 
