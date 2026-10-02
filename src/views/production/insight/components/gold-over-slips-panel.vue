@@ -141,29 +141,18 @@ export default {
         { field: 'excessMoney', header: this.$t('view.productionInsight.gold.overSlipsColExcessMoney'), sortable: false, minWidth: '110px', align: 'right' },
         { field: 'netMoney', header: this.$t('view.productionInsight.gold.overSlipsColNetMoney'), sortable: false, minWidth: '140px', align: 'right' }
       ]
+    },
+
+    // รวมตัวกรองทั้งหมดเป็น key เดียว กัน resetPaging() ยิงซ้ำตอนเปลี่ยนหลายค่าพร้อมกัน (เช่นแก้ประเภทช่าง+ช่วง
+    // เวลาแล้วกด "ใช้ตัวกรอง" ครั้งเดียว, หรือ preset เปลี่ยน start+end พร้อมกัน) — pattern เดียวกับบั๊กจริงที่
+    // เจอบน delivery-late-plans-panel.vue 2026-10-01
+    resetPagingKey() {
+      return JSON.stringify([this.workerTypes, this.workerCodes, this.metal, this.start, this.end])
     }
   },
 
   watch: {
-    workerTypes: {
-      handler() {
-        this.resetPaging()
-      },
-      deep: true
-    },
-    workerCodes: {
-      handler() {
-        this.resetPaging()
-      },
-      deep: true
-    },
-    metal() {
-      this.resetPaging()
-    },
-    start() {
-      this.resetPaging()
-    },
-    end() {
+    resetPagingKey() {
       this.resetPaging()
     }
   },

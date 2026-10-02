@@ -71,11 +71,7 @@
           </template>
 
           <template #workersTemplate="{ data }">
-            <span v-if="!workersOf(data).shown">—</span>
-            <span v-else :title="workersOf(data).title">
-              {{ workersOf(data).shown }}
-              <span v-if="workersOf(data).moreCount > 0" class="text-muted">+{{ workersOf(data).moreCount }}</span>
-            </span>
+            <PlanWorkersCell :workers="data.workers" :worker-items="data.workerItems" />
           </template>
 
           <template #dueDateTemplate="{ data }">
@@ -98,7 +94,6 @@ import { PermissionService } from '@/services/permission/permission.js'
 import { formatDate } from '@/services/utils/dayjs.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 import {
-  summarizeWorkers,
   resolveStatusLine,
   buildLastActionLine,
   resolvePlanLinkState,
@@ -111,6 +106,7 @@ import InfoTipGeneric from '@/components/generic/InfoTipGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
+import PlanWorkersCell from './plan-workers-cell.vue'
 
 const DEPARTMENT_KEYS = ['design', 'trim', 'rawPolish', 'gemSort', 'setting', 'plating', 'costCard']
 
@@ -124,7 +120,8 @@ export default {
     InfoTipGeneric,
     ButtonGeneric,
     BaseDataTable,
-    ToggleGroupGeneric
+    ToggleGroupGeneric,
+    PlanWorkersCell
   },
 
   setup() {
@@ -209,21 +206,21 @@ export default {
 
     permissionService() {
       return new PermissionService(this.authStore.getUser, this.authStore.permissions)
+    },
+
+    // รวม mode+departmentKeys+riskWindowDays เป็น key เดียว กัน resetPaging() ยิงซ้ำตอนเปลี่ยนหลายค่าพร้อมกัน
+    // (เช่นแก้แผนก+riskWindowDays แล้วกด "ใช้ตัวกรอง" ครั้งเดียว) — riskWindowDays มีผลเฉพาะโหมด dueSoon
+    // (เหมือนเดิม) จึงใส่ใน key เฉพาะตอนนั้น ไม่งั้น key ไม่เปลี่ยนตอนแก้ riskWindowDays ระหว่างดูโหมด overdue
+    // (คงพฤติกรรมเดิมที่ตั้งใจไม่ยิง fetch เปล่าประโยชน์) — mode ต้องรวมเข้า key นี้ด้วย (ไม่แยก watcher เอง)
+    // ไม่งั้นตอนสลับโหมดจะโดนยิงซ้ำ 2 รอบเองจาก mode()+resetPagingKey() คนละตัว
+    resetPagingKey() {
+      return JSON.stringify([this.mode, this.departmentKeys, this.mode === 'dueSoon' ? this.riskWindowDays : null])
     }
   },
 
   watch: {
-    mode() {
+    resetPagingKey() {
       this.resetPaging()
-    },
-    departmentKeys: {
-      handler() {
-        this.resetPaging()
-      },
-      deep: true
-    },
-    riskWindowDays() {
-      if (this.mode === 'dueSoon') this.resetPaging()
     }
   },
 
@@ -236,10 +233,6 @@ export default {
 
     lastActionLine(data) {
       return buildLastActionLine(data.lastUpdateBy, data.lastAction, this.$t('view.productionInsight.wip.lastActionCreated'))
-    },
-
-    workersOf(data) {
-      return summarizeWorkers(data.workers)
     },
 
     planLinkState(data) {

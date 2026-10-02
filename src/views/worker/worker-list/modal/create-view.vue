@@ -31,6 +31,11 @@
                   <InputTextGeneric v-model="form.nameEn" />
                 </FormFieldGeneric>
               </div>
+              <div class="form-row two-col">
+                <FormFieldGeneric :label="$t('view.worker.workerList.fieldEmploymentType')">
+                  <DropdownGeneric v-model="form.employmentType" :options="employmentTypeOptions" optionLabel="label" optionValue="value" :showClear="!!form.employmentType" />
+                </FormFieldGeneric>
+              </div>
             </SectionCardGeneric>
           </div>
         </form>
@@ -57,12 +62,14 @@ import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usePlanWorkerApiStore } from '@/stores/modules/api/worker/plan-worker-store.js'
+import { WORKER_EMPLOYMENT_TYPE_VALUES } from '../worker-employment-type.js'
 
 const interfaceForm = {
   code: null,
   nameTh: null,
   nameEn: null,
-  type: null
+  type: null,
+  employmentType: null
 }
 const interfaceIsValid = {
   isValWorkerProductionType: false
@@ -94,6 +101,10 @@ export default {
   computed: {
     masterWorkerProductionType() {
       return this.masterStore.workerType
+    },
+
+    employmentTypeOptions() {
+      return WORKER_EMPLOYMENT_TYPE_VALUES.map((value) => ({ value, label: this.$t(`view.worker.workerList.employmentType.${value}`) }))
     }
   },
 

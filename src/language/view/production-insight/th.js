@@ -453,6 +453,55 @@ export default {
     stagePendingQueue: 'รอจ่าย {count} · {gram} g'
   },
 
+  workers: {
+    filterSectionTitle: 'ตัวกรองช่างและค่าแรง',
+    filterDept: 'แผนก',
+    filterEmploymentType: 'ประเภทช่าง',
+    filterCustomRangeLabel: 'ช่วงเวลากำหนดเอง',
+
+    employmentType: {
+      IN_HOUSE: 'ในบ้าน',
+      OUTSIDE: 'นอกบ้าน',
+      SHOP: 'ร้าน',
+      UNKNOWN: 'ไม่ระบุ'
+    },
+
+    kpiGroupTitle: 'ภาพรวมค่าแรงและกำลังคน',
+    kpiWagesPerMonth: 'ค่าแรงในระบบ/เดือน',
+    excludesSalariedNote: 'ไม่รวมเงินเดือน',
+    kpiWagePerPlan: 'ค่าแรงต่อใบงานที่ผลิตเสร็จ',
+    kpiWagePerPlanSub: 'เฉลี่ยทั้งบริษัท',
+    kpiActiveWorkers: 'ช่างที่มีงาน',
+    kpiOutsideShare: 'สัดส่วนค่าแรงนอกบ้าน/ร้าน',
+
+    trendTitle: 'ค่าแรงรายเดือนแยกแผนก',
+    seriesWagePerPlan: 'ค่าแรงต่อใบงาน',
+    wagesUnit: 'บาท',
+    jobsUnit: 'งาน',
+
+    tableTitle: 'ช่างรายคน',
+    tableFilterDept: 'แผนก',
+    tableFilterType: 'ประเภทช่าง',
+    tableWageComparableNote: 'ค่าแรงต่องานเทียบได้เฉพาะแผนกและประเภทเดียวกัน',
+    colWorker: 'ช่าง',
+    colDept: 'แผนก',
+    colEmploymentType: 'ประเภท',
+    colJobs: 'งาน',
+    colPlans: 'ใบงาน',
+    colWages: 'ค่าแรง',
+    colWagePerJob: 'ต่องาน',
+    colShareOfDeptJobs: 'สัดส่วนงาน',
+    colGold: 'ทอง',
+
+    detailTitle: 'แนวโน้มรายเดือนของ{name}',
+    detailSeriesJobs: 'จำนวนงาน',
+    detailSeriesWages: 'ค่าแรง',
+
+    unpaidTitle: 'งานที่ยังไม่บันทึกค่าแรง',
+    unpaidColJobDate: 'วันที่ทำงาน',
+    unpaidColCheckGram: 'ตรวจนับ (กรัม)'
+  },
+
   // code -> ข้อความเต็ม (พร้อม params) — ใช้กับ insight-tab-layout prop i18nPrefix (default namespace นี้)
   rules: {
     WIP_STALE: 'งานค้างไม่ขยับนานเกินกำหนด {count} ใบ ({percent}% จากงานเปิดอยู่ {openCount} ใบ)',
@@ -515,8 +564,18 @@ export default {
     ACT_CLEAN_STALE: 'ตรวจสอบงานค้างนิ่งนาน {staleWip} ใบ (เกิน 180 วันไม่ขยับ)',
     ACT_SMOOTH_INFLOW: 'กระจายงานเข้าให้สม่ำเสมอขึ้น (ผลิตได้เฉลี่ย {outputPerMonth} ใบ/เดือน)',
 
-    WORKERS_PLACEHOLDER_NO_WAGE: 'รายการที่ไม่มีค่าแรง',
-    WORKERS_PLACEHOLDER_RISING_COST_PER_PIECE: 'ค่าแรงต่อชิ้นสูงขึ้น',
+    WRK_CONCENTRATION: 'แผนก{deptKey}พึ่งพาช่าง {workers} สูงถึง {top2Share}% ของงานในแผนก',
+    WRK_RATE_OUTLIER: 'มีช่างที่ค่าแรงต่องานผิดปกติเทียบค่ากลางแผนกเดียวกัน {count} คน: {workers}',
+    WRK_WAGE_PER_PLAN_RISING: 'ค่าแรงต่อใบงานที่ผลิตเสร็จมีแนวโน้มเพิ่มขึ้นจาก {fromValue} เป็น {toValue} บาท/ใบ',
+    WRK_UNPAID_JOBS: 'มีงานที่ตรวจนับแล้วแต่ยังไม่บันทึกค่าแรง {count} ใบ',
+    WRK_GOLD_REPEAT: 'ช่าง {workers} เสียทองเกินเกณฑ์ต่อเนื่องหลายช่วง',
+    FC_WAGES_NEXT_MONTH: 'คาดว่าค่าแรงในระบบเดือนหน้าจะอยู่ที่ประมาณ {projectedWages} บาท (เฉลี่ยที่ผ่านมา {avgWages} บาท/เดือน)',
+    FC_KEY_PERSON_RISK: 'แผนก{deptKey}เสี่ยงขาด{workerName}ซึ่งเป็นกำลังหลัก — ถ้าขาดคิวจะยาวขึ้นจาก {queueDaysNow} วัน เป็น {queueDaysWithout} วัน',
+    ACT_CROSS_TRAIN: 'ฝึกข้ามแผนกให้ช่างในแผนก{deptKey} ลดความเสี่ยงพึ่งพา {workerNames}',
+    ACT_REVIEW_RATE: 'ทบทวนอัตราค่าแรงของช่างที่ผิดปกติ: {workers}',
+    ACT_RECORD_WAGES: 'บันทึกค่าแรงงานที่ค้างอยู่ {count} ใบ',
+    ACT_TALK_WORKER_GOLD: 'พูดคุยกับช่าง {workers} เรื่องเสียทองเกินเกณฑ์ต่อเนื่อง',
+
     MATERIALS_PLACEHOLDER_GEM_LOW_STOCK: 'พลอยใกล้หมดเทียบงานที่รอคัดพลอย',
     MATERIALS_PLACEHOLDER_NEGATIVE_GOLD: 'ทองวัตถุดิบในระบบติดลบ'
   },
@@ -559,14 +618,20 @@ export default {
     CAP_INFLOW_OVER_OUTPUT: 'งานเข้ามากกว่าที่ผลิตได้',
     CAP_COSTCARD_SLOW: 'บัตรต้นทุนช้า',
     FC_BACKLOG_PROJECTED: 'คาดว่างานค้างจะเพิ่ม',
-    FC_PEAK_RISK: 'เสี่ยงงานเข้าพุ่งสูง'
+    FC_PEAK_RISK: 'เสี่ยงงานเข้าพุ่งสูง',
+    WRK_CONCENTRATION: 'พึ่งพาช่างไม่กี่คน',
+    WRK_RATE_OUTLIER: 'ค่าแรงต่องานผิดปกติ',
+    WRK_WAGE_PER_PLAN_RISING: 'ค่าแรงต่อใบงานเพิ่มขึ้น',
+    WRK_UNPAID_JOBS: 'งานยังไม่บันทึกค่าแรง',
+    WRK_GOLD_REPEAT: 'เสียทองเกินเกณฑ์ต่อเนื่อง',
+    FC_WAGES_NEXT_MONTH: 'คาดการณ์ค่าแรงเดือนหน้า',
+    FC_KEY_PERSON_RISK: 'เสี่ยงขาดช่างสำคัญ'
   },
 
   placeholder: {
     message: 'กำลังจัดทำ — ยังดูข้อมูลได้ที่หน้าเดิมครับ',
     reportTitle: 'ข้อมูลอยู่ที่หน้าเดิม',
     link: {
-      workers: 'ไปที่รายงานค่าแรงช่าง',
       materials: 'ไปที่แดชบอร์ดคลังอัญมณี'
     }
   },
@@ -689,6 +754,16 @@ export default {
     CAP_INFLOW_OVER_OUTPUT: 'เทียบจำนวนเดือนที่งานเข้ามากกว่าที่ผลิตได้ กับจำนวนเดือนทั้งหมดในช่วงที่เลือก',
     CAP_COSTCARD_SLOW: 'ผลิตเสร็จ = เข้าบัตรต้นทุนครั้งแรก (งานช่างจบ) — เวลาที่ใช้นับจากวันที่ควรเข้าบัตรถึงวันที่เข้าจริง',
     FC_BACKLOG_PROJECTED: 'ประมาณการจากอัตราสุทธิ (งานเข้า − ผลิตออก) ต่อเดือนที่ผ่านมา',
-    FC_PEAK_RISK: 'ประมาณการจากเดือนที่เคยมีงานเข้าสูงสุดในช่วงที่ผ่านมา'
+    FC_PEAK_RISK: 'ประมาณการจากเดือนที่เคยมีงานเข้าสูงสุดในช่วงที่ผ่านมา',
+
+    workersKpiDefinitions: 'ค่าแรงต่อใบงาน = ค่าแรงรวม ÷ จำนวนใบงานที่ผลิตเสร็จในช่วงที่เลือก · ไม่รวมเงินเดือนประจำ (เฉพาะค่าแรงรายชิ้น/ผลงาน)',
+    workersTableWageComparableNote: 'ค่าแรงต่องานเปรียบเทียบข้ามแผนก/ประเภทช่างกันตรงๆ ไม่ได้ เพราะอัตราค่าแรงต่อชิ้นต่างกันตามลักษณะงาน',
+    WRK_CONCENTRATION: 'สัดส่วนงานของช่าง 2 คนที่ทำมากสุดในแผนกเทียบงานทั้งหมดของแผนกนั้น\nด่วนเมื่อสูงผิดปกติ (เสี่ยงถ้าคนใดคนหนึ่งลาออก)',
+    WRK_RATE_OUTLIER: 'ค่าแรงต่องานของช่างคนนั้นเทียบค่ากลางช่างแผนก/ประเภทเดียวกัน',
+    WRK_WAGE_PER_PLAN_RISING: 'ประมาณการจากแนวโน้มค่าแรงต่อใบงานที่ผลิตเสร็จเพิ่มขึ้นต่อเนื่องหลายช่วงล่าสุด',
+    WRK_UNPAID_JOBS: 'งานที่ตรวจนับแล้ว (มี checkGram) แต่ยังไม่ถูกบันทึกเป็นค่าแรงรายชิ้น',
+    WRK_GOLD_REPEAT: 'ช่างที่เสียทองเกินเกณฑ์ต่อเนื่องหลายช่วง (ข้อมูลเดียวกับหมวด "ทองและ Loss")',
+    FC_WAGES_NEXT_MONTH: 'ประมาณการจากแนวโน้มค่าแรงรวมต่อเดือนที่ผ่านมา',
+    FC_KEY_PERSON_RISK: 'แผนกที่พึ่งพาช่างไม่กี่คนสูงต่อเนื่อง เสี่ยงกระทบงานถ้าลาออก'
   }
 }

@@ -242,6 +242,52 @@ export function clearedCapacityFilterQueryKeys(filter = {}) {
   return keys
 }
 
+// ---- Workers tab filter (departmentKeys / employmentTypes / range) ----
+// bucket เป็นรายเดือนเสมอ (ไม่มีพารามิเตอร์ bucket ใน draft contract — เหมือน Capacity) — departmentKeys/
+// employmentTypes ส่งไป ProductionInsight/Workers จริง (ต่างจาก Capacity ที่ endpoint ไม่รับ departmentKeys)
+// กรอง KPI/กราฟ/ตาราง/concentration ทั้งก้อนตามตัวกรองนี้
+
+export const WORKERS_EMPLOYMENT_TYPE_VALUES = ['IN_HOUSE', 'OUTSIDE', 'SHOP']
+const WORKERS_BUCKET = 'month'
+
+export function buildDefaultWorkersFilter() {
+  const range = buildDefaultRangeState()
+  return {
+    departmentKeys: [],
+    employmentTypes: [],
+    rangePreset: range.preset,
+    start: range.start,
+    end: range.end,
+    bucket: WORKERS_BUCKET
+  }
+}
+
+export function parseWorkersFilterQuery(query = {}) {
+  const range = parseRangeQuery(query)
+  return {
+    departmentKeys: parseArrayParam(query.wrkDept),
+    employmentTypes: parseArrayParam(query.wrkEmpType),
+    rangePreset: range.preset,
+    start: range.start,
+    end: range.end,
+    bucket: WORKERS_BUCKET
+  }
+}
+
+export function workersFilterToQuery(filter = {}) {
+  const query = { ...rangeToQuery({ preset: filter.rangePreset, start: filter.start, end: filter.end }) }
+  if (filter.departmentKeys && filter.departmentKeys.length) query.wrkDept = filter.departmentKeys.join(',')
+  if (filter.employmentTypes && filter.employmentTypes.length) query.wrkEmpType = filter.employmentTypes.join(',')
+  return query
+}
+
+export function clearedWorkersFilterQueryKeys(filter = {}) {
+  const keys = [...clearedRangeQueryKeys({ preset: filter.rangePreset, start: filter.start, end: filter.end })]
+  if (!filter.departmentKeys || !filter.departmentKeys.length) keys.push('wrkDept')
+  if (!filter.employmentTypes || !filter.employmentTypes.length) keys.push('wrkEmpType')
+  return keys
+}
+
 // ---- Active filter chips (ActiveFilterChipsGeneric) ----
 // items: Array<{ key, label, value, alwaysShow? }> — value/label ต้อง resolve เป็นข้อความจริงมาก่อนแล้ว
 // (i18n resolution เป็นหน้าที่ของ component ผู้เรียก ไม่ใช่ไฟล์นี้) — ไม่มี concept "dimmed" ข้ามหมวดอีก

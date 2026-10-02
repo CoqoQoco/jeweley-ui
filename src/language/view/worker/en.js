@@ -17,6 +17,14 @@ export default {
     colNameTh: 'Name (TH)',
     colNameEn: 'Name (EN)',
     colDept: 'Department',
+    fieldEmploymentType: 'Employment Type',
+    colEmploymentType: 'Employment Type',
+    employmentType: {
+      IN_HOUSE: 'In-house',
+      OUTSIDE: 'Outside',
+      SHOP: 'Shop',
+      UNKNOWN: 'Unspecified'
+    },
     colCreateDate: 'Created Date',
     colStatus: 'Status',
     statusActive: 'Active',

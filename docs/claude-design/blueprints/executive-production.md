@@ -816,3 +816,97 @@ API agent ตรวจสอบจาก `ProductionInsightRuleEngine.cs` ฝั
 
 verify: `npx eslint` เฉพาะไฟล์ที่แก้ (clean) + `npx vitest run` (insight, 422 ผ่านทั้งหมด) + `npm run build`
 (สำเร็จ) + grep `border-left` ไฟล์ที่เปลี่ยนทั้งหมด (เจอแค่ในคอมเมนต์ "ห้ามใช้")
+
+## Revision 6 (2026-10-01): หมวด "ช่างและค่าแรง" (workers tab) + employmentType ในหน้าข้อมูลช่าง
+
+หมวด `workers` ("ช่างและค่าแรง") ย้ายจาก placeholder เป็นเนื้อหาจริงเต็มรูปแบบ — เหลือแค่ `materials`
+("วัตถุดิบที่กระทบการผลิต") ที่ยังเป็น placeholder — orchestrator ใหม่ `sections/workers-section.vue` ยิง
+`ProductionInsight/Workers` ครั้งเดียวได้ทั้ง problems/forecasts/actions/status +
+kpi/series/seriesTotal/workers/concentration — **bucket เป็นรายเดือนเสมอ** (เหมือน capacity ไม่มีพารามิเตอร์
+bucket ใน contract เลย) — **ต่างจาก capacity ตรงที่ `departmentKeys`/`employmentTypes` ส่งไป server จริง**
+(ยืนยันจาก API agent) จึง deep-watch ทั้ง `filter` object แบบเดียวกับ wip/delivery/gold ไม่ใช่ watch เฉพาะ field
+แบบ capacity
+
+**5 ส่วนตามที่ user ระบุ**: (1) `WorkersKpiGroup` 4 StatCards (ค่าแรงในระบบ/เดือน + sub "{แผนก1} {share1}% ·
+{แผนก2} {share2}%" จาก `kpi.wagesByDept` เรียงมากไปน้อยเอง ไม่ hardcode ชื่อแผนก ต่อท้ายด้วย "ไม่รวมเงินเดือน"
+เพราะ `kpi.excludesSalaried` เป็น true เสมอ, ค่าแรงต่อใบงานที่ผลิตเสร็จ, ช่างที่มีงาน + sub tooltip แยกแผนกจาก
+`kpi.activeWorkersByDept`, สัดส่วนค่าแรงนอกบ้าน/ร้าน) (2) `WorkersTrendChart` stacked bar ค่าแรงแยกแผนก (ไม่
+hardcode รายชื่อแผนก — `collectWageDeptKeys` อ่านจาก `series[]` เอง) + เส้นค่าแรงต่อใบงาน (`seriesTotal[].
+wagePerPlan`, แกนขวา) ตาม pattern `gold-stage-trend-chart.vue` (stacked ไม่ใช่แยกแกน) (3) `WorkersTablePanel`
+(table+detail chart รวม orchestrator เดียว ตาม pattern `gold-stage-department-panel.vue` — **ไม่
+auto-select แถวแรก** ต่างจาก gold-stage เพราะช่างมีได้หลายสิบ-ร้อยคน ต้องให้คลิกเลือกเอง) ตาราง `WorkersTable`
+มีตัวกรอง "แผนก"/"ประเภท" ของตัวเองแบบ client-side ล้วน (กรองเฉพาะ `workers[]` ที่โหลดมาแล้ว ไม่ยิง request ใหม่
+— แยกจากตัวกรอง departmentKeys/employmentTypes ของแผงตัวกรองหลักที่กรองทั้งก้อน server-side) วางเป็น toolbar
+ใต้ title แทนการใช้ slot `header-actions` (ใช้ได้แค่ headerStyle filled/dashboard ไม่ใช่ legend ที่หมวดนี้ใช้ —
+ตาม pattern `wip-due-risk-panel.vue`'s mode toggle) คลิกแถว → `WorkersDetailChart` ยิง `WorkerMonthly` เอง
+(ไม่ได้มากับ response หลัก, ต้องส่ง `deptKey` คู่กับ `code` เสมอเพราะช่างคนเดียวอาจทำงานหลายแผนก) (4)
+`WorkersUnpaidJobsPanel` (paged, ยิง `UnpaidPieceJobs` เอง ตาม pattern `gold-stage-outlier-jobs-panel.vue`)
+(5) หน้าข้อมูลช่าง (`views/worker/worker-list/`) เพิ่ม dropdown "ประเภทช่าง" (ในบ้าน/นอกบ้าน/ร้าน) ในฟอร์ม
+สร้าง/แก้ไข + คอลัมน์ในตารางรายการ
+
+**field name ไม่ตรงกับ convention เดิม (แก้ `formatWorkerNameList` กลาง)**: `workers[]`/`concentration[].
+topWorkers[]` ของหมวดนี้ใช้ field ชื่อ `name`/`code` (ไม่ใช่ `workerName`/`workerCode` แบบ wip/gold/capacity เดิม)
+— `formatWorkerNameList` (`insight-helpers.js`, ใช้ร่วมทุกหมวด) แก้เป็น fallback `workerName ?? name` รองรับทั้ง
+2 แบบ + รองรับ array ของสตริงชื่อดิบตรงๆ ด้วย (`workerNames[]` ของ `ACT_CROSS_TRAIN`) — **ขยาย format ต่อคน
+เพิ่มใหม่**: ถ้า item มี `wagePerJob`+`medianPerJob` ครบคู่ (เฉพาะ `WRK_RATE_OUTLIER`/`ACT_REVIEW_RATE`) ต่อท้าย
+เป็น `"{ชื่อ} {wagePerJob} ฿/งาน (ค่ากลาง {medianPerJob})"` ตามตัวอย่างที่ API agent ให้ตรงๆ ("หนิง 1,290 ฿/งาน
+(ค่ากลาง 145)") — เพิ่ม suffix ตัวเลขใหม่ `Wages` (0 ทศนิยม เหมือน `Money`) ใน
+`NUMERIC_SUFFIX_MAX_FRACTION_DIGITS` สำหรับ `FC_WAGES_NEXT_MONTH.projectedWages/avgWages` (ชื่อ param ไม่ได้
+ลงท้าย `Money` ตรงๆ)
+
+**findings/actions (final contract)**: 5 problem/forecast code (`WRK_CONCENTRATION`/`WRK_RATE_OUTLIER`/
+`WRK_WAGE_PER_PLAN_RISING`(forecast)/`WRK_UNPAID_JOBS`/`WRK_GOLD_REPEAT`) + 2 forecast
+(`FC_WAGES_NEXT_MONTH`(info)/`FC_KEY_PERSON_RISK`) + 4 action (`ACT_CROSS_TRAIN`/`ACT_REVIEW_RATE`/
+`ACT_RECORD_WAGES`/`ACT_TALK_WORKER_GOLD`) — param ยืนยันจาก API agent 2026-10-01: `WRK_CONCENTRATION`→
+deptKey,top2Share,workers[{code,name}] (1 ต่อแผนก) | `WRK_RATE_OUTLIER`→count,workers[{code,name,wagePerJob,
+medianPerJob}] (top3, ตรงกับ `DEFAULT_MAX_WORKER_NAMES` พอดีไม่ต้อง override) | `WRK_WAGE_PER_PLAN_RISING`→
+fromValue,toValue (บาท/ใบ — **ไม่ใช่ fromMoney/toMoney** จึงไม่ auto-format ตัวคั่นหลักพัน ฝัง "บาท/ใบ" เป็น
+ข้อความตรงๆ แทน) | `WRK_UNPAID_JOBS`→count | `WRK_GOLD_REPEAT`→workers[{code,name}],count |
+`FC_WAGES_NEXT_MONTH`→projectedWages,avgWages | `FC_KEY_PERSON_RISK`→deptKey,**workerName** (เอกพจน์ ไม่ใช่
+`workers[]`),queueDaysNow,queueDaysWithout | `ACT_CROSS_TRAIN`→deptKey,**workerNames** (string[], ไม่มี count
+แยก = array คือรายชื่อเต็มเสมอ) | `ACT_REVIEW_RATE`→workers (shape เดียวกับ RATE_OUTLIER, ไม่มี count แยก) |
+`ACT_RECORD_WAGES`→count | `ACT_TALK_WORKER_GOLD`→workers[{code,name}] — `top2Share`/`share`/`shareOfDeptJobs`/
+`outsideWageShare`/`wagesByDept.share` เป็นสเกล 0–100 ทั้งหมด (ต่อท้าย "%" ในข้อความ/คอลัมน์ตรงๆ ไม่ต้องคูณ)
+
+**ตัวกรองหน้าตาราง (คนละชั้นกับตัวกรองหลัก)**: ดรอปดาวน์ "แผนก" + toggle "ประเภท" (ทั้งหมด|ในบ้าน|นอกบ้าน|ร้าน)
+ใน `WorkersTable` เป็น **client-side ล้วน** กรองแค่ตารางที่เห็น ไม่กระทบ KPI/กราฟ/ตัวเลือกแผนกในดรอปดาวน์มาจาก
+deptKey ที่ปรากฏจริงใน `workers[]` เท่านั้น (ไม่ใช่ลิสต์ 7 แผนกคงที่) — ส่วนตัวกรองหลัก (FilterPanelGeneric,
+`departmentKeys`/`employmentTypes`) ส่งไป server กรองทั้งก้อน kpi/series/workers/concentration จริง
+
+**employmentType ในหน้าข้อมูลช่าง**: `Worker/Search` คืน `employmentType` มาด้วยแล้ว (แสดงในคอลัมน์ใหม่) —
+`Worker/Create`/`Worker/Update` รับ `employmentType` เป็น optional (`'IN_HOUSE'|'OUTSIDE'|'SHOP'`) — **กฎ
+Update สำคัญ**: omit key = คงค่าเดิม, `""` = ล้างค่า — ฟอร์มจึงต้อง **ส่ง key นี้เสมอไม่ omit** (ไม่งั้นแก้ชื่อ
+เฉยๆ โดยไม่แตะ dropdown จะไม่เป็นไร เพราะ key หายไปจาก payload = backend ตีความว่า "คงเดิม" ไม่ใช่ "ล้าง" —
+ถ้า omit ผิดจังหวะถึงจะเป็นปัญหา) — `plan-worker-store.js`'s `fetchCreate`/`fetchUpdate` ส่ง
+`employmentType: formValue.employmentType || ''` เสมอ (coerce null/undefined → `''` กัน wire payload หลุด
+เป็น `null` ที่ไม่อยู่ในคอนแทรค) — ฟอร์มแก้ไขโหลดค่าปัจจุบันมาเต็มอยู่แล้ว (`watch.modelUpdate` spread
+ทั้ง record) จึงส่งค่าเดิมกลับไปถูกต้องเสมอถ้าผู้ใช้ไม่แตะช่องนี้ — ค่าคงที่ enum อยู่ที่ไฟล์เดียว
+`views/worker/worker-list/worker-employment-type.js` ใช้ร่วม 3 ไฟล์ (update/create/data-table) กัน duplicate
+
+**ลบ dead code**: `topic-placeholder-section.vue` TOPIC_LINK/TOPIC_CODES entry `workers` + i18n
+`WORKERS_PLACEHOLDER_NO_WAGE`/`WORKERS_PLACEHOLDER_RISING_COST_PER_PIECE`/`placeholder.link.workers`
+
+### ไฟล์ที่แตะ
+
+| ไฟล์ | สรุป | เจ้าของ |
+|---|---|---|
+| `src/views/production/insight/components/workers-*.vue` (+ helpers/spec) (ใหม่ทั้งหมด) | KPI/กราฟ/ตารางช่าง/รายละเอียด/งานค้างบันทึก | @ui-implementer |
+| `src/views/production/insight/sections/workers-section.vue` (ใหม่) | mount ทุก component ข้างต้น | @ui-implementer |
+| `src/views/production/insight/sections/topic-placeholder-section.vue` | ลบ entry `workers` | @ui-implementer |
+| `src/views/production/insight/index-view.vue` | mount `WorkersSection`, ขยาย `hasFilterableFields`/`activeChips`/filter-panel handlers/draft state เป็น 5-way | @ui-implementer |
+| `src/views/production/insight/insight-filters.js` | เพิ่มชุดฟังก์ชัน workers filter คู่ขนานกับ wip/delivery/gold (ส่ง departmentKeys/employmentTypes ไป server จริง, bucket คงที่ 'month') | @ui-implementer |
+| `src/stores/modules/api/production/production-insight-api.js` | เพิ่ม `fetchWorkers`/`fetchWorkerMonthly`/`fetchUnpaidPieceJobs` | @ui-implementer |
+| `src/components/insight/insight-helpers.js` (+spec) | `formatWorkerNameList` รองรับ field `name`/สตริงดิบ/wagePerJob+medianPerJob, `workerNames` param ใหม่, suffix `Wages` | @ui-implementer |
+| `src/language/view/production-insight/{th,en}.js` | เพิ่ม namespace `workers.*` เต็ม + rules/codeLabel/help ของ 11 code ใหม่ + ลบ placeholder keys ที่ตายแล้ว | @ui-implementer |
+| `src/language/view/production-insight/workers-i18n.spec.js` (ใหม่) | ขยาย pattern เดียวกับ `capacity-i18n.spec.js`/`gold-i18n.spec.js` | @ui-implementer |
+| `src/views/worker/worker-list/{modal,components}/*.vue` + `plan-worker-store.js` + `worker-employment-type.js` (ใหม่) | เพิ่ม dropdown/คอลัมน์/wire payload employmentType | @ui-implementer |
+| `src/language/view/worker/{th,en}.js` | เพิ่ม `fieldEmploymentType`/`colEmploymentType`/`employmentType.*` | @ui-implementer |
+| Backend `ProductionInsight/{Workers,WorkerMonthly,UnpaidPieceJobs}` + `Worker/{Search,Create,Update}` employmentType | ใหม่/แก้ — final contract ยืนยันแล้ว (2026-10-01) | @api-implementer |
+
+- **Decision**: ตารางช่างมี "ตัวกรองซ้อน 2 ชั้น" (หลัก server-side + ท้องถิ่นใน box client-side) โดยตั้งใจ —
+  ตัวกรองหลักไว้กรองข้อมูลจริงที่ดึงมา (กระทบ KPI/กราฟด้วย) ส่วนตัวกรอง box ไว้ไล่ดูตารางยาวๆ เร็วๆ โดยไม่ต้อง
+  เปิดแผงตัวกรอง/รอ request ใหม่ — ยังไม่เห็น wireframe จริง (เปิดลิงก์ artifact ไม่ได้) จุดนี้เป็นการตีความเอง
+  ถ้า user ตรวจแล้วไม่ตรง wireframe ให้แจ้งกลับมาปรับ
+- verify: `npx eslint` เฉพาะไฟล์ที่แก้ (clean) + `npx vitest run` ทั้ง repo (1270/1279 ผ่าน เหลือแค่
+  `customer-edit-modal.spec.js` 9 เทสที่ fail ซ้ำเดิมมาตลอด session นี้ ไม่เกี่ยวกับงานนี้) + `npm run build`
+  (สำเร็จ) + grep `border-left` ไฟล์ที่เปลี่ยนทั้งหมด (เจอแค่ในคอมเมนต์ "ห้ามใช้")

@@ -78,11 +78,7 @@
           </template>
 
           <template #workersTemplate="{ data }">
-            <span v-if="!workersOf(data).shown">—</span>
-            <span v-else :title="workersOf(data).title">
-              {{ workersOf(data).shown }}
-              <span v-if="workersOf(data).moreCount > 0" class="text-muted">+{{ workersOf(data).moreCount }}</span>
-            </span>
+            <PlanWorkersCell :workers="data.workers" :worker-items="data.workerItems" />
           </template>
         </BaseDataTable>
       </div>
@@ -97,7 +93,6 @@ import { PermissionService } from '@/services/permission/permission.js'
 import { formatDate } from '@/services/utils/dayjs.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 import {
-  summarizeWorkers,
   resolveStatusLine,
   buildLastActionLine,
   resolvePlanLinkState,
@@ -109,6 +104,7 @@ import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import InfoTipGeneric from '@/components/generic/InfoTipGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import PlanWorkersCell from './plan-workers-cell.vue'
 
 const DEPARTMENT_KEYS = ['design', 'trim', 'rawPolish', 'gemSort', 'setting', 'plating', 'costCard']
 
@@ -121,7 +117,8 @@ export default {
     SectionCardGeneric,
     InfoTipGeneric,
     ButtonGeneric,
-    BaseDataTable
+    BaseDataTable,
+    PlanWorkersCell
   },
 
   setup() {
@@ -190,17 +187,18 @@ export default {
 
     permissionService() {
       return new PermissionService(this.authStore.getUser, this.authStore.permissions)
+    },
+
+    // รวม departmentKeys+minDays เป็น key เดียว กัน resetPaging() ยิงซ้ำตอนแก้ทั้งคู่แล้วกด "ใช้ตัวกรอง"
+    // ครั้งเดียว (เดิม watch แยกคนละตัว ยิง fetch 2 รอบต่อการกด 1 ครั้ง — pattern เดียวกับบั๊กจริงที่เจอบน
+    // delivery-late-plans-panel.vue 2026-10-01)
+    resetPagingKey() {
+      return JSON.stringify([this.departmentKeys, this.minDays])
     }
   },
 
   watch: {
-    departmentKeys: {
-      handler() {
-        this.resetPaging()
-      },
-      deep: true
-    },
-    minDays() {
+    resetPagingKey() {
       this.resetPaging()
     }
   },
@@ -214,10 +212,6 @@ export default {
 
     lastActionLine(data) {
       return buildLastActionLine(data.lastUpdateBy, data.lastAction, this.$t('view.productionInsight.wip.lastActionCreated'))
-    },
-
-    workersOf(data) {
-      return summarizeWorkers(data.workers)
     },
 
     planLinkState(data) {

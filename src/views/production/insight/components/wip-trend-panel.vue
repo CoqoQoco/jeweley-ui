@@ -247,17 +247,19 @@ export default {
         { field: 'net', header: this.$t('view.productionInsight.wip.trendColNet'), sortable: false, minWidth: '90px', align: 'right' }
       ]
       return cols.map((col) => (fieldsWithCustomHeaderSlot.includes(col.field) ? { ...col, header: '' } : col))
+    },
+
+    // รวม start+end+bucket เป็น key เดียว กัน fetchTrend() ยิงซ้ำ 3 ครั้งตอนเปลี่ยนช่วงเวลา (preset เปลี่ยน
+    // ทั้ง 3 ค่าพร้อมกันในจังหวะเดียว แต่เดิม watch แยกคนละตัว ยิง fetch 3 รอบต่อการกด 1 ครั้ง — บั๊กจริงที่เจอ
+    // บน prod 2026-10-02, WipTrend ×3) — pattern เดียวกับที่แก้ resetPagingKey ทั่ว insight (ไม่ใช้ mixin
+    // dataTablePaging ที่นี่เพราะไม่มี paging จึงตั้งชื่อ fetchKey แทน resetPagingKey)
+    fetchKey() {
+      return JSON.stringify([this.start, this.end, this.bucket])
     }
   },
 
   watch: {
-    start() {
-      this.fetchTrend()
-    },
-    end() {
-      this.fetchTrend()
-    },
-    bucket() {
+    fetchKey() {
       this.fetchTrend()
     }
   },

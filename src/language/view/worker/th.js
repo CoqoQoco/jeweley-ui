@@ -17,6 +17,14 @@ export default {
     colNameTh: 'ชื่อ TH',
     colNameEn: 'ชื่อ EN',
     colDept: 'แผนกช่าง',
+    fieldEmploymentType: 'ประเภทช่าง',
+    colEmploymentType: 'ประเภทช่าง',
+    employmentType: {
+      IN_HOUSE: 'ในบ้าน',
+      OUTSIDE: 'นอกบ้าน',
+      SHOP: 'ร้าน',
+      UNKNOWN: 'ไม่ระบุ'
+    },
     colCreateDate: 'สร้างข้อมูล',
     colStatus: 'สถานะ',
     statusActive: 'เปิดใช้งาน',

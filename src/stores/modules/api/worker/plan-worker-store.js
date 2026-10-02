@@ -158,7 +158,9 @@ export const usePlanWorkerApiStore = defineStore('PlanWorker', {
           code: formValue.code,
           type: formValue.type,
           nameTh: formValue.nameTh,
-          nameEn: formValue.nameEn
+          nameEn: formValue.nameEn,
+          // ส่งเสมอ (ไม่ omit) ตามคอนแทรค Worker/Create — ค่าว่าง/ไม่ได้เลือกส่งเป็น "" (ไม่ใช่ null/undefined)
+          employmentType: formValue.employmentType || ''
         }
         //console.log(params)
 
@@ -173,7 +175,11 @@ export const usePlanWorkerApiStore = defineStore('PlanWorker', {
           code: formValue.code,
           type: formValue.type,
           nameTh: formValue.nameTh,
-          nameEn: formValue.nameEn
+          nameEn: formValue.nameEn,
+          // ส่งเสมอ (ไม่ omit) ตามคอนแทรค Worker/Update — omit = คงค่าเดิม, "" = ล้างค่า (ยืนยันจาก API agent
+          // 2026-10-01) — ฟอร์มนี้โหลดค่าปัจจุบันมาเต็มอยู่แล้วเสมอ (ดู watch.modelUpdate) จึงส่งซ้ำค่าเดิมได้
+          // ถ้าผู้ใช้ไม่ได้แตะช่องนี้ ไม่ใช่การ clear โดยไม่ตั้งใจ
+          employmentType: formValue.employmentType || ''
         }
         //console.log(params)
 

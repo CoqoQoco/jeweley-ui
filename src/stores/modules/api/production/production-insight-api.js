@@ -250,6 +250,42 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // ปิดงาน" — ไม่มีตัวกรองเพิ่มนอกจาก paging ตามคอนแทรค)
     async fetchCostCardPendingPlans({ take = 50, skip = 0, sort = [] } = {}) {
       return await api.jewelry.post('ProductionInsight/CostCardPendingPlans', { take, skip, sort })
+    },
+
+    // หมวด "ช่างและค่าแรง" — bucket เป็นรายเดือนเสมอ (ไม่มีพารามิเตอร์ bucket ใน draft contract — เหมือน
+    // Capacity) — ต่างจาก Capacity ตรงที่ departmentKeys/employmentTypes ส่งไปจริง (API agent ระบุใน draft
+    // contract ว่า endpoint รับทั้งคู่) กรอง kpi/series/seriesTotal/workers/concentration ทั้งก้อน
+    async fetchWorkers({ start, end, departmentKeys = [], employmentTypes = [] } = {}) {
+      return await api.jewelry.post('ProductionInsight/Workers', {
+        start: start ? formatISOString(start) : null,
+        end: end ? formatISOString(end) : null,
+        departmentKeys,
+        employmentTypes
+      })
+    },
+
+    // รายเดือนของช่างคนเดียว (คลิกแถวในตารางช่าง) — ต้องส่ง deptKey คู่กับ code เสมอ (ช่างคนเดียวกันอาจทำงาน
+    // มากกว่า 1 แผนกในช่วงที่เลือกได้ — ยืนยันจาก draft contract ของ API agent)
+    async fetchWorkerMonthly({ code, deptKey, start, end } = {}) {
+      return await api.jewelry.post('ProductionInsight/WorkerMonthly', {
+        code,
+        deptKey,
+        start: start ? formatISOString(start) : null,
+        end: end ? formatISOString(end) : null
+      })
+    },
+
+    // DataSourceRequest + start/end/departmentKeys — items = planId,wo,woNumber,woText,deptKey,workerCode,
+    // workerName,jobDate,checkGram (งานที่ตรวจนับแล้วแต่ยังไม่บันทึกเป็นค่าแรงรายชิ้น)
+    async fetchUnpaidPieceJobs({ take = 50, skip = 0, sort = [], start, end, departmentKeys = [] } = {}) {
+      return await api.jewelry.post('ProductionInsight/UnpaidPieceJobs', {
+        take,
+        skip,
+        sort,
+        start: start ? formatISOString(start) : null,
+        end: end ? formatISOString(end) : null,
+        departmentKeys
+      })
     }
   }
 })

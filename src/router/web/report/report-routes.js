@@ -85,7 +85,11 @@ const routes = [
             th: 'ภาพรวมผู้บริหาร'
           },
           minorShow: true,
-          permissions: [PERMISSIONS.EXECUTIVE_VIEW]
+          permissions: [PERMISSIONS.EXECUTIVE_VIEW],
+          // ฝัง ProductionInsightView ที่ sync ตัวกรอง/ช่วงเวลาลง query ตลอด (syncStateToQuery) — ต้องไม่ให้
+          // router-view (LayoutDashboard.vue) remount ทั้งหน้าตอน query เปลี่ยนเฉยๆ ไม่งั้นทุก endpoint
+          // (รวม ExecutiveReport/Summary ที่ไม่เกี่ยวกับช่วงเวลาเลย) ยิงซ้ำ 2 รอบทุกครั้งที่สลับช่วง/ตัวกรอง
+          queryStableKey: true
         }
       },
       {

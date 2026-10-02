@@ -37,12 +37,28 @@ export function worstStatus(a, b) {
 
 const DEFAULT_MAX_WORKER_NAMES = 3
 
+// ป้ายของช่าง 1 คนในลิสต์ — รองรับ 3 รูปแบบ: สตริงชื่อดิบ (เช่น workerNames[] ของ ACT_CROSS_TRAIN), object
+// {workerName} (ชื่อ field เดิมของ wip/gold/capacity), object {name} (ชื่อ field ของหมวด "ช่างและค่าแรง" —
+// ยืนยันจาก API agent 2026-10-01 ว่า workers[]/concentration[].topWorkers[] ใช้ชื่อ field `name` ไม่ใช่
+// `workerName`) — มี wagePerJob+medianPerJob ครบคู่ (เฉพาะ WRK_RATE_OUTLIER/ACT_REVIEW_RATE) ต่อท้ายเป็น
+// "{ชื่อ} {ค่าแรง} ฿/งาน (ค่ากลาง {ค่ากลาง})" ตามตัวอย่างที่ API agent ให้ไว้ตรงๆ ("หนิง 1,290 ฿/งาน (ค่ากลาง 145)")
+function formatWorkerEntryLabel(worker) {
+  if (typeof worker === 'string') return worker
+  const name = worker?.workerName ?? worker?.name ?? ''
+  if (!name) return ''
+  if (worker.wagePerJob != null && worker.medianPerJob != null) {
+    return `${name} ${formatThaiNumber(worker.wagePerJob, 0)} ฿/งาน (ค่ากลาง ${formatThaiNumber(worker.medianPerJob, 0)})`
+  }
+  return name
+}
+
 // รวมชื่อช่างหลายคนเป็นสตริงเดียวฝังใน finding/action text เดียว (เช่น GOLD_REPEAT_OFFENDER/ACT_TALK_WORKER
 // ที่รวมช่างหลายคนเป็น finding/action เดียวแทนที่จะแยกทีละคน) — โชว์สูงสุด maxNames คน ที่เหลือสรุปเป็น
 // "และอีก N คน" ต่อท้าย (ไม่มี overflow ใช้ "และ" คั่นคนสุดท้ายตามไวยากรณ์ไทยปกติแทน) — count มาจาก API เอง
-// (จำนวนจริงทั้งหมด ไม่ใช่แค่ workers.length ที่อาจถูกตัดมาสั้นกว่าแล้วตั้งแต่ response)
+// (จำนวนจริงทั้งหมด ไม่ใช่แค่ workers.length ที่อาจถูกตัดมาสั้นกว่าแล้วตั้งแต่ response) — รับได้ทั้ง array ของ
+// object (workers[]) หรือ array ของสตริงชื่อดิบ (workerNames[]) ผ่าน formatWorkerEntryLabel
 export function formatWorkerNameList(workers, count, maxNames = DEFAULT_MAX_WORKER_NAMES) {
-  const list = (workers || []).slice(0, maxNames).map((w) => w.workerName).filter(Boolean)
+  const list = (workers || []).slice(0, maxNames).map(formatWorkerEntryLabel).filter(Boolean)
   if (!list.length) return ''
   const remaining = (count ?? (workers || []).length) - list.length
   if (remaining > 0) return `${list.join(', ')} และอีก ${remaining} คน`
@@ -119,7 +135,10 @@ export function formatBucketMonthLabels(bucketEnds) {
 const NUMERIC_SUFFIX_MAX_FRACTION_DIGITS = {
   Money: 0,
   Gram: 2,
-  Percent: 2
+  Percent: 2,
+  // Wages (FC_WAGES_NEXT_MONTH.projectedWages/avgWages ของหมวด "ช่างและค่าแรง") จัดรูปแบบเหมือน Money เป๊ะ
+  // (ไม่มีทศนิยม มีตัวคั่นหลักพัน) — ชื่อ param ไม่ได้ลงท้าย Money ตรงๆ เพราะ API agent ตั้งชื่อมาแบบนี้
+  Wages: 0
 }
 
 function formatThaiNumber(value, maximumFractionDigits) {
@@ -164,6 +183,11 @@ export function resolveFindingParams(params, translateDept, translateWorkerType,
   }
   if (resolved.workers !== undefined) {
     resolved.workers = formatWorkerNameList(resolved.workers, resolved.count, maxWorkerNames)
+  }
+  // workerNames (ACT_CROSS_TRAIN ของหมวด "ช่างและค่าแรง") เป็น array ของสตริงชื่อดิบล้วน (ไม่มี count แยก —
+  // array ที่ส่งมาคือรายชื่อเต็มเสมอ ไม่มีการตัดสั้นลงแบบ workers[]+count) ใช้ joiner ตัวเดียวกับ workers[]
+  if (resolved.workerNames !== undefined) {
+    resolved.workerNames = formatWorkerNameList(resolved.workerNames, resolved.workerNames.length, maxWorkerNames)
   }
   if (resolved.depts !== undefined) {
     resolved.depts = formatDeptQueueList(resolved.depts, translateDept)
@@ -227,7 +251,14 @@ const HELP_KEY_CODES = new Set([
   'GOLD_STAGE_ABOVE_TARGET',
   'GOLD_STAGE_PENDING_RETURN',
   'GOLD_STAGE_OUTLIER_JOBS',
-  'FC_GOLD_STAGE_RISING'
+  'FC_GOLD_STAGE_RISING',
+  'WRK_CONCENTRATION',
+  'WRK_RATE_OUTLIER',
+  'WRK_WAGE_PER_PLAN_RISING',
+  'WRK_UNPAID_JOBS',
+  'WRK_GOLD_REPEAT',
+  'FC_WAGES_NEXT_MONTH',
+  'FC_KEY_PERSON_RISK'
 ])
 
 export function resolveHelpKey(code) {

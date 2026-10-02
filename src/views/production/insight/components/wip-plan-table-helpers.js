@@ -1,16 +1,30 @@
-// wip-plan-table-helpers.js — pure logic ใช้ร่วมกันระหว่าง wip-stale-plans-panel.vue และ
-// wip-due-risk-panel.vue (คอลัมน์ "ช่าง" + คอลัมน์ "แผนก/สถานะ" ที่ไม่ซ้ำคำ + บรรทัดผู้อัปเดตล่าสุด)
+// wip-plan-table-helpers.js — pure logic ใช้ร่วมกันระหว่างตาราง plan ทุกตัวในหมวด insight (wip-stale/
+// wip-due-risk/wip-abnormal-dwell/delivery-at-risk — คอลัมน์ "ช่าง" ใช้ผ่าน plan-workers-cell.vue +
+// resolvePlanWorkersDisplay) — มีคอลัมน์ "แผนก/สถานะ" ที่ไม่ซ้ำคำ + บรรทัดผู้อัปเดตล่าสุดด้วย
 // ห้าม import Vue/i18n ที่นี่ — ข้อความ fallback (เช่น "สร้างใบงาน") ให้ caller ส่ง $t(...) เข้ามาเป็น param
 
-// ตัดรายชื่อช่างที่แสดงเหลือ maxShown คนแรก ที่เหลือสรุปเป็นตัวเลข "+n" — title คืนรายชื่อเต็มเสมอ
-// (ไม่ว่าจะถูกตัดหรือไม่) ให้ caller ใส่เป็น title tooltip ของ cell
-export function summarizeWorkers(workers, maxShown = 2) {
-  const list = (workers || []).filter(Boolean)
-  if (!list.length) return { shown: '', moreCount: 0, title: '' }
+const DEFAULT_MAX_WORKER_ITEMS = 3
+
+// รวมข้อมูลช่างของแถวตาราง plan ให้เป็นรูปแบบเดียวกันเสมอ ไม่ว่า API จะส่ง `workerItems`
+// ([{code,name,isQueue}], field ใหม่ ยืนยันจาก API agent 2026-10-01) หรือยังส่งแค่ `workers` (เดิม, string[]
+// ล้วนไม่มี code/isQueue — คงอยู่เป็น fallback) — ใช้ workerItems ก่อนเสมอถ้ามีและไม่ว่าง ไม่งั้น fallback ไป
+// ครอบ workers เป็น shape เดียวกัน (code:null, isQueue:false ทุกตัว) — เรียงช่างจริง (isQueue=false) ไว้ก่อน
+// รายการรอคิว (isQueue=true) เสมอไม่ว่าลำดับเดิมจาก API จะเป็นอย่างไร แล้วตัดเหลือ maxShown รายการแรก ที่เหลือ
+// สรุปเป็นตัวเลข moreCount — allNames คืนรายชื่อเต็มเรียงลำดับเดียวกัน (ไม่ตัด) ให้ caller ใช้ทำ title tooltip
+export function resolvePlanWorkersDisplay(data, maxShown = DEFAULT_MAX_WORKER_ITEMS) {
+  const items =
+    Array.isArray(data?.workerItems) && data.workerItems.length
+      ? data.workerItems.filter(Boolean)
+      : (data?.workers || []).filter(Boolean).map((name) => ({ code: null, name, isQueue: false }))
+
+  const real = items.filter((w) => !w.isQueue)
+  const queued = items.filter((w) => w.isQueue)
+  const ordered = [...real, ...queued]
+
   return {
-    shown: list.slice(0, maxShown).join(', '),
-    moreCount: Math.max(0, list.length - maxShown),
-    title: list.join(', ')
+    shown: ordered.slice(0, maxShown),
+    moreCount: Math.max(0, ordered.length - maxShown),
+    allNames: ordered.map((w) => w.name).filter(Boolean)
   }
 }
 

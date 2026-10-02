@@ -453,6 +453,55 @@ export default {
     stagePendingQueue: 'Queued {count} · {gram}g'
   },
 
+  workers: {
+    filterSectionTitle: 'Workers & Wages Filters',
+    filterDept: 'Department',
+    filterEmploymentType: 'Employment Type',
+    filterCustomRangeLabel: 'Custom Range',
+
+    employmentType: {
+      IN_HOUSE: 'In-house',
+      OUTSIDE: 'Outside',
+      SHOP: 'Shop',
+      UNKNOWN: 'Unspecified'
+    },
+
+    kpiGroupTitle: 'Workers & Wages Overview',
+    kpiWagesPerMonth: 'Total Wages / Month',
+    excludesSalariedNote: 'Excludes salary',
+    kpiWagePerPlan: 'Wage per Completed Plan',
+    kpiWagePerPlanSub: 'Company-wide average',
+    kpiActiveWorkers: 'Active Workers',
+    kpiOutsideShare: 'Outside/Shop Wage Share',
+
+    trendTitle: 'Monthly Wages by Department',
+    seriesWagePerPlan: 'Wage per Plan',
+    wagesUnit: 'THB',
+    jobsUnit: 'jobs',
+
+    tableTitle: 'Workers',
+    tableFilterDept: 'Department',
+    tableFilterType: 'Employment Type',
+    tableWageComparableNote: 'Wage per job is only comparable within the same department and employment type',
+    colWorker: 'Worker',
+    colDept: 'Department',
+    colEmploymentType: 'Type',
+    colJobs: 'Jobs',
+    colPlans: 'Plans',
+    colWages: 'Wages',
+    colWagePerJob: 'Per Job',
+    colShareOfDeptJobs: 'Job Share',
+    colGold: 'Gold',
+
+    detailTitle: '{name} — Monthly Trend',
+    detailSeriesJobs: 'Job Count',
+    detailSeriesWages: 'Wages',
+
+    unpaidTitle: 'Jobs Pending Wage Records',
+    unpaidColJobDate: 'Job Date',
+    unpaidColCheckGram: 'Checked (g)'
+  },
+
   rules: {
     WIP_STALE: '{count} plans have been stale too long ({percent}% of {openCount} open plans)',
     WIP_OVERDUE: '{count} plans are already overdue ({percent}% of {openCount} open plans)',
@@ -514,8 +563,18 @@ export default {
     ACT_CLEAN_STALE: 'Review {staleWip} plans that have been stale for over 180 days',
     ACT_SMOOTH_INFLOW: 'Smooth out inflow timing (averaging {outputPerMonth} plans/month of output)',
 
-    WORKERS_PLACEHOLDER_NO_WAGE: 'Items with no wage recorded',
-    WORKERS_PLACEHOLDER_RISING_COST_PER_PIECE: 'Rising wage cost per piece',
+    WRK_CONCENTRATION: '{deptKey} relies on {workers} for as much as {top2Share}% of the department\'s jobs',
+    WRK_RATE_OUTLIER: '{count} workers have an unusual wage per job vs. the department median: {workers}',
+    WRK_WAGE_PER_PLAN_RISING: 'Wage per completed plan is trending up from {fromValue} to {toValue} THB/plan',
+    WRK_UNPAID_JOBS: '{count} jobs have been checked but not yet recorded as wages',
+    WRK_GOLD_REPEAT: '{workers} have been over the gold allowance for multiple consecutive periods',
+    FC_WAGES_NEXT_MONTH: 'Total wages next month are estimated at about {projectedWages} THB (recent average {avgWages} THB/month)',
+    FC_KEY_PERSON_RISK: '{deptKey} is at risk of losing {workerName}, a key worker — the queue would grow from {queueDaysNow} to {queueDaysWithout} days without them',
+    ACT_CROSS_TRAIN: 'Cross-train workers in {deptKey} to reduce reliance on {workerNames}',
+    ACT_REVIEW_RATE: 'Review the wage rate for these workers: {workers}',
+    ACT_RECORD_WAGES: 'Record wages for {count} pending jobs',
+    ACT_TALK_WORKER_GOLD: 'Talk to {workers} about repeatedly exceeding the gold allowance',
+
     MATERIALS_PLACEHOLDER_GEM_LOW_STOCK: 'Low gem stock vs. pending sorting work',
     MATERIALS_PLACEHOLDER_NEGATIVE_GOLD: 'Negative raw gold balance in the system'
   },
@@ -557,14 +616,20 @@ export default {
     CAP_INFLOW_OVER_OUTPUT: 'Inflow exceeding output',
     CAP_COSTCARD_SLOW: 'Slow cost card processing',
     FC_BACKLOG_PROJECTED: 'Backlog projected to grow',
-    FC_PEAK_RISK: 'Risk of an inflow spike'
+    FC_PEAK_RISK: 'Risk of an inflow spike',
+    WRK_CONCENTRATION: 'Relies on a few workers',
+    WRK_RATE_OUTLIER: 'Unusual wage per job',
+    WRK_WAGE_PER_PLAN_RISING: 'Wage per plan rising',
+    WRK_UNPAID_JOBS: 'Jobs pending wage records',
+    WRK_GOLD_REPEAT: 'Repeatedly over gold allowance',
+    FC_WAGES_NEXT_MONTH: 'Next month wage forecast',
+    FC_KEY_PERSON_RISK: 'Key-person risk'
   },
 
   placeholder: {
     message: 'Being built — data is still available on the previous page.',
     reportTitle: 'Data is on the previous page',
     link: {
-      workers: 'Go to worker wages report',
       materials: 'Go to gem stock dashboard'
     }
   },
@@ -685,6 +750,16 @@ export default {
     CAP_INFLOW_OVER_OUTPUT: 'Compares how many months inflow exceeded output against the total number of months in the selected range',
     CAP_COSTCARD_SLOW: 'Completed = first entered a cost card (craftsman\'s work is done) — measured from the date it should have entered to the date it actually did',
     FC_BACKLOG_PROJECTED: 'Estimated from the recent net rate (inflow − output) per month',
-    FC_PEAK_RISK: 'Estimated from the month with the highest inflow in the recent period'
+    FC_PEAK_RISK: 'Estimated from the month with the highest inflow in the recent period',
+
+    workersKpiDefinitions: 'Wage per plan = total wages ÷ plans completed in the selected range · excludes salaried pay (piece-rate wages only)',
+    workersTableWageComparableNote: 'Wage per job is only comparable within the same department and employment type',
+    WRK_CONCENTRATION: 'Share of the department\'s jobs done by its top 2 workers\nUrgent when unusually high (risk if either one leaves)',
+    WRK_RATE_OUTLIER: 'The worker\'s wage per job vs. the median of the same department/employment type',
+    WRK_WAGE_PER_PLAN_RISING: 'Estimated from a continuous rise in wage per completed plan over the recent periods',
+    WRK_UNPAID_JOBS: 'Jobs that have been checked (have a checkGram) but not yet recorded as piece-rate wages',
+    WRK_GOLD_REPEAT: 'Workers repeatedly over the gold allowance across periods (same data as the "Gold & Loss" topic)',
+    FC_WAGES_NEXT_MONTH: 'Estimated from the recent trend of total monthly wages',
+    FC_KEY_PERSON_RISK: 'A department that has relied heavily on a few workers for a sustained period — at risk if they leave'
   }
 }

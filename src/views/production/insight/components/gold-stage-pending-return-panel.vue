@@ -157,23 +157,17 @@ export default {
 
     permissionService() {
       return new PermissionService(this.authStore.getUser, this.authStore.permissions)
+    },
+
+    // รวมตัวกรองทั้งหมดเป็น key เดียว กัน resetPaging() ยิงซ้ำตอนเปลี่ยนหลายค่าพร้อมกัน (เช่น preset เปลี่ยน
+    // start+end พร้อมกัน) — pattern เดียวกับบั๊กจริงที่เจอบน delivery-late-plans-panel.vue 2026-10-01
+    resetPagingKey() {
+      return JSON.stringify([this.metal, this.olderThanDays, this.start, this.end, this.includeQueue])
     }
   },
 
   watch: {
-    metal() {
-      this.resetPaging()
-    },
-    olderThanDays() {
-      this.resetPaging()
-    },
-    start() {
-      this.resetPaging()
-    },
-    end() {
-      this.resetPaging()
-    },
-    includeQueue() {
+    resetPagingKey() {
       this.resetPaging()
     }
   },

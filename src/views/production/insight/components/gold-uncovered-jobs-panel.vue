@@ -180,32 +180,17 @@ export default {
 
     permissionService() {
       return new PermissionService(this.authStore.getUser, this.authStore.permissions)
+    },
+
+    // รวมตัวกรองทั้งหมดเป็น key เดียว กัน resetPaging() ยิงซ้ำตอนเปลี่ยนหลายค่าพร้อมกัน — pattern เดียวกับ
+    // บั๊กจริงที่เจอบน delivery-late-plans-panel.vue 2026-10-01
+    resetPagingKey() {
+      return JSON.stringify([this.workerTypes, this.workerCodes, this.olderThanDays, this.metal, this.start, this.end])
     }
   },
 
   watch: {
-    workerTypes: {
-      handler() {
-        this.resetPaging()
-      },
-      deep: true
-    },
-    workerCodes: {
-      handler() {
-        this.resetPaging()
-      },
-      deep: true
-    },
-    olderThanDays() {
-      this.resetPaging()
-    },
-    metal() {
-      this.resetPaging()
-    },
-    start() {
-      this.resetPaging()
-    },
-    end() {
+    resetPagingKey() {
       this.resetPaging()
     }
   },

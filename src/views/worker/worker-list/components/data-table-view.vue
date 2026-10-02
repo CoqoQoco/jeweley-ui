@@ -24,6 +24,10 @@
           {{ getStatusName(data.isActive) }}
         </div>
       </template>
+
+      <template #employmentTypeTemplate="{ data }">
+        {{ employmentTypeLabel(data.employmentType) }}
+      </template>
     </BaseDataTable>
 
     <updateView
@@ -106,6 +110,12 @@ export default {
           minWidth: '150px'
         },
         {
+          field: 'employmentType',
+          header: this.$t('view.worker.workerList.colEmploymentType'),
+          sortable: false,
+          minWidth: '120px'
+        },
+        {
           field: 'createDate',
           header: this.$t('view.worker.workerList.colCreateDate'),
           sortable: true,
@@ -171,6 +181,9 @@ export default {
       return status
         ? this.$t('view.worker.workerList.statusActive')
         : this.$t('view.worker.workerList.statusInactive')
+    },
+    employmentTypeLabel(employmentType) {
+      return this.$t(`view.worker.workerList.employmentType.${employmentType || 'UNKNOWN'}`)
     }
   }
 }

@@ -22,6 +22,14 @@ describe('report-routes — executive overview', () => {
     expect(child.meta.permissions).toEqual([PERMISSIONS.EXECUTIVE_VIEW])
   })
 
+  // /executive ฝัง ProductionInsightView ที่ sync ตัวกรอง/ช่วงเวลาลง query ตลอด — ต้องติด flag นี้กัน
+  // router-view (LayoutDashboard.vue, ดู resolveRouteViewKey) remount ทั้งหน้าซ้ำซ้อนตอน query เปลี่ยนเอง
+  // (บั๊กจริงที่เจอบน prod: ทุก endpoint รวม ExecutiveReport/Summary ยิงซ้ำ 2 รอบทุกครั้งที่สลับช่วง/ตัวกรอง)
+  it('has queryStableKey:true so changing its own query (range/filter) does not remount the whole page', () => {
+    const child = executiveParent.children.find((r) => r.name === 'executive')
+    expect(child.meta.queryStableKey).toBe(true)
+  })
+
   it('has a read-only plan-detail child route, not shown in the menu, gated by executive:view only', () => {
     expect(executiveParent.children).toHaveLength(2)
 

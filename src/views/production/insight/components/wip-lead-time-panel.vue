@@ -123,17 +123,18 @@ export default {
     detailTitle() {
       if (!this.selectedRow) return ''
       return this.$t('view.productionInsight.wip.leadTimeDetailTitle', { name: this.$t(`view.executive.department.${this.selectedRow.key}`) })
+    },
+
+    // รวม start+end+bucket เป็น key เดียว กัน fetchLeadTime() ยิงซ้ำ 3 ครั้งตอนเปลี่ยนช่วงเวลา (preset เปลี่ยน
+    // ทั้ง 3 ค่าพร้อมกันในจังหวะเดียว แต่เดิม watch แยกคนละตัว ยิง fetch 3 รอบต่อการกด 1 ครั้ง — บั๊กจริงที่เจอ
+    // บน prod 2026-10-02, StageLeadTime ×3) — pattern เดียวกับ wip-trend-panel.vue/resetPagingKey ทั่ว insight
+    fetchKey() {
+      return JSON.stringify([this.start, this.end, this.bucket])
     }
   },
 
   watch: {
-    start() {
-      this.fetchLeadTime()
-    },
-    end() {
-      this.fetchLeadTime()
-    },
-    bucket() {
+    fetchKey() {
       this.fetchLeadTime()
     }
   },

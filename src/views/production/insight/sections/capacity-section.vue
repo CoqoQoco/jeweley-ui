@@ -8,8 +8,9 @@
   เองผ่าน `filteredDepartments` ใช้แค่กับตารางรายแผนก/แผงจำลอง/กราฟรายละเอียด (CapacityDepartmentPanel/
   CapacityWhatIfPanel) ส่วน KPI/กราฟแนวโน้ม/ปัญหาที่พบเป็นภาพรวมทั้งบริษัทเสมอ ไม่กรอง (CapacityKpiGroup รับ
   `departments` เต็มไม่กรอง เพื่อให้ cross-reference คอขวดภาพรวมถูกต้อง) — เพราะ departmentKeys ไม่กระทบ
-  response จาก server เลย การแก้ค่านี้จึง **ไม่ refetch** (ต่างจาก unit/start/end/bucket ที่ watch แยกเฉพาะ
-  field ที่ endpoint รับจริง แทนการ deep-watch ทั้ง filter แบบหมวดอื่น)
+  response จาก server เลย การแก้ค่านี้จึง **ไม่ refetch** (ต่างจาก unit/start/end/bucket ที่รวมเป็น
+  `serverFilterKey` เดียว watch ตัวเดียว แทนการ deep-watch ทั้ง filter แบบหมวดอื่น — ไม่ watch แยก field เดิมแล้ว
+  เพราะ preset เปลี่ยนหลาย field พร้อมกันทำให้ fetch ซ้ำ 3 ครั้ง — บั๊กจริงที่เจอบน prod 2026-10-02)
 
   Props:
     filter — Object (required) — รวม unit ('plan'|'piece', default 'plan') + departmentKeys (client-side only)
@@ -142,23 +143,20 @@ export default {
       const keys = this.filter.departmentKeys
       if (!keys || !keys.length) return this.departments
       return this.departments.filter((d) => keys.includes(d.key))
+    },
+
+    // รวม unit+start+end+bucket (field ที่ Capacity endpoint รับจริง) เป็น key เดียว กัน fetchCapacity() ยิง
+    // ซ้ำ 3 ครั้งตอนเปลี่ยนช่วงเวลา (preset เปลี่ยน start+end+bucket พร้อมกันในจังหวะเดียว แต่เดิม watch แยก
+    // dotted-path คนละตัว ยิง fetch 3 รอบต่อการกด 1 ครั้ง — บั๊กจริงที่เจอบน prod 2026-10-02) — ไม่รวม
+    // departmentKeys เพราะเป็น client-side ล้วน ไม่กระทบ response จาก server เลย (ใช้ filteredDepartments
+    // กรองเฉยๆ ไม่ควร refetch) — pattern เดียวกับ resetPagingKey ทั่ว insight
+    serverFilterKey() {
+      return JSON.stringify([this.filter.unit, this.filter.start, this.filter.end, this.filter.bucket])
     }
   },
 
   watch: {
-    // watch เฉพาะ field ที่ Capacity endpoint รับจริง (unit/start/end/bucket) — ไม่ deep-watch ทั้ง filter
-    // แบบหมวดอื่น เพราะ filter.departmentKeys เป็น client-side ล้วน ไม่กระทบ response จาก server เลย
-    // (แก้ตัวกรองแผนกจึงไม่ควร refetch — ใช้ filteredDepartments ด้านบนกรองเฉยๆ)
-    'filter.unit'() {
-      this.onServerFilterChange()
-    },
-    'filter.start'() {
-      this.onServerFilterChange()
-    },
-    'filter.end'() {
-      this.onServerFilterChange()
-    },
-    'filter.bucket'() {
+    serverFilterKey() {
       this.onServerFilterChange()
     },
 

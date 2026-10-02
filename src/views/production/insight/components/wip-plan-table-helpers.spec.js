@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 
 import {
-  summarizeWorkers,
+  resolvePlanWorkersDisplay,
   resolveStatusLine,
   buildLastActionLine,
   resolvePlanLinkState,
@@ -9,29 +9,92 @@ import {
   EXECUTIVE_PLAN_DETAIL_ROUTE_NAME
 } from './wip-plan-table-helpers.js'
 
-describe('summarizeWorkers', () => {
-  it('returns empty shape when workers is empty/missing', () => {
-    expect(summarizeWorkers([])).toEqual({ shown: '', moreCount: 0, title: '' })
-    expect(summarizeWorkers(null)).toEqual({ shown: '', moreCount: 0, title: '' })
-    expect(summarizeWorkers(undefined)).toEqual({ shown: '', moreCount: 0, title: '' })
+describe('resolvePlanWorkersDisplay', () => {
+  it('returns empty shape when both workers and workerItems are empty/missing', () => {
+    expect(resolvePlanWorkersDisplay({})).toEqual({ shown: [], moreCount: 0, allNames: [] })
+    expect(resolvePlanWorkersDisplay({ workers: [], workerItems: [] })).toEqual({ shown: [], moreCount: 0, allNames: [] })
+    expect(resolvePlanWorkersDisplay(null)).toEqual({ shown: [], moreCount: 0, allNames: [] })
   })
 
-  it('shows all names joined when within maxShown', () => {
-    expect(summarizeWorkers(['สมชาย', 'สมหญิง'])).toEqual({ shown: 'สมชาย, สมหญิง', moreCount: 0, title: 'สมชาย, สมหญิง' })
+  // fallback: API ยังไม่ส่ง workerItems มาครบทุก response — ครอบ workers (string[] ล้วน) เป็น shape เดียวกัน
+  it('falls back to the legacy workers (names-only) array when workerItems is missing', () => {
+    expect(resolvePlanWorkersDisplay({ workers: ['สมชาย', 'สมหญิง'] })).toEqual({
+      shown: [
+        { code: null, name: 'สมชาย', isQueue: false },
+        { code: null, name: 'สมหญิง', isQueue: false }
+      ],
+      moreCount: 0,
+      allNames: ['สมชาย', 'สมหญิง']
+    })
   })
 
-  it('truncates to the first maxShown names and reports the remaining count', () => {
-    const workers = ['A', 'B', 'C', 'D', 'E']
-    expect(summarizeWorkers(workers)).toEqual({ shown: 'A, B', moreCount: 3, title: 'A, B, C, D, E' })
+  it('falls back to workers when workerItems is an empty array', () => {
+    expect(resolvePlanWorkersDisplay({ workers: ['สมชาย'], workerItems: [] })).toEqual({
+      shown: [{ code: null, name: 'สมชาย', isQueue: false }],
+      moreCount: 0,
+      allNames: ['สมชาย']
+    })
+  })
+
+  it('filters out falsy entries from the legacy workers array', () => {
+    expect(resolvePlanWorkersDisplay({ workers: ['A', null, '', 'B'] }).allNames).toEqual(['A', 'B'])
+  })
+
+  it('uses workerItems when present, keeping code + isQueue', () => {
+    const workerItems = [
+      { code: 'CW01', name: 'สมชาย', isQueue: false },
+      { code: 'CW02', name: 'สมหญิง', isQueue: false }
+    ]
+    expect(resolvePlanWorkersDisplay({ workerItems })).toEqual({ shown: workerItems, moreCount: 0, allNames: ['สมชาย', 'สมหญิง'] })
+  })
+
+  // ตามสั่ง: ช่างจริงมาก่อนเสมอ ตามด้วยรายการรอคิว ไม่ว่า API จะส่งมาเรียงแบบไหน
+  it('orders real workers (isQueue=false) before queued items (isQueue=true), regardless of input order', () => {
+    const workerItems = [
+      { code: 'CG9K', name: 'รอจ่ายขัดชุบ 9K', isQueue: true },
+      { code: 'CW01', name: 'สมชาย', isQueue: false }
+    ]
+    expect(resolvePlanWorkersDisplay({ workerItems }).shown).toEqual([
+      { code: 'CW01', name: 'สมชาย', isQueue: false },
+      { code: 'CG9K', name: 'รอจ่ายขัดชุบ 9K', isQueue: true }
+    ])
+  })
+
+  it('truncates to the first maxShown items (default 3) and reports the remaining count', () => {
+    const workerItems = [
+      { code: 'CW01', name: 'A', isQueue: false },
+      { code: 'CW02', name: 'B', isQueue: false },
+      { code: 'CW03', name: 'C', isQueue: false },
+      { code: 'CW04', name: 'D', isQueue: false },
+      { code: 'CW05', name: 'E', isQueue: false }
+    ]
+    const result = resolvePlanWorkersDisplay({ workerItems })
+    expect(result.shown.map((w) => w.name)).toEqual(['A', 'B', 'C'])
+    expect(result.moreCount).toBe(2)
+    expect(result.allNames).toEqual(['A', 'B', 'C', 'D', 'E'])
   })
 
   it('respects a custom maxShown', () => {
-    const workers = ['A', 'B', 'C', 'D']
-    expect(summarizeWorkers(workers, 3)).toEqual({ shown: 'A, B, C', moreCount: 1, title: 'A, B, C, D' })
+    const workerItems = [
+      { code: 'CW01', name: 'A', isQueue: false },
+      { code: 'CW02', name: 'B', isQueue: false },
+      { code: 'CW03', name: 'C', isQueue: false }
+    ]
+    const result = resolvePlanWorkersDisplay({ workerItems }, 2)
+    expect(result.shown.map((w) => w.name)).toEqual(['A', 'B'])
+    expect(result.moreCount).toBe(1)
   })
 
-  it('filters out falsy entries', () => {
-    expect(summarizeWorkers(['A', null, '', 'B'])).toEqual({ shown: 'A, B', moreCount: 0, title: 'A, B' })
+  it('counts a queued item toward maxShown/moreCount the same as a real worker', () => {
+    const workerItems = [
+      { code: 'CW01', name: 'A', isQueue: false },
+      { code: 'CW02', name: 'B', isQueue: false },
+      { code: 'CW03', name: 'C', isQueue: false },
+      { code: 'CG9K', name: 'รอจ่ายขัดชุบ 9K', isQueue: true }
+    ]
+    const result = resolvePlanWorkersDisplay({ workerItems })
+    expect(result.shown.map((w) => w.name)).toEqual(['A', 'B', 'C'])
+    expect(result.moreCount).toBe(1)
   })
 })
 

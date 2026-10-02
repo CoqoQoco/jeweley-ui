@@ -5,7 +5,8 @@
   lastUpdateBy/lastAction/workers มาด้วย (null/[] เสมอ ตามคอนแทรคจริง) จึงไม่มีคอลัมน์ "อัปเดตล่าสุด"/"ช่าง"
   ต่างจาก delivery-at-risk-panel.vue ที่มี
 
-  ช่วงเวลามาจาก props (คุมจาก RangePresetGeneric/FilterPanelGeneric ของ ProductionInsightView)
+  ช่วงเวลามาจาก props (คุมจาก RangePresetGeneric/FilterPanelGeneric ของ ProductionInsightView) — watch รวม
+  start+end เป็น resetPagingKey เดียว (ไม่ watch แยก) กัน resetPaging() ยิงซ้ำตอน preset เปลี่ยนทั้งคู่พร้อมกัน
 
   Props:
     start — Date (required)
@@ -123,6 +124,14 @@ export default {
       ]
     },
 
+    // รวม start+end เป็น key เดียว กัน resetPaging() ยิงซ้ำ 2 ครั้งตอนเปลี่ยนช่วงเวลา (preset เปลี่ยนทั้ง
+    // start/end พร้อมกันในจังหวะเดียว แต่เดิม watch แยก start()/end() คนละตัวทำให้ยิง fetch 2 รอบต่อการกด 1
+    // ครั้ง — ยืนยัน bug จริงบน prod 2026-10-01, reqid 62350+62351) — JSON.stringify(Date) ใช้ toISOString()
+    // ให้อัตโนมัติ เทียบ string ตรงๆ ได้
+    resetPagingKey() {
+      return JSON.stringify([this.start, this.end])
+    },
+
     canOpenPlanDetail() {
       const route = this.$router.resolve({ name: PLAN_DETAIL_ROUTE_NAME, params: { id: 0 } })
       return this.permissionService.hasAnyPermission(route.meta.permissions)
@@ -139,10 +148,7 @@ export default {
   },
 
   watch: {
-    start() {
-      this.resetPaging()
-    },
-    end() {
+    resetPagingKey() {
       this.resetPaging()
     }
   },

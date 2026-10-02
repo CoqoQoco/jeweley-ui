@@ -161,17 +161,17 @@ export default {
 
     permissionService() {
       return new PermissionService(this.authStore.getUser, this.authStore.permissions)
+    },
+
+    // รวม metal+start+end เป็น key เดียว กัน resetPaging() ยิงซ้ำตอน preset เปลี่ยน start+end พร้อมกัน —
+    // pattern เดียวกับบั๊กจริงที่เจอบน delivery-late-plans-panel.vue 2026-10-01
+    resetPagingKey() {
+      return JSON.stringify([this.metal, this.start, this.end])
     }
   },
 
   watch: {
-    metal() {
-      this.resetPaging()
-    },
-    start() {
-      this.resetPaging()
-    },
-    end() {
+    resetPagingKey() {
       this.resetPaging()
     }
   },

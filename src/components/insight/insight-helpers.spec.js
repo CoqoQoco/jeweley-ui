@@ -141,6 +141,12 @@ describe('resolveFindingParams', () => {
     expect(resolveFindingParams({ workers, count: 4 })).toEqual({ workers: 'ขวัญชัย, ณฐกร, ศิริมงคล และอีก 1 คน', count: 4 })
   })
 
+  // workerNames (ACT_CROSS_TRAIN ของหมวด "ช่างและค่าแรง") เป็น array ของสตริงชื่อดิบ ไม่มี count แยก (array
+  // ที่ส่งมาคือรายชื่อเต็มเสมอ) — ไม่ควรมี "และอีก N คน" ต่อท้ายถ้า array สั้นกว่า maxNames
+  it('formats a workerNames[] param (plain strings, no separate count) into a single name-list string', () => {
+    expect(resolveFindingParams({ workerNames: ['สมชาย', 'สมหญิง'] })).toEqual({ workerNames: 'สมชาย และ สมหญิง' })
+  })
+
   it('passes a custom maxWorkerNames through to formatWorkerNameList (e.g. ACT_TALK_WORKER shows up to 5)', () => {
     const workers = [
       { workerName: 'หนึ่ง' },
@@ -158,6 +164,11 @@ describe('resolveFindingParams', () => {
 
   it('formats params whose key ends in Money with thousand separators and no decimals', () => {
     expect(resolveFindingParams({ excessMoney: 9008.4 })).toEqual({ excessMoney: '9,008' })
+  })
+
+  // Wages (FC_WAGES_NEXT_MONTH.projectedWages/avgWages ของหมวด "ช่างและค่าแรง") จัดรูปแบบเหมือน Money เป๊ะ
+  it('formats params whose key ends in Wages the same way as Money (thousand separators, no decimals)', () => {
+    expect(resolveFindingParams({ projectedWages: 850000.4, avgWages: 820000 })).toEqual({ projectedWages: '850,000', avgWages: '820,000' })
   })
 
   it('formats params whose key ends in Gram with up to 2 decimals', () => {
@@ -210,6 +221,27 @@ describe('formatWorkerNameList', () => {
   it('respects a custom maxNames', () => {
     const workers = [{ workerName: 'เอ' }, { workerName: 'บี' }, { workerName: 'ซี' }]
     expect(formatWorkerNameList(workers, 3, 2)).toBe('เอ, บี และอีก 1 คน')
+  })
+
+  // workers-helpers.js (หมวด "ช่างและค่าแรง") ใช้ field ชื่อ `name` ไม่ใช่ `workerName` — ยืนยันจาก API agent
+  // 2026-10-01 — ต้องรองรับทั้ง 2 ชื่อ field พร้อมกัน (ไม่ทุบของเดิม)
+  it('falls back to the "name" field (workers-topic shape) when "workerName" is absent', () => {
+    expect(formatWorkerNameList([{ name: 'หนิง' }], 1)).toBe('หนิง')
+  })
+
+  // รองรับ array ของสตริงชื่อดิบตรงๆ (workerNames[] ของ ACT_CROSS_TRAIN) ไม่ใช่แค่ array ของ object
+  it('accepts a plain array of name strings (e.g. workerNames[])', () => {
+    expect(formatWorkerNameList(['เอ', 'บี'], 2)).toBe('เอ และ บี')
+  })
+
+  // WRK_RATE_OUTLIER/ACT_REVIEW_RATE: worker ที่มี wagePerJob+medianPerJob ครบคู่ ต้องต่อท้ายเป็น
+  // "{ชื่อ} {ค่าแรง} ฿/งาน (ค่ากลาง {ค่ากลาง})" ตามตัวอย่างที่ API agent ให้ไว้ตรงๆ
+  it('appends "{wagePerJob} ฿/งาน (ค่ากลาง {medianPerJob})" when both extra fields are present', () => {
+    expect(formatWorkerNameList([{ name: 'หนิง', wagePerJob: 1290, medianPerJob: 145 }], 1)).toBe('หนิง 1,290 ฿/งาน (ค่ากลาง 145)')
+  })
+
+  it('does not append the wage breakdown when only one of wagePerJob/medianPerJob is present', () => {
+    expect(formatWorkerNameList([{ name: 'หนิง', wagePerJob: 1290, medianPerJob: null }], 1)).toBe('หนิง')
   })
 })
 
@@ -357,7 +389,14 @@ describe('resolveHelpKey', () => {
       'GOLD_STAGE_ABOVE_TARGET',
       'GOLD_STAGE_PENDING_RETURN',
       'GOLD_STAGE_OUTLIER_JOBS',
-      'FC_GOLD_STAGE_RISING'
+      'FC_GOLD_STAGE_RISING',
+      'WRK_CONCENTRATION',
+      'WRK_RATE_OUTLIER',
+      'WRK_WAGE_PER_PLAN_RISING',
+      'WRK_UNPAID_JOBS',
+      'WRK_GOLD_REPEAT',
+      'FC_WAGES_NEXT_MONTH',
+      'FC_KEY_PERSON_RISK'
     ].forEach((code) => {
       expect(resolveHelpKey(code)).toBe(`view.productionInsight.help.${code}`)
     })

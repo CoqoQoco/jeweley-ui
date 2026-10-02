@@ -105,11 +105,7 @@
           </template>
 
           <template #workersTemplate="{ data }">
-            <span v-if="!workersOf(data).shown">—</span>
-            <span v-else :title="workersOf(data).title">
-              {{ workersOf(data).shown }}
-              <span v-if="workersOf(data).moreCount > 0" class="text-muted">+{{ workersOf(data).moreCount }}</span>
-            </span>
+            <PlanWorkersCell :workers="data.workers" :worker-items="data.workerItems" />
           </template>
         </BaseDataTable>
       </div>
@@ -124,7 +120,6 @@ import { PermissionService } from '@/services/permission/permission.js'
 import { formatDate } from '@/services/utils/dayjs.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 import {
-  summarizeWorkers,
   buildLastActionLine,
   resolvePlanLinkState,
   PLAN_DETAIL_ROUTE_NAME,
@@ -135,6 +130,7 @@ import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import InfoTipGeneric from '@/components/generic/InfoTipGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import PlanWorkersCell from './plan-workers-cell.vue'
 
 const DEPARTMENT_KEYS = ['design', 'trim', 'rawPolish', 'gemSort', 'setting', 'plating', 'costCard']
 
@@ -147,7 +143,8 @@ export default {
     SectionCardGeneric,
     InfoTipGeneric,
     ButtonGeneric,
-    BaseDataTable
+    BaseDataTable,
+    PlanWorkersCell
   },
 
   setup() {
@@ -216,17 +213,17 @@ export default {
 
     permissionService() {
       return new PermissionService(this.authStore.getUser, this.authStore.permissions)
+    },
+
+    // รวม departmentKeys+riskHorizonDays เป็น key เดียว กัน resetPaging() ยิงซ้ำตอนแก้ทั้งคู่แล้วกด "ใช้
+    // ตัวกรอง" ครั้งเดียว (pattern เดียวกับบั๊กจริงที่เจอบน delivery-late-plans-panel.vue 2026-10-01)
+    resetPagingKey() {
+      return JSON.stringify([this.departmentKeys, this.riskHorizonDays])
     }
   },
 
   watch: {
-    departmentKeys: {
-      handler() {
-        this.resetPaging()
-      },
-      deep: true
-    },
-    riskHorizonDays() {
+    resetPagingKey() {
       this.resetPaging()
     }
   },
@@ -236,10 +233,6 @@ export default {
 
     lastActionLine(data) {
       return buildLastActionLine(data.lastUpdateBy, data.lastAction, this.$t('view.productionInsight.wip.lastActionCreated'))
-    },
-
-    workersOf(data) {
-      return summarizeWorkers(data.workers)
     },
 
     planLinkState(data) {

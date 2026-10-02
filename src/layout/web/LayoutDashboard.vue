@@ -10,7 +10,7 @@
     <!-- Content Area (includes sidebar and main content) -->
     <div class="content-container">
       <div id="main" class="main-content">
-        <router-view :key="$route.fullPath"></router-view>
+        <router-view :key="routeViewKey"></router-view>
       </div>
     </div>
   </div>
@@ -21,6 +21,7 @@ import mainBar from '@/components/layout/main-bar.vue'
 //import SlideBar from '@/components/layout/SideBar.vue'
 
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
+import { resolveRouteViewKey } from './layout-dashboard-helpers.js'
 
 export default {
   components: {
@@ -34,6 +35,12 @@ export default {
   },
 
   computed: {
+    // ดู layout-dashboard-helpers.js (resolveRouteViewKey) — route ที่ sync state ลง query บ่อยๆ (เช่น
+    // /executive) ติด meta.queryStableKey กัน router-view remount ทั้งหน้าซ้ำซ้อนตอน query เปลี่ยนเอง
+    routeViewKey() {
+      return resolveRouteViewKey(this.$route)
+    },
+
     user() {
       return this.authStore.user
     },
