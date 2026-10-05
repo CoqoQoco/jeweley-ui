@@ -5,15 +5,12 @@ const ExecutiveOverview = () => import('@/views/report/executive/index-view.vue'
 const ExecutivePlanDetail = () => import('@/views/report/executive/plan-detail/index-view.vue')
 
 // ---- production reports ----
-const ProductionDashboard = () => import('@/views/production/dashboard/index-view.vue')
 const reportPlanCompletedWithAllGold = () =>
   import('@/views/production/report/plan-completed-all-gold/index-view.vue')
 const PlanBOMReport = () => import('@/views/production/plan-bom/index-view.vue')
 const GoldCostReport = () => import('@/views/production/report/gold-cost-report/index-view.vue')
 const WipByStageReport = () => import('@/views/production/report/wip-by-stage-report/index-view.vue')
 const TransferReport = () => import('@/views/production/report/transfer-report/index-view.vue')
-const GoldLossDashboard = () =>
-  import('@/views/production/gold-loss-dashboard/index-view.vue')
 const ProductionPriceReport = () =>
   import('@/views/production/report/production-price-report/index-view.vue')
 const LeadTimeReport = () =>
@@ -114,7 +111,7 @@ const routes = [
   {
     path: '/report-production',
     component: Layout,
-    redirect: '/production-dashboard',
+    redirect: { path: '/executive', query: { view: 'wip' } },
     name: 'report-production',
     meta: {
       Displayname: {
@@ -129,30 +126,30 @@ const routes = [
     },
     children: [
       {
+        // ปิดแดชบอร์ดเก่า — เหลือไว้เพื่อ redirect ลิงก์/bookmark เก่าไปหน้าภาพรวมผู้บริหาร
         path: '/production-dashboard',
         name: 'production-dashboard',
-        component: ProductionDashboard,
+        redirect: { path: '/executive', query: { view: 'wip' } },
         meta: {
           Displayname: {
             en: 'Dashboard',
             th: 'แดชบอร์ด'
           },
-          minorShow: true,
+          minorShow: false,
           permissions: [PERMISSIONS.PRODUCTION_VIEW]
         }
       },
       {
+        // ปิดแดชบอร์ดเก่า — เหลือไว้เพื่อ redirect ลิงก์/bookmark เก่าไปหน้าภาพรวมผู้บริหาร
         path: '/gold-loss-dashboard',
         name: 'gold-loss-dashboard',
-        component: GoldLossDashboard,
+        redirect: { path: '/executive', query: { view: 'gold' } },
         meta: {
           Displayname: {
             en: 'Gold Loss Dashboard',
             th: 'แดชบอร์ด Gold Loss'
           },
-          minorShow: true,
-          // ต้องมีทั้ง PRODUCTION_VIEW และ WORKER_VIEW (OR) — 3 หน้าเดิมที่ redirect เข้ามา
-          // (tang-by-worker/slip-by-worker/by-worker) ใช้ WORKER_VIEW เดี่ยวๆ มาก่อน guard เป็น hasAnyPermission (OR)
+          minorShow: false,
           permissions: [PERMISSIONS.PRODUCTION_VIEW, PERMISSIONS.WORKER_VIEW]
         }
       },
@@ -222,10 +219,10 @@ const routes = [
         }
       },
       {
-        // ย้ายเข้า gold-loss-dashboard (?tab=stage&group=gold) แล้ว — เหลือไว้เพื่อ redirect ลิงก์เก่า
+        // ย้ายเข้า /executive (view=gold) จาก gold-loss-dashboard (?tab=stage&group=gold) แล้ว — เหลือไว้เพื่อ redirect ลิงก์เก่า
         path: '/report-gold-loss-monthly',
         name: 'report-gold-loss-monthly',
-        redirect: '/gold-loss-dashboard?tab=stage&group=gold',
+        redirect: { path: '/executive', query: { view: 'gold' } },
         meta: {
           Displayname: {
             en: 'Monthly Gold Loss Report',
@@ -236,10 +233,10 @@ const routes = [
         }
       },
       {
-        // ย้ายเข้า gold-loss-dashboard (?tab=stage) แล้ว — เหลือไว้เพื่อ redirect ลิงก์เก่า
+        // ย้ายเข้า /executive (view=gold) จาก gold-loss-dashboard (?tab=stage) แล้ว — เหลือไว้เพื่อ redirect ลิงก์เก่า
         path: '/report-gold-loss-by-stage',
         name: 'report-gold-loss-by-stage',
-        redirect: '/gold-loss-dashboard?tab=stage',
+        redirect: { path: '/executive', query: { view: 'gold' } },
         meta: {
           Displayname: {
             en: 'Gold Loss by Stage Report',
@@ -250,10 +247,10 @@ const routes = [
         }
       },
       {
-        // ย้ายเข้า gold-loss-dashboard (?tab=reconcile) แล้ว — เหลือไว้เพื่อ redirect ลิงก์เก่า
+        // ย้ายเข้า /executive (view=gold) จาก gold-loss-dashboard (?tab=reconcile) แล้ว — เหลือไว้เพื่อ redirect ลิงก์เก่า
         path: '/report-gold-loss-reconcile',
         name: 'report-gold-loss-reconcile',
-        redirect: '/gold-loss-dashboard?tab=reconcile',
+        redirect: { path: '/executive', query: { view: 'gold' } },
         meta: {
           Displayname: {
             en: 'Gold Loss Reconciliation Report',
@@ -585,10 +582,10 @@ const routes = [
         }
       },
       {
-        // ย้ายเข้า gold-loss-dashboard (?tab=slip-tang) แล้ว — เหลือไว้เพื่อ redirect ลิงก์เก่า
+        // ย้ายเข้า /executive (view=gold) จาก gold-loss-dashboard (?tab=slip-tang) แล้ว — เหลือไว้เพื่อ redirect ลิงก์เก่า
         path: '/report-gold-loss-tang-by-worker',
         name: 'report-gold-loss-tang-by-worker',
-        redirect: '/gold-loss-dashboard?tab=slip-tang',
+        redirect: { path: '/executive', query: { view: 'gold' } },
         meta: {
           Displayname: {
             en: 'Gold Loss by Worker Report',
@@ -599,10 +596,10 @@ const routes = [
         }
       },
       {
-        // ย้ายเข้า gold-loss-dashboard (?tab=slip-setter) แล้ว — เหลือไว้เพื่อ redirect ลิงก์เก่า
+        // ย้ายเข้า /executive (view=gold) จาก gold-loss-dashboard (?tab=slip-setter) แล้ว — เหลือไว้เพื่อ redirect ลิงก์เก่า
         path: '/report-gold-loss-slip-by-worker',
         name: 'report-gold-loss-slip-by-worker',
-        redirect: '/gold-loss-dashboard?tab=slip-setter',
+        redirect: { path: '/executive', query: { view: 'gold' } },
         meta: {
           Displayname: {
             en: 'Gold Loss by Setter Report',
@@ -613,10 +610,10 @@ const routes = [
         }
       },
       {
-        // ย้ายเข้า gold-loss-dashboard (?tab=worker) แล้ว — เหลือไว้เพื่อ redirect ลิงก์เก่า
+        // ย้ายเข้า /executive (view=gold) จาก gold-loss-dashboard (?tab=worker) แล้ว — เหลือไว้เพื่อ redirect ลิงก์เก่า
         path: '/report-gold-loss-by-worker',
         name: 'report-gold-loss-by-worker',
-        redirect: '/gold-loss-dashboard?tab=worker',
+        redirect: { path: '/executive', query: { view: 'gold' } },
         meta: {
           Displayname: {
             en: 'Gold Loss by Worker (All Stages)',

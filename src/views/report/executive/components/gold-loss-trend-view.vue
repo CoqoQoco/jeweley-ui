@@ -11,10 +11,6 @@
   <div class="gold-loss-trend">
     <div class="gold-loss-trend__header">
       <h6 class="gold-loss-trend__title">{{ $t('view.executive.goldLossTrend.title') }}</h6>
-      <router-link v-if="canViewGoldLossDashboard" :to="{ path: '/gold-loss-dashboard' }" class="gold-loss-trend__link">
-        {{ $t('view.executive.goldLossTrend.detailLink') }}
-        <i class="bi bi-chevron-right"></i>
-      </router-link>
     </div>
 
     <div class="gold-loss-trend__grid">
@@ -35,9 +31,6 @@ import dayjs from 'dayjs'
 import api from '@/axios/axios-helper.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
 import { normalizeTangRow, normalizeSetterRow, buildMonthRange, monthKeyOf, filterRowsByMonthKeys } from '@/services/utils/gold-loss/slip-monthly-helpers.js'
-import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
-import { PermissionService } from '@/services/permission/permission.js'
-import { PERMISSIONS } from '@/services/permission/config.js'
 
 import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 import SlipCompareChart from '@/components/gold-loss/slip-compare-chart.vue'
@@ -50,11 +43,6 @@ export default {
     ToggleGroupGeneric,
     SlipCompareChart,
     SlipWorkerRankingChart
-  },
-
-  setup() {
-    const authStore = useAuthStore()
-    return { authStore }
   },
 
   props: {
@@ -79,14 +67,6 @@ export default {
   },
 
   computed: {
-    permissionService() {
-      return new PermissionService(this.authStore.getUser, this.authStore.permissions)
-    },
-
-    canViewGoldLossDashboard() {
-      return this.permissionService.hasAnyPermission([PERMISSIONS.PRODUCTION_VIEW, PERMISSIONS.WORKER_VIEW])
-    },
-
     rankingRangeValue: {
       get() {
         return this.rankingRange
@@ -194,17 +174,6 @@ export default {
   font-weight: 600;
   font-size: var(--fs-base);
   margin: 0;
-}
-
-.gold-loss-trend__link {
-  font-size: var(--fs-sm);
-  font-weight: 600;
-  color: var(--base-green);
-  white-space: nowrap;
-
-  &:hover {
-    text-decoration: underline;
-  }
 }
 
 .gold-loss-trend__grid {

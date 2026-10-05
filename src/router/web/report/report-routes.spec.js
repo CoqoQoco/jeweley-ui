@@ -44,3 +44,44 @@ describe('report-routes — executive overview', () => {
     expect(executiveParent.redirect).toBe('/executive')
   })
 })
+
+describe('report-routes — old dashboards closed (Phase 5)', () => {
+  const allChildren = routes.flatMap((r) => r.children || [])
+  const byName = (name) => allChildren.find((r) => r.name === name)
+  const wip = { path: '/executive', query: { view: 'wip' } }
+  const gold = { path: '/executive', query: { view: 'gold' } }
+
+  it.each([
+    ['production-dashboard', wip],
+    ['gold-loss-dashboard', gold],
+    ['report-gold-loss-monthly', gold],
+    ['report-gold-loss-by-stage', gold],
+    ['report-gold-loss-reconcile', gold],
+    ['report-gold-loss-tang-by-worker', gold],
+    ['report-gold-loss-slip-by-worker', gold],
+    ['report-gold-loss-by-worker', gold]
+  ])('%s redirects straight to /executive', (name, target) => {
+    const route = byName(name)
+    expect(route.redirect).toEqual(target)
+    expect(route.component).toBeUndefined()
+    expect(route.meta.minorShow).toBe(false)
+  })
+
+  it('redirects the report-production parent to /executive?view=wip', () => {
+    expect(routes.find((r) => r.name === 'report-production').redirect).toEqual(wip)
+  })
+
+  it('has no redirect chain through the old dashboard paths', () => {
+    const oldPaths = ['/production-dashboard', '/gold-loss-dashboard']
+    routes.concat(allChildren).forEach((r) => {
+      const target = typeof r.redirect === 'string' ? r.redirect : r.redirect?.path
+      if (target) expect(oldPaths).not.toContain(target.split('?')[0])
+    })
+  })
+
+  it('shows no menu entry that targets the old dashboard paths', () => {
+    const visible = allChildren.filter((r) => r.meta?.minorShow)
+    expect(visible.map((r) => r.path)).not.toContain('/production-dashboard')
+    expect(visible.map((r) => r.path)).not.toContain('/gold-loss-dashboard')
+  })
+})

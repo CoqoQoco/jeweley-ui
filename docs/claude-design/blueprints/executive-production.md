@@ -992,3 +992,8 @@ contract ครบแล้วทั้ง rules/i18n spec
 - verify: `npx eslint` เฉพาะไฟล์ที่แก้ (clean) + `npx vitest run` ทั้ง repo (1335/1344 ผ่าน เหลือแค่
   `customer-edit-modal.spec.js` 9 เทสที่ fail ซ้ำเดิมมาตลอด session นี้ ไม่เกี่ยวกับงานนี้, insight scope
   585/585 ผ่าน) + `npm run build` (สำเร็จ) + grep `border-left` ไฟล์ที่เปลี่ยนทั้งหมด (ไม่เจอเลย)
+
+## Phase 5: old dashboards redirected (2026-10-05)
+
+- `/production-dashboard` -> `/executive?view=wip`; `/gold-loss-dashboard` และ redirect เก่าทั้งหมดของ gold-loss -> `/executive?view=gold` (redirect ตรง ไม่มี chain, ซ่อนจากเมนู)
+- view เดิม (`views/production/dashboard/*`, `gold-loss-dashboard/*`) คงไว้บนดิสก์ ไม่ถูกอ้างอิงจาก router แล้ว
