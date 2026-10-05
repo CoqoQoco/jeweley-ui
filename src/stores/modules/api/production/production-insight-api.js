@@ -286,6 +286,37 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
         end: end ? formatISOString(end) : null,
         departmentKeys
       })
+    },
+
+    // หมวด "วัตถุดิบที่กระทบการผลิต" (พลอยอย่างเดียว ตามที่ user ยืนยัน) — bucket เป็นรายเดือนเสมอ (ไม่มี
+    // พารามิเตอร์ bucket ให้เลือกใน draft contract — เหมือน capacity/workers)
+    async fetchMaterials({ start, end } = {}) {
+      return await api.jewelry.post('ProductionInsight/Materials', {
+        start: start ? formatISOString(start) : null,
+        end: end ? formatISOString(end) : null,
+        bucket: 'month'
+      })
+    },
+
+    // DataSourceRequest + gemStatus ('ready'|'short'|'unmatched'|'' = ทั้งหมด) — items = base plan fields +
+    // workerItems/requestDate/enteredGemSortDate/waitingDays/gems[{gem,shape,size,metal,qty,available,
+    // status}]/gemStatus — ไม่มี start/end (snapshot ใบที่ "รอเบิกอยู่ตอนนี้" เหมือน StalePlans/DueRiskPlans
+    // ของหมวด wip ไม่ใช่ query ตามช่วงเวลา)
+    async fetchMaterialWaitingPlans({ take = 50, skip = 0, sort = [], gemStatus = '' } = {}) {
+      return await api.jewelry.post('ProductionInsight/MaterialWaitingPlans', { take, skip, sort, gemStatus })
+    },
+
+    // DataSourceRequest + status ('ready'|'short'|'unmatched'|'' = ทั้งหมด) — items = gem,shape,size,metal,
+    // waitingPlans,upcomingPlans,requiredQty,available,usedPerMonth,coverDays,status — snapshot เทียบ
+    // ความต้องการกับสต็อกตอนนี้ ไม่มี start/end เช่นกัน
+    async fetchMaterialGemDemand({ take = 50, skip = 0, sort = [], status = '' } = {}) {
+      return await api.jewelry.post('ProductionInsight/MaterialGemDemand', { take, skip, sort, status })
+    },
+
+    // DataSourceRequest + coverDays (default 30) — items = code,groupName,shape,size,grade,quantity,
+    // used90d,coverDays — ไม่มี start/end
+    async fetchMaterialGemLowCover({ take = 50, skip = 0, sort = [], coverDays = 30 } = {}) {
+      return await api.jewelry.post('ProductionInsight/MaterialGemLowCover', { take, skip, sort, coverDays })
     }
   }
 })

@@ -38,7 +38,8 @@ export default {
     deptHead: 'Department Head',
     planner: 'Production Planner',
     productionManager: 'Production Manager',
-    goldControl: 'Gold Control'
+    goldControl: 'Gold Control',
+    purchasing: 'Purchasing'
   },
 
   wip: {
@@ -502,6 +503,68 @@ export default {
     unpaidColCheckGram: 'Checked (g)'
   },
 
+  materials: {
+    filterSectionTitle: 'Materials Filters',
+    filterCustomRangeLabel: 'Custom Range',
+
+    gemStatus: {
+      ready: 'Ready',
+      short: 'Short',
+      unmatched: 'No spec match',
+      unmatchedGem: 'No spec match (type)',
+      unmatchedSpec: 'No spec match (size/shape)'
+    },
+    gemStatusShortWithAvailable: 'Short: have {available}',
+
+    kpiGroupTitle: 'Materials Overview',
+    kpiWaitingPlans: 'Waiting for Gems',
+    kpiWaitingPlansSub: 'Median wait {days} days',
+    kpiIssueMedian: 'Entry→Issue Median',
+    kpiIssueMedianSub: 'P90 {days} days',
+    kpiShortLines: 'Gems Short',
+    kpiShortLinesSub: '{plans} plans affected',
+    kpiMatchedPercent: 'Spec Matched',
+    kpiMatchedPercentSub: '{matched}/{total} lines',
+    statusEstimateNote: 'Ready/short status is an estimate (matches type, shape, size, gold/silver only — ignores carat/quality and other plans\' reservations)',
+    daysUnit: 'days',
+    plansUnit: 'plans',
+
+    trendTitle: 'Monthly Gem Sorting Entries + Entry→Issue Time',
+    seriesEntered: 'Entered',
+    seriesIssueMedian: 'Entry→Issue Median',
+    seriesIssueP90: 'Entry→Issue P90',
+
+    waitingTitle: 'Plans Waiting for Gems',
+    waitingStatusFilter: 'Filter by gem status',
+    waitingColRequestDate: 'Requested',
+    waitingColEnteredDate: 'Entered Gem Sorting',
+    waitingColWaitingDays: 'Waiting (days)',
+    waitingColGems: 'Gems',
+    waitingColDueDate: 'Due Date',
+
+    demandTitle: 'Gem Demand vs. Stock',
+    demandStatusFilter: 'Filter by status',
+    demandColGem: 'Gem',
+    demandColWaitingPlans: 'Waiting Plans',
+    demandColUpcomingPlans: 'Upcoming Plans',
+    demandColRequiredQty: 'Required',
+    demandColAvailable: 'Available',
+    demandColUsedPerMonth: 'Used/Month',
+    demandColCoverDays: 'Cover (days)',
+    demandColStatus: 'Status',
+
+    lowCoverTitle: 'Low Cover Gems',
+    lowCoverFilterDays: 'Cover at most (days)',
+    lowCoverColCode: 'Code',
+    lowCoverColGroup: 'Group',
+    lowCoverColShape: 'Shape',
+    lowCoverColSize: 'Size',
+    lowCoverColGrade: 'Grade',
+    lowCoverColQuantity: 'Quantity',
+    lowCoverColUsed90d: 'Used 90d',
+    lowCoverColCoverDays: 'Cover (days)'
+  },
+
   rules: {
     WIP_STALE: '{count} plans have been stale too long ({percent}% of {openCount} open plans)',
     WIP_OVERDUE: '{count} plans are already overdue ({percent}% of {openCount} open plans)',
@@ -575,8 +638,16 @@ export default {
     ACT_RECORD_WAGES: 'Record wages for {count} pending jobs',
     ACT_TALK_WORKER_GOLD: 'Talk to {workers} about repeatedly exceeding the gold allowance',
 
-    MATERIALS_PLACEHOLDER_GEM_LOW_STOCK: 'Low gem stock vs. pending sorting work',
-    MATERIALS_PLACEHOLDER_NEGATIVE_GOLD: 'Negative raw gold balance in the system'
+    MAT_GEM_WAITING: '{count} plans are waiting for gems to be issued (median wait {medianDays} days)',
+    MAT_READY_NOT_ISSUED: '{count} plans have gems ready but not yet issued',
+    MAT_GEM_SHORT: '{lines} gem lines are short, affecting {plans} plans',
+    MAT_SPEC_UNMATCHED: '{lines} gem lines could not be matched to a spec ({percent}% of all lines)',
+    FC_GEM_SHORT_UPCOMING: 'Gems are projected to fall short for {plans} upcoming plans ({lines} lines)',
+    FC_GEM_STOCKOUT: '{count} gem lines are projected to run out within {days} days at the current usage rate',
+    ACT_ISSUE_READY: 'Issue gems for the {count} plans that are ready',
+    ACT_BUY_GEMS: 'Order more gems for the {lines} short lines',
+    ACT_FIX_GEM_SPEC: 'Fix the gem spec for the {lines} unmatched lines',
+    ACT_ADD_GEM_SORTER: 'Consider adding a gem sorter in {deptKey}'
   },
 
   codeLabel: {
@@ -623,15 +694,13 @@ export default {
     WRK_UNPAID_JOBS: 'Jobs pending wage records',
     WRK_GOLD_REPEAT: 'Repeatedly over gold allowance',
     FC_WAGES_NEXT_MONTH: 'Next month wage forecast',
-    FC_KEY_PERSON_RISK: 'Key-person risk'
-  },
-
-  placeholder: {
-    message: 'Being built — data is still available on the previous page.',
-    reportTitle: 'Data is on the previous page',
-    link: {
-      materials: 'Go to gem stock dashboard'
-    }
+    FC_KEY_PERSON_RISK: 'Key-person risk',
+    MAT_GEM_WAITING: 'Waiting for gems',
+    MAT_READY_NOT_ISSUED: 'Ready but not issued',
+    MAT_GEM_SHORT: 'Gems short',
+    MAT_SPEC_UNMATCHED: 'Spec not matched',
+    FC_GEM_SHORT_UPCOMING: 'Projected gem shortage',
+    FC_GEM_STOCKOUT: 'Projected stockout'
   },
 
   help: {
@@ -760,6 +829,13 @@ export default {
     WRK_UNPAID_JOBS: 'Jobs that have been checked (have a checkGram) but not yet recorded as piece-rate wages',
     WRK_GOLD_REPEAT: 'Workers repeatedly over the gold allowance across periods (same data as the "Gold & Loss" topic)',
     FC_WAGES_NEXT_MONTH: 'Estimated from the recent trend of total monthly wages',
-    FC_KEY_PERSON_RISK: 'A department that has relied heavily on a few workers for a sustained period — at risk if they leave'
+    FC_KEY_PERSON_RISK: 'A department that has relied heavily on a few workers for a sustained period — at risk if they leave',
+
+    MAT_GEM_WAITING: 'Plans that have been sent to gem sorting but not yet issued for use',
+    MAT_READY_NOT_ISSUED: 'Gems look ready (rough estimate) but have not been issued from stock yet',
+    MAT_GEM_SHORT: 'Gem lines where stock does not cover the current demand',
+    MAT_SPEC_UNMATCHED: 'Gem lines whose spec (type/shape/size/gold-silver) does not match anything in stock',
+    FC_GEM_SHORT_UPCOMING: 'Estimated from available gem stock vs. plans about to enter gem sorting soon',
+    FC_GEM_STOCKOUT: 'Estimated from remaining stock divided by the recent monthly usage rate'
   }
 }

@@ -396,7 +396,13 @@ describe('resolveHelpKey', () => {
       'WRK_UNPAID_JOBS',
       'WRK_GOLD_REPEAT',
       'FC_WAGES_NEXT_MONTH',
-      'FC_KEY_PERSON_RISK'
+      'FC_KEY_PERSON_RISK',
+      'MAT_GEM_WAITING',
+      'MAT_READY_NOT_ISSUED',
+      'MAT_GEM_SHORT',
+      'MAT_SPEC_UNMATCHED',
+      'FC_GEM_SHORT_UPCOMING',
+      'FC_GEM_STOCKOUT'
     ].forEach((code) => {
       expect(resolveHelpKey(code)).toBe(`view.productionInsight.help.${code}`)
     })

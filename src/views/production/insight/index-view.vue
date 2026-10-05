@@ -6,19 +6,21 @@
   ทองและ Loss / ช่างและค่าแรง / วัตถุดิบที่กระทบการผลิต — ทุกหมวดใช้โครง 4 ส่วนเดียวกัน (InsightTabLayout):
   ปัญหาที่เกิดแล้ว / คาดการณ์ปัญหาที่จะเกิด / วิธีแก้ / รายงาน
 
-  Revision 6: หมวด "งานค้างและคอขวด" (wip) + "ส่งงานตรงเวลา" (delivery) + "ทองและ Loss" (gold) + "กำลังการ
-  ผลิต" (capacity) + "ช่างและค่าแรง" (workers) มีเนื้อหาจริงแล้ว (เรียก ProductionInsight/Wip, Delivery, Gold,
-  Capacity, Workers) — เหลือแค่ "วัตถุดิบที่กระทบการผลิต" (materials) ที่ยังเป็น placeholder
-  (topic-placeholder-section.vue) จนกว่าจะมี API ของหมวดนั้น — ตัวกรอง (FilterPanelGeneric) มีจริง 5 หมวดนี้
-  (wip: แผนก/ไม่ขยับเกิน (วัน)/เตือนล่วงหน้า (วัน)/เกณฑ์งานค้างเพิ่มเร็ว, delivery: แผนก/เตือนล่วงหน้า (วัน),
-  gold: ประเภทช่าง/ช่าง/ไม่ครบ slip เกิน (วัน), capacity: หน่วย ใบ/ชิ้น/แผนก, workers: แผนก/ประเภทช่าง) หมวดอื่น
-  ไม่มีตัวกรองให้กด (ปุ่ม/chip แถวตัวกรองซ่อนไปเลยเมื่อหมวดนั้นไม่มี filter — ดู hasFilterableFields) — ทั้ง 5
-  หมวดถือ range state (rangePreset/start/end/bucket) แยกกันเองใน filters.wip/filters.delivery/filters.gold/
-  filters.capacity/filters.workers แต่ sync ผ่าน URL query key ร่วมกัน (range/start/end ไม่มี prefix ตาม
-  range-presets.js) เฉพาะของหมวดที่เปิดอยู่ ณ ขณะนั้นเท่านั้น (ดู syncStateToQuery) — ตัวเลือกช่าง (workerCodes)
-  ของหมวด gold มาจากข้อมูลที่ gold-section.vue ยิง Gold สำเร็จแล้ว emit ขึ้นมา (goldWorkerOptions) ไม่ใช่ list
-  คงที่แบบแผนกของ wip/delivery/capacity/workers — departmentKeys/employmentTypes ของหมวด workers ส่งไป server
-  จริง (ต่างจาก capacity ที่ departmentKeys เป็น client-side ล้วน — ดู workers-section.vue)
+  Revision 7: ครบทั้ง 6 หมวดมีเนื้อหาจริงแล้ว (ไม่มี topic placeholder เหลืออีกต่อไป —
+  topic-placeholder-section.vue ถูกลบทิ้งแล้ว): "งานค้างและคอขวด" (wip) + "ส่งงานตรงเวลา" (delivery) +
+  "ทองและ Loss" (gold) + "กำลังการผลิต" (capacity) + "ช่างและค่าแรง" (workers) + "วัตถุดิบที่กระทบการผลิต"
+  (materials, พลอยอย่างเดียว) — ตัวกรอง (FilterPanelGeneric) มีจริงทุกหมวด (wip: แผนก/ไม่ขยับเกิน (วัน)/เตือน
+  ล่วงหน้า (วัน)/เกณฑ์งานค้างเพิ่มเร็ว, delivery: แผนก/เตือนล่วงหน้า (วัน), gold: ประเภทช่าง/ช่าง/ไม่ครบ slip
+  เกิน (วัน), capacity: หน่วย ใบ/ชิ้น/แผนก, workers: แผนก/ประเภทช่าง, materials: ช่วงเวลากำหนดเองเท่านั้น ไม่มี
+  field อื่นใน draft contract) — ทุกหมวดถือ range state (rangePreset/start/end/bucket) แยกกันเองใน
+  filters.wip/filters.delivery/filters.gold/filters.capacity/filters.workers/filters.materials แต่ sync ผ่าน
+  URL query key ร่วมกัน (range/start/end ไม่มี prefix ตาม range-presets.js) เฉพาะของหมวดที่เปิดอยู่ ณ ขณะนั้น
+  เท่านั้น (ดู syncStateToQuery) — ตัวเลือกช่าง (workerCodes) ของหมวด gold มาจากข้อมูลที่ gold-section.vue ยิง
+  Gold สำเร็จแล้ว emit ขึ้นมา (goldWorkerOptions) ไม่ใช่ list คงที่แบบแผนกของ wip/delivery/capacity/workers —
+  departmentKeys/employmentTypes ของหมวด workers ส่งไป server จริง (ต่างจาก capacity ที่ departmentKeys เป็น
+  client-side ล้วน — ดู workers-section.vue) — ตาราง waiting/demand/lowCover ของหมวด materials ใช้ตัวกรอง
+  local state ของตัวเองทั้งหมด (gemStatus/status/coverDays) ไม่ผ่านแผงตัวกรองหลักเลย เพราะเป็น snapshot
+  ปัจจุบัน ไม่ query ตามช่วงเวลา (ดู materials-section.vue)
 
   โหลดข้อมูลเฉพาะหมวดที่เปิด (mount ครั้งแรกแล้วค้างด้วย v-show/visitedSections) — URL sync: อ่าน query
   ครั้งเดียวใน created() แล้ว $router.replace ตอนเปลี่ยน คงค่า query key อื่นของ host ไว้เสมอ (เช่น
@@ -84,10 +86,12 @@
         :filter="filters.workers"
         :active="activeSection === 'workers'"
       />
-
-      <template v-for="topic in placeholderTopics" :key="topic">
-        <TopicPlaceholderSection v-if="visitedSections.has(topic)" v-show="activeSection === topic" :topicKey="topic" />
-      </template>
+      <MaterialsSection
+        v-if="visitedSections.has('materials')"
+        v-show="activeSection === 'materials'"
+        :filter="filters.materials"
+        :active="activeSection === 'materials'"
+      />
     </div>
 
     <FilterPanelGeneric
@@ -105,6 +109,7 @@
         <template v-else-if="activeSection === 'gold'">{{ $t('view.productionInsight.gold.filterSectionTitle') }}</template>
         <template v-else-if="activeSection === 'capacity'">{{ $t('view.productionInsight.capacity.filterSectionTitle') }}</template>
         <template v-else-if="activeSection === 'workers'">{{ $t('view.productionInsight.workers.filterSectionTitle') }}</template>
+        <template v-else-if="activeSection === 'materials'">{{ $t('view.productionInsight.materials.filterSectionTitle') }}</template>
       </template>
       <template #section>
         <template v-if="activeSection === 'wip'">
@@ -276,6 +281,20 @@
             />
           </FormFieldGeneric>
         </template>
+
+        <template v-else-if="activeSection === 'materials'">
+          <FormFieldGeneric
+            :label="$t('view.productionInsight.materials.filterCustomRangeLabel')"
+            :tip="$t('view.productionInsight.help.filterCustomRange')"
+          >
+            <DateRangeGeneric
+              :startDate="draftMaterialsFilter.start"
+              :endDate="draftMaterialsFilter.end"
+              @update:startDate="onDraftCustomRangeChange('start', $event)"
+              @update:endDate="onDraftCustomRangeChange('end', $event)"
+            />
+          </FormFieldGeneric>
+        </template>
       </template>
     </FilterPanelGeneric>
   </div>
@@ -315,7 +334,11 @@ import {
   parseWorkersFilterQuery,
   workersFilterToQuery,
   clearedWorkersFilterQueryKeys,
-  WORKERS_EMPLOYMENT_TYPE_VALUES
+  WORKERS_EMPLOYMENT_TYPE_VALUES,
+  buildDefaultMaterialsFilter,
+  parseMaterialsFilterQuery,
+  materialsFilterToQuery,
+  clearedMaterialsFilterQueryKeys
 } from './insight-filters.js'
 import { resolvePresetRange, resolveCustomBucket } from '@/services/utils/range-presets.js'
 
@@ -333,7 +356,7 @@ import DeliverySection from './sections/delivery-section.vue'
 import GoldSection from './sections/gold-section.vue'
 import CapacitySection from './sections/capacity-section.vue'
 import WorkersSection from './sections/workers-section.vue'
-import TopicPlaceholderSection from './sections/topic-placeholder-section.vue'
+import MaterialsSection from './sections/materials-section.vue'
 
 const DEPARTMENT_KEYS = ['design', 'trim', 'rawPolish', 'gemSort', 'setting', 'plating', 'costCard']
 
@@ -355,7 +378,7 @@ export default {
     GoldSection,
     CapacitySection,
     WorkersSection,
-    TopicPlaceholderSection
+    MaterialsSection
   },
 
   data() {
@@ -370,13 +393,15 @@ export default {
         delivery: buildDefaultDeliveryFilter(),
         gold: buildDefaultGoldFilter(),
         capacity: buildDefaultCapacityFilter(),
-        workers: buildDefaultWorkersFilter()
+        workers: buildDefaultWorkersFilter(),
+        materials: buildDefaultMaterialsFilter()
       },
       draftWipFilter: buildDefaultWipFilter(),
       draftDeliveryFilter: buildDefaultDeliveryFilter(),
       draftGoldFilter: buildDefaultGoldFilter(),
       draftCapacityFilter: buildDefaultCapacityFilter(),
       draftWorkersFilter: buildDefaultWorkersFilter(),
+      draftMaterialsFilter: buildDefaultMaterialsFilter(),
       // ตัวเลือกช่างของหมวด gold — มาจาก Gold.workers ที่ gold-section.vue emit ขึ้นมาหลังยิงสำเร็จ (ไม่ใช่
       // list คงที่แบบแผนกของ wip/delivery) ว่างก่อน gold-section.vue ยิงครั้งแรก
       goldWorkerOptions: [],
@@ -388,10 +413,6 @@ export default {
   computed: {
     sectionOptions() {
       return SECTION_VALUES.map((value) => ({ value, label: this.$t(`view.productionInsight.nav.${value}`) }))
-    },
-
-    placeholderTopics() {
-      return SECTION_VALUES.filter((v) => v !== 'wip' && v !== 'delivery' && v !== 'gold' && v !== 'capacity' && v !== 'workers')
     },
 
     departmentOptions() {
@@ -416,14 +437,10 @@ export default {
 
     // มีตัวกรองจริงแค่หมวด "งานค้างและคอขวด"/"ส่งงานตรงเวลา"/"ทองและ Loss"/"กำลังการผลิต" — หมวดอื่นยังเป็น
     // placeholder ไม่มี filter ให้กด
+    // ครบทั้ง 6 หมวดมี filter เป็นของตัวเองแล้ว (materials มีแค่ช่วงเวลา ไม่มี field อื่น) จึงเป็น true เสมอ —
+    // เก็บ computed นี้ไว้เผื่อมี topic ใหม่ในอนาคตที่ยังไม่มี filter เลย
     hasFilterableFields() {
-      return (
-        this.activeSection === 'wip' ||
-        this.activeSection === 'delivery' ||
-        this.activeSection === 'gold' ||
-        this.activeSection === 'capacity' ||
-        this.activeSection === 'workers'
-      )
+      return true
     },
 
     activeChips() {
@@ -486,6 +503,7 @@ export default {
           { key: 'employmentTypes', label: this.$t('view.productionInsight.workers.filterEmploymentType'), value: this.resolveEmploymentTypeLabels(f.employmentTypes) }
         ])
       }
+      // materials (และหมวดอื่นที่ไม่มี field ให้กรองเลย) ไม่มี chip ให้แสดง — ตกลงมาที่ return [] ด้านล่างเฉยๆ
       return []
     },
 
@@ -547,6 +565,7 @@ export default {
       this.filters.gold = parseGoldFilterQuery(query)
       this.filters.capacity = parseCapacityFilterQuery(query)
       this.filters.workers = parseWorkersFilterQuery(query)
+      this.filters.materials = parseMaterialsFilterQuery(query)
       this.$nextTick(() => {
         this.isApplyingRouteQuery = false
       })
@@ -565,7 +584,9 @@ export default {
                 ? capacityFilterToQuery(this.filters.capacity)
                 : this.activeSection === 'workers'
                   ? workersFilterToQuery(this.filters.workers)
-                  : {}
+                  : this.activeSection === 'materials'
+                    ? materialsFilterToQuery(this.filters.materials)
+                    : {}
       const clearedKeys =
         this.activeSection === 'wip'
           ? clearedWipFilterQueryKeys(this.filters.wip)
@@ -577,7 +598,9 @@ export default {
                 ? clearedCapacityFilterQueryKeys(this.filters.capacity)
                 : this.activeSection === 'workers'
                   ? clearedWorkersFilterQueryKeys(this.filters.workers)
-                  : []
+                  : this.activeSection === 'materials'
+                    ? clearedMaterialsFilterQueryKeys(this.filters.materials)
+                    : []
       const query = { ...this.$route.query, view: this.activeSection, ...sectionQuery }
       clearedKeys.forEach((key) => delete query[key])
       this.$router.replace({ query }).catch(() => {})
@@ -589,6 +612,7 @@ export default {
       this.draftGoldFilter = { ...this.filters.gold }
       this.draftCapacityFilter = { ...this.filters.capacity }
       this.draftWorkersFilter = { ...this.filters.workers }
+      this.draftMaterialsFilter = { ...this.filters.materials }
       this.isFilterPanelOpen = true
     },
 
@@ -602,6 +626,7 @@ export default {
       else if (this.activeSection === 'gold') this.filters.gold = { ...this.draftGoldFilter }
       else if (this.activeSection === 'capacity') this.filters.capacity = { ...this.draftCapacityFilter }
       else if (this.activeSection === 'workers') this.filters.workers = { ...this.draftWorkersFilter }
+      else if (this.activeSection === 'materials') this.filters.materials = { ...this.draftMaterialsFilter }
       this.closeFilterPanel()
     },
 
@@ -611,6 +636,7 @@ export default {
       else if (this.activeSection === 'gold') this.filters.gold = buildDefaultGoldFilter()
       else if (this.activeSection === 'capacity') this.filters.capacity = buildDefaultCapacityFilter()
       else if (this.activeSection === 'workers') this.filters.workers = buildDefaultWorkersFilter()
+      else if (this.activeSection === 'materials') this.filters.materials = buildDefaultMaterialsFilter()
       this.closeFilterPanel()
     },
 
@@ -674,6 +700,7 @@ export default {
       else if (this.activeSection === 'gold') this.filters.gold = buildDefaultGoldFilter()
       else if (this.activeSection === 'capacity') this.filters.capacity = buildDefaultCapacityFilter()
       else if (this.activeSection === 'workers') this.filters.workers = buildDefaultWorkersFilter()
+      else if (this.activeSection === 'materials') this.filters.materials = buildDefaultMaterialsFilter()
     },
 
     // กดปุ่ม preset ใน RangePresetGeneric (แถบเครื่องมือ) — ใช้ทันที ไม่ผ่าน draft/apply เหมือน field อื่น
@@ -698,6 +725,9 @@ export default {
       } else if (this.activeSection === 'workers') {
         // bucket ของหมวด "ช่างและค่าแรง" เป็นรายเดือนเสมอเช่นกัน (ไม่มีพารามิเตอร์ bucket ใน draft contract)
         this.filters.workers = { ...this.filters.workers, rangePreset: preset, start, end, bucket: 'month' }
+      } else if (this.activeSection === 'materials') {
+        // bucket ของหมวด "วัตถุดิบที่กระทบการผลิต" เป็นรายเดือนเสมอเช่นกัน
+        this.filters.materials = { ...this.filters.materials, rangePreset: preset, start, end, bucket: 'month' }
       }
     },
 
@@ -731,6 +761,9 @@ export default {
       } else if (this.activeSection === 'workers') {
         // bucket เป็นรายเดือนเสมอเช่นกัน (ดู onRangePresetChange)
         this.draftWorkersFilter = { ...this.draftWorkersFilter, [field]: value, rangePreset: 'custom', bucket: 'month' }
+      } else if (this.activeSection === 'materials') {
+        // bucket เป็นรายเดือนเสมอเช่นกัน (ดู onRangePresetChange)
+        this.draftMaterialsFilter = { ...this.draftMaterialsFilter, [field]: value, rangePreset: 'custom', bucket: 'month' }
       }
     }
   },

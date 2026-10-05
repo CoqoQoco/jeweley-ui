@@ -288,6 +288,41 @@ export function clearedWorkersFilterQueryKeys(filter = {}) {
   return keys
 }
 
+// ---- Materials tab filter (range เท่านั้น — ไม่มี departmentKeys/อื่นๆ ใน draft contract) ----
+// bucket เป็นรายเดือนเสมอ (เหมือน capacity/workers) — ตัวกรองสถานะ/จำนวนวัน cover ของแต่ละตาราง
+// (waiting/demand/lowCover) เป็น local state ของแต่ละ panel เอง ไม่ผ่านแผงตัวกรองหลัก (ไม่มี start/end ด้วย —
+// เป็น snapshot ปัจจุบัน ไม่ query ตามช่วงเวลา)
+
+const MATERIALS_BUCKET = 'month'
+
+export function buildDefaultMaterialsFilter() {
+  const range = buildDefaultRangeState()
+  return {
+    rangePreset: range.preset,
+    start: range.start,
+    end: range.end,
+    bucket: MATERIALS_BUCKET
+  }
+}
+
+export function parseMaterialsFilterQuery(query = {}) {
+  const range = parseRangeQuery(query)
+  return {
+    rangePreset: range.preset,
+    start: range.start,
+    end: range.end,
+    bucket: MATERIALS_BUCKET
+  }
+}
+
+export function materialsFilterToQuery(filter = {}) {
+  return { ...rangeToQuery({ preset: filter.rangePreset, start: filter.start, end: filter.end }) }
+}
+
+export function clearedMaterialsFilterQueryKeys(filter = {}) {
+  return [...clearedRangeQueryKeys({ preset: filter.rangePreset, start: filter.start, end: filter.end })]
+}
+
 // ---- Active filter chips (ActiveFilterChipsGeneric) ----
 // items: Array<{ key, label, value, alwaysShow? }> — value/label ต้อง resolve เป็นข้อความจริงมาก่อนแล้ว
 // (i18n resolution เป็นหน้าที่ของ component ผู้เรียก ไม่ใช่ไฟล์นี้) — ไม่มี concept "dimmed" ข้ามหมวดอีก

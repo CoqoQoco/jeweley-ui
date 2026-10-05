@@ -38,7 +38,8 @@ export default {
     deptHead: 'หัวหน้าแผนก',
     planner: 'ผู้วางแผนผลิต',
     productionManager: 'ผู้จัดการฝ่ายผลิต',
-    goldControl: 'ควบคุมทอง'
+    goldControl: 'ควบคุมทอง',
+    purchasing: 'จัดซื้อ'
   },
 
   wip: {
@@ -502,6 +503,68 @@ export default {
     unpaidColCheckGram: 'ตรวจนับ (กรัม)'
   },
 
+  materials: {
+    filterSectionTitle: 'ตัวกรองวัตถุดิบที่กระทบการผลิต',
+    filterCustomRangeLabel: 'ช่วงเวลากำหนดเอง',
+
+    gemStatus: {
+      ready: 'พร้อม',
+      short: 'ไม่พอ',
+      unmatched: 'ไม่พบสเปก',
+      unmatchedGem: 'ไม่พบสเปก (ชนิด)',
+      unmatchedSpec: 'ไม่พบสเปก (ขนาด/รูปทรง)'
+    },
+    gemStatusShortWithAvailable: 'ไม่พอ: มี {available}',
+
+    kpiGroupTitle: 'ภาพรวมวัตถุดิบที่กระทบการผลิต',
+    kpiWaitingPlans: 'รอเบิกพลอย',
+    kpiWaitingPlansSub: 'ค่ากลางรอ {days} วัน',
+    kpiIssueMedian: 'เข้า→เบิก ค่ากลาง',
+    kpiIssueMedianSub: 'P90 {days} วัน',
+    kpiShortLines: 'พลอยไม่พอ',
+    kpiShortLinesSub: '{plans} ใบงานติด',
+    kpiMatchedPercent: 'จับคู่สเปกได้',
+    kpiMatchedPercentSub: '{matched}/{total} รายการ',
+    statusEstimateNote: 'สถานะพร้อม/ไม่พอเป็นค่าประมาณ (ดูชนิด รูปทรง ขนาด ทอง/เงิน ไม่ดูกะรัต/คุณภาพ ไม่หักของที่ใบอื่นจอง)',
+    daysUnit: 'วัน',
+    plansUnit: 'ใบ',
+
+    trendTitle: 'งานเข้าคัดพลอยรายเดือน + เวลาเข้า→เบิก',
+    seriesEntered: 'งานเข้า',
+    seriesIssueMedian: 'ค่ากลางเข้า→เบิก',
+    seriesIssueP90: 'P90 เข้า→เบิก',
+
+    waitingTitle: 'ใบงานรอเบิกพลอย',
+    waitingStatusFilter: 'กรองตามสถานะพลอย',
+    waitingColRequestDate: 'วันที่ขอ',
+    waitingColEnteredDate: 'วันที่เข้าคัดพลอย',
+    waitingColWaitingDays: 'รอมา (วัน)',
+    waitingColGems: 'พลอย',
+    waitingColDueDate: 'กำหนดส่ง',
+
+    demandTitle: 'ความต้องการเทียบสต็อกพลอย',
+    demandStatusFilter: 'กรองตามสถานะ',
+    demandColGem: 'พลอย',
+    demandColWaitingPlans: 'ใบงานรอ',
+    demandColUpcomingPlans: 'ใบงานใกล้ถึง',
+    demandColRequiredQty: 'ต้องการ',
+    demandColAvailable: 'มีอยู่',
+    demandColUsedPerMonth: 'ใช้/เดือน',
+    demandColCoverDays: 'พอใช้ (วัน)',
+    demandColStatus: 'สถานะ',
+
+    lowCoverTitle: 'พลอยใกล้หมดเทียบการใช้งาน',
+    lowCoverFilterDays: 'พอใช้ไม่เกิน (วัน)',
+    lowCoverColCode: 'รหัส',
+    lowCoverColGroup: 'กลุ่ม',
+    lowCoverColShape: 'ทรง',
+    lowCoverColSize: 'ขนาด',
+    lowCoverColGrade: 'เกรด',
+    lowCoverColQuantity: 'คงเหลือ',
+    lowCoverColUsed90d: 'ใช้ 90 วัน',
+    lowCoverColCoverDays: 'พอใช้ (วัน)'
+  },
+
   // code -> ข้อความเต็ม (พร้อม params) — ใช้กับ insight-tab-layout prop i18nPrefix (default namespace นี้)
   rules: {
     WIP_STALE: 'งานค้างไม่ขยับนานเกินกำหนด {count} ใบ ({percent}% จากงานเปิดอยู่ {openCount} ใบ)',
@@ -576,8 +639,16 @@ export default {
     ACT_RECORD_WAGES: 'บันทึกค่าแรงงานที่ค้างอยู่ {count} ใบ',
     ACT_TALK_WORKER_GOLD: 'พูดคุยกับช่าง {workers} เรื่องเสียทองเกินเกณฑ์ต่อเนื่อง',
 
-    MATERIALS_PLACEHOLDER_GEM_LOW_STOCK: 'พลอยใกล้หมดเทียบงานที่รอคัดพลอย',
-    MATERIALS_PLACEHOLDER_NEGATIVE_GOLD: 'ทองวัตถุดิบในระบบติดลบ'
+    MAT_GEM_WAITING: 'มีใบงานรอเบิกพลอย {count} ใบ (ค่ากลางรอ {medianDays} วัน)',
+    MAT_READY_NOT_ISSUED: 'มีใบงานที่พลอยพร้อมแล้วแต่ยังไม่เบิก {count} ใบ',
+    MAT_GEM_SHORT: 'พลอยไม่พอ {lines} รายการ กระทบใบงาน {plans} ใบ',
+    MAT_SPEC_UNMATCHED: 'มีรายการพลอยที่จับคู่สเปกไม่ได้ {lines} รายการ ({percent}% ของทั้งหมด)',
+    FC_GEM_SHORT_UPCOMING: 'คาดว่าพลอยจะไม่พอสำหรับงานที่จะเข้าเร็วๆ นี้ {plans} ใบ ({lines} รายการ)',
+    FC_GEM_STOCKOUT: 'คาดว่าพลอย {count} รายการจะหมดภายใน {days} วัน ที่อัตราการใช้ปัจจุบัน',
+    ACT_ISSUE_READY: 'เบิกพลอยให้ใบงานที่พร้อมแล้ว {count} ใบ',
+    ACT_BUY_GEMS: 'สั่งซื้อพลอยเพิ่มสำหรับรายการที่ไม่พอ {lines} รายการ',
+    ACT_FIX_GEM_SPEC: 'แก้ไขสเปกพลอยที่จับคู่ไม่ได้ {lines} รายการ',
+    ACT_ADD_GEM_SORTER: 'พิจารณาเพิ่มช่างคัดพลอยในแผนก{deptKey}'
   },
 
   // code -> ป้ายสั้น ไม่มี param — ใช้แสดง "แก้ปัญหา: ..." ใต้แต่ละ action
@@ -625,15 +696,13 @@ export default {
     WRK_UNPAID_JOBS: 'งานยังไม่บันทึกค่าแรง',
     WRK_GOLD_REPEAT: 'เสียทองเกินเกณฑ์ต่อเนื่อง',
     FC_WAGES_NEXT_MONTH: 'คาดการณ์ค่าแรงเดือนหน้า',
-    FC_KEY_PERSON_RISK: 'เสี่ยงขาดช่างสำคัญ'
-  },
-
-  placeholder: {
-    message: 'กำลังจัดทำ — ยังดูข้อมูลได้ที่หน้าเดิมครับ',
-    reportTitle: 'ข้อมูลอยู่ที่หน้าเดิม',
-    link: {
-      materials: 'ไปที่แดชบอร์ดคลังอัญมณี'
-    }
+    FC_KEY_PERSON_RISK: 'เสี่ยงขาดช่างสำคัญ',
+    MAT_GEM_WAITING: 'รอเบิกพลอย',
+    MAT_READY_NOT_ISSUED: 'พร้อมแล้วแต่ยังไม่เบิก',
+    MAT_GEM_SHORT: 'พลอยไม่พอ',
+    MAT_SPEC_UNMATCHED: 'จับคู่สเปกไม่ได้',
+    FC_GEM_SHORT_UPCOMING: 'คาดว่าพลอยจะไม่พอ',
+    FC_GEM_STOCKOUT: 'คาดว่าพลอยจะหมด'
   },
 
   // ข้อความอธิบาย (ⓘ InfoTipGeneric) — พูดกับเจ้าของกิจการตรงๆ สั้น กระชับ ≤2 บรรทัดเท่าที่ทำได้
@@ -764,6 +833,13 @@ export default {
     WRK_UNPAID_JOBS: 'งานที่ตรวจนับแล้ว (มี checkGram) แต่ยังไม่ถูกบันทึกเป็นค่าแรงรายชิ้น',
     WRK_GOLD_REPEAT: 'ช่างที่เสียทองเกินเกณฑ์ต่อเนื่องหลายช่วง (ข้อมูลเดียวกับหมวด "ทองและ Loss")',
     FC_WAGES_NEXT_MONTH: 'ประมาณการจากแนวโน้มค่าแรงรวมต่อเดือนที่ผ่านมา',
-    FC_KEY_PERSON_RISK: 'แผนกที่พึ่งพาช่างไม่กี่คนสูงต่อเนื่อง เสี่ยงกระทบงานถ้าลาออก'
+    FC_KEY_PERSON_RISK: 'แผนกที่พึ่งพาช่างไม่กี่คนสูงต่อเนื่อง เสี่ยงกระทบงานถ้าลาออก',
+
+    MAT_GEM_WAITING: 'ใบงานที่ส่งคัดพลอยแล้วแต่ยังไม่ได้เบิกออกมาใช้',
+    MAT_READY_NOT_ISSUED: 'พลอยพร้อมเบิกแล้ว (เทียบคร่าวๆ) แต่ยังไม่มีการเบิกออกจากคลัง',
+    MAT_GEM_SHORT: 'รายการพลอยที่สต็อกไม่พอความต้องการตอนนี้',
+    MAT_SPEC_UNMATCHED: 'รายการพลอยที่ระบุสเปกมาไม่ตรงกับที่มีในคลังเลย (ชนิด/รูปทรง/ขนาด/ทอง-เงิน)',
+    FC_GEM_SHORT_UPCOMING: 'ประมาณการจากพลอยที่มีอยู่เทียบกับงานที่กำลังจะเข้าคัดพลอยเร็วๆ นี้',
+    FC_GEM_STOCKOUT: 'ประมาณการจากสต็อกคงเหลือหารด้วยอัตราการใช้ต่อเดือนที่ผ่านมา'
   }
 }

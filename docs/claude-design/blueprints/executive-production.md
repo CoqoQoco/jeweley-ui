@@ -910,3 +910,85 @@ Update สำคัญ**: omit key = คงค่าเดิม, `""` = ล้�
 - verify: `npx eslint` เฉพาะไฟล์ที่แก้ (clean) + `npx vitest run` ทั้ง repo (1270/1279 ผ่าน เหลือแค่
   `customer-edit-modal.spec.js` 9 เทสที่ fail ซ้ำเดิมมาตลอด session นี้ ไม่เกี่ยวกับงานนี้) + `npm run build`
   (สำเร็จ) + grep `border-left` ไฟล์ที่เปลี่ยนทั้งหมด (เจอแค่ในคอมเมนต์ "ห้ามใช้")
+
+## Revision 7 (2026-10-02): หมวด "วัตถุดิบที่กระทบการผลิต" (materials tab, พลอยอย่างเดียว) — ครบ 6 หมวดแล้ว
+
+หมวด `materials` ย้ายจาก placeholder เป็นเนื้อหาจริงเต็มรูปแบบ — **ครบทั้ง 6 หมวดของ Production Insight แล้ว
+ไม่มี topic placeholder เหลืออีกต่อไป** — ลบ `topic-placeholder-section.vue` ออกทั้งไฟล์ (ไม่ใช่แค่ลบ entry
+เหมือนรอบก่อนๆ เพราะไม่มี topic ไหนใช้มันอีกแล้ว) พร้อม `placeholderTopics` computed ใน `index-view.vue` และ
+i18n `placeholder.*` namespace ทั้งหมดใน th/en.js (dead code ทั้งชุด)
+
+orchestrator ใหม่ `sections/materials-section.vue` ยิง `ProductionInsight/Materials` ครั้งเดียวได้ทั้ง
+problems/forecasts/actions/status + kpi/series — **bucket เป็นรายเดือนเสมอ** (เหมือน capacity/workers) —
+**filter มีแค่ช่วงเวลาเท่านั้น ไม่มี departmentKeys/field อื่นเลยใน draft contract** (ต่างจากทุกหมวดก่อนหน้า)
+แต่ยังเปิด `hasFilterableFields=true` ให้ (เปลี่ยนจาก per-section switch เป็น `return true` คงที่ เพราะครบ
+ทุกหมวดแล้วไม่มี topic ไหนไม่มี filter อีกต่อไป) เพื่อให้ RangePresetGeneric + ปุ่มตัวกรอง (ช่วงเวลากำหนดเอง
+อย่างเดียว ไม่มี field อื่น) ยังใช้งานได้เหมือนหมวดอื่น
+
+**ตารางทั้ง 3 (waiting/demand/lowCover) ไม่มี start/end เลย** — เป็น snapshot สถานะปัจจุบัน (เหมือน
+StalePlans/DueRiskPlans ของหมวด wip) ไม่ใช่ query ตามช่วงเวลา — ตัวกรองของแต่ละตาราง (gemStatus/status/
+coverDays) เป็น **local state ของ panel นั้นเองทั้งหมด ไม่ผ่านแผงตัวกรองหลักเลย** (ไม่มี prop ส่งเข้ามาแม้แต่
+ตัวเดียวจาก materials-section.vue — ตารางยิง endpoint ของตัวเองตั้งแต่ mount เลย)
+
+**5 ส่วนตามที่ user ระบุ**: (1) `MaterialsKpiGroup` 4 StatCards (รอเบิกพลอย+ค่ากลางรอ, เข้า→เบิก ค่ากลาง/P90,
+พลอยไม่พอ+ใบงานติด, จับคู่สเปกได้ %) พร้อม **note ที่เห็นได้ตรงๆ ใต้การ์ด** (ไม่ใช่แค่ ⓘ tooltip) อธิบายว่า
+สถานะพร้อม/ไม่พอเป็นค่าประมาณ ตามที่สั่งเป๊ะ (2) `MaterialsTrendChart` แท่งงานเข้า (entered) แกนซ้าย + เส้น
+ค่ากลาง/P90 วันเข้า→เบิก แกนขวา ตาม pattern `capacity-costcard-panel.vue` (3) `MaterialsWaitingPlansPanel`
+(paged, ToggleGroup local filter ทั้งหมด|พร้อม|ไม่พอ|ไม่พบสเปก ตาม pattern `mode` ของ
+`wip-due-risk-panel.vue`) — คอลัมน์ "พลอย" เป็น custom cell โชว์ "{ชื่อพลอย} {ทรง} {ขนาด} ×{จำนวน}" ทุก
+บรรทัดพลอยของใบงานนั้น พร้อมชิปสถานะต่อบรรทัด ใช้ `PlanWorkersCell`/`resolvePlanLinkState` ร่วมกับตารางอื่น
+ทั้งแอป (4) `MaterialsGemDemandPanel` (paged, local status filter เหมือนกัน) (5) `MaterialsGemLowCoverPanel`
+(paged, local number filter "พอใช้ไม่เกิน (วัน)" default 30 — ไม่ resolve ผ่าน gem master เพราะ item เป็น
+stock lot/batch code คนละแนวคิดกับ gem-type code ของ 2 ตารางอื่น)
+
+**แปลชื่อพลอย/ทรงผ่าน gem master ที่มีอยู่แล้ว ตามที่สั่ง "ใช้ store/helper เดิมถ้ามี ไม่งั้นโชว์ code ดิบ"**
+— เจอ `useMasterApiStore().gem`/`gemShape` (fetch ผ่าน `fetchGem()`/`fetchGemShape()`, cache-aware อยู่แล้ว)
+ใช้ field `nameTh` (gem) และ `description` (gemShape) ตามลำดับ (คนละ field name กัน ยืนยันจาก
+`plan-bom-view.vue`/`gems-section.vue` ที่ใช้ pattern เดียวกันอยู่แล้วทั่วแอป) — `resolveGemName`/
+`resolveGemShapeName` (`materials-helpers.js`) fallback เป็น code ดิบเมื่อไม่เจอ match — metal ('GOLD'|
+'SILVER') แปลผ่าน namespace `gold.metalLabel` เดิมของหมวด "ทองและ Loss" ไม่สร้างคำแปลซ้ำ
+
+**unmatchedReason แยกสเปกไม่ตรง 2 แบบ (final contract follow-up)**: gem lines (`MaterialWaitingPlans.gems[]`)
+และแถว `MaterialGemDemand` มี `unmatchedReason: 'gem'|'spec'` เมื่อ `status==='unmatched'` — `'gem'` = ไม่รู้จัก
+ชนิดพลอยเลย (chip "ไม่พบสเปก (ชนิด)"), `'spec'` = รู้จักชนิดแต่รูปทรง/ขนาดไม่ตรง (chip "ไม่พบสเปก
+(ขนาด/รูปทรง)") — เพิ่ม `resolveGemStatusLabelKey(status, unmatchedReason)` (`materials-helpers.js`, ใช้ร่วม
+กัน 2 ตาราง) คืน key `unmatchedGem`/`unmatchedSpec`/`unmatched` (fallback) — `available` เป็น `null` เสมอ
+สำหรับ unmatched, status `short` มี `available` จริงเสมอ (≥0 ไม่ใช่ null)
+
+**KPI fields เพิ่ม/ชัดเจนขึ้น (final contract follow-up)**: `readyPlans` = ใบงานที่ยังไม่ผ่านขั้นคัดพลอย
+ทั้งหมด (กว้าง) **ไม่ใช่** "พร้อมเบิกแล้ว" ตามที่เข้าใจตอนแรก — เพิ่ม `readyWaitingPlans` ใหม่ (พร้อมเบิก+ยัง
+ค้างอยู่ที่คัดพลอยไม่เบิกออก) ใช้กับ `MAT_READY_NOT_ISSUED` โดยเฉพาะ — `unmatchedLines = unmatchedByGem +
+unmatchedBySpec` (2 field ใหม่) — ทั้ง 3 field เก็บไว้ใน `emptyKpi()` ของ `materials-section.vue` เผื่อใช้ใน
+อนาคต (ไม่ได้ขึ้นการ์ด KPI ตรงๆ เพราะ spec กำหนดแค่ 4 การ์ด เหมือนที่ `kpi.unpaidPieceJobs` ของหมวด workers
+ไม่ขึ้นการ์ดของตัวเองเช่นกัน)
+
+**findings/actions param (final contract)**: 4 problem/forecast (`MAT_GEM_WAITING`→count,medianDays |
+`MAT_READY_NOT_ISSUED`→count | `MAT_GEM_SHORT`→plans,lines | `MAT_SPEC_UNMATCHED`(info)→lines,percent) + 2
+forecast (`FC_GEM_SHORT_UPCOMING`→plans,lines | `FC_GEM_STOCKOUT`→count,days) + 4 action
+(`ACT_ISSUE_READY`→count | `ACT_BUY_GEMS`→lines | `ACT_FIX_GEM_SPEC`→lines | `ACT_ADD_GEM_SORTER`→deptKey
+**ไม่มี workerName** — ตั้งใจสั่งเน้นว่า "no workerName" เพราะ action นี้แนะนำเพิ่มคนในแผนก ไม่ใช่คุยกับคนที่
+มีอยู่แบบ ACT_TALK_WORKER_GOLD) — ฉบับร่างแรกเดา param ผิดหลายตัว (ใช้ `count` ซ้ำทุก code) แก้ให้ตรง final
+contract ครบแล้วทั้ง rules/i18n spec
+
+### ไฟล์ที่แตะ
+
+| ไฟล์ | สรุป | เจ้าของ |
+|---|---|---|
+| `src/views/production/insight/components/materials-*.vue` (+ helpers/spec) (ใหม่ทั้งหมด) | KPI/กราฟ/ตารางรอเบิก/ตารางความต้องการ/ตาราง low-cover | @ui-implementer |
+| `src/views/production/insight/sections/materials-section.vue` (ใหม่) | mount ทุก component ข้างต้น | @ui-implementer |
+| `src/views/production/insight/sections/topic-placeholder-section.vue` | **ลบไฟล์ทั้งหมด** (ไม่มี topic ไหนใช้แล้ว) | @ui-implementer |
+| `src/views/production/insight/index-view.vue` | mount `MaterialsSection`, ลบ `placeholderTopics`/`TopicPlaceholderSection` ทิ้ง, `hasFilterableFields` เปลี่ยนเป็น `true` คงที่, ขยาย filter-panel/draft state เป็น 6-way | @ui-implementer |
+| `src/views/production/insight/insight-filters.js` | เพิ่มชุดฟังก์ชัน materials filter (แค่ range, ไม่มี field อื่น) | @ui-implementer |
+| `src/stores/modules/api/production/production-insight-api.js` | เพิ่ม `fetchMaterials`/`fetchMaterialWaitingPlans`/`fetchMaterialGemDemand`/`fetchMaterialGemLowCover` | @ui-implementer |
+| `src/components/insight/insight-helpers.js` (+spec) | เพิ่ม 6 code ใหม่ใน `HELP_KEY_CODES` | @ui-implementer |
+| `src/language/view/production-insight/{th,en}.js` | เพิ่ม namespace `materials.*` เต็ม + rules/codeLabel/help ของ 10 code ใหม่ + ลบ `placeholder.*`/`MATERIALS_PLACEHOLDER_*` ที่ตายแล้ว | @ui-implementer |
+| `src/language/view/production-insight/materials-i18n.spec.js` (ใหม่) | ขยาย pattern เดียวกับ `workers-i18n.spec.js` | @ui-implementer |
+| Backend `ProductionInsight/{Materials,MaterialWaitingPlans,MaterialGemDemand,MaterialGemLowCover}` | ใหม่ — final contract ยืนยันแล้ว (2026-10-02) | @api-implementer |
+
+- **Decision**: ตัวกรอง "แผนก"/"ประเภท"-style ของตารางช่าง (รอบ workers) vs ตัวกรอง local ของตาราง materials
+  (gemStatus/status/coverDays) ใช้ pattern เดียวกัน (local state ไม่ sync URL/global filter) แต่ materials
+  **ไม่มีตัวกรองคู่ซ้อน 2 ชั้นแบบ workers** เพราะไม่มี field ระดับ global ให้ซ้อนด้วยตั้งแต่แรก (draft
+  contract ของ `Materials` ไม่มี field แบบ `departmentKeys`/`employmentTypes` เลย)
+- verify: `npx eslint` เฉพาะไฟล์ที่แก้ (clean) + `npx vitest run` ทั้ง repo (1335/1344 ผ่าน เหลือแค่
+  `customer-edit-modal.spec.js` 9 เทสที่ fail ซ้ำเดิมมาตลอด session นี้ ไม่เกี่ยวกับงานนี้, insight scope
+  585/585 ผ่าน) + `npm run build` (สำเร็จ) + grep `border-left` ไฟล์ที่เปลี่ยนทั้งหมด (ไม่เจอเลย)
