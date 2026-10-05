@@ -10,7 +10,7 @@
 
     <TabViewGeneric :modelValue="activeTab" :tabs="tabsConfig" @update:modelValue="onTabChange">
       <template #production>
-        <productionInsightView />
+        <productionInsightView ref="insight" />
       </template>
       <template #sales>
         <salesView :receivablesSummary="summary.receivables" :salesOrdersSummary="summary.salesOrders" :refreshToken="refreshToken" />
@@ -26,6 +26,8 @@
 import dayjs from 'dayjs'
 
 import { useExecutiveReportApiStore } from '@/stores/modules/api/report/executive-report-api.js'
+import { useProductionInsightApiStore } from '@/stores/modules/api/production/production-insight-api.js'
+import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
 import api from '@/axios/axios-helper.js'
@@ -40,6 +42,30 @@ import {
   buildGoldLossMonthlyExcelRows,
   buildGoldLossByWorkerExcelRows
 } from './executive-helpers.js'
+import {
+  INSIGHT_EXCEL_TOPICS,
+  CAPACITY_EXCEL_WIDTH,
+  GOLD_EXCEL_WIDTH,
+  formatExcelRangeText,
+  buildRangeLeadRows,
+  buildTopicRangeTexts,
+  buildPositionalColumns,
+  buildInsightFindingsExcelRows,
+  buildStageLeadTimeExcelRows,
+  buildDeliveryPlansExcelRows,
+  buildCapacityExcelRows,
+  buildGoldExcelRows,
+  buildWorkersExcelRows,
+  buildMaterialsWaitingExcelRows
+} from './executive-insight-excel-helpers.js'
+import {
+  buildDefaultWipFilter,
+  buildDefaultDeliveryFilter,
+  buildDefaultGoldFilter,
+  buildDefaultCapacityFilter,
+  buildDefaultWorkersFilter,
+  buildDefaultMaterialsFilter
+} from '@/views/production/insight/insight-filters.js'
 
 import DashboardHeaderGeneric from '@/components/generic/DashboardHeaderGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
@@ -51,6 +77,17 @@ import stockHealthView from './components/stock-health-view.vue'
 import productionInsightView from '@/views/production/insight/index-view.vue'
 
 const EXPORT_TAKE = 5000
+// Kendo take=0 = ทุกแถว (ใช้กับตาราง insight ที่ export ครบทุกหน้า)
+const EXPORT_ALL_ROWS = 0
+
+const INSIGHT_FILTER_BUILDERS = {
+  wip: buildDefaultWipFilter,
+  delivery: buildDefaultDeliveryFilter,
+  capacity: buildDefaultCapacityFilter,
+  gold: buildDefaultGoldFilter,
+  workers: buildDefaultWorkersFilter,
+  materials: buildDefaultMaterialsFilter
+}
 
 const emptySummary = () => ({
   asOf: null,
@@ -86,7 +123,9 @@ export default {
 
   setup() {
     const executiveReportStore = useExecutiveReportApiStore()
-    return { executiveReportStore }
+    const productionInsightStore = useProductionInsightApiStore()
+    const masterStore = useMasterApiStore()
+    return { executiveReportStore, productionInsightStore, masterStore }
   },
 
   data() {
@@ -178,8 +217,175 @@ export default {
       }
     },
 
+    // ตัวกรองที่ผู้ใช้เลือกอยู่บนจอ (production-insight index-view ถือ filters ต่อหมวด) — ถ้ายังไม่ได้ mount
+    // (ไม่เคยเปิดแท็บผลิต) ใช้ default ของแต่ละหมวด (3 เดือน)
+    resolveInsightExportFilters() {
+      const onScreen = this.$refs.insight?.filters || {}
+      return Object.fromEntries(INSIGHT_EXCEL_TOPICS.map((key) => [key, onScreen[key] || INSIGHT_FILTER_BUILDERS[key]()]))
+    },
+
+    // ยิงข้อมูลเพิ่มของ 7 sheet insight พร้อมกันทีเดียว (เฉพาะตอนกดปุ่ม) ด้วยช่วงเวลาเดียวกับที่เห็นบนจอ
+    async fetchInsightExportData(filters) {
+      const store = this.productionInsightStore
+      const range = (f) => ({ start: f.start, end: f.end })
+      const [wip, leadTime, delivery, atRisk, late, capacity, gold, goldStage, workers, materials, waiting] = await Promise.all([
+        store.fetchWip({
+          ...range(filters.wip),
+          staleDays: filters.wip.staleDays,
+          riskWindowDays: filters.wip.riskWindowDays,
+          growthThresholdPercent: filters.wip.growthThresholdPercent
+        }),
+        store.fetchStageLeadTime({ ...range(filters.wip), bucket: filters.wip.bucket }),
+        store.fetchDelivery({ ...range(filters.delivery), bucket: filters.delivery.bucket, riskHorizonDays: filters.delivery.riskHorizonDays }),
+        store.fetchDeliveryAtRiskPlans({
+          take: EXPORT_ALL_ROWS,
+          riskHorizonDays: filters.delivery.riskHorizonDays,
+          departmentKeys: filters.delivery.departmentKeys
+        }),
+        store.fetchDeliveryLatePlans({ ...range(filters.delivery), take: EXPORT_ALL_ROWS }),
+        store.fetchCapacity({ ...range(filters.capacity), bucket: 'month', unit: filters.capacity.unit }),
+        store.fetchGold({
+          ...range(filters.gold),
+          bucket: filters.gold.bucket,
+          workerTypes: filters.gold.workerTypes,
+          workerCodes: filters.gold.workerCodes,
+          metal: 'GOLD'
+        }),
+        store.fetchGoldByStage({ ...range(filters.gold), metal: 'GOLD' }),
+        store.fetchWorkers({
+          ...range(filters.workers),
+          departmentKeys: filters.workers.departmentKeys,
+          employmentTypes: filters.workers.employmentTypes
+        }),
+        store.fetchMaterials(range(filters.materials)),
+        store.fetchMaterialWaitingPlans({ take: EXPORT_ALL_ROWS }),
+        this.masterStore.fetchGem(),
+        this.masterStore.fetchGemShape()
+      ])
+      return { wip, leadTime, delivery, atRisk, late, capacity, gold, goldStage, workers, materials, waiting }
+    },
+
+    buildInsightExportSheets(data, filters) {
+      const t = (key, params) => this.$t(key, params)
+      const L = (key) => this.$t(`view.executive.excel.insight.${key}`)
+      const rangeText = (key) => formatExcelRangeText(t, filters[key].start, filters[key].end)
+      const col = (header, key) => ({ header, key })
+
+      const sourceByTopic = {
+        wip: data.wip,
+        delivery: data.delivery,
+        capacity: data.capacity,
+        gold: data.gold,
+        workers: data.workers,
+        materials: data.materials
+      }
+      const findingsTopics = INSIGHT_EXCEL_TOPICS.map((key) => ({
+        key,
+        problems: sourceByTopic[key]?.problems,
+        forecasts: sourceByTopic[key]?.forecasts,
+        actions: sourceByTopic[key]?.actions
+      }))
+      const findingsRangeTexts = buildTopicRangeTexts(
+        INSIGHT_EXCEL_TOPICS.map((key) => ({ key, start: filters[key].start, end: filters[key].end })),
+        t
+      )
+
+      return [
+        {
+          sheetName: L('sheetFindings'),
+          data: [...buildRangeLeadRows(findingsRangeTexts, 'topic'), ...buildInsightFindingsExcelRows(findingsTopics, t)],
+          columns: [
+            col(L('colTopic'), 'topic'),
+            col(L('colKind'), 'kind'),
+            col(L('colSeverity'), 'severity'),
+            col(L('colText'), 'text'),
+            col(L('colOwner'), 'owner')
+          ]
+        },
+        {
+          sheetName: L('sheetLeadTime'),
+          data: [
+            ...buildRangeLeadRows(rangeText('wip'), 'dept'),
+            ...buildStageLeadTimeExcelRows(data.leadTime?.departments, data.leadTime?.capacity?.departments, t)
+          ],
+          columns: [
+            col(L('colDept'), 'dept'),
+            col(L('leadColStandard'), 'standard'),
+            col(L('leadColMedian'), 'medianTotal'),
+            col(L('leadColP90'), 'p90'),
+            col(L('leadColWait'), 'wait'),
+            col(L('leadColWork'), 'work'),
+            col(L('leadColOverStandard'), 'overStandardPercent'),
+            col(L('leadColExited'), 'exited'),
+            col(L('leadColCurrentWaiting'), 'currentWaiting'),
+            col(L('leadColAbnormal'), 'abnormal'),
+            col(L('leadColActiveWip'), 'activeWip'),
+            col(L('leadColQueueCurrent'), 'queueDaysCurrent'),
+            col(L('leadColQueueStandard'), 'queueDaysAtStandard'),
+            col(L('colBottleneck'), 'bottleneck')
+          ]
+        },
+        {
+          sheetName: L('sheetDeliveryPlans'),
+          data: [...buildRangeLeadRows(rangeText('delivery'), 'type'), ...buildDeliveryPlansExcelRows(data.atRisk?.data, data.late?.data, t)],
+          columns: [
+            col(L('deliveryColType'), 'type'),
+            col(L('deliveryColWo'), 'wo'),
+            col(L('deliveryColProduct'), 'product'),
+            col(L('deliveryColDueDate'), 'dueDate'),
+            col(L('deliveryColFinishDate'), 'finishDate'),
+            col(L('deliveryColLateDays'), 'lateDays'),
+            col(L('colDept'), 'dept'),
+            col(L('deliveryColWorkers'), 'workers')
+          ]
+        },
+        {
+          sheetName: L('sheetCapacity'),
+          data: buildCapacityExcelRows(data.capacity?.kpi, data.capacity?.costCardToDone, data.capacity?.departments, t),
+          columns: buildPositionalColumns(rangeText('capacity'), CAPACITY_EXCEL_WIDTH)
+        },
+        {
+          sheetName: L('sheetGold'),
+          data: buildGoldExcelRows(data.gold?.workers, data.goldStage?.departments, t),
+          columns: buildPositionalColumns(rangeText('gold'), GOLD_EXCEL_WIDTH)
+        },
+        {
+          sheetName: L('sheetWorkers'),
+          data: [...buildRangeLeadRows(rangeText('workers'), 'name'), ...buildWorkersExcelRows(data.workers?.workers, t)],
+          columns: [
+            col(L('colWorkerName'), 'name'),
+            col(L('colWorkerCode'), 'code'),
+            col(L('colDept'), 'dept'),
+            col(L('workersColEmploymentType'), 'employmentType'),
+            col(L('workersColJobs'), 'jobs'),
+            col(L('workersColPlans'), 'plans'),
+            col(L('workersColWages'), 'wages'),
+            col(L('workersColWagePerJob'), 'wagePerJob'),
+            col(L('workersColShare'), 'shareOfDeptJobs'),
+            col(L('workersColGold'), 'gold')
+          ]
+        },
+        {
+          sheetName: L('sheetMaterials'),
+          data: [
+            ...buildRangeLeadRows([rangeText('materials'), L('snapshotNote')], 'wo'),
+            ...buildMaterialsWaitingExcelRows(data.waiting?.data, this.masterStore.gem, this.masterStore.gemShape, t)
+          ],
+          columns: [
+            col(L('materialsColWo'), 'wo'),
+            col(L('materialsColProduct'), 'product'),
+            col(L('materialsColWaitingDays'), 'waitingDays'),
+            col(L('materialsColGems'), 'gems'),
+            col(L('materialsColGemStatus'), 'gemStatus'),
+            col(L('materialsColDueDate'), 'dueDate')
+          ]
+        }
+      ]
+    },
+
     async onExportExcel() {
-      const [stalePlansRes, receivablesRes, salesOrdersRes, stockHealthRes, goldLossWorkerRows] = await Promise.all([
+      const insightFilters = this.resolveInsightExportFilters()
+      const [stalePlansRes, receivablesRes, salesOrdersRes, stockHealthRes, goldLossWorkerRows, insightData] = await Promise.all([
         this.executiveReportStore.fetchStalePlans({
           take: EXPORT_TAKE,
           skip: 0,
@@ -190,7 +396,8 @@ export default {
         this.executiveReportStore.fetchReceivables({ take: EXPORT_TAKE, skip: 0, sort: [], filter: 'all' }),
         this.executiveReportStore.fetchSalesOrdersWithoutInvoice({ take: EXPORT_TAKE, skip: 0, sort: [] }),
         this.executiveReportStore.fetchStockHealth(),
-        this.fetchGoldLossWorkerReportsForExport()
+        this.fetchGoldLossWorkerReportsForExport(),
+        this.fetchInsightExportData(insightFilters)
       ])
 
       const goldLossCompareMonthKeys = buildMonthRange(dayjs().subtract(5, 'month'), dayjs()).map((m) => monthKeyOf(m.year, m.month))
@@ -355,7 +562,8 @@ export default {
               { header: this.$t('view.executive.goldLossTrend.excel.colAllowedGram'), key: 'allowedGram' },
               { header: this.$t('view.executive.goldLossTrend.excel.colLossPercent'), key: 'lossPercent' }
             ]
-          }
+          },
+          ...this.buildInsightExportSheets(insightData, insightFilters)
         ],
         { filename: `${this.$t('view.executive.excel.filenamePrefix')}-${dayjs().format('YYYY-MM-DD')}.xlsx` }
       )
