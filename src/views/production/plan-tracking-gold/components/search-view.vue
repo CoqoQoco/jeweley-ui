@@ -7,7 +7,7 @@
       :isShowRightSlot="true"
     >
       <template #rightSlot>
-        <button class="btn btn-sm btn-main" @click="onCreate">
+        <button v-if="canCreate" class="btn btn-sm btn-main" @click="onCreate">
           <span class="bi bi-pencil"></span>
         </button>
       </template>
@@ -96,6 +96,8 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
+import { hasProductionCreateAccess } from '@/services/permission/production-access.js'
+
 // Local
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
@@ -119,6 +121,12 @@ export default {
     modelForm: {
       type: Object,
       default: () => ({})
+    }
+  },
+
+  computed: {
+    canCreate() {
+      return hasProductionCreateAccess()
     }
   },
 

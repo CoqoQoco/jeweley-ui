@@ -224,8 +224,7 @@ import { initPdfMake } from '@/services/utils/pdf-make.js'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 
 import api from '@/axios/axios-helper.js'
-import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
-import { formatDate, formatISOString } from '@/services/utils/dayjs'
+import { formatDate } from '@/services/utils/dayjs'
 
 const interfaceForm = {
   bookNo: null,
@@ -418,46 +417,6 @@ export default {
       }
       this.$emit('closeModal')
     },
-    onSubmit() {
-      if (this.validateForm()) {
-        confirmSubmit(
-          `เลขที่:${this.form.no} | เล่มที่:${this.form.bookNo} `,
-          'ยืนยันเเก้ไขใบเบิกทอง',
-          async () => {
-            await this.submit()
-          }
-        )
-      }
-    },
-    validateForm() {
-      if (!this.form.assignDate) {
-        this.val = {
-          isValAssignDate: true
-        }
-        return false
-      }
-      // if (!this.form.meltDate) {
-      //   this.val = {
-      //     isValMeltDate: true
-      //   }
-      //   return false
-      // }
-      if (!this.form.gold) {
-        this.val = {
-          isValGold: true
-        }
-        return false
-      }
-      if (!this.form.goldSize) {
-        this.val = {
-          isValGoldSize: true
-        }
-        return false
-      }
-
-      return true
-    },
-
     // ----------- Grid -------------------//
     onRowEditSave(event) {
       let { newData, index } = event
@@ -491,42 +450,6 @@ export default {
     },
 
     // --- APIs --- //
-    async submit() {
-      this.form.items = this.form.items.map((x) => {
-        return {
-          ...x,
-          productionPlanId: x.productionPlan
-            ? `${x.productionPlan.wo}-${x.productionPlan.woNumber}`
-            : null
-        }
-      })
-
-      const params = {
-        ...this.form,
-        goldCode: this.form.gold.code,
-        goldSizeCode: this.form.goldSize.code,
-        assignDateFormat: this.form.assignDate ? formatISOString(this.form.assignDate) : null,
-        meltDateFormat: this.form.meltDate ? formatISOString(this.form.meltDate) : null,
-        castDateFormat: this.form.castDate ? formatISOString(this.form.castDate) : null
-      }
-
-      const res = await api.jewelry.post('ProductionPlanCost/UpdateGoldCost', params)
-      if (res) {
-        success(
-          null,
-          null,
-          () => {
-            this.form = {
-              ...interfaceForm
-            }
-            this.val = {
-              ...interfaceIsValid
-            }
-            this.$emit('fetch')
-          }
-        )
-      }
-    },
     async onSearchProductionPlanId(e) {
       const params = {
         take: 0,

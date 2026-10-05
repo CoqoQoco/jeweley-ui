@@ -12,6 +12,7 @@
       <template #actionsTemplate="{ data: rowData }">
         <div class="btn-action-container">
           <button
+            v-if="canEdit"
             class="btn btn-sm btn-main"
             :title="$t('view.production.planTrackingGold.editMode')"
             @click="UpdatePlanGold(rowData)"
@@ -19,7 +20,7 @@
             <i class="bi bi-brush"></i>
           </button>
           <button
-            class="ml-1 btn btn-sm btn-dark"
+            :class="['btn btn-sm btn-dark', { 'ml-1': canEdit }]"
             :title="$t('view.production.planTrackingGold.viewMode')"
             @click="ViewPlanGold(rowData)"
           >
@@ -54,6 +55,7 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import { formatDate, formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import api from '@/axios/axios-helper.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
+import { hasProductionEditAccess } from '@/services/permission/production-access.js'
 
 // Local
 import moldalUpdate from './update-view.vue'
@@ -100,6 +102,9 @@ export default {
   },
 
   computed: {
+    canEdit() {
+      return hasProductionEditAccess()
+    },
     columns() {
       return [
         {
@@ -192,6 +197,7 @@ export default {
 
     // -------- modal update -------- //
     UpdatePlanGold(e) {
+      if (!this.canEdit) return
       this.updateModel = { ...e }
       this.isShowMoldalUpdate = true
     },

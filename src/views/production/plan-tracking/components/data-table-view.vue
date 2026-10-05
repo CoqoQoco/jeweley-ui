@@ -10,7 +10,7 @@
     >
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
-          <button class="btn btn-sm btn-green" @click="viewplan(data)">
+          <button v-if="planLinkState(data).canOpen" class="btn btn-sm btn-green" @click="viewplan(data)">
             <i class="bi bi-search"></i>
           </button>
         </div>
@@ -58,6 +58,7 @@
       <!-- Custom Footer/Paginator Buttons -->
       <template #paginator-buttons>
         <button
+          v-if="canEdit"
           :class="['btn btn-sm', isTranferJob ? 'btn-outline-main' : 'btn-main']"
           type="button"
           :disabled="isTranferJob"
@@ -68,6 +69,7 @@
           <span class="ml-2">{{ $t('view.production.planTracking.transferJob') }}</span>
         </button>
         <button
+          v-if="canEdit"
           :class="['btn btn-sm ml-2', isTransferProduct ? 'btn-outline-main' : 'btn-main']"
           type="button"
           :disabled="isTransferProduct"
@@ -81,12 +83,14 @@
     </BaseDataTable>
 
     <TransferJob
+      v-if="canEdit"
       :isShow="isShow.transferJob"
       :masterStatusValue="planStatus"
       :stausTransferValue="statusTransfer"
       @closeModal="closeModal"
     />
     <TransferProduct
+      v-if="canEdit"
       :isShow="isShow.transferProduct"
       :masterStatusValue="planStatus"
       :stausTransferValue="statusTransfer"
@@ -104,10 +108,18 @@ import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
+import { PermissionService } from '@/services/permission/permission.js'
+import { hasProductionEditAccess } from '@/services/permission/production-access.js'
+import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 
 // Local
 import TransferJob from '../modal/TransferJob.vue'
 import TransferProduct from '../modal/TransferProduct.vue'
+import {
+  resolvePlanLinkState,
+  PLAN_DETAIL_ROUTE_NAME,
+  EXECUTIVE_PLAN_DETAIL_ROUTE_NAME
+} from '@/views/production/insight/components/wip-plan-table-helpers.js'
 
 const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 
@@ -163,6 +175,21 @@ export default {
   },
 
   computed: {
+    canEdit() {
+      return hasProductionEditAccess()
+    },
+    canOpenPlanDetail() {
+      const route = this.$router.resolve({ name: PLAN_DETAIL_ROUTE_NAME, params: { id: 0 } })
+      return this.permissionService.hasAnyPermission(route.meta.permissions)
+    },
+    canOpenExecutivePlanDetail() {
+      const route = this.$router.resolve({ name: EXECUTIVE_PLAN_DETAIL_ROUTE_NAME, params: { id: 0 } })
+      return this.permissionService.hasAnyPermission(route.meta.permissions)
+    },
+    permissionService() {
+      const authStore = useAuthStore()
+      return new PermissionService(authStore.getUser, authStore.permissions)
+    },
     columns() {
       return [
         {
@@ -308,11 +335,17 @@ export default {
 
   methods: {
     // ----- event
+    planLinkState(item) {
+      return resolvePlanLinkState(item.id, this.canOpenPlanDetail, this.canOpenExecutivePlanDetail)
+    },
     viewplan(item) {
-      const id = item.id
-      window.open(`/plan-order-tracking-update/${id}`, '_blank')
+      const { routeLocation } = this.planLinkState(item)
+      if (!routeLocation) return
+      const route = this.$router.resolve(routeLocation)
+      window.open(route.href, '_blank')
     },
     async onTrnsferJob() {
+      if (!this.canEdit) return
       if (this.planSearchStore.dataPlanSearcTotalRecord > this.planSearchStore.totalTransferAllow) {
         warning(
           `${this.$t('view.production.planTracking.transferLimit')} ${this.planSearchStore.totalTransferAllow} ${this.$t('view.production.planTracking.transferLimitUnit')}`,
@@ -325,6 +358,7 @@ export default {
       }
     },
     async onTrnsferProduct() {
+      if (!this.canEdit) return
       if (this.planSearchStore.dataPlanSearcTotalRecord > this.planSearchStore.totalTransferAllow) {
         warning(
           `${this.$t('view.production.planTracking.transferLimit')} ${this.planSearchStore.totalTransferAllow} ${this.$t('view.production.planTracking.transferLimitUnit')}`,
