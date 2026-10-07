@@ -963,7 +963,13 @@ export default {
     }
   },
   async mounted() {
-    this.termHistory = await getTermHistory()
+    const [termHistory] = await Promise.all([
+      getTermHistory(),
+      this.masterStore.fetchGold(),
+      this.masterStore.fetchGem(),
+      this.masterStore.fetchDiamondGrade()
+    ])
+    this.termHistory = termHistory
   },
 
   methods: {
