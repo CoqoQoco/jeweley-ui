@@ -15,7 +15,7 @@ import {
 
 // สำเนาฟังก์ชันเดิมจาก commit 7048e5a^ (ก่อนย้ายไป DK Print Bridge) ไว้เทียบผลลัพธ์ตรงตัวอักษร
 // ต้นฉบับใช้ formValue.stockNumber ตรงๆ (ไม่มี concept ของ stockNumberOrigin)
-// ข้อความราคาใช้ formatLabelPrice (จำนวนเต็ม + R) ตามรูปแบบใหม่ — จุดเดียวที่ตั้งใจให้ต่างจากโค้ดต้นฉบับจริง
+// ข้อความราคาใช้ formatLabelPrice (จำนวนเต็ม ตัดหลักสุดท้ายแทนด้วย R) ตามรูปแบบใหม่ — จุดเดียวที่ตั้งใจให้ต่างจากโค้ดต้นฉบับจริง
 function originalGenerateZPLs(formValue) {
   let zpl = '^XA^LL200^MD25^LT40^XZ'
   zpl += '^XA'
@@ -136,32 +136,36 @@ describe('formatGemText', () => {
 })
 
 describe('formatLabelPrice', () => {
-  it('23000 → 23000R', () => {
-    expect(formatLabelPrice(23000)).toBe('23000R')
+  it('23000 → 2300R', () => {
+    expect(formatLabelPrice(23000)).toBe('2300R')
   })
 
-  it('3050 → 3050R', () => {
-    expect(formatLabelPrice(3050)).toBe('3050R')
+  it('3050 → 305R', () => {
+    expect(formatLabelPrice(3050)).toBe('305R')
   })
 
-  it('87600.00 → 87600R', () => {
-    expect(formatLabelPrice(87600.0)).toBe('87600R')
+  it('87600.00 → 8760R', () => {
+    expect(formatLabelPrice(87600.0)).toBe('8760R')
   })
 
-  it('23000.50 → 23000R (ตัดสตางค์ทิ้ง ไม่ปัดเศษ)', () => {
-    expect(formatLabelPrice(23000.5)).toBe('23000R')
+  it('3050.75 → 305R (ตัดสตางค์ทิ้ง ไม่ปัดเศษ)', () => {
+    expect(formatLabelPrice(3050.75)).toBe('305R')
   })
 
-  it('23000.99 → 23000R (ตัดสตางค์ทิ้ง ไม่ปัดเศษขึ้น)', () => {
-    expect(formatLabelPrice(23000.99)).toBe('23000R')
+  it('23000.99 → 2300R (ตัดสตางค์ทิ้ง ไม่ปัดเศษขึ้น)', () => {
+    expect(formatLabelPrice(23000.99)).toBe('2300R')
   })
 
-  it('1234.9999999 (float error) → 1234R', () => {
-    expect(formatLabelPrice(1234.9999999)).toBe('1234R')
+  it('1234.9999999 (float error) → 123R', () => {
+    expect(formatLabelPrice(1234.9999999)).toBe('123R')
   })
 
-  it('3050.0000001 (float error) → 3050R', () => {
-    expect(formatLabelPrice(3050.0000001)).toBe('3050R')
+  it('3050.0000001 (float error) → 305R', () => {
+    expect(formatLabelPrice(3050.0000001)).toBe('305R')
+  })
+
+  it('7 → R (หลักเดียว)', () => {
+    expect(formatLabelPrice(7)).toBe('R')
   })
 
   it('0 → ค่าว่าง', () => {
@@ -180,12 +184,12 @@ describe('formatLabelPrice', () => {
     expect(formatLabelPrice(undefined)).toBe('')
   })
 
-  it('string ตัวเลข "23000.50" → 23000R (coerce ด้วย Number())', () => {
-    expect(formatLabelPrice('23000.50')).toBe('23000R')
+  it('string ตัวเลข "23000.50" → 2300R (coerce ด้วย Number())', () => {
+    expect(formatLabelPrice('23000.50')).toBe('2300R')
   })
 
-  it('string ตัวเลข "3050" → 3050R', () => {
-    expect(formatLabelPrice('3050')).toBe('3050R')
+  it('string ตัวเลข "3050" → 305R', () => {
+    expect(formatLabelPrice('3050')).toBe('305R')
   })
 
   it('string ไม่ใช่ตัวเลข → ค่าว่าง', () => {
@@ -303,7 +307,7 @@ describe('GT800 — เลือก ROOMY/TIGHT', () => {
   it('พลอย 3 บรรทัด แต่บรรทัดราคายาวเกิน 20 ตัวอักษร → TIGHT', () => {
     const form = {
       stockNumber: 'AB123',
-      salePrice: 123456789012.99, // ดันให้ codeLine ยาวเกิน 20 ตัวอักษร (ราคาแบบใหม่สั้นลง ต้องใช้ตัวเลขหลักเยอะขึ้น)
+      salePrice: 1234567890123.99, // ดันให้ codeLine ยาวเกิน 20 ตัวอักษร (ราคาแบบใหม่ตัดหลักท้าย ต้องใช้ตัวเลขหลักเยอะขึ้น)
       gems: ['0.24ct.', '0.15ct.', '0.10ct.']
     }
     const layout = layoutGt800(form, 'original')
@@ -452,7 +456,7 @@ describe('layoutGt800 / generateGt800ZPL — แท็บ original ใหม่ 
 
   it('generateGt800ZPL: เลขที่ผลิต-ราคา ที่ x256,y68', () => {
     const zpl = generateGt800ZPL(form, 1)
-    expect(zpl).toContain('^FO256,68^A0N,16,16^FDAH21142 - 12345R^FS')
+    expect(zpl).toContain('^FO256,68^A0N,16,16^FDAH21142 - 1234R^FS')
   })
 
   it('generateGt800ZPL: บรรทัดทอง x256,y86 ไม่มี goldType นำหน้าอีกแล้ว', () => {
@@ -498,10 +502,10 @@ describe('layoutGt800Qr / generateGt800ZPLQr — layout ใหม่ (บล็�
     publicUrl: 'https://app.duangkeaw.com/p/DK-18K-20A-12810-ABCDEFGH'
   }
 
-  it('layoutGt800Qr: กรณี typical → blockRight≈380.8, qrX=458', () => {
+  it('layoutGt800Qr: กรณี typical → blockRight≈378.4, qrX=457', () => {
     const layout = layoutGt800Qr(typical)
-    expect(layout.blockRight).toBeCloseTo(380.8, 1)
-    expect(layout.qrX).toBe(458)
+    expect(layout.blockRight).toBeCloseTo(378.4, 1)
+    expect(layout.qrX).toBe(457)
   })
 
   it('layoutGt800Qr: กรณี worst → qrX=511', () => {
@@ -531,7 +535,7 @@ describe('layoutGt800Qr / generateGt800ZPLQr — layout ใหม่ (บล็�
     const code = 'DK-18K-20A-12810'
     expect(zpl).toContain(`^FO256,31^A0N,14,14^FD${worst.productNameEn}^FS`)
     expect(zpl).toContain(`^FO262,47^BY1,3.0:1,18^BCN,18,N,N^FD${code}^FS`)
-    expect(zpl).toContain(`^FO256,68^A0N,15,15^FD${code} - 1234567R^FS`)
+    expect(zpl).toContain(`^FO256,68^A0N,15,15^FD${code} - 123456R^FS`)
     expect(zpl).toContain('^FO256,86^A0N,14,14^FD12.35 g. Gold #52^FS')
   })
 
@@ -546,9 +550,9 @@ describe('layoutGt800Qr / generateGt800ZPLQr — layout ใหม่ (บล็�
     expect(zpl).not.toContain('ct.')
   })
 
-  it('generateGt800ZPLQr: กรณี typical → ^FO458,13^BQN,2,2^FDLA,<url>^FS', () => {
+  it('generateGt800ZPLQr: กรณี typical → ^FO457,13^BQN,2,2^FDLA,<url>^FS', () => {
     const zpl = generateGt800ZPLQr(typical, 1)
-    expect(zpl).toContain(`^FO458,13^BQN,2,2^FDLA,${typical.publicUrl}^FS`)
+    expect(zpl).toContain(`^FO457,13^BQN,2,2^FDLA,${typical.publicUrl}^FS`)
   })
 
   it('generateGt800ZPLQr: กรณี worst → ^FO511,13^BQN,2,2^FDLA,<url>^FS', () => {

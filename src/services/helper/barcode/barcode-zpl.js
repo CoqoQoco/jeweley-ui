@@ -140,19 +140,20 @@ export function formatGemText(text) {
   return result
 }
 
-// ราคาบนป้ายบาร์โค้ดสินค้า — จำนวนเต็มล้วน ไม่มี comma คั่นหลักพัน ไม่มีทศนิยม (ตัดสตางค์ทิ้ง ไม่ปัดเศษ) ตามด้วย R
+// ราคาบนป้ายบาร์โค้ดสินค้า — จำนวนเต็มล้วน ไม่มี comma ไม่มีทศนิยม (ตัดสตางค์ทิ้ง ไม่ปัดเศษ)
+// แล้วตัดหลักสุดท้ายทิ้งและแทนด้วย R (เช่น 23000 → 2300R, 3050 → 305R)
 // value <= 0 / null / undefined → '' (ไม่มีราคา)
 export function formatLabelPrice(value) {
   const num = Number(value)
   if (value == null || !Number.isFinite(num) || num <= 0) return ''
-  return `${Math.trunc(num)}R`
+  return `${String(Math.trunc(num)).slice(0, -1)}R`
 }
 
 // ─────────────────────────────────────────────────────────────
 // Legacy (เครื่องเดิม, Zebra Print Service) — คัดลอกจาก 7048e5a^ ตรงตัวอักษร
 // ห้ามแก้ตัวเลข/บั๊กเดิม (^F450 ตก O, เลขนำศูนย์ ^FO250,090 / ^FO025,050) เครื่องเดิมพิมพ์ถูกด้วยค่าชุดนี้
 // ข้อยกเว้น 2 จุด: (1) ทุกจุดที่ใช้ formValue.stockNumber เปลี่ยนเป็น resolveLabelCode(formValue)
-// (2) ข้อความราคาเปลี่ยนจากรูปแบบ th-TH ทศนิยม 2 ตำแหน่ง เป็น formatLabelPrice (จำนวนเต็ม + R)
+// (2) ข้อความราคาเปลี่ยนจากรูปแบบ th-TH ทศนิยม 2 ตำแหน่ง เป็น formatLabelPrice (จำนวนเต็ม ตัดหลักสุดท้ายแทนด้วย R)
 // ─────────────────────────────────────────────────────────────
 
 export function generateLegacyZPL(formValue) {
