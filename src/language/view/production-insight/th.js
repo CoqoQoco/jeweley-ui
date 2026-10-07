@@ -67,7 +67,7 @@ export default {
     colWorkers: 'ช่าง',
     lastActionCreated: 'สร้างใบงาน',
     planLinkTitle: 'เปิดรายละเอียดใบงาน (แท็บใหม่)',
-    planLinkNoPermission: 'ต้องมีสิทธิ์แก้ไขงานผลิตหรือดูภาพรวมผู้บริหารจึงเปิดรายละเอียดได้',
+    planLinkNoPermission: 'ต้องมีสิทธิ์แก้ไขงานผลิตหรือดูภาพรวมบริหารจึงเปิดรายละเอียดได้',
 
     trendCardsTitle: 'พัฒนาการงานค้างแยกแผนก',
     trendCardsHint: 'คลิกการ์ดเพื่อดูงานเข้า-ออกของแผนกนั้นด้านล่าง',

@@ -1,5 +1,5 @@
 export default {
-  title: 'ภาพรวมผู้บริหาร',
+  title: 'ภาพรวมบริหาร',
   asOf: 'ข้อมูล ณ {date}',
 
   tabs: {
@@ -140,7 +140,7 @@ export default {
 
   excel: {
     exportAllBtn: 'Excel ทั้งหมด',
-    filenamePrefix: 'ภาพรวมผู้บริหาร',
+    filenamePrefix: 'ภาพรวมบริหาร',
     sheetSummary: 'สรุป',
     sheetStalePlans: 'ใบงานค้าง',
     sheetReceivables: 'บิลค้างรับ',

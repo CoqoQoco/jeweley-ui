@@ -63,7 +63,7 @@ const routes = [
     meta: {
       Displayname: {
         en: 'Executive Overview',
-        th: 'ภาพรวมผู้บริหาร'
+        th: 'ภาพรวมบริหาร'
       },
       classIcon: 'bi bi-speedometer2',
       majorShow: true,
@@ -79,7 +79,7 @@ const routes = [
         meta: {
           Displayname: {
             en: 'Executive Overview',
-            th: 'ภาพรวมผู้บริหาร'
+            th: 'ภาพรวมบริหาร'
           },
           minorShow: true,
           permissions: [PERMISSIONS.EXECUTIVE_VIEW],
