@@ -79,6 +79,8 @@
         v-show="activeSection === 'capacity'"
         :filter="filters.capacity"
         :active="activeSection === 'capacity'"
+        @update-filter="onCapacityFilterUpdate"
+        @filter-options-loaded="onCapacityFilterOptionsLoaded"
       />
       <WorkersSection
         v-if="visitedSections.has('workers')"
@@ -236,6 +238,20 @@
             />
           </FormFieldGeneric>
           <FormFieldGeneric
+            v-for="field in capacityBreakdownFilterFields"
+            :key="field.filterField"
+            :label="field.label"
+          >
+            <MultiSelectGeneric
+              v-model="draftCapacityFilter[field.filterField]"
+              :options="field.options"
+              optionLabel="label"
+              optionValue="value"
+              :placeholder="$t('common.label.all')"
+              :showClear="true"
+            />
+          </FormFieldGeneric>
+          <FormFieldGeneric
             :label="$t('view.productionInsight.capacity.filterCustomRangeLabel')"
             :tip="$t('view.productionInsight.help.filterCustomRange')"
           >
@@ -330,6 +346,8 @@ import {
   clearedCapacityFilterQueryKeys,
   CAPACITY_UNIT_VALUES,
   CAPACITY_DEFAULT_UNIT,
+  CAPACITY_BREAKDOWN_BY_VALUES,
+  CAPACITY_BREAKDOWN_FILTER_FIELD,
   buildDefaultWorkersFilter,
   parseWorkersFilterQuery,
   workersFilterToQuery,
@@ -359,6 +377,8 @@ import WorkersSection from './sections/workers-section.vue'
 import MaterialsSection from './sections/materials-section.vue'
 
 const DEPARTMENT_KEYS = ['design', 'trim', 'rawPolish', 'gemSort', 'setting', 'plating', 'costCard']
+
+const CAPACITY_BREAKDOWN_FILTER_FIELDS = Object.values(CAPACITY_BREAKDOWN_FILTER_FIELD)
 
 export default {
   name: 'ProductionInsightView',
@@ -405,6 +425,9 @@ export default {
       // ตัวเลือกช่างของหมวด gold — มาจาก Gold.workers ที่ gold-section.vue emit ขึ้นมาหลังยิงสำเร็จ (ไม่ใช่
       // list คงที่แบบแผนกของ wip/delivery) ว่างก่อน gold-section.vue ยิงครั้งแรก
       goldWorkerOptions: [],
+      // ตัวเลือกตัวกรอง สินค้า/ทอง/Gold size ของหมวด capacity — มาจาก Capacity.filterOptions (API คำนวณโดยไม่สนตัวกรอง
+      // สินค้า จึงไม่หดเมื่อกรองอยู่) ที่ capacity-section emit ขึ้นมา — key เป็นชื่อฟิลด์ตัวกรอง (productTypes/golds/goldSizes)
+      capacityFilterOptions: { productTypes: [], golds: [], goldSizes: [] },
       isFilterPanelOpen: false,
       isApplyingRouteQuery: false
     }
@@ -429,6 +452,19 @@ export default {
 
     metalOptions() {
       return GOLD_METAL_VALUES.map((value) => ({ value, label: this.$t(`view.productionInsight.gold.metalLabel.${value}`) }))
+    },
+
+    // ฟิลด์ตัวกรอง 3 มิติของ capacity ในแผงตัวกรอง — options รวมค่าที่เลือกอยู่แล้วที่ยังไม่อยู่ในรายการสะสม
+    // (เช่นมาจาก URL ก่อนเคยโหลด breakdown) เพื่อให้ MultiSelect/ชิปโชว์ค่าได้เสมอ
+    capacityBreakdownFilterFields() {
+      return CAPACITY_BREAKDOWN_BY_VALUES.map((by) => {
+        const filterField = CAPACITY_BREAKDOWN_FILTER_FIELD[by]
+        const known = this.capacityFilterOptions[filterField]
+        const selected = (this.draftCapacityFilter[filterField] || [])
+          .filter((value) => !known.some((o) => o.value === value))
+          .map((value) => ({ value, label: value || this.$t('view.productionInsight.capacity.breakdownEmptyGroup') }))
+        return { by, filterField, label: this.$t(`view.productionInsight.capacity.breakdownBy.${by}`), options: [...known, ...selected] }
+      })
     },
 
     capacityUnitOptions() {
@@ -493,7 +529,12 @@ export default {
             label: this.$t('view.productionInsight.capacity.filterUnit'),
             value: f.unit !== CAPACITY_DEFAULT_UNIT ? this.$t(`view.productionInsight.capacity.unitLabel.${f.unit}`) : ''
           },
-          { key: 'departmentKeys', label: this.$t('view.productionInsight.capacity.filterDept'), value: this.resolveDeptLabels(f.departmentKeys) }
+          { key: 'departmentKeys', label: this.$t('view.productionInsight.capacity.filterDept'), value: this.resolveDeptLabels(f.departmentKeys) },
+          ...CAPACITY_BREAKDOWN_BY_VALUES.map((by) => ({
+            key: CAPACITY_BREAKDOWN_FILTER_FIELD[by],
+            label: this.$t(`view.productionInsight.capacity.breakdownBy.${by}`),
+            value: this.resolveCapacityGroupLabels(by, f[CAPACITY_BREAKDOWN_FILTER_FIELD[by]])
+          }))
         ])
       }
       if (this.activeSection === 'workers') {
@@ -533,6 +574,26 @@ export default {
     resolveDeptLabels(keys) {
       if (!keys || !keys.length) return ''
       return keys.map((key) => this.$t(`view.executive.department.${key}`)).join(', ')
+    },
+
+    resolveCapacityGroupLabels(by, values) {
+      if (!values || !values.length) return ''
+      return values
+        .map((value) => this.capacityFilterOptions[CAPACITY_BREAKDOWN_FILTER_FIELD[by]].find((o) => o.value === value)?.label || value || this.$t('view.productionInsight.capacity.breakdownEmptyGroup'))
+        .join(', ')
+    },
+
+    onCapacityFilterUpdate(patch) {
+      this.filters.capacity = { ...this.filters.capacity, ...patch }
+    },
+
+    onCapacityFilterOptionsLoaded(filterOptions) {
+      const toOptions = (list) => (list || []).map((o) => ({ value: o.key, label: o.name || o.key || this.$t('view.productionInsight.capacity.breakdownEmptyGroup') }))
+      this.capacityFilterOptions = {
+        productTypes: toOptions(filterOptions.productTypes),
+        golds: toOptions(filterOptions.golds),
+        goldSizes: toOptions(filterOptions.goldSizes)
+      }
     },
 
     resolveWorkerTypeLabels(workerTypes) {
@@ -668,6 +729,7 @@ export default {
         const next = { ...this.filters.capacity }
         if (key === 'unit') next.unit = CAPACITY_DEFAULT_UNIT
         else if (key === 'departmentKeys') next.departmentKeys = []
+        else if (CAPACITY_BREAKDOWN_FILTER_FIELDS.includes(key)) next[key] = []
         this.filters.capacity = next
       } else if (this.activeSection === 'workers') {
         const next = { ...this.filters.workers }

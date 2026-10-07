@@ -236,12 +236,18 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // เสร็จ/ปิดสำเร็จ/งานค้างยังนับเป็นใบเสมอ ไม่มีหน่วยชิ้นให้ — ดู capacity-trend-chart.vue) — endpoint นี้
     // ไม่รับ departmentKeys (ยืนยันจาก API agent) — KPI/กราฟแนวโน้ม/ปัญหาที่พบเป็นภาพรวมทั้งบริษัทเสมอ ตัวกรอง
     // แผนกใน filter panel เอาไปกรอง client-side เฉพาะตารางรายแผนก/แผงจำลอง/กราฟรายละเอียด (ดู capacity-section.vue)
-    async fetchCapacity({ start, end, bucket = 'month', unit = 'plan' } = {}) {
+    // productTypes/golds/goldSizes กรองทั้ง response ที่ server (หลายค่า, ว่าง = ไม่กรอง) — breakdownBy
+    // ('productType'|'gold'|'goldSize') คุมมิติของ breakdown{} ที่ตอบกลับมาเท่านั้น
+    async fetchCapacity({ start, end, bucket = 'month', unit = 'plan', productTypes = [], golds = [], goldSizes = [], breakdownBy = 'productType' } = {}) {
       return await api.jewelry.post('ProductionInsight/Capacity', {
         start: start ? formatISOString(start) : null,
         end: end ? formatISOString(end) : null,
         bucket,
-        unit
+        unit,
+        productTypes,
+        golds,
+        goldSizes,
+        breakdownBy
       })
     },
 

@@ -343,10 +343,44 @@ describe('parseCapacityFilterQuery / capacityFilterToQuery round-trip', () => {
   })
 })
 
+describe('capacity product breakdown filters (capPt / capGold / capSize / capBy)', () => {
+  it('defaults to empty filters and productType breakdown', () => {
+    const filter = buildDefaultCapacityFilter()
+    expect(filter.productTypes).toEqual([])
+    expect(filter.golds).toEqual([])
+    expect(filter.goldSizes).toEqual([])
+    expect(filter.breakdownBy).toBe('productType')
+  })
+
+  it('parses and re-emits the new query keys, omitting defaults', () => {
+    const filter = parseCapacityFilterQuery({ capPt: 'RING,EARRING', capGold: 'YG', capSize: '16', capBy: 'gold' })
+    expect(filter.productTypes).toEqual(['RING', 'EARRING'])
+    expect(filter.golds).toEqual(['YG'])
+    expect(filter.goldSizes).toEqual(['16'])
+    expect(filter.breakdownBy).toBe('gold')
+    expect(capacityFilterToQuery(filter)).toEqual({ capPt: 'RING,EARRING', capGold: 'YG', capSize: '16', capBy: 'gold' })
+    expect(capacityFilterToQuery(buildDefaultCapacityFilter())).toEqual({})
+  })
+
+  it('round-trips the empty "ไม่ระบุ" group value through the query', () => {
+    const filter = { ...buildDefaultCapacityFilter(), productTypes: ['', 'RING'] }
+    const query = capacityFilterToQuery(filter)
+    expect(query.capPt).toBe('~,RING')
+    expect(parseCapacityFilterQuery(query).productTypes).toEqual(['', 'RING'])
+  })
+
+  it('falls back to productType for an unknown breakdownBy and lists cleared keys for defaults', () => {
+    expect(parseCapacityFilterQuery({ capBy: 'BOGUS' }).breakdownBy).toBe('productType')
+    const cleared = clearedCapacityFilterQueryKeys(buildDefaultCapacityFilter())
+    expect(cleared).toEqual(expect.arrayContaining(['capPt', 'capGold', 'capSize', 'capBy']))
+    expect(clearedCapacityFilterQueryKeys({ ...buildDefaultCapacityFilter(), productTypes: ['RING'] })).not.toContain('capPt')
+  })
+})
+
 describe('clearedCapacityFilterQueryKeys', () => {
   it('returns query keys that are back to default', () => {
     const keys = clearedCapacityFilterQueryKeys(buildDefaultCapacityFilter())
-    expect(keys.sort()).toEqual(['range', 'start', 'end', 'capDept', 'capUnit'].sort())
+    expect(keys.sort()).toEqual(['range', 'start', 'end', 'capDept', 'capUnit', 'capPt', 'capGold', 'capSize', 'capBy'].sort())
   })
 
   it('excludes keys that are still non-default', () => {

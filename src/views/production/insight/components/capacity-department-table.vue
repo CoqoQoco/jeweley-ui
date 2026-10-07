@@ -5,6 +5,8 @@
 
   Props:
     departments — Array (required) จาก Capacity.departments
+    unit        — String ('plan') — 'plan'|'piece' เลือกชุด field ใบ/ชิ้น (resolveCapacityDeptValues) ของคอลัมน์ ใบออก/
+                  ชิ้นออก, ใบ/ชิ้นต่อช่าง, รอ, ทำ, งานค้าง — คิว (queueDays) นับเป็นใบงานเสมอไม่เปลี่ยนตามหน่วย (มี tip)
     selectedKey — String ('') — key แผนกที่เลือกอยู่ (highlight แถว)
     loading     — Boolean (false)
 
@@ -16,7 +18,7 @@
       <template #header-queueDays>
         <span class="capacity-department-table__col-header">
           {{ $t('view.productionInsight.capacity.deptColQueueDays') }}
-          <InfoTipGeneric :text="$t('view.productionInsight.help.capacityQueueDays')" position="bottom" tone="inverse" />
+          <InfoTipGeneric :text="queueTipText" position="bottom" tone="inverse" />
         </span>
       </template>
 
@@ -24,24 +26,28 @@
         <strong>{{ data.label }}</strong>
       </template>
 
-      <template #exitsPerMonthTemplate="{ data }">
-        <div class="text-right">{{ formatCount(data.exitsPerMonth) }}</div>
+      <template #exitsTemplate="{ data }">
+        <div class="text-right">{{ formatCount(data.exits) }}</div>
       </template>
 
       <template #workersMedianTemplate="{ data }">
         <div class="text-right">{{ formatCount(data.workersMedian) }}</div>
       </template>
 
-      <template #plansPerWorkerTemplate="{ data }">
-        <div class="text-right">{{ formatDecimal(data.plansPerWorker) }}</div>
+      <template #perWorkerTemplate="{ data }">
+        <div class="text-right">{{ formatDecimal(data.perWorker) }}</div>
       </template>
 
-      <template #waitingNowTemplate="{ data }">
-        <div class="text-right">{{ formatCount(data.waitingNow) }}</div>
+      <template #waitingTemplate="{ data }">
+        <div class="text-right">{{ formatCount(data.waiting) }}</div>
       </template>
 
-      <template #workingNowTemplate="{ data }">
-        <div class="text-right">{{ formatCount(data.workingNow) }}</div>
+      <template #workingTemplate="{ data }">
+        <div class="text-right">{{ formatCount(data.working) }}</div>
+      </template>
+
+      <template #activeWipTemplate="{ data }">
+        <div class="text-right">{{ formatCount(data.activeWip) }}</div>
       </template>
 
       <template #queueDaysTemplate="{ data }">
@@ -55,6 +61,8 @@
 </template>
 
 <script>
+import { resolveCapacityDeptValues } from './capacity-helpers.js'
+
 import InfoTipGeneric from '@/components/generic/InfoTipGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
@@ -71,6 +79,10 @@ export default {
       type: Array,
       required: true
     },
+    unit: {
+      type: String,
+      default: 'plan'
+    },
     selectedKey: {
       type: String,
       default: ''
@@ -85,7 +97,17 @@ export default {
 
   computed: {
     rows() {
-      return this.departments.map((d) => ({ ...d, label: this.$t(`view.executive.department.${d.key}`) }))
+      return this.departments.map((d) => ({ ...d, ...resolveCapacityDeptValues(d, this.unit), label: this.$t(`view.executive.department.${d.key}`) }))
+    },
+
+    unitKey() {
+      return this.unit === 'piece' ? 'Piece' : 'Plan'
+    },
+
+    // คิวเทียบเท่านับเป็นใบงานเสมอ (ไม่มีหน่วยชิ้นให้) — บอกใน tip เมื่อตารางโชว์หน่วยชิ้น กันเข้าใจว่าคิวเปลี่ยนตามหน่วย
+    queueTipText() {
+      const base = this.$t('view.productionInsight.help.capacityQueueDays')
+      return this.unit === 'piece' ? `${base} ${this.$t('view.productionInsight.capacity.deptQueuePlanNote')}` : base
     },
 
     // คอลัมน์ queueDays มี custom header slot (label+ⓘ) ต้องเคลียร์ header prop ทิ้งเป็น '' ไม่งั้นหัวขึ้นซ้ำ
@@ -93,11 +115,12 @@ export default {
     columns() {
       return [
         { field: 'label', header: this.$t('view.productionInsight.capacity.deptColDept'), sortable: false, minWidth: '110px' },
-        { field: 'exitsPerMonth', header: this.$t('view.productionInsight.capacity.deptColExitsPerMonth'), sortable: false, minWidth: '110px', align: 'right' },
+        { field: 'exits', header: this.$t(`view.productionInsight.capacity.deptColExits${this.unitKey}`), sortable: false, minWidth: '110px', align: 'right' },
         { field: 'workersMedian', header: this.$t('view.productionInsight.capacity.deptColWorkers'), sortable: false, minWidth: '90px', align: 'right' },
-        { field: 'plansPerWorker', header: this.$t('view.productionInsight.capacity.deptColPlansPerWorker'), sortable: false, minWidth: '90px', align: 'right' },
-        { field: 'waitingNow', header: this.$t('view.productionInsight.capacity.deptColWaiting'), sortable: false, minWidth: '80px', align: 'right' },
-        { field: 'workingNow', header: this.$t('view.productionInsight.capacity.deptColWorking'), sortable: false, minWidth: '80px', align: 'right' },
+        { field: 'perWorker', header: this.$t(`view.productionInsight.capacity.deptColPerWorker${this.unitKey}`), sortable: false, minWidth: '90px', align: 'right' },
+        { field: 'waiting', header: this.$t('view.productionInsight.capacity.deptColWaiting'), sortable: false, minWidth: '80px', align: 'right' },
+        { field: 'working', header: this.$t('view.productionInsight.capacity.deptColWorking'), sortable: false, minWidth: '80px', align: 'right' },
+        { field: 'activeWip', header: this.$t('view.productionInsight.capacity.deptColActiveWip'), sortable: false, minWidth: '90px', align: 'right' },
         { field: 'queueDays', header: '', sortable: false, minWidth: '140px', align: 'right' }
       ]
     }

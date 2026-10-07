@@ -186,11 +186,24 @@ export default {
       return code === 'ACT_TALK_WORKER' ? 5 : undefined
     },
 
-    resolveText(code, params) {
-      return this.$t(
-        `${this.i18nPrefix}.${code}`,
-        resolveFindingParams(params, this.translateDept, this.translateWorkerType, this.translateMetal, this.resolveMaxWorkerNames(code))
+    // by = มิติการแยกของ CAP_GROUP_BACKLOG_GROWING ('productType'|'gold'|'goldSize') — reuse ป้ายของกล่อง "แยกตามสินค้า"
+    translateBreakdownBy(value, kind = 'by') {
+      return this.$t(kind === 'unit' ? 'view.productionInsight.capacity.unitMixed' : `view.productionInsight.capacity.breakdownBy.${value}`)
+    },
+
+    resolveParams(code, params) {
+      return resolveFindingParams(
+        params,
+        this.translateDept,
+        this.translateWorkerType,
+        this.translateMetal,
+        this.resolveMaxWorkerNames(code),
+        this.translateBreakdownBy
       )
+    },
+
+    resolveText(code, params) {
+      return this.$t(`${this.i18nPrefix}.${code}`, this.resolveParams(code, params))
     },
 
     // คำอธิบาย "วิธีคำนวณ/เกณฑ์ด่วน" ของ finding — คืนค่าว่างเมื่อ code นั้นยังไม่มีคำอธิบาย (resolveHelpKey)
@@ -201,7 +214,7 @@ export default {
       if (!helpKey) return ''
       return this.$t(helpKey, {
         ...this.helpParams,
-        ...resolveFindingParams(params, this.translateDept, this.translateWorkerType, this.translateMetal, this.resolveMaxWorkerNames(code))
+        ...this.resolveParams(code, params)
       })
     },
 

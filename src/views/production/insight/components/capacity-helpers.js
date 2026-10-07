@@ -145,3 +145,88 @@ export function resolveWhatIfBottleneck(rows, field) {
   if (!candidates.length) return null
   return candidates.reduce((max, r) => (r[field] > max[field] ? r : max), candidates[0]).key
 }
+
+// ---- หน่วยใบงาน/ชิ้น (filter.unit) คุมทั้งแท็บ — field ของแต่ละหน่วยอยู่ที่นี่ที่เดียว ----
+// plan = นับเป็นใบงาน, piece = นับตามจำนวนในใบงานตามที่ใบงานระบุ (ชิ้น/คู่/เส้น ตามประเภทสินค้า) — ไม่แปลงหน่วย
+
+const SERIES_FIELDS_BY_UNIT = {
+  plan: { inflow: 'inflow', output: CAPACITY_PRODUCED_FIELD, completed: CAPACITY_CLOSED_FIELD, activeWipEnd: 'activeWipEnd' },
+  piece: { inflow: 'inflowPieces', output: 'outputPieces', completed: 'completedPieces', activeWipEnd: 'activeWipEndPieces' }
+}
+
+const KPI_FIELDS_BY_UNIT = {
+  plan: { inflow: 'inflowPerMonth', output: 'outputPerMonth', net: 'netPerMonth', backlogMonths: 'backlogMonths', activeWip: 'activeWip' },
+  piece: {
+    inflow: 'inflowPiecesPerMonth',
+    output: 'outputPiecesPerMonth',
+    net: 'netPiecesPerMonth',
+    backlogMonths: 'backlogMonthsPieces',
+    activeWip: 'activeWipPieces'
+  }
+}
+
+const DEPT_FIELDS_BY_UNIT = {
+  plan: { exits: 'exitsPerMonth', perWorker: 'plansPerWorker', waiting: 'waitingNow', working: 'workingNow', activeWip: 'activeWip' },
+  piece: { exits: 'exitsPiecesPerMonth', perWorker: 'piecesPerWorker', waiting: 'waitingNowPieces', working: 'workingNowPieces', activeWip: 'activeWipPieces' }
+}
+
+function resolveUnit(unit) {
+  return unit === 'piece' ? 'piece' : 'plan'
+}
+
+export function resolveCapacitySeriesFields(unit) {
+  return SERIES_FIELDS_BY_UNIT[resolveUnit(unit)]
+}
+
+// ค่า KPI ตามหน่วย — field ที่ไม่มีใน response คืน null (ไม่ coerce เป็น 0)
+export function resolveCapacityKpiValues(kpi, unit) {
+  const fields = KPI_FIELDS_BY_UNIT[resolveUnit(unit)]
+  return Object.fromEntries(Object.entries(fields).map(([name, field]) => [name, kpi?.[field] ?? null]))
+}
+
+// ค่าของแถวแผนกตามหน่วย — คิว (queueDays) ไม่อยู่ในนี้ เพราะนับเป็นใบงานเสมอไม่ว่าหน่วยไหน
+export function resolveCapacityDeptValues(dept, unit) {
+  const fields = DEPT_FIELDS_BY_UNIT[resolveUnit(unit)]
+  return Object.fromEntries(Object.entries(fields).map(([name, field]) => [name, dept?.[field] ?? null]))
+}
+
+// ---- กล่อง "แยกตามสินค้า" (Capacity.breakdown) ----
+
+export const BREAKDOWN_METRICS = ['inflowPieces', 'outputPieces']
+export const BREAKDOWN_TOP_N = 6
+
+// เรียงแถวกลุ่มตามงานค้าง (ชิ้น) มากไปน้อย — กลุ่มที่งานค้างมากสุดขึ้นก่อน
+export function sortBreakdownRows(rows) {
+  return [...(rows || [])].sort((a, b) => (b?.activeWipPieces ?? 0) - (a?.activeWipPieces ?? 0))
+}
+
+// series (long format: 1 แถวต่อ bucketEnd+key) → top N กลุ่ม (ตามผลรวม metric ตลอดช่วง) + "อื่น ๆ" รวมที่เหลือ
+// เป็น stacked series ต่อ bucket — คืน { bucketEnds, series: [{ key, name, data }] } เรียงเดือนเก่า→ใหม่ — ค่าที่ไม่มี
+// จุดข้อมูล = 0 (ไม่มีงานของกลุ่มนั้นในเดือนนั้นจริง ต่างจาก series ของ KPI ที่ null = ไม่มีข้อมูล)
+export function buildBreakdownChartData(series, rows, metric, otherLabel, topN = BREAKDOWN_TOP_N) {
+  const points = series || []
+  const bucketEnds = [...new Set(points.map((p) => p.bucketEnd))].sort()
+  const nameByKey = Object.fromEntries((rows || []).map((r) => [r.key, r.name || r.key]))
+
+  const totals = {}
+  points.forEach((p) => {
+    totals[p.key] = (totals[p.key] || 0) + (p[metric] || 0)
+  })
+  const topKeys = Object.keys(totals)
+    .sort((a, b) => totals[b] - totals[a])
+    .slice(0, topN)
+
+  const valueAt = (key, bucketEnd) => points.filter((p) => p.key === key && p.bucketEnd === bucketEnd).reduce((sum, p) => sum + (p[metric] || 0), 0)
+
+  const result = topKeys.map((key) => ({ key, name: nameByKey[key] || key, data: bucketEnds.map((b) => valueAt(key, b)) }))
+
+  const otherKeys = Object.keys(totals).filter((k) => !topKeys.includes(k))
+  if (otherKeys.length) {
+    result.push({
+      key: '__other__',
+      name: otherLabel,
+      data: bucketEnds.map((b) => otherKeys.reduce((sum, key) => sum + valueAt(key, b), 0))
+    })
+  }
+  return { bucketEnds, series: result }
+}

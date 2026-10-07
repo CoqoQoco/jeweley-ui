@@ -5,6 +5,7 @@
 
   Props:
     departments — Array (required) จาก Capacity.departments
+    unit        — String ('plan') — 'plan'|'piece' ส่งต่อให้ตารางรายแผนก (กราฟรายละเอียดแผนกยังเป็นใบ/จำนวนช่างเสมอ)
     rangeLabel  — String ('') — ช่วงเวลาที่เลือก ต่อท้ายหัวข้อกราฟรายละเอียด
     loading     — Boolean (false)
 -->
@@ -19,7 +20,7 @@
         headerStyle="legend"
       >
         <p class="capacity-department-panel__hint">{{ $t('view.productionInsight.capacity.deptSelectHint') }}</p>
-        <CapacityDepartmentTable :departments="departments" :selectedKey="selectedDeptKey" :loading="loading" @select-dept="onSelectDept" />
+        <CapacityDepartmentTable :departments="departments" :unit="unit" :selectedKey="selectedDeptKey" :loading="loading" @select-dept="onSelectDept" />
       </SectionCardGeneric>
     </div>
 
@@ -49,6 +50,10 @@ export default {
     departments: {
       type: Array,
       required: true
+    },
+    unit: {
+      type: String,
+      default: 'plan'
     },
     rangeLabel: {
       type: String,

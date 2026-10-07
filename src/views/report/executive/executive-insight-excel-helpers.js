@@ -98,7 +98,8 @@ export function renderInsightText(t, code, params) {
     (key) => t(`view.executive.department.${key}`),
     (workerType) => t(`view.productionInsight.gold.workerType.${workerType}`),
     (metal) => t(`view.productionInsight.gold.metalLabel.${metal}`),
-    code === 'ACT_TALK_WORKER' ? 5 : undefined
+    code === 'ACT_TALK_WORKER' ? 5 : undefined,
+    (value, kind = 'by') => t(kind === 'unit' ? 'view.productionInsight.capacity.unitMixed' : `view.productionInsight.capacity.breakdownBy.${value}`)
   )
   return t(`${RULES_PREFIX}.${code}`, resolved)
 }
@@ -184,7 +185,7 @@ export function buildDeliveryPlansExcelRows(atRiskRows, lateRows, t) {
 // ---- 4. กำลังการผลิต (KPI block + ตารางรายแผนก) ----
 export const CAPACITY_EXCEL_WIDTH = 8
 
-export function buildCapacityExcelRows(kpi, costCardToDone, departments, t) {
+export function buildCapacityExcelRows(kpi, costCardToDone, departments, t, breakdown = null) {
   const k = kpi || {}
   const cc = costCardToDone || {}
   const bottleneckNames = (k.bottleneckDepts || []).map((key) => deptName(t, key)).join(', ')
@@ -194,7 +195,10 @@ export function buildCapacityExcelRows(kpi, costCardToDone, departments, t) {
     [label(t, 'capKpiOutput'), count(k.outputPerMonth)],
     [label(t, 'capKpiNet'), count(k.netPerMonth)],
     [label(t, 'capKpiBacklogMonths'), days(k.backlogMonths)],
+    [label(t, 'capKpiOutputPieces'), count(k.outputPiecesPerMonth)],
+    [label(t, 'capKpiNetPieces'), count(k.netPiecesPerMonth)],
     [label(t, 'capKpiActiveWip'), count(k.activeWip)],
+    [label(t, 'capKpiActiveWipPieces'), count(k.activeWipPieces)],
     [label(t, 'capKpiBottleneck'), bottleneckNames],
     [label(t, 'capKpiCostCardMedian'), days(cc.medianDays)],
     [label(t, 'capKpiCostCardP90'), days(cc.p90Days)],
@@ -209,6 +213,15 @@ export function buildCapacityExcelRows(kpi, costCardToDone, departments, t) {
     count(d.workingNow),
     days(d.queueDays),
     yesOrEmpty(t, d.isBottleneck)
+  ])
+  const breakdownRows = (breakdown?.rows || []).map((r) => [
+    r.name || r.key || label(t, 'capBreakdownEmptyGroup'),
+    r.unit === 'mixed' ? t('view.productionInsight.capacity.unitMixed') : r.unit || '',
+    count(r.inflowPiecesPerMonth),
+    count(r.outputPiecesPerMonth),
+    count(r.netPiecesPerMonth),
+    count(r.activeWipPieces),
+    count(r.activeWipPlans)
   ])
   return [
     ...buildBlockRows(label(t, 'capBlockKpi'), [label(t, 'colItem'), label(t, 'colValue')], kpiRows),
@@ -225,7 +238,22 @@ export function buildCapacityExcelRows(kpi, costCardToDone, departments, t) {
         label(t, 'colBottleneck')
       ],
       deptRows
-    )
+    ),
+    ...(breakdownRows.length
+      ? buildBlockRows(
+          `${label(t, 'capBlockBreakdown')}: ${t(`view.productionInsight.capacity.breakdownBy.${breakdown.by}`)}`,
+          [
+            t(`view.productionInsight.capacity.breakdownBy.${breakdown.by}`),
+            label(t, 'capColBreakdownUnit'),
+            label(t, 'capColBreakdownInflow'),
+            label(t, 'capColBreakdownOutput'),
+            label(t, 'capColBreakdownNet'),
+            label(t, 'capColBreakdownWipPieces'),
+            label(t, 'capColBreakdownWipPlans')
+          ],
+          breakdownRows
+        )
+      : [])
   ]
 }
 

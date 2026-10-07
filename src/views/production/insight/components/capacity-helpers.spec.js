@@ -17,7 +17,12 @@ import {
   buildWhatIfRows,
   sumWhatIfField,
   resolveWhatIfBottleneck,
-  WHATIF_EXCLUDED_DEPT_KEY
+  WHATIF_EXCLUDED_DEPT_KEY,
+  resolveCapacitySeriesFields,
+  resolveCapacityKpiValues,
+  resolveCapacityDeptValues,
+  sortBreakdownRows,
+  buildBreakdownChartData
 } from './capacity-helpers.js'
 
 describe('mapCapacitySeriesField', () => {
@@ -348,5 +353,61 @@ describe('resolveWhatIfBottleneck', () => {
 
   it('returns null for empty input', () => {
     expect(resolveWhatIfBottleneck([], 'queueDaysNow')).toBeNull()
+  })
+})
+
+describe('unit-driven field resolvers', () => {
+  it('maps series fields per unit', () => {
+    expect(resolveCapacitySeriesFields('plan')).toEqual({ inflow: 'inflow', output: 'output', completed: 'completed', activeWipEnd: 'activeWipEnd' })
+    expect(resolveCapacitySeriesFields('piece')).toEqual({
+      inflow: 'inflowPieces',
+      output: 'outputPieces',
+      completed: 'completedPieces',
+      activeWipEnd: 'activeWipEndPieces'
+    })
+    expect(resolveCapacitySeriesFields('bogus').inflow).toBe('inflow')
+  })
+
+  it('reads KPI values for the selected unit and returns null for missing fields', () => {
+    const kpi = { inflowPerMonth: 10, outputPerMonth: 8, netPerMonth: 2, backlogMonths: 3, activeWip: 30, inflowPiecesPerMonth: 100, outputPiecesPerMonth: 80, activeWipPieces: 300 }
+    expect(resolveCapacityKpiValues(kpi, 'plan')).toEqual({ inflow: 10, output: 8, net: 2, backlogMonths: 3, activeWip: 30 })
+    expect(resolveCapacityKpiValues(kpi, 'piece')).toEqual({ inflow: 100, output: 80, net: null, backlogMonths: null, activeWip: 300 })
+  })
+
+  it('reads department values for the selected unit', () => {
+    const dept = { exitsPerMonth: 5, plansPerWorker: 1, waitingNow: 2, workingNow: 3, activeWip: 5, exitsPiecesPerMonth: 50, piecesPerWorker: 10, waitingNowPieces: 20 }
+    expect(resolveCapacityDeptValues(dept, 'plan')).toEqual({ exits: 5, perWorker: 1, waiting: 2, working: 3, activeWip: 5 })
+    expect(resolveCapacityDeptValues(dept, 'piece')).toEqual({ exits: 50, perWorker: 10, waiting: 20, working: null, activeWip: null })
+  })
+})
+
+describe('breakdown helpers', () => {
+  it('sortBreakdownRows orders by activeWipPieces desc without mutating', () => {
+    const rows = [{ key: 'a', activeWipPieces: 1 }, { key: 'b', activeWipPieces: 9 }]
+    expect(sortBreakdownRows(rows).map((r) => r.key)).toEqual(['b', 'a'])
+    expect(rows[0].key).toBe('a')
+  })
+
+  it('buildBreakdownChartData keeps top N by total and folds the rest into "other"', () => {
+    const series = [
+      { bucketEnd: '2026-08-01', key: 'ring', inflowPieces: 10 },
+      { bucketEnd: '2026-09-01', key: 'ring', inflowPieces: 20 },
+      { bucketEnd: '2026-08-01', key: 'ear', inflowPieces: 5 },
+      { bucketEnd: '2026-09-01', key: 'pend', inflowPieces: 1 },
+      { bucketEnd: '2026-09-01', key: 'brac', inflowPieces: 2 }
+    ]
+    const rows = [{ key: 'ring', name: 'แหวน' }, { key: 'ear', name: 'ต่างหู' }]
+    const result = buildBreakdownChartData(series, rows, 'inflowPieces', 'อื่น ๆ', 2)
+    expect(result.bucketEnds).toEqual(['2026-08-01', '2026-09-01'])
+    expect(result.series.map((s) => s.name)).toEqual(['แหวน', 'ต่างหู', 'อื่น ๆ'])
+    expect(result.series[0].data).toEqual([10, 20])
+    expect(result.series[1].data).toEqual([5, 0])
+    expect(result.series[2].data).toEqual([0, 3])
+  })
+
+  it('buildBreakdownChartData has no "other" series when everything fits and uses the key when no name', () => {
+    const result = buildBreakdownChartData([{ bucketEnd: 'b', key: 'x', outputPieces: 4 }], [], 'outputPieces', 'อื่น ๆ')
+    expect(result.series).toEqual([{ key: 'x', name: 'x', data: [4] }])
+    expect(buildBreakdownChartData(null, null, 'inflowPieces', 'อื่น ๆ')).toEqual({ bucketEnds: [], series: [] })
   })
 })

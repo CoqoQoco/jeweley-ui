@@ -243,7 +243,15 @@ export default {
           departmentKeys: filters.delivery.departmentKeys
         }),
         store.fetchDeliveryLatePlans({ ...range(filters.delivery), take: EXPORT_ALL_ROWS }),
-        store.fetchCapacity({ ...range(filters.capacity), bucket: 'month', unit: filters.capacity.unit }),
+        store.fetchCapacity({
+          ...range(filters.capacity),
+          bucket: 'month',
+          unit: filters.capacity.unit,
+          productTypes: filters.capacity.productTypes,
+          golds: filters.capacity.golds,
+          goldSizes: filters.capacity.goldSizes,
+          breakdownBy: filters.capacity.breakdownBy
+        }),
         store.fetchGold({
           ...range(filters.gold),
           bucket: filters.gold.bucket,
@@ -341,7 +349,7 @@ export default {
         },
         {
           sheetName: L('sheetCapacity'),
-          data: buildCapacityExcelRows(data.capacity?.kpi, data.capacity?.costCardToDone, data.capacity?.departments, t),
+          data: buildCapacityExcelRows(data.capacity?.kpi, data.capacity?.costCardToDone, data.capacity?.departments, t, data.capacity?.breakdown),
           columns: buildPositionalColumns(rangeText('capacity'), CAPACITY_EXCEL_WIDTH)
         },
         {

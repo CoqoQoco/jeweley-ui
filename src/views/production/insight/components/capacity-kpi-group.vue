@@ -10,6 +10,8 @@
 
   Props:
     kpi           — Object (required) จาก Capacity.kpi
+    unit          — String ('plan') — 'plan'|'piece' (filter.unit) เลือกชุด field ของการ์ด งานเข้า/ผลิตเสร็จ/งานค้าง/
+                    งานค้างเทียบเท่า ทั้งชุด (resolveCapacityKpiValues) — คอขวด/บัตรต้นทุนนับเป็นใบเสมอ
     departments   — Array (required) จาก Capacity.departments (ไม่กรองตาม filter.departmentKeys — เลข KPI
                     เป็นภาพรวมทั้งบริษัทเสมอ ไม่กรองรายแผนก) — ใช้จับคู่ queueDays ของแผนกคอขวด (kpi.bottleneckDepts
                     เป็นแค่ array ของ key ไม่มี queueDays มาด้วย)
@@ -35,7 +37,7 @@
       <div class="kpi-card">
         <StatCardGeneric
           icon="bi-box-arrow-in-down"
-          :value="formatCount(kpi.inflowPerMonth)"
+          :value="formatCount(values.inflow)"
           :label="$t('view.productionInsight.capacity.kpiInflow')"
           :subLabel="inflowSubLabel"
           variant="main"
@@ -47,7 +49,7 @@
       <div class="kpi-card">
         <StatCardGeneric
           icon="bi-box-arrow-up-right"
-          :value="formatCount(completedCardValue)"
+          :value="formatCount(values.output)"
           :label="$t('view.productionInsight.capacity.kpiCompleted')"
           :subLabel="netSubLabel"
           :variant="netVariant"
@@ -59,7 +61,7 @@
       <div class="kpi-card">
         <StatCardGeneric
           icon="bi-stack"
-          :value="formatMonths(kpi.backlogMonths)"
+          :value="formatMonths(values.backlogMonths)"
           :label="$t('view.productionInsight.capacity.kpiBacklog')"
           :subLabel="backlogSubLabel"
           variant="main"
@@ -97,7 +99,7 @@
 </template>
 
 <script>
-import { resolveNetVariant, resolveBottleneckVariant, resolveCostCardVariant, buildBottleneckSummary, CAPACITY_PRODUCED_FIELD } from './capacity-helpers.js'
+import { resolveNetVariant, resolveBottleneckVariant, resolveCostCardVariant, buildBottleneckSummary, resolveCapacityKpiValues } from './capacity-helpers.js'
 import { formatDateTime } from '@/services/utils/dayjs.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
@@ -115,6 +117,10 @@ export default {
     kpi: {
       type: Object,
       required: true
+    },
+    unit: {
+      type: String,
+      default: 'plan'
     },
     departments: {
       type: Array,
@@ -137,13 +143,17 @@ export default {
   emits: ['goto-report'],
 
   computed: {
-    // "ผลิตเสร็จ" = field CAPACITY_PRODUCED_FIELD (='outputPerMonth' — ดู comment บน) ไม่ใช่ completedPerMonth
-    completedCardValue() {
-      return this.kpi[`${CAPACITY_PRODUCED_FIELD}PerMonth`]
+    // ค่า KPI ของหน่วยที่เลือก — "ผลิตเสร็จ" = field output (ใบ: outputPerMonth / ชิ้น: outputPiecesPerMonth) ไม่ใช่ completed
+    values() {
+      return resolveCapacityKpiValues(this.kpi, this.unit)
+    },
+
+    unitText() {
+      return this.$t(`view.productionInsight.capacity.unitLabel.${this.unit === 'piece' ? 'piece' : 'plan'}`)
     },
 
     netVariant() {
-      return resolveNetVariant(this.kpi.netPerMonth)
+      return resolveNetVariant(this.values.net)
     },
 
     bottleneckVariant() {
@@ -158,20 +168,25 @@ export default {
       return buildBottleneckSummary(this.kpi.bottleneckDepts, this.departments)
     },
 
+    // หน่วยหลักเป็นใบ → แสดงชิ้นเป็นรอง / หน่วยหลักเป็นชิ้น → แสดงใบงานเป็นรอง
     inflowSubLabel() {
+      if (this.unit === 'piece') {
+        return this.$t('view.productionInsight.capacity.kpiInflowSubPlans', { plans: this.formatCount(this.kpi.inflowPerMonth) })
+      }
       return this.$t('view.productionInsight.capacity.kpiInflowSub', { pieces: this.formatCount(this.kpi.inflowPiecesPerMonth) })
     },
 
     netSubLabel() {
-      const amount = this.formatCount(Math.abs(this.kpi.netPerMonth ?? 0))
-      if (this.kpi.netPerMonth == null) return this.$t('view.productionInsight.capacity.kpiNetSubUnknown')
-      return this.kpi.netPerMonth > 0
-        ? this.$t('view.productionInsight.capacity.kpiNetSubUp', { amount })
-        : this.$t('view.productionInsight.capacity.kpiNetSubDown', { amount })
+      const net = this.values.net
+      const amount = this.formatCount(Math.abs(net ?? 0))
+      if (net == null) return this.$t('view.productionInsight.capacity.kpiNetSubUnknown')
+      return net > 0
+        ? this.$t('view.productionInsight.capacity.kpiNetSubUp', { amount, unit: this.unitText })
+        : this.$t('view.productionInsight.capacity.kpiNetSubDown', { amount, unit: this.unitText })
     },
 
     backlogSubLabel() {
-      return this.$t('view.productionInsight.capacity.kpiBacklogSub', { activeWip: this.formatCount(this.kpi.activeWip) })
+      return this.$t('view.productionInsight.capacity.kpiBacklogSub', { activeWip: this.formatCount(this.values.activeWip), unit: this.unitText })
     },
 
     bottleneckSubLabel() {

@@ -997,3 +997,28 @@ contract ครบแล้วทั้ง rules/i18n spec
 
 - `/production-dashboard` -> `/executive?view=wip`; `/gold-loss-dashboard` และ redirect เก่าทั้งหมดของ gold-loss -> `/executive?view=gold` (redirect ตรง ไม่มี chain, ซ่อนจากเมนู)
 - view เดิม (`views/production/dashboard/*`, `gold-loss-dashboard/*`) คงไว้บนดิสก์ ไม่ถูกอ้างอิงจาก router แล้ว
+
+## Revision 8 (2026-10-07): หมวด "กำลังการผลิต" รองรับหน่วยชิ้นทั้งแท็บ + กล่อง "แยกตามสินค้า"
+
+- **หน่วยนับ ใบงาน|ชิ้น (filter.unit) คุมทั้งแท็บ** (เดิมคุมแค่แท่ง "งานเข้า" ของกราฟ): การ์ด KPI งานเข้า/ผลิตเสร็จ/สุทธิ/งานค้างเทียบเท่า,
+  กราฟแนวโน้ม (แท่งทั้ง 3 + เส้นงานค้าง), ตารางรายแผนก (ใบ/ชิ้นออก, ใบ/ชิ้นต่อช่าง, รอ, ทำ, งานค้าง) — response มีทั้งสองชุดเสมอ
+  จึงเลือก field ฝั่ง client ผ่าน `resolveCapacityKpiValues`/`resolveCapacitySeriesFields`/`resolveCapacityDeptValues` (capacity-helpers.js)
+  คอลัมน์คิวเทียบเท่า (วัน) + แผงจำลองเพิ่ม/ลดคน ยังเป็นใบงานเสมอ (มี tip/note บอก) — "ชิ้น" = จำนวนตามที่ใบงานระบุ (ชิ้น/คู่/เส้น) ไม่แปลงหน่วย
+- **ตัวกรองใหม่ productTypes/golds/goldSizes** (หลายค่า, ส่งไป server จริง กรองทุกอย่างใน Capacity รวม rules) + **breakdownBy**
+  ('productType'|'gold'|'goldSize', default productType) — URL `capPt`/`capGold`/`capSize`/`capBy` (ค่าว่าง "ไม่ระบุ" เข้ารหัส `~` ใน URL เพราะ
+  parseArrayParam ทิ้งค่าว่าง) — ทั้งหมดรวมใน `serverFilterKey` เดียวของ capacity-section (ยิงรอบเดียวต่อ 1 action)
+- **กล่อง "แยกตามสินค้า"** (`capacity-breakdown-panel.vue`, reportRef `capBreakdown`, วางหลังตารางรายแผนก): ToggleGroup มิติ → refetch ด้วย
+  breakdownBy · ตาราง กลุ่ม/หน่วย/งานเข้า/ผลิตเสร็จ/สุทธิ ±/งานค้าง(ชิ้น)/งานค้าง(ใบ) · กราฟ stacked รายเดือน top 6 + "อื่น ๆ"
+  (`buildBreakdownChartData`) สลับ งานเข้า/ผลิตเสร็จ · คลิกแถว = ตั้งกลุ่มนั้นเป็นตัวกรองทั้งแท็บ (emit update-filter → index-view; ชิปที่แถบตัวกรอง
+  ลบได้; คลิกซ้ำ = เอาออก) · `unit:'mixed'` แสดง "ชิ้น/คู่" · note "นับตามจำนวนในใบงาน (ชิ้น/คู่/เส้น)"
+- **ตัวเลือกตัวกรอง 3 มิติ** สะสมจากแถว breakdown ที่ section emit ขึ้นมา (union ไม่หด) — มิติที่ยังไม่เคยเปิดดูในกล่องจะยังไม่มีตัวเลือก (tip บอกใน
+  แผงตัวกรอง) เพราะ API ตอบ breakdown ทีละมิติ
+- **CAP_GROUP_BACKLOG_GROWING** (by, key, name, months, addedPieces, unit; สูงสุด 3 รายการ ไม่มี action): `resolveFindingParams` รับ translator ตัวที่ 6
+  แปล `by` และ `unit==='mixed'`; param ลงท้าย `Pieces` ใส่ตัวคั่นหลักพัน; help text + codeLabel ครบ
+- **Excel "กำลังการผลิต"** (หน้า /executive): ส่งตัวกรอง/breakdownBy เดียวกับบนจอ, KPI เพิ่มแถวชิ้น, ต่อท้ายด้วยบล็อก "แยกตามสินค้า: {มิติ}"
+- **ที่ยังไม่ยืนยัน**: ความหมายของ inflowPieces/outputPieces ในแถว breakdown ตีความเป็น "ต่อเดือน (เฉลี่ย)" ตามหัวคอลัมน์ที่ user ระบุ; unitNote ที่ API ส่งเป็น boolean
+  จึงใช้ข้อความ i18n คงที่
+
+### Note (2026-10-07, follow-up Revision 8)
+- breakdown.rows.inflowPieces/outputPieces/completedPieces = ยอดรวมทั้งช่วง; คอลัมน์ "งานเข้า/เดือน"/"ผลิตเสร็จ/เดือน" อ่านจาก rows.inflowPiecesPerMonth/outputPiecesPerMonth (netPiecesPerMonth เป็นต่อเดือนอยู่แล้ว)
+- ตัวเลือก MultiSelect สินค้า/ทอง/Gold size มาจาก Capacity.filterOptions ({productTypes,golds,goldSizes}[{key,name}] คำนวณโดยไม่สนตัวกรองสินค้า) — เลิกสะสมจาก breakdown rows และลบ tip เดิม; URL คงใช้ `~` แทนกลุ่มว่าง

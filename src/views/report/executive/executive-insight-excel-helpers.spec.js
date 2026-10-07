@@ -213,6 +213,40 @@ describe('sheet 4: buildCapacityExcelRows', () => {
   })
 })
 
+describe('sheet 4 (breakdown block): buildCapacityExcelRows', () => {
+  const breakdown = {
+    by: 'productType',
+    rows: [
+      { key: 'RING', name: 'แหวน', unit: 'วง', inflowPieces: 360, outputPieces: 300, inflowPiecesPerMonth: 120, outputPiecesPerMonth: 100, netPiecesPerMonth: 20, activeWipPieces: 300, activeWipPlans: 40 },
+      { key: '', name: 'ไม่ระบุ', unit: 'mixed', inflowPieces: 30, outputPieces: 36, inflowPiecesPerMonth: 10, outputPiecesPerMonth: 12, netPiecesPerMonth: -2, activeWipPieces: 30, activeWipPlans: 6 }
+    ]
+  }
+
+  it('appends a breakdown block for the current dimension after the department block', () => {
+    const rows = buildCapacityExcelRows({ outputPiecesPerMonth: 90, netPiecesPerMonth: 5, activeWipPieces: 400 }, {}, [], t, breakdown)
+    const title = rows.findIndex((r) => r.c1 === 'แยกตามสินค้า: ประเภทสินค้า')
+    expect(title).toBeGreaterThan(0)
+    expect(rows[title + 1]).toMatchObject({ c1: 'ประเภทสินค้า', c2: 'หน่วย', c5: 'สุทธิ ±' })
+    expect(rows[title + 2]).toEqual({ c1: 'แหวน', c2: 'วง', c3: 120, c4: 100, c5: 20, c6: 300, c7: 40 })
+    expect(rows[title + 3]).toMatchObject({ c1: 'ไม่ระบุ', c2: 'ชิ้น/คู่', c5: -2 })
+  })
+
+  it('adds the piece KPI rows and omits the breakdown block when there is no breakdown', () => {
+    const rows = buildCapacityExcelRows({ outputPiecesPerMonth: 90, netPiecesPerMonth: 5, activeWipPieces: 400 }, {}, [], t, null)
+    expect(rows.find((r) => r.c1 === 'ผลิตเสร็จ (ชิ้น/เดือน)').c2).toBe(90)
+    expect(rows.find((r) => r.c1 === 'งานค้างทั้งหมด (ชิ้น)').c2).toBe(400)
+    expect(rows.some((r) => String(r.c1 || '').startsWith('แยกตามสินค้า'))).toBe(false)
+  })
+
+  it('renders CAP_GROUP_BACKLOG_GROWING with the translated dimension in the findings sheet', () => {
+    const rows = buildInsightFindingsExcelRows(
+      [{ key: 'capacity', problems: [{ code: 'CAP_GROUP_BACKLOG_GROWING', severity: 'warning', params: { by: 'productType', key: 'RING', name: 'แหวน', months: 3, addedPieces: 120, unit: 'คู่' } }] }],
+      t
+    )
+    expect(rows[0].text).toBe('แหวน (ประเภทสินค้า) งานเข้ามากกว่าผลิตออก 3 เดือนติด งานค้างเพิ่ม 120 คู่')
+  })
+})
+
 describe('sheet 5: buildGoldExcelRows', () => {
   const rows = buildGoldExcelRows(
     [

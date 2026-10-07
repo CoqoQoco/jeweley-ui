@@ -1,9 +1,10 @@
 <!--
   capacity-trend-chart — กราฟ "งานเข้า vs ผลิตเสร็จ vs ปิดสำเร็จ" รายเดือน (reportRef: capTrend) ของหมวด
   "กำลังการผลิต" — แท่ง 3 ชุด (งานเข้า/ผลิตเสร็จ/ปิดสำเร็จ, แกนซ้าย) + เส้นงานค้างปลายงวด (activeWipEnd,
-  แกนขวา, null = ยังไม่มีข้อมูลช่วงนั้น เว้นช่องว่างเสมอ) — unit='piece' สลับเฉพาะแท่ง "งานเข้า" เป็นหน่วยชิ้น
-  (series.inflowPieces) ส่วนผลิตเสร็จ/ปิดสำเร็จ/งานค้างยังนับเป็นใบเสมอ (ไม่มีหน่วยชิ้นให้จากฝั่ง API) — โชว์
-  hint อธิบายใต้กราฟเมื่อ unit='piece'
+  แกนขวา, null = ยังไม่มีข้อมูลช่วงนั้น เว้นช่องว่างเสมอ) — unit ('plan'|'piece') สลับทั้ง 4 ชุดพร้อมกัน (แท่งทั้ง 3 +
+  เส้นงานค้าง) ผ่าน resolveCapacitySeriesFields: ใบ = inflow/output/completed/activeWipEnd, ชิ้น =
+  inflowPieces/outputPieces/completedPieces/activeWipEndPieces — ชิ้นคือจำนวนตามที่ใบงานระบุ (ชิ้น/คู่/เส้น
+  ตามประเภทสินค้า ไม่แปลงหน่วย) จึงมี hint อธิบายใต้กราฟเมื่อ unit='piece'
 
   mapping คำ ↔ field (ยืนยันจาก API agent แล้ว — เดิมเข้าใจสลับกัน แก้แล้ว 2026-10-01): "ผลิตเสร็จ" = เข้าบัตร
   ต้นทุนครั้งแรก (งานช่างจบ) = field `output` (ตรงกับ KPI card "ผลิตเสร็จ/เดือน" ที่ใช้ kpi.outputPerMonth
@@ -15,7 +16,7 @@
 
   Props:
     series  — Array (required) ของ Capacity.series
-    unit    — String ('plan') — 'plan'|'piece' คุมหน่วยของแท่ง "งานเข้า" เท่านั้น
+    unit    — String ('plan') — 'plan'|'piece' คุมหน่วยของทั้ง 4 ชุด (แท่งงานเข้า/ผลิตเสร็จ/ปิดสำเร็จ + เส้นงานค้าง)
     loading — Boolean (false)
 -->
 <template>
@@ -28,7 +29,7 @@
 <script>
 import { CHART_TOKENS } from '@/services/utils/chart-colors.js'
 import { formatBucketMonthLabels } from '@/components/insight/insight-helpers.js'
-import { mapCapacitySeriesField, CAPACITY_PRODUCED_FIELD, CAPACITY_CLOSED_FIELD } from './capacity-helpers.js'
+import { mapCapacitySeriesField, resolveCapacitySeriesFields } from './capacity-helpers.js'
 
 import ChartGeneric from '@/components/prime-vue/ChartGeneric.vue'
 
@@ -55,8 +56,12 @@ export default {
   },
 
   computed: {
-    inflowField() {
-      return this.unit === 'piece' ? 'inflowPieces' : 'inflow'
+    fields() {
+      return resolveCapacitySeriesFields(this.unit)
+    },
+
+    unitText() {
+      return this.$t(`view.productionInsight.capacity.unitLabel.${this.unit === 'piece' ? 'piece' : 'plan'}`)
     },
 
     inflowSeriesName() {
@@ -65,12 +70,12 @@ export default {
 
     chartSeries() {
       return [
-        { name: this.inflowSeriesName, type: 'bar', data: mapCapacitySeriesField(this.series, this.inflowField) },
-        // seriesCompleted คือ label "ผลิตเสร็จ" แต่อ่านจาก field CAPACITY_PRODUCED_FIELD (='output', ดู mapping ด้านบน)
-        { name: this.$t('view.productionInsight.capacity.seriesCompleted'), type: 'bar', data: mapCapacitySeriesField(this.series, CAPACITY_PRODUCED_FIELD) },
-        // seriesOutput คือ label "ปิดสำเร็จ" แต่อ่านจาก field CAPACITY_CLOSED_FIELD (='completed', ดู mapping ด้านบน)
-        { name: this.$t('view.productionInsight.capacity.seriesOutput'), type: 'bar', data: mapCapacitySeriesField(this.series, CAPACITY_CLOSED_FIELD) },
-        { name: this.$t('view.productionInsight.capacity.seriesActiveWip'), type: 'line', data: mapCapacitySeriesField(this.series, 'activeWipEnd') }
+        { name: this.inflowSeriesName, type: 'bar', data: mapCapacitySeriesField(this.series, this.fields.inflow) },
+        // seriesCompleted คือ label "ผลิตเสร็จ" แต่อ่านจาก field output (ใบ) / outputPieces (ชิ้น) — ดู mapping ด้านบน
+        { name: this.$t('view.productionInsight.capacity.seriesCompleted'), type: 'bar', data: mapCapacitySeriesField(this.series, this.fields.output) },
+        // seriesOutput คือ label "ปิดสำเร็จ" แต่อ่านจาก field completed (ใบ) / completedPieces (ชิ้น)
+        { name: this.$t('view.productionInsight.capacity.seriesOutput'), type: 'bar', data: mapCapacitySeriesField(this.series, this.fields.completed) },
+        { name: this.$t('view.productionInsight.capacity.seriesActiveWip'), type: 'line', data: mapCapacitySeriesField(this.series, this.fields.activeWipEnd) }
       ]
     },
 
@@ -82,13 +87,13 @@ export default {
         plotOptions: { bar: { columnWidth: '55%' } },
         xaxis: { categories: formatBucketMonthLabels(this.series.map((p) => p.bucketEnd)) },
         yaxis: [
-          { seriesName: this.inflowSeriesName, title: { text: this.$t('view.productionInsight.capacity.planUnit') }, labels: { formatter: (v) => this.formatCount(v) } },
+          { seriesName: this.inflowSeriesName, title: { text: this.unitText }, labels: { formatter: (v) => this.formatCount(v) } },
           { seriesName: this.inflowSeriesName, show: false, labels: { formatter: (v) => this.formatCount(v) } },
           { seriesName: this.inflowSeriesName, show: false, labels: { formatter: (v) => this.formatCount(v) } },
           {
             seriesName: this.$t('view.productionInsight.capacity.seriesActiveWip'),
             opposite: true,
-            title: { text: this.$t('view.productionInsight.capacity.planUnit') },
+            title: { text: this.unitText },
             labels: { formatter: (v) => this.formatCount(v) }
           }
         ],

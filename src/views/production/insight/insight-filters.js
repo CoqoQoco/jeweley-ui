@@ -200,6 +200,28 @@ function resolveCapacityUnit(value) {
   return CAPACITY_UNIT_VALUES.includes(value) ? value : CAPACITY_DEFAULT_UNIT
 }
 
+// กล่อง "แยกตามสินค้า" — breakdownBy คือมิติที่แยก (ส่งไป server เป็น breakdownBy) ส่วน productTypes/golds/goldSizes
+// เป็นตัวกรองหลายค่า (ส่งไป server จริง กรองทั้งหมวด) — key ของแต่ละมิติ → field ตัวกรองที่ตรงกัน
+export const CAPACITY_BREAKDOWN_BY_VALUES = ['productType', 'gold', 'goldSize']
+export const CAPACITY_DEFAULT_BREAKDOWN_BY = 'productType'
+export const CAPACITY_BREAKDOWN_FILTER_FIELD = { productType: 'productTypes', gold: 'golds', goldSize: 'goldSizes' }
+
+// กลุ่ม "ไม่ระบุ" ของ breakdown ใช้ key '' (สตริงว่าง = ใบงานที่ไม่มีค่านั้น, server รับ "" เป็นตัวกรองได้) — ใน URL
+// เข้ารหัสเป็น '~' เพราะ parseArrayParam ทิ้งค่าว่าง
+const CAPACITY_EMPTY_VALUE_TOKEN = '~'
+
+function parseCapacityValueList(value) {
+  return parseArrayParam(value).map((v) => (v === CAPACITY_EMPTY_VALUE_TOKEN ? '' : v))
+}
+
+function capacityValueListToQuery(values) {
+  return values.map((v) => (v === '' ? CAPACITY_EMPTY_VALUE_TOKEN : v)).join(',')
+}
+
+function resolveCapacityBreakdownBy(value) {
+  return CAPACITY_BREAKDOWN_BY_VALUES.includes(value) ? value : CAPACITY_DEFAULT_BREAKDOWN_BY
+}
+
 // bucket ของหมวดนี้เป็นรายเดือนเสมอ (ยืนยันจาก API agent) ไม่ผันตาม preset แบบ wip/delivery/gold — สัปดาห์
 // ไม่มีความหมายกับเลข "ใบออก/เดือน" ของ Capacity
 const CAPACITY_BUCKET = 'month'
@@ -209,6 +231,10 @@ export function buildDefaultCapacityFilter() {
   return {
     departmentKeys: [],
     unit: CAPACITY_DEFAULT_UNIT,
+    productTypes: [],
+    golds: [],
+    goldSizes: [],
+    breakdownBy: CAPACITY_DEFAULT_BREAKDOWN_BY,
     rangePreset: range.preset,
     start: range.start,
     end: range.end,
@@ -221,6 +247,10 @@ export function parseCapacityFilterQuery(query = {}) {
   return {
     departmentKeys: parseArrayParam(query.capDept),
     unit: resolveCapacityUnit(query.capUnit),
+    productTypes: parseCapacityValueList(query.capPt),
+    golds: parseCapacityValueList(query.capGold),
+    goldSizes: parseCapacityValueList(query.capSize),
+    breakdownBy: resolveCapacityBreakdownBy(query.capBy),
     rangePreset: range.preset,
     start: range.start,
     end: range.end,
@@ -232,6 +262,10 @@ export function capacityFilterToQuery(filter = {}) {
   const query = { ...rangeToQuery({ preset: filter.rangePreset, start: filter.start, end: filter.end }) }
   if (filter.departmentKeys && filter.departmentKeys.length) query.capDept = filter.departmentKeys.join(',')
   if (filter.unit && filter.unit !== CAPACITY_DEFAULT_UNIT) query.capUnit = filter.unit
+  if (filter.productTypes && filter.productTypes.length) query.capPt = capacityValueListToQuery(filter.productTypes)
+  if (filter.golds && filter.golds.length) query.capGold = capacityValueListToQuery(filter.golds)
+  if (filter.goldSizes && filter.goldSizes.length) query.capSize = capacityValueListToQuery(filter.goldSizes)
+  if (filter.breakdownBy && filter.breakdownBy !== CAPACITY_DEFAULT_BREAKDOWN_BY) query.capBy = filter.breakdownBy
   return query
 }
 
@@ -239,6 +273,10 @@ export function clearedCapacityFilterQueryKeys(filter = {}) {
   const keys = [...clearedRangeQueryKeys({ preset: filter.rangePreset, start: filter.start, end: filter.end })]
   if (!filter.departmentKeys || !filter.departmentKeys.length) keys.push('capDept')
   if (!filter.unit || filter.unit === CAPACITY_DEFAULT_UNIT) keys.push('capUnit')
+  if (!filter.productTypes || !filter.productTypes.length) keys.push('capPt')
+  if (!filter.golds || !filter.golds.length) keys.push('capGold')
+  if (!filter.goldSizes || !filter.goldSizes.length) keys.push('capSize')
+  if (!filter.breakdownBy || filter.breakdownBy === CAPACITY_DEFAULT_BREAKDOWN_BY) keys.push('capBy')
   return keys
 }
 

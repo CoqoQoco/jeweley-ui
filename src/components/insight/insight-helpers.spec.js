@@ -414,3 +414,23 @@ describe('resolveHelpKey', () => {
     expect(resolveHelpKey('bogus')).toBe('')
   })
 })
+
+describe('resolveFindingParams — breakdown by / mixed unit / Pieces suffix', () => {
+  const translateBy = (value, kind = 'by') => (kind === 'unit' ? 'ชิ้น/คู่' : `BY:${value}`)
+
+  it('translates by and the mixed unit through the same translator', () => {
+    const resolved = resolveFindingParams({ by: 'gold', unit: 'mixed', addedPieces: 1500 }, undefined, undefined, undefined, undefined, translateBy)
+    expect(resolved.by).toBe('BY:gold')
+    expect(resolved.unit).toBe('ชิ้น/คู่')
+    expect(resolved.addedPieces).toBe('1,500')
+  })
+
+  it('keeps a concrete unit as-is and leaves by untouched without a translator', () => {
+    expect(resolveFindingParams({ by: 'goldSize', unit: 'คู่' }, undefined, undefined, undefined, undefined, translateBy).unit).toBe('คู่')
+    expect(resolveFindingParams({ by: 'goldSize' }).by).toBe('goldSize')
+  })
+
+  it('CAP_GROUP_BACKLOG_GROWING has a help text key', () => {
+    expect(resolveHelpKey('CAP_GROUP_BACKLOG_GROWING')).toBe('view.productionInsight.help.CAP_GROUP_BACKLOG_GROWING')
+  })
+})

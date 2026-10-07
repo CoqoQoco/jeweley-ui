@@ -11,6 +11,7 @@ import { describe, it, expect } from 'vitest'
 import { createI18n } from 'vue-i18n'
 
 import th from './th.js'
+import { resolveFindingParams } from '@/components/insight/insight-helpers.js'
 
 const i18n = createI18n({
   legacy: false,
@@ -46,9 +47,12 @@ const cases = [
   ['rules.ACT_SMOOTH_INFLOW', { outputPerMonth: 128 }],
   // KPI/what-if templates ของ capacity-kpi-group.vue/capacity-whatif-panel.vue (ไม่ใช่ rule code จาก backend)
   ['capacity.kpiInflowSub', { pieces: 450 }],
-  ['capacity.kpiNetSubUp', { amount: 40 }],
-  ['capacity.kpiNetSubDown', { amount: 40 }],
-  ['capacity.kpiBacklogSub', { activeWip: 320 }],
+  ['capacity.kpiNetSubUp', { amount: 40, unit: 'ใบ' }],
+  ['capacity.kpiNetSubDown', { amount: 40, unit: 'ชิ้น' }],
+  ['capacity.kpiBacklogSub', { activeWip: 320, unit: 'ใบ' }],
+  ['capacity.kpiInflowSubPlans', { plans: 90 }],
+  ['rules.CAP_GROUP_BACKLOG_GROWING', { name: 'แหวน', by: 'ประเภทสินค้า', months: 3, addedPieces: '120', unit: 'คู่' }],
+  ['capacity.breakdownChartTitle', { by: 'ทอง' }],
   ['capacity.kpiBottleneckDeptItem', { name: 'ช่างแต่ง', days: 37 }],
   ['capacity.kpiCostCardSub', { p90: 28, pending: 15 }],
   ['capacity.deptDetailTitle', { name: 'ช่างแต่ง' }],
@@ -83,5 +87,23 @@ describe('capacity i18n param interpolation (vue-i18n ตัวจริง)', (
         expect(rendered).toContain(String(params[name]))
       })
     })
+  })
+})
+
+describe('CAP_GROUP_BACKLOG_GROWING end-to-end (resolveFindingParams + vue-i18n)', () => {
+  const translateBy = (value, kind = 'by') => t(kind === 'unit' ? 'view.productionInsight.capacity.unitMixed' : `view.productionInsight.capacity.breakdownBy.${value}`)
+  const render = (params) => t('view.productionInsight.rules.CAP_GROUP_BACKLOG_GROWING', resolveFindingParams(params, undefined, undefined, undefined, undefined, translateBy))
+
+  it('renders the example sentence with the translated dimension and unit', () => {
+    expect(render({ by: 'productType', key: 'RING', name: 'แหวน', months: 3, addedPieces: 120, unit: 'คู่' })).toBe(
+      'แหวน (ประเภทสินค้า) งานเข้ามากกว่าผลิตออก 3 เดือนติด งานค้างเพิ่ม 120 คู่'
+    )
+  })
+
+  it('translates by for gold / goldSize and unit "mixed" to ชิ้น/คู่, and groups thousands in addedPieces', () => {
+    const text = render({ by: 'goldSize', key: '16', name: '16', months: 4, addedPieces: 12345, unit: 'mixed' })
+    expect(text).toContain('(Gold size)')
+    expect(text).toContain('12,345 ชิ้น/คู่')
+    expect(render({ by: 'gold', key: 'YG', name: 'YG', months: 2, addedPieces: 5, unit: 'เส้น' })).toContain('(ทอง)')
   })
 })

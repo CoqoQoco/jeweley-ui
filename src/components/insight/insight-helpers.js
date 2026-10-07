@@ -138,7 +138,9 @@ const NUMERIC_SUFFIX_MAX_FRACTION_DIGITS = {
   Percent: 2,
   // Wages (FC_WAGES_NEXT_MONTH.projectedWages/avgWages ของหมวด "ช่างและค่าแรง") จัดรูปแบบเหมือน Money เป๊ะ
   // (ไม่มีทศนิยม มีตัวคั่นหลักพัน) — ชื่อ param ไม่ได้ลงท้าย Money ตรงๆ เพราะ API agent ตั้งชื่อมาแบบนี้
-  Wages: 0
+  Wages: 0,
+  // Pieces (CAP_GROUP_BACKLOG_GROWING.addedPieces) จำนวนชิ้น/คู่/เส้นของกลุ่มสินค้า — เลขเต็ม มีตัวคั่นหลักพัน
+  Pieces: 0
 }
 
 function formatThaiNumber(value, maximumFractionDigits) {
@@ -162,7 +164,14 @@ function applyNumericSuffixFormatting(resolved) {
 // (maxWorkerNames ต่าง code กันได้ เช่น ACT_TALK_WORKER โชว์ได้ถึง 5 คน ส่วน finding ทั่วไปโชว์แค่ 3) แล้วใส่
 // ตัวคั่นหลักพัน/ปัดทศนิยมให้ param ที่ชื่อลงท้าย Money/Gram/Percent อัตโนมัติ — ค่า param อื่น (count/days/...)
 // ปล่อยผ่านตรงๆ
-export function resolveFindingParams(params, translateDept, translateWorkerType, translateMetal, maxWorkerNames = DEFAULT_MAX_WORKER_NAMES) {
+export function resolveFindingParams(
+  params,
+  translateDept,
+  translateWorkerType,
+  translateMetal,
+  maxWorkerNames = DEFAULT_MAX_WORKER_NAMES,
+  translateBreakdownBy
+) {
   if (!params) return {}
   const resolved = { ...params }
   if (resolved.deptKey !== undefined && typeof translateDept === 'function') {
@@ -180,6 +189,12 @@ export function resolveFindingParams(params, translateDept, translateWorkerType,
   }
   if (resolved.metal !== undefined && typeof translateMetal === 'function') {
     resolved.metal = translateMetal(resolved.metal)
+  }
+  // by ('productType'|'gold'|'goldSize' ของ CAP_GROUP_BACKLOG_GROWING) แปลเป็นชื่อมิติที่แสดงบนจอ
+  // unit === 'mixed' (กลุ่มที่ไม่มีหน่วยใดเกิน 50%) แปลเป็น "ชิ้น/คู่" — translator เดียวกัน แยกด้วยอาร์กิวเมนต์ที่ 2
+  if (resolved.by !== undefined && typeof translateBreakdownBy === 'function') {
+    resolved.by = translateBreakdownBy(resolved.by, 'by')
+    if (resolved.unit === 'mixed') resolved.unit = translateBreakdownBy('mixed', 'unit')
   }
   if (resolved.workers !== undefined) {
     resolved.workers = formatWorkerNameList(resolved.workers, resolved.count, maxWorkerNames)
@@ -248,6 +263,7 @@ const HELP_KEY_CODES = new Set([
   'CAP_COSTCARD_SLOW',
   'FC_BACKLOG_PROJECTED',
   'FC_PEAK_RISK',
+  'CAP_GROUP_BACKLOG_GROWING',
   'GOLD_STAGE_ABOVE_TARGET',
   'GOLD_STAGE_PENDING_RETURN',
   'GOLD_STAGE_OUTLIER_JOBS',
