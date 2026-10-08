@@ -14,6 +14,27 @@ export function resolveLatestGoldLossRow(rows) {
   return list.length ? list[list.length - 1] : { ...EMPTY_GOLD_LOSS_ROW }
 }
 
+// แถว loss เดือนล่าสุดตามโลหะที่เลือกทั้งหน้า — GOLD = Summary.goldLoss, SILVER = Summary.silverLoss, ALL = ทั้งสองแถว
+// (การ์ด "loss ช่างแต่ง" แสดง "ทอง x% · เงิน y%") — คืน [{ metal, row }] เรียง ทอง→เงิน เสมอ
+export function resolveSummaryLossRows(summary, metal) {
+  const gold = { metal: 'GOLD', row: resolveLatestGoldLossRow(summary?.goldLoss) }
+  // เลือกเงิน: API ใส่แถวเงินไว้ใน goldLoss เอง (goldLossMetal = 'SILVER') ส่วน silverLoss มีค่าเฉพาะตอน ALL
+  const silverOnly = { metal: 'SILVER', row: gold.row }
+  const silver = { metal: 'SILVER', row: resolveLatestGoldLossRow(summary?.silverLoss) }
+  if (metal === 'GOLD') return [gold]
+  if (metal === 'SILVER') return [silverOnly]
+  return [gold, silver]
+}
+
+// สัดส่วนโลหะที่เลือกในบิล/SO แบบผสม (metalShare 0–1 เช่น 0.6 = 60% ของมูลค่า; ยอดเงินใน row คูณสัดส่วนมาแล้ว) —
+// คืนเปอร์เซ็นต์ (0–100) ที่ต้องโชว์ hint เฉพาะเมื่อเลือกโลหะใดโลหะหนึ่งและสัดส่วนน้อยกว่า 1 — ไม่งั้นคืน null
+export function resolveMetalShareHint(row, metal) {
+  if (!metal || metal === 'ALL') return null
+  const share = row?.metalShare
+  if (share == null || !Number.isFinite(Number(share)) || Number(share) >= 1) return null
+  return Math.round(Number(share) * 1000) / 10
+}
+
 // ---- Tab navigation (TabViewGeneric — ผูก query string ?tab=) ----
 
 export const EXECUTIVE_TABS = ['production', 'sales', 'stock']

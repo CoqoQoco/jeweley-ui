@@ -13,14 +13,13 @@
   `workers-loaded` ขึ้นไปให้ index-view.vue เก็บเป็น options ทุกครั้งที่ยิง Gold สำเร็จ
 
   Props:
-    filter — Object (required) — รวม metal ('GOLD'|'SILVER', default 'GOLD') คุมทั้งหมวด (KPI/กราฟ/ตารางทุก
-             จุด follow ค่านี้) แก้ได้ทั้งจาก FilterPanelGeneric และ ToggleGroupGeneric ข้าง GoldKpiGroup
-             (state เดียวกัน ส่งขึ้นผ่าน metal-change ให้ index-view.vue เป็นคนแก้ filter จริง — gold-section
-             เองไม่ได้ถือ filter)
+    filter — Object (required) — รวม metal ('GOLD'|'SILVER') คุมทั้งหมวด (KPI/กราฟ/ตารางทุกจุด follow ค่านี้) —
+             ค่ามาจากตัวสลับโลหะทั้งหน้า /executive (index-view.vue goldSectionFilter: รวม = ทอง) — เมื่อทั้งหน้า
+             เป็น "รวม" โชว์ note ว่าแท็บนี้ดูทีละโลหะ (gold-section เองไม่ได้ถือ filter)
     active — Boolean (true) — false เมื่อ mounted ค้างไว้แต่ไม่ใช่หมวดที่เปิดอยู่ (v-show ซ่อน) — ตัวกรอง
              เปลี่ยนตอนไม่ active ไม่ยิง Gold ทันที แค่ติดธง needsRefetch ไว้ยิงใหม่ตอนกลับมา active
 
-  Emits: workers-loaded(workers), metal-change(value)
+  Emits: workers-loaded(workers)
 -->
 <template>
   <InsightTabLayout
@@ -33,7 +32,12 @@
     :helpParams="helpParams"
   >
     <template #report>
-      <GoldKpiGroup :kpi="kpi" :asOf="asOf" :metal="filter.metal" :loading="loading" @goto-report="scrollToReport" @update:metal="onMetalChange" />
+      <p v-if="isAllMetalScope" class="gold-section__metal-note">
+        <i class="bi bi-info-circle"></i>
+        {{ $t('view.productionInsight.gold.metalAllNote') }}
+      </p>
+
+      <GoldKpiGroup :kpi="kpi" :asOf="asOf" :metal="filter.metal" :loading="loading" @goto-report="scrollToReport" />
 
       <GoldStagePanel
         :departments="stageDepartments"
@@ -81,6 +85,7 @@
 
 <script>
 import { useProductionInsightApiStore } from '@/stores/modules/api/production/production-insight-api.js'
+import { useMetalScopeStore } from '@/stores/modules/ui/metal-scope-store.js'
 import { formatRangeLabel } from '@/services/utils/range-presets.js'
 
 import InsightTabLayout from '@/components/insight/insight-tab-layout.vue'
@@ -106,7 +111,8 @@ export default {
 
   setup() {
     const productionInsightStore = useProductionInsightApiStore()
-    return { productionInsightStore }
+    const metalScopeStore = useMetalScopeStore()
+    return { productionInsightStore, metalScopeStore }
   },
 
   props: {
@@ -120,7 +126,7 @@ export default {
     }
   },
 
-  emits: ['workers-loaded', 'metal-change'],
+  emits: ['workers-loaded'],
 
   data() {
     return {
@@ -134,6 +140,7 @@ export default {
       targets: [],
       workers: [],
       asOf: null,
+      metalForced: false,
       stageLoading: false,
       stageDepartments: [],
       stageSeries: [],
@@ -146,6 +153,13 @@ export default {
   },
 
   computed: {
+    // ทั้งหน้าเลือก "รวม" แต่แท็บนี้ดูได้ทีละโลหะ (แสดงทอง) — โชว์ note บอกให้เลือกเงินที่ตัวสลับด้านบนหน้า
+    // metalForced:true จาก Gold/GoldByStage = API บังคับเป็นทองเพราะทั้งหน้าเป็น "รวม" — ใช้ร่วมกับ scope
+    // (ก่อน response แรกมา ใช้ scope ตัดสินไปก่อน)
+    isAllMetalScope() {
+      return this.metalForced || this.metalScopeStore.metal === 'ALL'
+    },
+
     rangeLabel() {
       return formatRangeLabel(this.filter.start, this.filter.end)
     },
@@ -181,12 +195,6 @@ export default {
     scrollToReport(reportRef) {
       const el = document.getElementById(`insight-report-${reportRef}`)
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    },
-
-    // สลับทอง/เงินจาก ToggleGroupGeneric ข้าง GoldKpiGroup — ไม่ได้ถือ filter เอง ส่งขึ้นให้ index-view.vue
-    // แก้ filters.gold.metal จริง (เหมือน onRangePresetChange เดิม ใช้ทันทีไม่ผ่าน draft/apply ของแผงตัวกรอง)
-    onMetalChange(value) {
-      this.$emit('metal-change', value)
     },
 
     // ผู้ใช้แก้ค่าในแผงตั้งเป้า (ยังไม่บันทึก) — รวม 2 scope จาก payload เป็น draftTargets array เดียว ยิงทั้ง
@@ -229,6 +237,7 @@ export default {
       this.targets = res?.targets || []
       this.workers = res?.workers || []
       this.asOf = res?.asOf ?? null
+      this.metalForced = !!res?.metalForced
       this.loading = false
       this.$emit('workers-loaded', this.workers)
     },
@@ -260,3 +269,14 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.gold-section__metal-note {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--base-sub-color);
+}
+</style>

@@ -2,6 +2,12 @@
   <div class="app-container">
     <DashboardHeaderGeneric :title="$t('view.executive.title')" :subtitle="asOfSubtitle" icon="bi-speedometer2" @refresh="onRefresh">
       <template #controls>
+        <ToggleGroupGeneric
+          :modelValue="metal"
+          :options="metalOptions"
+          :ariaLabel="$t('view.executive.metalScope.toggleAriaLabel')"
+          @update:modelValue="onMetalChange"
+        />
         <ButtonGeneric variant="green" icon="bi-file-earmark-excel" :label="$t('view.executive.excel.exportAllBtn')" @click="onExportExcel" />
       </template>
     </DashboardHeaderGeneric>
@@ -10,13 +16,13 @@
 
     <TabViewGeneric :modelValue="activeTab" :tabs="tabsConfig" @update:modelValue="onTabChange">
       <template #production>
-        <productionInsightView ref="insight" />
+        <productionInsightView :key="metal" ref="insight" />
       </template>
       <template #sales>
-        <salesView :receivablesSummary="summary.receivables" :salesOrdersSummary="summary.salesOrders" :refreshToken="refreshToken" />
+        <salesView :key="metal" :receivablesSummary="summary.receivables" :salesOrdersSummary="summary.salesOrders" :refreshToken="refreshToken" />
       </template>
       <template #stock>
-        <stockHealthView :refreshToken="refreshToken" />
+        <stockHealthView :key="metal" :refreshToken="refreshToken" />
       </template>
     </TabViewGeneric>
   </div>
@@ -30,6 +36,8 @@ import { useProductionInsightApiStore } from '@/stores/modules/api/production/pr
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
+import { METAL_SCOPE_VALUES, parseMetalQuery, metalToQuery, resolveGoldTabMetal } from '@/services/utils/metal-scope.js'
+import { useMetalScopeStore } from '@/stores/modules/ui/metal-scope-store.js'
 import api from '@/axios/axios-helper.js'
 import { normalizeTangRow, normalizeSetterRow, buildMonthRange, monthKeyOf, filterRowsByMonthKeys } from '@/services/utils/gold-loss/slip-monthly-helpers.js'
 import {
@@ -70,6 +78,7 @@ import {
 import DashboardHeaderGeneric from '@/components/generic/DashboardHeaderGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import TabViewGeneric from '@/components/generic/TabViewGeneric.vue'
+import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 
 import summaryView from './components/summary-view.vue'
 import salesView from './components/sales-view.vue'
@@ -115,6 +124,7 @@ export default {
     DashboardHeaderGeneric,
     ButtonGeneric,
     TabViewGeneric,
+    ToggleGroupGeneric,
     summaryView,
     salesView,
     stockHealthView,
@@ -125,7 +135,8 @@ export default {
     const executiveReportStore = useExecutiveReportApiStore()
     const productionInsightStore = useProductionInsightApiStore()
     const masterStore = useMasterApiStore()
-    return { executiveReportStore, productionInsightStore, masterStore }
+    const metalScopeStore = useMetalScopeStore()
+    return { executiveReportStore, productionInsightStore, masterStore, metalScopeStore }
   },
 
   data() {
@@ -133,6 +144,8 @@ export default {
       summary: emptySummary(),
       productionFilter: { departmentKeys: [], minDays: 180 },
       goldLossRankingRange: '3m',
+      // โลหะทั้งหน้า GOLD|SILVER|ALL — ค่าจริงอ่านจาก ?metal= ใน created() ก่อน child mount (store ฝั่ง API อ่านจาก metalScopeStore)
+      metal: parseMetalQuery(this.$route.query.metal),
       refreshToken: 0,
       activeTab: 'production',
       isApplyingRouteQuery: false
@@ -141,7 +154,12 @@ export default {
 
   computed: {
     asOfSubtitle() {
-      return this.summary.asOf ? this.$t('view.executive.asOf', { date: formatDateTime(this.summary.asOf) }) : ''
+      if (!this.summary.asOf) return ''
+      return `${this.$t('view.executive.asOf', { date: formatDateTime(this.summary.asOf) })} · ${this.metalLabel(this.metal)}`
+    },
+
+    metalOptions() {
+      return METAL_SCOPE_VALUES.map((value) => ({ value, label: this.metalLabel(value) }))
     },
 
     tabsConfig() {
@@ -170,6 +188,15 @@ export default {
     // activeTab แล้วมาจบที่นี่เหมือนกัน คอย sync query string ?tab= เสมอ (refresh ไม่ผ่าน watcher นี้ — tab เดิม)
     activeTab() {
       this.syncStateToQuery()
+    },
+
+    // store ต้องถูกตั้งก่อน child ถูก remount (key=metal) — watcher แบบ pre-flush จึงรันก่อน render เสมอ child ที่ mount
+    // ใหม่ยิง request ของตัวเองด้วย metal ใหม่ครั้งเดียวต่อ endpoint ที่มองเห็น (หมวดอื่นของ insight ที่ยังไม่เคยเปิด
+    // ไม่ถูก mount) — Summary ยิงที่นี่
+    metal(value) {
+      this.metalScopeStore.setMetal(value)
+      this.syncStateToQuery()
+      this.fetchSummary()
     }
   },
 
@@ -190,7 +217,19 @@ export default {
 
     syncStateToQuery() {
       if (this.isApplyingRouteQuery) return
-      this.$router.replace({ query: { ...this.$route.query, tab: this.activeTab } }).catch(() => {})
+      const query = { ...this.$route.query, tab: this.activeTab }
+      const metalQuery = metalToQuery(this.metal)
+      if (metalQuery) query.metal = metalQuery
+      else delete query.metal
+      this.$router.replace({ query }).catch(() => {})
+    },
+
+    metalLabel(value) {
+      return this.$t(`view.executive.metalScope.options.${value}`)
+    },
+
+    onMetalChange(value) {
+      this.metal = parseMetalQuery(value)
     },
 
     onTabChange(tab) {
@@ -228,6 +267,8 @@ export default {
     async fetchInsightExportData(filters) {
       const store = this.productionInsightStore
       const range = (f) => ({ start: f.start, end: f.end })
+      // หมวดทองดูทีละโลหะ — ทั้งหน้าเป็น รวม = ทอง (เหมือนบนจอ)
+      const goldMetal = resolveGoldTabMetal(this.metal)
       const [wip, leadTime, delivery, atRisk, late, capacity, gold, goldStage, workers, materials, waiting] = await Promise.all([
         store.fetchWip({
           ...range(filters.wip),
@@ -257,9 +298,9 @@ export default {
           bucket: filters.gold.bucket,
           workerTypes: filters.gold.workerTypes,
           workerCodes: filters.gold.workerCodes,
-          metal: 'GOLD'
+          metal: goldMetal
         }),
-        store.fetchGoldByStage({ ...range(filters.gold), metal: 'GOLD' }),
+        store.fetchGoldByStage({ ...range(filters.gold), metal: goldMetal }),
         store.fetchWorkers({
           ...range(filters.workers),
           departmentKeys: filters.workers.departmentKeys,
@@ -276,7 +317,9 @@ export default {
     buildInsightExportSheets(data, filters) {
       const t = (key, params) => this.$t(key, params)
       const L = (key) => this.$t(`view.executive.excel.insight.${key}`)
-      const rangeText = (key) => formatExcelRangeText(t, filters[key].start, filters[key].end)
+      // หัวช่วงเวลาของทุก sheet ระบุโลหะที่เลือกด้วย (sheet ทองและ Loss ใช้โลหะที่หมวดทองแสดงจริง)
+      const metalOf = (key) => this.metalLabel(key === 'gold' ? resolveGoldTabMetal(this.metal) : this.metal)
+      const rangeText = (key) => formatExcelRangeText(t, filters[key].start, filters[key].end, metalOf(key))
       const col = (header, key) => ({ header, key })
 
       const sourceByTopic = {
@@ -294,7 +337,7 @@ export default {
         actions: sourceByTopic[key]?.actions
       }))
       const findingsRangeTexts = buildTopicRangeTexts(
-        INSIGHT_EXCEL_TOPICS.map((key) => ({ key, start: filters[key].start, end: filters[key].end })),
+        INSIGHT_EXCEL_TOPICS.map((key) => ({ key, start: filters[key].start, end: filters[key].end, metalLabel: metalOf(key) })),
         t
       )
 
@@ -465,7 +508,7 @@ export default {
         [
           {
             sheetName: this.$t('view.executive.excel.sheetSummary'),
-            data: buildSummaryExcelRows(this.summary, summaryLabels),
+            data: [{ label: this.$t('view.executive.excel.metalRow'), value: this.metalLabel(this.metal) }, ...buildSummaryExcelRows(this.summary, summaryLabels)],
             columns: [
               { header: this.$t('view.executive.excel.colLabel'), key: 'label' },
               { header: this.$t('view.executive.excel.colValue'), key: 'value' }
@@ -579,6 +622,7 @@ export default {
   },
 
   created() {
+    this.metalScopeStore.setMetal(this.metal)
     this.applyQueryToState(this.$route.query)
   },
 

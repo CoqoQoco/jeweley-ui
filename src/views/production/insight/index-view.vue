@@ -69,10 +69,9 @@
       <GoldSection
         v-if="visitedSections.has('gold')"
         v-show="activeSection === 'gold'"
-        :filter="filters.gold"
+        :filter="goldSectionFilter"
         :active="activeSection === 'gold'"
         @workers-loaded="onGoldWorkersLoaded"
-        @metal-change="onGoldMetalChange"
       />
       <CapacitySection
         v-if="visitedSections.has('capacity')"
@@ -181,9 +180,6 @@
         </template>
 
         <template v-else-if="activeSection === 'gold'">
-          <FormFieldGeneric :label="$t('view.productionInsight.gold.filterMetal')">
-            <ToggleGroupGeneric v-model="draftGoldFilter.metal" :options="metalOptions" :ariaLabel="$t('view.productionInsight.gold.metalToggleAriaLabel')" />
-          </FormFieldGeneric>
           <FormFieldGeneric :label="$t('view.productionInsight.gold.filterWorkerType')">
             <MultiSelectGeneric
               v-model="draftGoldFilter.workerTypes"
@@ -338,8 +334,6 @@ import {
   goldFilterToQuery,
   clearedGoldFilterQueryKeys,
   GOLD_DEFAULT_OLDER_THAN_DAYS,
-  GOLD_METAL_VALUES,
-  GOLD_DEFAULT_METAL,
   buildDefaultCapacityFilter,
   parseCapacityFilterQuery,
   capacityFilterToQuery,
@@ -359,6 +353,8 @@ import {
   clearedMaterialsFilterQueryKeys
 } from './insight-filters.js'
 import { resolvePresetRange, resolveCustomBucket } from '@/services/utils/range-presets.js'
+import { resolveGoldTabMetal } from '@/services/utils/metal-scope.js'
+import { useMetalScopeStore } from '@/stores/modules/ui/metal-scope-store.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
@@ -399,6 +395,11 @@ export default {
     CapacitySection,
     WorkersSection,
     MaterialsSection
+  },
+
+  setup() {
+    const metalScopeStore = useMetalScopeStore()
+    return { metalScopeStore }
   },
 
   data() {
@@ -450,8 +451,10 @@ export default {
       return [80, 50].map((workerType) => ({ value: String(workerType), label: this.$t(`view.productionInsight.gold.workerType.${workerType}`) }))
     },
 
-    metalOptions() {
-      return GOLD_METAL_VALUES.map((value) => ({ value, label: this.$t(`view.productionInsight.gold.metalLabel.${value}`) }))
+    // โลหะของหมวดทองมาจากตัวสลับทั้งหน้า (/executive) — รวม = แสดงทอง (gold-section มี note) — object ใหม่เฉพาะเมื่อ
+    // filters.gold หรือโลหะเปลี่ยน (computed) กัน deep-watcher ของ gold-section ยิงซ้ำ
+    goldSectionFilter() {
+      return { ...this.filters.gold, metal: resolveGoldTabMetal(this.metalScopeStore.metal) }
     },
 
     // ฟิลด์ตัวกรอง 3 มิติของ capacity ในแผงตัวกรอง — options รวมค่าที่เลือกอยู่แล้วที่ยังไม่อยู่ในรายการสะสม
@@ -507,11 +510,6 @@ export default {
       if (this.activeSection === 'gold') {
         const f = this.filters.gold
         return buildActiveChips([
-          {
-            key: 'metal',
-            label: this.$t('view.productionInsight.gold.filterMetal'),
-            value: f.metal !== GOLD_DEFAULT_METAL ? this.$t(`view.productionInsight.gold.metalLabel.${f.metal}`) : ''
-          },
           { key: 'workerTypes', label: this.$t('view.productionInsight.gold.filterWorkerType'), value: this.resolveWorkerTypeLabels(f.workerTypes) },
           { key: 'workerCodes', label: this.$t('view.productionInsight.gold.filterWorkerCode'), value: this.resolveWorkerCodeLabels(f.workerCodes) },
           {
@@ -720,8 +718,7 @@ export default {
         this.filters.delivery = next
       } else if (this.activeSection === 'gold') {
         const next = { ...this.filters.gold }
-        if (key === 'metal') next.metal = GOLD_DEFAULT_METAL
-        else if (key === 'workerTypes') next.workerTypes = []
+        if (key === 'workerTypes') next.workerTypes = []
         else if (key === 'workerCodes') next.workerCodes = []
         else if (key === 'olderThanDays') next.olderThanDays = GOLD_DEFAULT_OLDER_THAN_DAYS
         this.filters.gold = next
@@ -737,23 +734,6 @@ export default {
         else if (key === 'employmentTypes') next.employmentTypes = []
         this.filters.workers = next
       }
-    },
-
-    // ToggleGroupGeneric ทอง/เงิน ข้าง GoldKpiGroup เป็น state เดียวกับฟิลด์ "โลหะ" ในแผงตัวกรอง — ใช้ทันที
-    // ไม่ผ่าน draft/apply เหมือน onRangePresetChange (ไม่ใช่ปุ่ม "ใช้ตัวกรอง" ปกติ) — sync query เองตรงๆ
-    // (กัน syncStateToQuery ของ filters watcher ทำงาน เพราะมันรีบิลด์ query ของทั้ง section แล้วลบ key ที่
-    // กลับเป็นค่า default ทิ้งแบบ blanket — ถ้า range ปัจจุบันบังเอิญเป็นค่า default 3m จะโดนลบ query.range
-    // ทิ้งไปด้วยทั้งที่ไม่เกี่ยวกับการสลับโลหะเลย) — แก้เฉพาะ key gldMetal คง key อื่นทั้งหมดไว้ตามเดิม
-    onGoldMetalChange(value) {
-      this.isApplyingRouteQuery = true
-      this.filters.gold = { ...this.filters.gold, metal: value }
-      this.$nextTick(() => {
-        this.isApplyingRouteQuery = false
-        const query = { ...this.$route.query, view: 'gold' }
-        if (value === GOLD_DEFAULT_METAL) delete query.gldMetal
-        else query.gldMetal = value
-        this.$router.replace({ query }).catch(() => {})
-      })
     },
 
     onClearFilter() {

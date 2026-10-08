@@ -4,6 +4,7 @@
       <div class="chart-col">
         <h6 class="chart-title">{{ $t('view.executive.stock.chartTitle') }}</h6>
         <ChartGeneric type="bar" :series="ageSeries" :options="ageOptions" :height="280" :emptyText="$t('common.label.noData')" />
+        <p v-if="ageQtyNote" class="stock-qty-note">{{ ageQtyNote }}</p>
       </div>
       <div class="table-col">
         <h6 class="table-title">{{ $t('view.executive.stock.byReceiptTypeTitle') }}</h6>
@@ -14,6 +15,9 @@
           <template #noCostCountTemplate="{ data }">
             <div class="text-right">{{ formatCount(data.noCostCount) }}</div>
           </template>
+          <template #qtyTemplate="{ data }">
+            <div class="text-right">{{ formatCount(data.qty) }}</div>
+          </template>
         </BaseDataTable>
       </div>
     </div>
@@ -22,6 +26,7 @@
 
 <script>
 import { useExecutiveReportApiStore } from '@/stores/modules/api/report/executive-report-api.js'
+import { useMetalScopeStore } from '@/stores/modules/ui/metal-scope-store.js'
 import { CHART_TOKENS } from '@/services/utils/chart-colors.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
@@ -41,7 +46,8 @@ export default {
 
   setup() {
     const executiveReportStore = useExecutiveReportApiStore()
-    return { executiveReportStore }
+    const metalScopeStore = useMetalScopeStore()
+    return { executiveReportStore, metalScopeStore }
   },
 
   props: {
@@ -98,16 +104,33 @@ export default {
         key: r.receiptType,
         receiptType: r.receiptType,
         count: r.count || 0,
-        noCostCount: r.noCostCount || 0
+        noCostCount: r.noCostCount || 0,
+        qty: r.qty ?? null
       }))
     },
 
+    // เลือกโลหะใดโลหะหนึ่ง (เช่น เงินที่เป็นล็อต) จำนวนชิ้น ไม่เท่าจำนวนจริง — โชว์คอลัมน์ "จำนวนตามหน่วย" (qty) เพิ่ม
+    // คู่กับจำนวนชิ้น ไม่แทนที่ (รวม = ซ่อน คงหน้าตาเดิม)
+    showQty() {
+      return this.metalScopeStore.metal !== 'ALL'
+    },
+
+    ageQtyNote() {
+      if (!this.showQty) return ''
+      const parts = (this.stockHealth.ageBuckets || [])
+        .filter((b) => b.qty != null)
+        .map((b) => `${this.bucketLabelMap[b.key] || b.key} ${this.formatCount(b.qty)}`)
+      return parts.length ? this.$t('view.executive.stock.ageQtyNote', { parts: parts.join(' · ') }) : ''
+    },
+
     receiptTypeColumns() {
-      return [
+      const columns = [
         { field: 'receiptType', header: this.$t('view.executive.stock.colReceiptType'), sortable: false, minWidth: '160px' },
         { field: 'count', header: this.$t('view.executive.stock.colCount'), sortable: false, minWidth: '100px', align: 'right' },
         { field: 'noCostCount', header: this.$t('view.executive.stock.colNoCostCount'), sortable: false, minWidth: '100px', align: 'right' }
       ]
+      if (this.showQty) columns.push({ field: 'qty', header: this.$t('view.executive.stock.colQty'), sortable: false, minWidth: '110px', align: 'right' })
+      return columns
     }
   },
 
@@ -153,5 +176,11 @@ export default {
   font-weight: 600;
   font-size: var(--fs-base);
   margin-bottom: var(--sp-sm);
+}
+
+.stock-qty-note {
+  margin: var(--sp-sm) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--base-sub-color);
 }
 </style>

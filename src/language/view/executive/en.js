@@ -21,7 +21,14 @@ export default {
     stockNoCost: 'Stock without cost',
     stockNoCostSub: '{noCostCount} of {inStockCount} pieces',
     goldLossOverAllowed: 'Trim gold loss this month',
-    goldLossOverAllowedSub: 'Allowed {allowedPercent}% · {overSlipCount} slips over ({overAllowedGram} g)'
+    goldLossOverAllowedSub: 'Allowed {allowedPercent}% · {overSlipCount} slips over ({overAllowedGram} g)',
+    lossLabel: {
+      GOLD: 'Gold loss this month (setter)',
+      SILVER: 'Silver loss this month (setter)',
+      ALL: 'Setter loss this month'
+    },
+    lossMetalValue: '{metal} {percent}%',
+    lossOverSlipAllSub: 'Over allowance per slip: gold {goldCount} / silver {silverCount}'
   },
 
   department: {
@@ -108,6 +115,8 @@ export default {
     colReceiptType: 'Receipt type',
     colCount: 'Piece count',
     colNoCostCount: 'No cost',
+    colQty: 'Quantity (units)',
+    ageQtyNote: 'Quantity by unit: {parts}',
     colCostThb: 'Cost value (THB)',
     ageBucket: {
       lt1y: 'Less than 1 year',
@@ -138,7 +147,18 @@ export default {
     }
   },
 
+  metalScope: {
+    toggleAriaLabel: 'Select the metal shown on the whole page',
+    options: {
+      GOLD: 'Gold',
+      SILVER: 'Silver',
+      ALL: 'All'
+    },
+    shareHint: '{metal} share {percent}%'
+  },
+
   excel: {
+    metalRow: 'Metal',
     exportAllBtn: 'Export All (Excel)',
     filenamePrefix: 'Executive-Overview',
     sheetSummary: 'Summary',
@@ -189,6 +209,7 @@ export default {
       sheetGold: 'Gold and loss',
       sheetWorkers: 'Workers and wages',
       sheetMaterials: 'Materials',
+      metalLabel: 'Metal',
       rangeLabel: 'Period',
       snapshotNote: 'Plans waiting for gems as of now (not tied to the period)',
       yes: 'Yes',

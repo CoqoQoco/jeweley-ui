@@ -360,7 +360,6 @@ export default {
     filterWorkerType: 'Worker Type',
     filterWorkerCode: 'Worker',
     filterOlderThan: 'Missing slip over (days)',
-    filterMetal: 'Metal',
     filterCustomRangeLabel: 'Custom range',
 
     workerType: {
@@ -372,7 +371,7 @@ export default {
       GOLD: 'Gold',
       SILVER: 'Silver'
     },
-    metalToggleAriaLabel: 'Select metal',
+    metalAllNote: 'The gold tab shows one metal at a time — showing gold (choose Silver at the top to see silver)',
 
     kpiLossPercent: 'Actual % Loss',
     kpiLossPercentSub: 'Allowed {allowed}% · Target {target}%',

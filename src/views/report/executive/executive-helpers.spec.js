@@ -17,6 +17,8 @@ import {
   calcPercent,
   resolveGoldLossKpiVariant,
   resolveLatestGoldLossRow,
+  resolveSummaryLossRows,
+  resolveMetalShareHint,
   formatMonthLabel,
   formatMoneyWithCurrency,
   buildMonthlyCompletedSeriesData,
@@ -552,5 +554,38 @@ describe('executive-helpers', () => {
         { rank: 1, dept: 'ช่างฝัง', workerCode: 'X', workerName: 'X', issuedGram: '200.00', lossGram: '2.00', allowedGram: '3.00', lossPercent: '1.00' }
       ])
     })
+  })
+})
+
+describe('resolveSummaryLossRows', () => {
+  const summary = { goldLoss: [{ lossPercent: 1.1 }], silverLoss: [{ lossPercent: 0.4 }] }
+
+  it('returns gold and silver rows for ALL, in that order', () => {
+    const rows = resolveSummaryLossRows(summary, 'ALL')
+    expect(rows.map((r) => r.metal)).toEqual(['GOLD', 'SILVER'])
+    expect(rows[1].row.lossPercent).toBe(0.4)
+  })
+
+  it('GOLD returns the goldLoss row only', () => {
+    expect(resolveSummaryLossRows(summary, 'GOLD')).toEqual([{ metal: 'GOLD', row: { lossPercent: 1.1 } }])
+  })
+
+  it('SILVER reads the row the API puts in goldLoss (goldLossMetal=SILVER), not silverLoss', () => {
+    const rows = resolveSummaryLossRows({ goldLoss: [{ lossPercent: 0.7 }], silverLoss: [] }, 'SILVER')
+    expect(rows).toEqual([{ metal: 'SILVER', row: { lossPercent: 0.7 } }])
+  })
+
+  it('falls back to an empty row when the metal has no data', () => {
+    expect(resolveSummaryLossRows({}, 'ALL')[1].row.lossPercent).toBe(0)
+  })
+})
+
+describe('resolveMetalShareHint', () => {
+  it('shows only for a selected metal and a share below 100', () => {
+    expect(resolveMetalShareHint({ metalShare: 0.6254 }, 'GOLD')).toBe(62.5)
+    expect(resolveMetalShareHint({ metalShare: 1 }, 'GOLD')).toBeNull()
+    expect(resolveMetalShareHint({ metalShare: 0.6 }, 'ALL')).toBeNull()
+    expect(resolveMetalShareHint({}, 'SILVER')).toBeNull()
+    expect(resolveMetalShareHint(null, 'SILVER')).toBeNull()
   })
 })

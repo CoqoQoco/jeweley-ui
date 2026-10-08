@@ -1022,3 +1022,14 @@ contract ครบแล้วทั้ง rules/i18n spec
 ### Note (2026-10-07, follow-up Revision 8)
 - breakdown.rows.inflowPieces/outputPieces/completedPieces = ยอดรวมทั้งช่วง; คอลัมน์ "งานเข้า/เดือน"/"ผลิตเสร็จ/เดือน" อ่านจาก rows.inflowPiecesPerMonth/outputPiecesPerMonth (netPiecesPerMonth เป็นต่อเดือนอยู่แล้ว)
 - ตัวเลือก MultiSelect สินค้า/ทอง/Gold size มาจาก Capacity.filterOptions ({productTypes,golds,goldSizes}[{key,name}] คำนวณโดยไม่สนตัวกรองสินค้า) — เลิกสะสมจาก breakdown rows และลบ tip เดิม; URL คงใช้ `~` แทนกลุ่มว่าง
+
+## Revision 9 (2026-10-07): ตัวสลับโลหะทั้งหน้า /executive (ทอง | เงิน | รวม)
+
+- **ตัวสลับ** `ToggleGroupGeneric` ที่ header (ข้างปุ่ม Excel/refresh) ค่า GOLD | SILVER | ALL (default ALL) sync URL `?metal=gold|silver|all` (ALL ไม่ใส่ใน URL) — คงอยู่ข้ามการสลับแท็บ/ช่วงเวลา (query key อื่นของหน้า/insight ถูก spread เก็บไว้เสมอ) — หัวหน้าจอโชว์ "ข้อมูล ณ … · ทอง"
+- **ส่ง metal ให้ทุก endpoint ที่ชั้น store** (ไม่ส่งต่อ prop ทุก component): `useMetalScopeStore` (`stores/modules/ui/metal-scope-store.js`) ถือค่า, `postScoped` ใน `executive-report-api.js` + `production-insight-api.js` เติม `metal` ให้ทุก POST (Save* ไม่เติม; ค่าที่ caller ส่งมาเองชนะ เช่นหมวดทอง) — ครอบคลุม Summary/StalePlans/Receivables/SalesOrdersWithoutInvoice/StockHealth + ProductionInsight ทั้ง 6 หมวด ทุก panel/ตาราง + Excel export
+- **เปลี่ยนโลหะ = ยิงใหม่ 1 ครั้งต่อ endpoint ที่มองเห็น**: `executive index-view` watch `metal` → ตั้ง store → fetchSummary, และ remount ของแท็บผลิต/ขายและเงิน/คลัง ด้วย `:key="metal"` (ตัวกรอง insight ถูกเก็บใน URL จึงกลับมาเหมือนเดิม; state ภายใน panel เช่นแถวที่เลือกรีเซ็ต) — เลือกวิธีนี้แทนการเพิ่ม metal เข้า watcher key ของ ~25 component เพราะได้พฤติกรรมเดียวกัน (1 request/endpoint, หมวดที่ยังไม่เปิดไม่ถูก mount) โดยไม่มีจุดที่ลืมได้
+- **หมวดทองและ Loss**: ตัวสลับทอง|เงินในแท็บ + ฟิลด์ "โลหะ" ในแผงตัวกรอง + ชิป + query `gldMetal` ถูกลบ — โลหะมาจากตัวสลับทั้งหน้า (`resolveGoldTabMetal`: รวม → ทอง) และเมื่อทั้งหน้าเป็น "รวม" โชว์ note "แท็บทองดูทีละโลหะ — แสดงทอง (เลือก เงิน ที่ด้านบนเพื่อดูเงิน)"
+- **การ์ด loss ช่างแต่ง** (Summary): ALL = "ทอง x% · เงิน y%" (goldLoss + silverLoss), ไม่งั้นโลหะที่เลือก — สี warning เมื่อโลหะใดเกินเกณฑ์
+- **ตารางขายและเงิน**: เลือกโลหะใดโลหะหนึ่งและ `metalShare < 100` → hint เล็กใต้ยอด "สัดส่วนทอง n%"
+- **Excel**: ทุก sheet ใหม่ระบุ "· โลหะ: …" ในบรรทัดช่วงเวลา (sheet ทองและ Loss ใช้โลหะที่หมวดทองแสดงจริง), sheet สรุปเดิมเพิ่มแถว "โลหะ" บนสุด, request ทั้งหมดใช้ metal เดียวกับบนจอ
+- **Final contract (ยืนยันแล้ว)**: Summary.goldLoss = โลหะเดียว (ALL → ทอง, SILVER → เงิน, `goldLossMetal` บอก) ส่วน `silverLoss` มีค่าเฉพาะตอน ALL; `metalShare` เป็น 0–1 (ยอดเงินคูณแล้ว) แสดง hint เมื่อ < 1; Gold/GoldByStage ส่ง `metalForced:true` เมื่อบังคับเป็นทอง (note แท็บทอง); StockHealth เพิ่ม qty — โชว์คอลัมน์ "จำนวนตามหน่วย" + สรุป qty ตามอายุเมื่อเลือกทอง/เงิน (รวม = ซ่อน); ใต้ SILVER ค่า slip-based ของช่าง/WRK_GOLD_REPEAT ว่างโดยออกแบบ

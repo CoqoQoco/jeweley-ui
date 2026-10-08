@@ -28,7 +28,10 @@
             {{ data.deliveryDate ? formatDate(data.deliveryDate) : '-' }}
           </template>
           <template #grandTotalThbTemplate="{ data }">
-            <div class="text-right">{{ formatMoneyFull(data.grandTotalThb) }}</div>
+            <div class="text-right">
+              {{ formatMoneyFull(data.grandTotalThb) }}
+              <small v-if="metalShareOf(data) != null" class="metal-share-hint">{{ metalShareHint(data) }}</small>
+            </div>
           </template>
           <template #outstandingTemplate="{ data }">
             <div class="text-right">{{ formatMoneyWithCurrency(data.outstanding, data.currencyUnit) }}</div>
@@ -56,8 +59,10 @@ import {
   buildReceivablesDonutSeries,
   buildDonutCenterLabel,
   buildDonutCenterLabelsOptions,
-  resolveDonutSliceFilter
+  resolveDonutSliceFilter,
+  resolveMetalShareHint
 } from '../executive-helpers.js'
+import { useMetalScopeStore } from '@/stores/modules/ui/metal-scope-store.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
@@ -79,7 +84,8 @@ export default {
 
   setup() {
     const executiveReportStore = useExecutiveReportApiStore()
-    return { executiveReportStore }
+    const metalScopeStore = useMetalScopeStore()
+    return { executiveReportStore, metalScopeStore }
   },
 
   props: {
@@ -231,6 +237,18 @@ export default {
       }
     },
 
+    // บิล/SO ที่มีหลายโลหะปน: เลือกโลหะใดโลหะหนึ่งแล้วยอดเป็นเฉพาะส่วนนั้น → บอกสัดส่วนใต้ยอด (metalShare < 100)
+    metalShareOf(data) {
+      return resolveMetalShareHint(data, this.metalScopeStore.metal)
+    },
+
+    metalShareHint(data) {
+      return this.$t('view.executive.metalScope.shareHint', {
+        metal: this.$t(`view.executive.metalScope.options.${this.metalScopeStore.metal}`),
+        percent: this.metalShareOf(data)
+      })
+    },
+
     async fetchData() {
       if (this.isSoTab) {
         const res = await this.executiveReportStore.fetchSalesOrdersWithoutInvoice({ take: this.take, skip: this.skip, sort: this.sort })
@@ -288,5 +306,11 @@ export default {
 
 .tab-row {
   margin-bottom: var(--sp-lg);
+}
+
+.metal-share-hint {
+  display: block;
+  font-size: var(--fs-sm);
+  color: var(--base-sub-color);
 }
 </style>

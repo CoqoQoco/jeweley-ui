@@ -38,6 +38,19 @@ describe('range helpers', () => {
     expect(formatExcelRangeText(t, START, END)).toBe('ช่วงเวลา: 01/07/2026 – 30/09/2026')
   })
 
+  it('formatExcelRangeText appends the selected metal when given', () => {
+    expect(formatExcelRangeText(t, START, END, 'เงิน')).toBe('ช่วงเวลา: 01/07/2026 – 30/09/2026 · โลหะ: เงิน')
+  })
+
+  it('buildTopicRangeTexts lists topics separately when their metal labels differ even with the same range', () => {
+    const entries = [
+      { key: 'wip', start: START, end: END, metalLabel: 'รวม' },
+      { key: 'gold', start: START, end: END, metalLabel: 'ทอง' }
+    ]
+    expect(buildTopicRangeTexts(entries, t)).toHaveLength(2)
+    expect(buildTopicRangeTexts(entries.map((e) => ({ ...e, metalLabel: 'รวม' })), t)).toHaveLength(1)
+  })
+
   it('buildRangeLeadRows accepts string or array and ends with a blank row', () => {
     expect(buildRangeLeadRows('a', 'x')).toEqual([{ x: 'a' }, {}])
     expect(buildRangeLeadRows(['a', 'b'], 'x')).toEqual([{ x: 'a' }, { x: 'b' }, {}])

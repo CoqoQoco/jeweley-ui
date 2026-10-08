@@ -1,5 +1,10 @@
 import { defineStore } from 'pinia'
 import api from '@/axios/axios-helper.js'
+import { useMetalScopeStore } from '@/stores/modules/ui/metal-scope-store.js'
+
+// ทุก POST เติม `metal` (GOLD|SILVER|ALL ของทั้งหน้า /executive) ให้ request body อัตโนมัติ — ค่าที่ caller ส่งมาเองชนะ
+// (เช่นหมวดทองที่กำหนด metal เอง) — Save* ไม่เติมเพราะไม่ใช่ query
+const postScoped = (path, body) => api.jewelry.post(path, useMetalScopeStore().scoped(body))
 
 // Store แบบ stateless (ตาม pattern sale-order-deposit-store.js) — คืน response ตรงๆ ไม่เก็บ state กลาง
 // เพราะหน้านี้มีทั้งตารางแบบ paged (แสดงบนจอ) และ export Excel เต็มชุด (take สูง) ที่ยิง endpoint เดียวกัน
@@ -9,27 +14,27 @@ export const useExecutiveReportApiStore = defineStore('executiveReportApi', {
 
   actions: {
     async fetchSummary() {
-      return await api.jewelry.post('ExecutiveReport/Summary', {})
+      return await postScoped('ExecutiveReport/Summary', {})
     },
 
     async fetchProductionWip() {
-      return await api.jewelry.post('ExecutiveReport/ProductionWip', {})
+      return await postScoped('ExecutiveReport/ProductionWip', {})
     },
 
     async fetchStalePlans({ take = 50, skip = 0, sort = [], minDays = 180, departmentKeys = [] } = {}) {
-      return await api.jewelry.post('ExecutiveReport/StalePlans', { take, skip, sort, minDays, departmentKeys })
+      return await postScoped('ExecutiveReport/StalePlans', { take, skip, sort, minDays, departmentKeys })
     },
 
     async fetchReceivables({ take = 20, skip = 0, sort = [], filter = 'unpaid' } = {}) {
-      return await api.jewelry.post('ExecutiveReport/Receivables', { take, skip, sort, filter })
+      return await postScoped('ExecutiveReport/Receivables', { take, skip, sort, filter })
     },
 
     async fetchSalesOrdersWithoutInvoice({ take = 20, skip = 0, sort = [] } = {}) {
-      return await api.jewelry.post('ExecutiveReport/SalesOrdersWithoutInvoice', { take, skip, sort })
+      return await postScoped('ExecutiveReport/SalesOrdersWithoutInvoice', { take, skip, sort })
     },
 
     async fetchStockHealth() {
-      return await api.jewelry.post('ExecutiveReport/StockHealth', {})
+      return await postScoped('ExecutiveReport/StockHealth', {})
     }
   }
 })

@@ -130,18 +130,13 @@ export function clearedDeliveryFilterQueryKeys(filter = {}) {
   return keys
 }
 
-// ---- Gold tab filter (workerTypes / workerCodes / olderThanDays / metal / range) ----
+// ---- Gold tab filter (workerTypes / workerCodes / olderThanDays / range) ----
 // workerCodes options มาจาก Gold.workers (ข้อมูลที่เพิ่งโหลดมา) ไม่ใช่ list คงที่แบบ department ของ wip/
-// delivery — index-view.vue เก็บ options ที่ gold-section.vue emit ขึ้นมาหลังยิง Gold สำเร็จ — metal คุมทั้ง
-// หมวด (KPI/กราฟ/ตารางทั้งหมด) แก้ได้ทั้งจากแผงตัวกรองนี้และ ToggleGroupGeneric ข้างหัวข้อ KPI (state เดียวกัน)
+// delivery — index-view.vue เก็บ options ที่ gold-section.vue emit ขึ้นมาหลังยิง Gold สำเร็จ — โลหะของหมวดนี้
+// ไม่อยู่ใน filter แล้ว: มาจากตัวสลับโลหะทั้งหน้า /executive (ทอง|เงิน|รวม → รวมแสดงทอง) ผ่าน
+// index-view.vue goldSectionFilter
 
 export const GOLD_DEFAULT_OLDER_THAN_DAYS = 14
-export const GOLD_DEFAULT_METAL = 'GOLD'
-export const GOLD_METAL_VALUES = ['GOLD', 'SILVER']
-
-function resolveMetal(value) {
-  return GOLD_METAL_VALUES.includes(value) ? value : GOLD_DEFAULT_METAL
-}
 
 export function buildDefaultGoldFilter() {
   const range = buildDefaultRangeState()
@@ -149,7 +144,6 @@ export function buildDefaultGoldFilter() {
     workerTypes: [],
     workerCodes: [],
     olderThanDays: GOLD_DEFAULT_OLDER_THAN_DAYS,
-    metal: GOLD_DEFAULT_METAL,
     rangePreset: range.preset,
     start: range.start,
     end: range.end,
@@ -163,7 +157,6 @@ export function parseGoldFilterQuery(query = {}) {
     workerTypes: parseArrayParam(query.gldWorkerType),
     workerCodes: parseArrayParam(query.gldWorkerCode),
     olderThanDays: parsePositiveIntOr(query.gldOlderThan, GOLD_DEFAULT_OLDER_THAN_DAYS),
-    metal: resolveMetal(query.gldMetal),
     rangePreset: range.preset,
     start: range.start,
     end: range.end,
@@ -176,7 +169,6 @@ export function goldFilterToQuery(filter = {}) {
   if (filter.workerTypes && filter.workerTypes.length) query.gldWorkerType = filter.workerTypes.join(',')
   if (filter.workerCodes && filter.workerCodes.length) query.gldWorkerCode = filter.workerCodes.join(',')
   if (filter.olderThanDays && filter.olderThanDays !== GOLD_DEFAULT_OLDER_THAN_DAYS) query.gldOlderThan = String(filter.olderThanDays)
-  if (filter.metal && filter.metal !== GOLD_DEFAULT_METAL) query.gldMetal = filter.metal
   return query
 }
 
@@ -185,7 +177,6 @@ export function clearedGoldFilterQueryKeys(filter = {}) {
   if (!filter.workerTypes || !filter.workerTypes.length) keys.push('gldWorkerType')
   if (!filter.workerCodes || !filter.workerCodes.length) keys.push('gldWorkerCode')
   if (!filter.olderThanDays || filter.olderThanDays === GOLD_DEFAULT_OLDER_THAN_DAYS) keys.push('gldOlderThan')
-  if (!filter.metal || filter.metal === GOLD_DEFAULT_METAL) keys.push('gldMetal')
   return keys
 }
 

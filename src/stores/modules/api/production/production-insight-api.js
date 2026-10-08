@@ -1,5 +1,10 @@
 import { defineStore } from 'pinia'
 import api from '@/axios/axios-helper.js'
+import { useMetalScopeStore } from '@/stores/modules/ui/metal-scope-store.js'
+
+// ทุก POST เติม `metal` (GOLD|SILVER|ALL ของทั้งหน้า /executive) ให้ request body อัตโนมัติ — ค่าที่ caller ส่งมาเองชนะ
+// (เช่นหมวดทองที่กำหนด metal เอง) — Save* ไม่เติมเพราะไม่ใช่ query
+const postScoped = (path, body) => api.jewelry.post(path, useMetalScopeStore().scoped(body))
 import { formatISOString } from '@/services/utils/dayjs.js'
 
 // Store แบบ stateless (ตาม pattern executive-report-api.js) — คืน response ตรงๆ ไม่เก็บ state กลาง
@@ -9,7 +14,7 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
 
   actions: {
     async fetchWip({ staleDays = 180, riskWindowDays = 30, start = null, end = null, growthThresholdPercent = 20 } = {}) {
-      return await api.jewelry.post('ProductionInsight/Wip', {
+      return await postScoped('ProductionInsight/Wip', {
         staleDays,
         riskWindowDays,
         start: start ? formatISOString(start) : null,
@@ -20,7 +25,7 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
 
     // พัฒนาการงานค้างแยกแผนกต่อช่วงเวลา (ใช้ป้อนการ์ด sparkline + กราฟรายละเอียด + ตารางเปรียบเทียบ)
     async fetchWipTrend({ start, end, bucket = 'week' } = {}) {
-      return await api.jewelry.post('ProductionInsight/WipTrend', {
+      return await postScoped('ProductionInsight/WipTrend', {
         start: start ? formatISOString(start) : null,
         end: end ? formatISOString(end) : null,
         bucket
@@ -29,18 +34,18 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
 
     // contract เดียวกับ ExecutiveReport/StalePlans เดิม
     async fetchStalePlans({ take = 50, skip = 0, sort = [], minDays = 180, departmentKeys = [] } = {}) {
-      return await api.jewelry.post('ProductionInsight/StalePlans', { take, skip, sort, minDays, departmentKeys })
+      return await postScoped('ProductionInsight/StalePlans', { take, skip, sort, minDays, departmentKeys })
     },
 
     // DataSourceRequest + mode — items = StalePlans item + dueDate/daysToDue
     async fetchDueRiskPlans({ take = 50, skip = 0, sort = [], mode = 'overdue', departmentKeys = [], riskWindowDays = 30 } = {}) {
-      return await api.jewelry.post('ProductionInsight/DueRiskPlans', { take, skip, sort, mode, departmentKeys, riskWindowDays })
+      return await postScoped('ProductionInsight/DueRiskPlans', { take, skip, sort, mode, departmentKeys, riskWindowDays })
     },
 
     // เวลาผลิตรายแผนก (รอ/ทำ) เทียบมาตรฐาน + ผลต่อกำลังการผลิต — draftStandards ส่งเฉพาะตอนกำลังแก้ไข
     // มาตรฐานในแผง "กำหนดมาตรฐาน" (ยังไม่กดบันทึก) ให้ตาราง/การ์ดคำนวณ preview ด้วยค่าร่างแบบ real-time
     async fetchStageLeadTime({ start, end, bucket = 'week', draftStandards } = {}) {
-      return await api.jewelry.post('ProductionInsight/StageLeadTime', {
+      return await postScoped('ProductionInsight/StageLeadTime', {
         start: start ? formatISOString(start) : null,
         end: end ? formatISOString(end) : null,
         bucket,
@@ -50,7 +55,7 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
 
     // DataSourceRequest + multiplier — items = StalePlans item + deptKey/daysInDept/waitDays/workDays/standardDays
     async fetchAbnormalDwellPlans({ take = 50, skip = 0, sort = [], departmentKeys = [], multiplier = 2 } = {}) {
-      return await api.jewelry.post('ProductionInsight/AbnormalDwellPlans', { take, skip, sort, departmentKeys, multiplier })
+      return await postScoped('ProductionInsight/AbnormalDwellPlans', { take, skip, sort, departmentKeys, multiplier })
     },
 
     async fetchStageStandards() {
@@ -69,7 +74,7 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // หมวด "ส่งงานตรงเวลา" — draftTargetPercent ส่งเฉพาะตอนกำลังแก้ไขเป้าในแผง "ตั้งเป้าส่งตรงเวลา" (ยังไม่
     // บันทึก) ให้ kpi/series คำนวณ preview แบบ real-time (เหมือน draftStandards ของ StageLeadTime)
     async fetchDelivery({ start, end, bucket = 'week', riskHorizonDays = 30, draftTargetPercent } = {}) {
-      return await api.jewelry.post('ProductionInsight/Delivery', {
+      return await postScoped('ProductionInsight/Delivery', {
         start: start ? formatISOString(start) : null,
         end: end ? formatISOString(end) : null,
         bucket,
@@ -81,12 +86,12 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // DataSourceRequest — items = stale-plan base fields + requestDate/currentDeptKey/daysInCurrentDept/
     // remainingDays/projectedFinishDate/projectedLateDays
     async fetchDeliveryAtRiskPlans({ take = 50, skip = 0, sort = [], riskHorizonDays = 30, departmentKeys = [] } = {}) {
-      return await api.jewelry.post('ProductionInsight/DeliveryAtRiskPlans', { take, skip, sort, riskHorizonDays, departmentKeys })
+      return await postScoped('ProductionInsight/DeliveryAtRiskPlans', { take, skip, sort, riskHorizonDays, departmentKeys })
     },
 
     // DataSourceRequest + ช่วงเวลา — items = base + requestDate/doneDate/lateDays
     async fetchDeliveryLatePlans({ start, end, take = 50, skip = 0, sort = [] } = {}) {
-      return await api.jewelry.post('ProductionInsight/DeliveryLatePlans', {
+      return await postScoped('ProductionInsight/DeliveryLatePlans', {
         start: start ? formatISOString(start) : null,
         end: end ? formatISOString(end) : null,
         take,
@@ -97,7 +102,7 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
 
     // DataSourceRequest — items = base + costCardDate/daysSinceCostCard
     async fetchStuckAfterCostCardPlans({ take = 50, skip = 0, sort = [] } = {}) {
-      return await api.jewelry.post('ProductionInsight/StuckAfterCostCardPlans', { take, skip, sort })
+      return await postScoped('ProductionInsight/StuckAfterCostCardPlans', { take, skip, sort })
     },
 
     async fetchDeliveryTarget() {
@@ -121,7 +126,7 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // (scope เพิ่มมาพร้อมฟีเจอร์ "Loss รายแผนก" — targets แยก scope SLIP/STAGE แล้ว) ส่งเฉพาะตอนกำลังแก้ไขเป้า
     // ในแผง "ตั้งเป้า Loss" (ยังไม่บันทึก) ให้ kpi/series คำนวณ preview แบบ real-time
     async fetchGold({ start, end, bucket = 'week', workerTypes = [], workerCodes = [], metal = 'GOLD', draftTargets } = {}) {
-      return await api.jewelry.post('ProductionInsight/Gold', {
+      return await postScoped('ProductionInsight/Gold', {
         start: start ? formatISOString(start) : null,
         end: end ? formatISOString(end) : null,
         bucket,
@@ -139,7 +144,7 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // Loss" (ยังไม่บันทึก) ให้ departments[] คำนวณ preview แบบ real-time — ไม่มี problems/forecasts/actions ใน
     // response นี้เลย (findings ของ stage มาทาง Gold() ปนกับของ slip)
     async fetchGoldByStage({ start, end, metal = 'GOLD', draftTargets } = {}) {
-      return await api.jewelry.post('ProductionInsight/GoldByStage', {
+      return await postScoped('ProductionInsight/GoldByStage', {
         start: start ? formatISOString(start) : null,
         end: end ? formatISOString(end) : null,
         metal,
@@ -150,7 +155,7 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // DataSourceRequest + metal/start/end/departmentKeys — items = GoldStageOutlierJobs (planId,wo,...,
     // deptMedianPercent) — เกณฑ์ outlier: % เกิน 3 เท่าของค่ากลางแผนก และส่วนต่าง ≥ 0.20 g (คำนวณฝั่ง backend)
     async fetchGoldStageOutlierJobs({ take = 50, skip = 0, sort = [], metal = 'GOLD', start, end, departmentKeys = [] } = {}) {
-      return await api.jewelry.post('ProductionInsight/GoldStageOutlierJobs', {
+      return await postScoped('ProductionInsight/GoldStageOutlierJobs', {
         take,
         skip,
         sort,
@@ -166,7 +171,7 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // filter.olderThanDays ของหมวด gold (เหมือน GoldUncoveredJobs) — includeQueue default false (เซิร์ฟเวอร์
     // กรองแถวคิวรอจ่ายช่างออกให้เองถ้าไม่ส่ง true — gold-stage-pending-return-panel.vue มีสวิตช์เปิดดูแยก)
     async fetchGoldStagePendingReturnJobs({ take = 50, skip = 0, sort = [], metal = 'GOLD', start, end, departmentKeys = [], olderThanDays = 14, includeQueue = false } = {}) {
-      return await api.jewelry.post('ProductionInsight/GoldStagePendingReturn', {
+      return await postScoped('ProductionInsight/GoldStagePendingReturn', {
         take,
         skip,
         sort,
@@ -182,7 +187,7 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // DataSourceRequest + workerTypes/workerCodes/metal/start/end — items = GoldOverSlips (slipId,documentNo,...)
     // — start/end ต้องส่งเสมอ (ช่วงเดียวกับ Gold) กัน request ไม่มีช่วงเวลาแล้วได้ 0 แถวเงียบๆ
     async fetchGoldOverSlips({ take = 50, skip = 0, sort = [], workerTypes = [], workerCodes = [], metal = 'GOLD', start, end } = {}) {
-      return await api.jewelry.post('ProductionInsight/GoldOverSlips', {
+      return await postScoped('ProductionInsight/GoldOverSlips', {
         take,
         skip,
         sort,
@@ -198,7 +203,7 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // — start/end เป็น required (ช่วงเดียวกับ Gold, range-scoped ฝั่ง backend แล้ว กันโชว์งานเก่าเกินช่วงที่
     // เลือก) olderThanDays เป็นตัวกรองเสริมแยกต่างหาก ไม่ใช่ตัวกำหนดช่วงเวลาหลัก
     async fetchGoldUncoveredJobs({ take = 50, skip = 0, sort = [], workerTypes = [], workerCodes = [], olderThanDays = 14, metal = 'GOLD', start, end } = {}) {
-      return await api.jewelry.post('ProductionInsight/GoldUncoveredJobs', {
+      return await postScoped('ProductionInsight/GoldUncoveredJobs', {
         take,
         skip,
         sort,
@@ -239,7 +244,7 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // productTypes/golds/goldSizes กรองทั้ง response ที่ server (หลายค่า, ว่าง = ไม่กรอง) — breakdownBy
     // ('productType'|'gold'|'goldSize') คุมมิติของ breakdown{} ที่ตอบกลับมาเท่านั้น
     async fetchCapacity({ start, end, bucket = 'month', unit = 'plan', productTypes = [], golds = [], goldSizes = [], breakdownBy = 'productType' } = {}) {
-      return await api.jewelry.post('ProductionInsight/Capacity', {
+      return await postScoped('ProductionInsight/Capacity', {
         start: start ? formatISOString(start) : null,
         end: end ? formatISOString(end) : null,
         bucket,
@@ -255,14 +260,14 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // StuckAfterCostCardPlans ของหมวด delivery แต่เป็นใบที่ "ยังไม่เข้าบัตรต้นทุน" ไม่ใช่ "เข้าบัตรแล้วแต่ยังไม่
     // ปิดงาน" — ไม่มีตัวกรองเพิ่มนอกจาก paging ตามคอนแทรค)
     async fetchCostCardPendingPlans({ take = 50, skip = 0, sort = [] } = {}) {
-      return await api.jewelry.post('ProductionInsight/CostCardPendingPlans', { take, skip, sort })
+      return await postScoped('ProductionInsight/CostCardPendingPlans', { take, skip, sort })
     },
 
     // หมวด "ช่างและค่าแรง" — bucket เป็นรายเดือนเสมอ (ไม่มีพารามิเตอร์ bucket ใน draft contract — เหมือน
     // Capacity) — ต่างจาก Capacity ตรงที่ departmentKeys/employmentTypes ส่งไปจริง (API agent ระบุใน draft
     // contract ว่า endpoint รับทั้งคู่) กรอง kpi/series/seriesTotal/workers/concentration ทั้งก้อน
     async fetchWorkers({ start, end, departmentKeys = [], employmentTypes = [] } = {}) {
-      return await api.jewelry.post('ProductionInsight/Workers', {
+      return await postScoped('ProductionInsight/Workers', {
         start: start ? formatISOString(start) : null,
         end: end ? formatISOString(end) : null,
         departmentKeys,
@@ -273,7 +278,7 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // รายเดือนของช่างคนเดียว (คลิกแถวในตารางช่าง) — ต้องส่ง deptKey คู่กับ code เสมอ (ช่างคนเดียวกันอาจทำงาน
     // มากกว่า 1 แผนกในช่วงที่เลือกได้ — ยืนยันจาก draft contract ของ API agent)
     async fetchWorkerMonthly({ code, deptKey, start, end } = {}) {
-      return await api.jewelry.post('ProductionInsight/WorkerMonthly', {
+      return await postScoped('ProductionInsight/WorkerMonthly', {
         code,
         deptKey,
         start: start ? formatISOString(start) : null,
@@ -284,7 +289,7 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // DataSourceRequest + start/end/departmentKeys — items = planId,wo,woNumber,woText,deptKey,workerCode,
     // workerName,jobDate,checkGram (งานที่ตรวจนับแล้วแต่ยังไม่บันทึกเป็นค่าแรงรายชิ้น)
     async fetchUnpaidPieceJobs({ take = 50, skip = 0, sort = [], start, end, departmentKeys = [] } = {}) {
-      return await api.jewelry.post('ProductionInsight/UnpaidPieceJobs', {
+      return await postScoped('ProductionInsight/UnpaidPieceJobs', {
         take,
         skip,
         sort,
@@ -297,7 +302,7 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // หมวด "วัตถุดิบที่กระทบการผลิต" (พลอยอย่างเดียว ตามที่ user ยืนยัน) — bucket เป็นรายเดือนเสมอ (ไม่มี
     // พารามิเตอร์ bucket ให้เลือกใน draft contract — เหมือน capacity/workers)
     async fetchMaterials({ start, end } = {}) {
-      return await api.jewelry.post('ProductionInsight/Materials', {
+      return await postScoped('ProductionInsight/Materials', {
         start: start ? formatISOString(start) : null,
         end: end ? formatISOString(end) : null,
         bucket: 'month'
@@ -309,20 +314,20 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
     // status}]/gemStatus — ไม่มี start/end (snapshot ใบที่ "รอเบิกอยู่ตอนนี้" เหมือน StalePlans/DueRiskPlans
     // ของหมวด wip ไม่ใช่ query ตามช่วงเวลา)
     async fetchMaterialWaitingPlans({ take = 50, skip = 0, sort = [], gemStatus = '' } = {}) {
-      return await api.jewelry.post('ProductionInsight/MaterialWaitingPlans', { take, skip, sort, gemStatus })
+      return await postScoped('ProductionInsight/MaterialWaitingPlans', { take, skip, sort, gemStatus })
     },
 
     // DataSourceRequest + status ('ready'|'short'|'unmatched'|'' = ทั้งหมด) — items = gem,shape,size,metal,
     // waitingPlans,upcomingPlans,requiredQty,available,usedPerMonth,coverDays,status — snapshot เทียบ
     // ความต้องการกับสต็อกตอนนี้ ไม่มี start/end เช่นกัน
     async fetchMaterialGemDemand({ take = 50, skip = 0, sort = [], status = '' } = {}) {
-      return await api.jewelry.post('ProductionInsight/MaterialGemDemand', { take, skip, sort, status })
+      return await postScoped('ProductionInsight/MaterialGemDemand', { take, skip, sort, status })
     },
 
     // DataSourceRequest + coverDays (default 30) — items = code,groupName,shape,size,grade,quantity,
     // used90d,coverDays — ไม่มี start/end
     async fetchMaterialGemLowCover({ take = 50, skip = 0, sort = [], coverDays = 30 } = {}) {
-      return await api.jewelry.post('ProductionInsight/MaterialGemLowCover', { take, skip, sort, coverDays })
+      return await postScoped('ProductionInsight/MaterialGemLowCover', { take, skip, sort, coverDays })
     }
   }
 })

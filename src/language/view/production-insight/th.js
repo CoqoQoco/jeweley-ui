@@ -360,7 +360,6 @@ export default {
     filterWorkerType: 'ประเภทช่าง',
     filterWorkerCode: 'ช่าง',
     filterOlderThan: 'ไม่ครบ slip เกิน (วัน)',
-    filterMetal: 'โลหะ',
     filterCustomRangeLabel: 'ช่วงเวลากำหนดเอง',
 
     workerType: {
@@ -372,7 +371,7 @@ export default {
       GOLD: 'ทอง',
       SILVER: 'เงิน'
     },
-    metalToggleAriaLabel: 'เลือกโลหะ',
+    metalAllNote: 'แท็บทองดูทีละโลหะ — แสดงทอง (เลือก เงิน ที่ด้านบนเพื่อดูเงิน)',
 
     kpiLossPercent: '% Loss จริง',
     kpiLossPercentSub: 'ยอมให้ {allowed}% · เป้า {target}%',

@@ -7,22 +7,16 @@
   Props:
     kpi     — Array (required) จาก Gold.kpi (1 แถวต่อประเภทช่าง — ของโลหะที่กำลังดูอยู่เท่านั้น)
     asOf    — String|null (null) — เวลาประมวลผลข้อมูลล่าสุด (Gold.asOf) — โชว์มุมขวาบนของกล่อง KPI
-    metal   — String ('GOLD') — 'GOLD'|'SILVER' — โชว์ ToggleGroupGeneric ทอง|เงิน ข้างหัวข้อ KPI (state
-              เดียวกับตัวกรองหมวด gold ใน FilterPanelGeneric — คุม parent โดยตรงผ่าน update:metal)
+    metal   — String ('GOLD') — 'GOLD'|'SILVER' — โลหะที่กำลังดู (มาจากตัวสลับทั้งหน้า /executive) ใช้ต่อท้ายหัวข้อ
+              + ป้ายการ์ด — ไม่มีตัวสลับของตัวเองในแท็บอีกแล้ว
     loading — Boolean (false)
 
-  Emits: goto-report(reportRef), update:metal(value)
+  Emits: goto-report(reportRef)
 -->
 <template>
   <SectionCardGeneric :title="kpiGroupTitle" icon="bi-gem" accent="main" headerStyle="dashboard">
     <template #header-actions>
       <div class="gold-kpi-group__header-actions">
-        <ToggleGroupGeneric
-          :modelValue="metal"
-          :options="metalOptions"
-          :ariaLabel="$t('view.productionInsight.gold.metalToggleAriaLabel')"
-          @update:modelValue="$emit('update:metal', $event)"
-        />
         <span v-if="asOf" class="gold-kpi-group__as-of">{{ $t('view.executive.asOf', { date: formatDateTime(asOf) }) }}</span>
       </div>
     </template>
@@ -77,10 +71,8 @@ import { formatDateTime } from '@/services/utils/dayjs.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import StatCardGeneric from '@/components/generic/StatCardGeneric.vue'
-import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 
 const ROW_ORDER = [80, 50]
-const METAL_VALUES = ['GOLD', 'SILVER']
 
 const emptyRow = (workerType) => ({
   workerType,
@@ -101,8 +93,7 @@ export default {
 
   components: {
     SectionCardGeneric,
-    StatCardGeneric,
-    ToggleGroupGeneric
+    StatCardGeneric
   },
 
   props: {
@@ -124,16 +115,12 @@ export default {
     }
   },
 
-  emits: ['goto-report', 'update:metal'],
+  emits: ['goto-report'],
 
   computed: {
     // "ทองและ Loss — ทอง"/"— เงิน" — ชื่อหมวดเดิมต่อท้ายด้วยโลหะที่กำลังดูอยู่ ให้เห็นชัดตรงหัวข้อ KPI
     kpiGroupTitle() {
       return `${this.$t('view.productionInsight.nav.gold')} — ${this.metalLabel}`
-    },
-
-    metalOptions() {
-      return METAL_VALUES.map((value) => ({ value, label: this.$t(`view.productionInsight.gold.metalLabel.${value}`) }))
     },
 
     metalLabel() {

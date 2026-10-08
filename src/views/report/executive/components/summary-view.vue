@@ -60,7 +60,7 @@
         <StatCardGeneric
           icon="bi-exclamation-triangle"
           :value="goldLossPercentLabel"
-          :label="$t('view.executive.summary.goldLossOverAllowed')"
+          :label="$t(`view.executive.summary.lossLabel.${metalScope}`)"
           :subLabel="goldLossOverAllowedSubLabel"
           :variant="goldLossKpiVariant"
           :clickable="true"
@@ -79,8 +79,10 @@ import {
   formatGramAmount,
   calcPercent,
   resolveGoldLossKpiVariant,
-  resolveLatestGoldLossRow
+  resolveSummaryLossRows
 } from '../executive-helpers.js'
+
+import { useMetalScopeStore } from '@/stores/modules/ui/metal-scope-store.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import StatCardGeneric from '@/components/generic/StatCardGeneric.vue'
@@ -101,6 +103,11 @@ export default {
   },
 
   emits: ['select-tab'],
+
+  setup() {
+    const metalScopeStore = useMetalScopeStore()
+    return { metalScopeStore }
+  },
 
   computed: {
     stalePlansSubLabel() {
@@ -148,23 +155,40 @@ export default {
       })
     },
 
-    latestGoldLossRow() {
-      return resolveLatestGoldLossRow(this.summary.goldLoss)
+    metalScope() {
+      return this.metalScopeStore.metal
     },
 
+    // แถว loss เดือนล่าสุดตามโลหะของทั้งหน้า (ALL = ทอง+เงิน) — การ์ดเดียวโชว์ได้ทั้งสองโลหะ
+    lossRows() {
+      return resolveSummaryLossRows(this.summary, this.metalScope)
+    },
+
+    // สีการ์ด: เตือนเมื่อมีโลหะใดโลหะหนึ่งเกินเกณฑ์
     goldLossKpiVariant() {
-      return resolveGoldLossKpiVariant(this.latestGoldLossRow.lossPercent, this.latestGoldLossRow.allowedPercent)
+      const anyOver = this.lossRows.some(({ row }) => resolveGoldLossKpiVariant(row.lossPercent, row.allowedPercent) === 'warning')
+      return anyOver ? 'warning' : 'green'
     },
 
     goldLossPercentLabel() {
-      return `${formatGramAmount(this.latestGoldLossRow.lossPercent)}%`
+      if (this.lossRows.length === 1) return `${formatGramAmount(this.lossRows[0].row.lossPercent)}%`
+      return this.lossRows
+        .map(({ metal, row }) => this.$t('view.executive.summary.lossMetalValue', { metal: this.$t(`view.executive.metalScope.options.${metal}`), percent: formatGramAmount(row.lossPercent) }))
+        .join(' · ')
     },
 
     goldLossOverAllowedSubLabel() {
-      return this.$t('view.executive.summary.goldLossOverAllowedSub', {
-        allowedPercent: formatGramAmount(this.latestGoldLossRow.allowedPercent),
-        overSlipCount: this.formatCount(this.latestGoldLossRow.overSlipCount),
-        overAllowedGram: formatGramAmount(this.latestGoldLossRow.overAllowedGram)
+      if (this.lossRows.length === 1) {
+        const row = this.lossRows[0].row
+        return this.$t('view.executive.summary.goldLossOverAllowedSub', {
+          allowedPercent: formatGramAmount(row.allowedPercent),
+          overSlipCount: this.formatCount(row.overSlipCount),
+          overAllowedGram: formatGramAmount(row.overAllowedGram)
+        })
+      }
+      return this.$t('view.executive.summary.lossOverSlipAllSub', {
+        goldCount: this.formatCount(this.lossRows[0].row.overSlipCount),
+        silverCount: this.formatCount(this.lossRows[1].row.overSlipCount)
       })
     }
   },

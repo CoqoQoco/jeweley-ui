@@ -21,7 +21,14 @@ export default {
     stockNoCost: 'สต็อกไม่มีต้นทุน',
     stockNoCostSub: '{noCostCount} จาก {inStockCount} ชิ้น',
     goldLossOverAllowed: 'ทองช่างแต่ง loss เดือนนี้',
-    goldLossOverAllowedSub: 'ยอมให้ {allowedPercent}% · เกินรายใบ {overSlipCount} ใบ ({overAllowedGram} g)'
+    goldLossOverAllowedSub: 'ยอมให้ {allowedPercent}% · เกินรายใบ {overSlipCount} ใบ ({overAllowedGram} g)',
+    lossLabel: {
+      GOLD: 'ทองช่างแต่ง loss เดือนนี้',
+      SILVER: 'เงินช่างแต่ง loss เดือนนี้',
+      ALL: 'loss ช่างแต่ง เดือนนี้'
+    },
+    lossMetalValue: '{metal} {percent}%',
+    lossOverSlipAllSub: 'เกินรายใบ ทอง {goldCount} · เงิน {silverCount} ใบ'
   },
 
   department: {
@@ -108,6 +115,8 @@ export default {
     colReceiptType: 'ประเภทการรับ',
     colCount: 'จำนวนชิ้น',
     colNoCostCount: 'ไม่มีต้นทุน',
+    colQty: 'จำนวนตามหน่วย',
+    ageQtyNote: 'จำนวนตามหน่วย (qty): {parts}',
     colCostThb: 'มูลค่าต้นทุน (บาท)',
     ageBucket: {
       lt1y: 'น้อยกว่า 1 ปี',
@@ -138,7 +147,18 @@ export default {
     }
   },
 
+  metalScope: {
+    toggleAriaLabel: 'เลือกโลหะที่แสดงทั้งหน้า',
+    options: {
+      GOLD: 'ทอง',
+      SILVER: 'เงิน',
+      ALL: 'รวม'
+    },
+    shareHint: 'สัดส่วน{metal} {percent}%'
+  },
+
   excel: {
+    metalRow: 'โลหะ',
     exportAllBtn: 'Excel ทั้งหมด',
     filenamePrefix: 'ภาพรวมบริหาร',
     sheetSummary: 'สรุป',
@@ -189,6 +209,7 @@ export default {
       sheetGold: 'ทองและ Loss',
       sheetWorkers: 'ช่างและค่าแรง',
       sheetMaterials: 'วัตถุดิบ',
+      metalLabel: 'โลหะ',
       rangeLabel: 'ช่วงเวลา',
       snapshotNote: 'รายการใบงานที่รอพลอย ณ ปัจจุบัน (ไม่ผูกกับช่วงเวลา)',
       yes: 'ใช่',

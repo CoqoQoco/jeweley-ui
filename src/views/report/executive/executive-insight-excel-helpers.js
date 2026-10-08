@@ -61,9 +61,11 @@ function workerNames(row) {
 }
 
 // "ช่วงเวลา: 01/07/2026 – 30/09/2026" — ใช้เป็นหัวบอกช่วงเวลาของทุก sheet ใหม่
-export function formatExcelRangeText(t, start, end) {
-  if (!start || !end) return label(t, 'rangeLabel')
-  return `${label(t, 'rangeLabel')}: ${formatDate(start)} – ${formatDate(end)}`
+// metalLabel (ทอง/เงิน/รวม) ต่อท้ายเมื่อส่งมา — ทุก sheet ใหม่ระบุโลหะที่เลือกทั้งหน้า
+export function formatExcelRangeText(t, start, end, metalLabel = '') {
+  const metalPart = metalLabel ? ` · ${label(t, 'metalLabel')}: ${metalLabel}` : ''
+  if (!start || !end) return `${label(t, 'rangeLabel')}${metalPart}`
+  return `${label(t, 'rangeLabel')}: ${formatDate(start)} – ${formatDate(end)}${metalPart}`
 }
 
 // แถวบอกช่วงเวลา (texts เป็น string หรือ array) + แถวว่างคั่น — ใส่บนสุดของ sheet แบบตารางเดียวที่ใช้หัวคอลัมน์จริง
@@ -74,7 +76,7 @@ export function buildRangeLeadRows(texts, firstKey) {
 
 // sheet "สรุปปัญหา" รวม 6 หมวดที่แต่ละหมวดมีช่วงเวลาของตัวเอง: ทุกหมวดช่วงเดียวกัน = บรรทัดเดียว ไม่งั้นบรรทัดละหมวด
 export function buildTopicRangeTexts(entries, t) {
-  const texts = (entries || []).map((e) => ({ key: e.key, text: formatExcelRangeText(t, e.start, e.end) }))
+  const texts = (entries || []).map((e) => ({ key: e.key, text: formatExcelRangeText(t, e.start, e.end, e.metalLabel) }))
   const distinct = [...new Set(texts.map((e) => e.text))]
   if (distinct.length <= 1) return distinct
   return texts.map((e) => `${t(`view.productionInsight.nav.${e.key}`)} - ${e.text}`)
