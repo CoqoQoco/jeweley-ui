@@ -49,6 +49,7 @@
         :data="data"
         :getBgColor="getBgColor"
         :isRequiredField="isRequiredField"
+        @update="(field, value) => onFieldUpdate(data, field, value)"
       />
     </template>
 
@@ -58,6 +59,7 @@
         :data="data"
         :getBgColor="getBgColor"
         :isRequiredField="isRequiredField"
+        @update="(field, value) => onFieldUpdate(data, field, value)"
       />
     </template>
 
@@ -68,6 +70,7 @@
         :language="'EN'"
         :getBgColor="getBgColor"
         :isRequiredField="isRequiredField"
+        @update="(field, value) => onFieldUpdate(data, field, value)"
         @search="onSearchProductName"
       />
     </template>
@@ -79,6 +82,7 @@
         :language="'TH'"
         :getBgColor="getBgColor"
         :isRequiredField="isRequiredField"
+        @update="(field, value) => onFieldUpdate(data, field, value)"
         @search="onSearchProductName"
       />
     </template>
@@ -241,6 +245,10 @@ export default {
   ],
 
   methods: {
+    onFieldUpdate(row, field, value) {
+      row[field] = value
+    },
+
     updateSelection(newSelection) {
       this.$emit('update:selectedItems', newSelection)
     },

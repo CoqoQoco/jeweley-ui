@@ -382,6 +382,10 @@ export default {
             }
           }
 
+          if (!String(formItem.moldDesign ?? '').trim()) {
+            isValid = false
+          }
+
           if (!formItem.productNameEN) {
             isValid = false
           }
