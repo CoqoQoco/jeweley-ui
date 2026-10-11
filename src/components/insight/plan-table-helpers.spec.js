@@ -7,7 +7,7 @@ import {
   resolvePlanLinkState,
   PLAN_DETAIL_ROUTE_NAME,
   EXECUTIVE_PLAN_DETAIL_ROUTE_NAME
-} from './wip-plan-table-helpers.js'
+} from '@/components/insight/plan-table-helpers.js'
 
 describe('resolvePlanWorkersDisplay', () => {
   it('returns empty shape when both workers and workerItems are empty/missing', () => {

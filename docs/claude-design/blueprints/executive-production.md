@@ -1033,3 +1033,59 @@ contract ครบแล้วทั้ง rules/i18n spec
 - **ตารางขายและเงิน**: เลือกโลหะใดโลหะหนึ่งและ `metalShare < 100` → hint เล็กใต้ยอด "สัดส่วนทอง n%"
 - **Excel**: ทุก sheet ใหม่ระบุ "· โลหะ: …" ในบรรทัดช่วงเวลา (sheet ทองและ Loss ใช้โลหะที่หมวดทองแสดงจริง), sheet สรุปเดิมเพิ่มแถว "โลหะ" บนสุด, request ทั้งหมดใช้ metal เดียวกับบนจอ
 - **Final contract (ยืนยันแล้ว)**: Summary.goldLoss = โลหะเดียว (ALL → ทอง, SILVER → เงิน, `goldLossMetal` บอก) ส่วน `silverLoss` มีค่าเฉพาะตอน ALL; `metalShare` เป็น 0–1 (ยอดเงินคูณแล้ว) แสดง hint เมื่อ < 1; Gold/GoldByStage ส่ง `metalForced:true` เมื่อบังคับเป็นทอง (note แท็บทอง); StockHealth เพิ่ม qty — โชว์คอลัมน์ "จำนวนตามหน่วย" + สรุป qty ตามอายุเมื่อเลือกทอง/เงิน (รวม = ซ่อน); ใต้ SILVER ค่า slip-based ของช่าง/WRK_GOLD_REPEAT ว่างโดยออกแบบ
+
+
+## Revision 10 (2026-10-08): InsightPage template (config-driven) — pilot หมวด wip
+
+เป้าหมาย: แท็บ Production Insight แต่ละหมวดเขียนเป็น **config** ชุดเดียว แทน section + panel หลายสิบไฟล์ — pilot เฉพาะหมวด `wip`
+(อีก 5 หมวดยังเป็น section เดิมทุกประการ) · เนื้อหาหน้าจอ wip ต้องเหมือนเดิม (blocks/ลำดับ/หัวข้อ/tip/คอลัมน์/ปฏิสัมพันธ์)
+
+### สถาปัตยกรรม (`src/components/insight/page/`)
+- **`InsightPage.vue`** — props `config`, `filter`, `active` · เรนเดอร์ `InsightTabLayout` เดิม (หัวข้อ + chip สถานะ + ปัญหา/คาดการณ์/วิธีแก้ ผ่าน i18n +
+  `resolveFindingParams`) แล้วตามด้วย `config.blocks[]` ตามลำดับ (`InsightBlockNode` เรียกตัวเองซ้ำ)
+  - node: `{ row: true, blocks }` (เคียงข้าง 2 คอลัมน์, container padding-top pattern เดิม) · `{ group: true, id, blocks }` (กลุ่มที่มี anchor ของตัวเอง ห่าง 24px) ·
+    `{ type:'slot', component, props, events }` (escape hatch) · `{ type:'kpi'|'trend'|'table'|'planTable'|'chart'|'detail'|'sparkCards' }`
+  - ทุก block ที่มี `id` ได้ DOM id `insight-report-<id>` (BlockFrame/group) → reportRef "ดู ›" เลื่อนได้เหมือนเดิม · `visible(ctx)` ซ่อน node ได้
+- **Data loader**: `config.sources = { Name: { endpoint, method, params(filter, state) } }` · key ของแต่ละ source = JSON ของ `params(filter, state)` —
+  watcher ตัวเดียวบน `sourceKeys` (computed) diff กับรอบก่อน แล้วยิงเฉพาะ source ที่ key ต่างจริง → **1 request ต่อ endpoint ต่อการกด 1 ครั้ง** (preset เปลี่ยน
+  start+end+bucket พร้อมกัน = 1 ครั้ง; field ที่ไม่มี source อ่านไม่ยิง) · แท็บไม่ active = ติดธง stale แล้วยิงตอนกลับมา active · กัน response เก่าทับใหม่ด้วย seq ต่อ source ·
+  `reload(names)` ยิงซ้ำแม้ params เท่าเดิม (หลังบันทึกมาตรฐาน) · `metal` เติมที่ store (`postScoped`) ไม่เติมซ้ำ · store ได้ action กลาง `post(path, body)`/`get(path, params)`
+- **state ร่วม** `config.state = { key: { initial, resetOn: { source, value(data, current) } } }` — แถวที่เลือก/โฟกัส/draft · block อ่าน/เขียนผ่าน `ctx.state`/`ctx.setState`
+  (เช่น คลิกเลข "ค้างนานผิดปกติ" → `abnormalFocus` → params ของตารางใบนานผิดปกติเปลี่ยน → ยิงใหม่ 1 ครั้ง + เลื่อนมาที่ตาราง)
+- **Blocks** (แต่ละตัว = SFC + helper pure + spec): `KpiBlock` (StatCard dashboard) · `TrendBlock` (series bar/line, axis 0|1, dashed, targetLine, null เป็นช่องว่าง,
+  `nullAs`/`negate`/`visible`) · `TableBlock` (rows คงที่, selectable → state, highlight, toolbar + `sections[]` หลายตาราง/ข้อความในกรอบเดียว, `detail` → DetailBlock) ·
+  `PlanTableBlock` (paged ด้วย `useDataTablePaging`, `resetPagingKey` = JSON params, `keyParams` แยก key จาก body, toggle/focus chip) · `ChartBlock` (barH/donut ห่อ ChartGeneric) ·
+  `TargetDrawer` (draft → preview → บันทึกพร้อมหมายเหตุ → ประวัติ; `target-presets.js` map `stageStandards` → StageStandards/StageStandardHistory/SaveStageStandards + draft state `draftStandards`;
+  สิทธิ์ `hasStandardEditAccess`) · `DetailBlock` (กราฟของแถวที่เลือก) · `SparkCardsBlock` (การ์ด sparkline เลือกได้ — เพิ่มจาก spec เพราะการ์ดพัฒนาการงานค้างไม่ใช่ StatCard)
+- **Column library** `columns.js`: planLink, mold, product, dept, workers, lastUpdate, date, days, number(fmt), percent, chip(variantFn), sparkline (+ text, shareBar) —
+  ทุก column รองรับ `tip` (หัวขึ้น ⓘ; เคลียร์ header prop กันหัวซ้ำ) · logic ตัดสินเซลล์อยู่ใน `resolveCell()` (pure + มีเทส) · ใช้ helper เดิม (`wip-plan-table-helpers`, `wip-lead-time-helpers`) ไม่เขียนซ้ำ
+- **`topics/wip.config.js`** — 4 sources (Wip, WipTrend, StageLeadTime, StageStandards[GET]) · state 5 ตัว · blocks: trend group (การ์ด sparkline + กราฟรายละเอียด + ตารางเปรียบเทียบ) →
+  row[departments ‖ flow] → leadTime (ตาราง + drawer + กราฟรายละเอียด) → capacity → stalePlans → dueRisk (toggle) → abnormalDwell (focus)
+- index-view: `<InsightPage :config="wipConfig" :filter="filters.wip" :active>` แทน `WipSection` — **คอมโพเนนต์ wip เดิมยังอยู่ ไม่ได้ลบ** (รอเทียบหน้าจอก่อน)
+
+### คอมโพเนนต์เดิมที่ไม่ถูกใช้แล้ว (ลบได้หลังเทียบหน้าจอ)
+`sections/wip-section.vue` · `wip-trend-panel.vue` (+ `.spec`) · `department-wip-chart.vue` · `department-flow-chart.vue` · `wip-lead-time-panel.vue` · `wip-lead-time-table.vue` · `wip-lead-time-chart.vue` ·
+`wip-capacity-panel.vue` · `wip-standards-panel.vue` · `wip-standard-history-modal.vue` · `wip-stale-plans-panel.vue` · `wip-due-risk-panel.vue` · `wip-abnormal-dwell-panel.vue`
+(`wip-trend-card.vue` + helper `.js` ยังใช้อยู่)
+
+### ที่ไม่เหมือนเดิม 1:1 (ต้องเทียบบนจอ)
+- กล่อง "ผลต่อกำลังการผลิต": ส่วนสรุปเทียบ "ตอนนี้ vs ถ้าได้ตามมาตรฐาน" เดิมเป็น grid div → ตอนนี้เป็นตาราง 3 แถว (ค่าเดียวกัน — **ตั้งใจ ยอมรับแล้ว**) · ค่าวันในตารางรายแผนกของกล่องนี้ต่อท้ายหน่วย "วัน" เหมือนเดิม (column option `unit`, แก้รอบหลังเทียบ)
+- ตารางพัฒนาการ: คอลัมน์ "สุทธิ" เป็นเลขจัดรูปแบบมีตัวคั่นหลักพัน (เดิมเลขดิบ — **ตั้งใจ ยอมรับแล้ว**) · เซลล์ "มาตรฐาน" จัดชิดซ้ายเหมือนเดิม
+- แถบสัดส่วนรอ/ทำ และสีชิป ใช้ token เดียวกับเดิมแต่ CSS อยู่ใน `ColumnCell.vue`
+- wip เดิมไม่มี StatCard KPI — `KpiBlock` พร้อมใช้แต่ config wip ไม่ได้ใช้
+- Excel export ไม่เกี่ยวข้อง (ใช้ endpoint เดิมแยกอยู่แล้ว)
+
+### เทสเพิ่ม
+helper ทุก block + `columns.spec` + `insight-page-helpers.spec` + `InsightPage.spec` (loader dedupe/stale/reload/race) + `wip.config.spec` (id/reportRef ครบไม่ซ้ำ, i18n key ที่ config อ้างมีจริง, state/preset ครบ,
+params ของ source) + `wip-page.smoke.spec` (mount config จริงทั้งหน้า: anchor ครบ, ทุก endpoint ยิงครั้งเดียว, โฟกัสตารางนานผิดปกติ = ยิงเพิ่ม 1 ครั้ง)
+
+### Note (2026-10-08, หลัง pilot review): ย้าย dependency เข้า `src/components/insight/`
+เลเยอร์ generic ห้าม import ย้อนไป `views/` — ย้ายไฟล์ที่ใช้ร่วมแล้วแก้ import ทุกที่ (รวม 5 หมวดที่ยังไม่ migrate, plan-tracking, executive excel; ไม่ใช้ shim):
+`wip-plan-table-helpers.js` → `plan-table-helpers.js` · `plan-workers-cell.vue` → `plan-workers-cell.vue` · `wip-trend-card.vue` → `trend-spark-card.vue` ·
+`wip-trend-helpers.js` → `trend-helpers.js` · `wip-lead-time-helpers.js` → `lead-time-helpers.js` (พร้อม spec) — ไฟล์ wip เดิม 13 ตัวยังอยู่ (import ชี้ path ใหม่)
+
+### Note (2026-10-11, หลังเทียบหน้าจอบน prod): แก้ 2 จุด + ลบคอมโพเนนต์ wip เดิม
+- `col.dept` ใช้ `row.label` ก่อน (แถว "รวม" ของตารางพัฒนาการไม่ขึ้น key ดิบ `department.total`) · hint ตัวอย่างน้อย "(n ใบ)" มีช่องว่างคั่นและเป็น span สีรอง
+- ลบแล้ว (ไม่มี import ค้าง): `sections/wip-section.vue` · `wip-trend-panel.vue` + `.spec` · `department-wip-chart.vue` · `department-flow-chart.vue` · `wip-lead-time-panel.vue` · `wip-lead-time-table.vue` ·
+  `wip-lead-time-chart.vue` · `wip-capacity-panel.vue` · `wip-standards-panel.vue` · `wip-standard-history-modal.vue` · `wip-stale-plans-panel.vue` · `wip-due-risk-panel.vue` · `wip-abnormal-dwell-panel.vue`
+- warning "Extraneous non-props attributes (class)" ของ DrawerGeneric จาก `FilterPanelGeneric` เป็นของเดิม (ไฟล์ไม่ถูกแก้ ส่ง `class` ลง DrawerGeneric ตั้งแต่ commit d12f2a2a) ไม่เกี่ยวกับ InsightPage

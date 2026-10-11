@@ -12,7 +12,7 @@ import {
   isSparklineEdgePoint,
   buildSparklineDiscreteMarkers,
   prependRangeStartPoint
-} from './wip-trend-helpers.js'
+} from '@/components/insight/trend-helpers.js'
 
 describe('resolveDeltaVariant', () => {
   it('positive delta = increase (worse — more stale WIP)', () => {

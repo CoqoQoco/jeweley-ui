@@ -13,6 +13,16 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
   state: () => ({}),
 
   actions: {
+    // generic endpoint call สำหรับ InsightPage (src/components/insight/page) — config ประกาศ endpoint+params เอง
+    // POST เติม `metal` ของทั้งหน้าให้อัตโนมัติ (postScoped) · GET ไม่เติม (StageStandards ฯลฯ ไม่ขึ้นกับโลหะ)
+    async post(path, body = {}) {
+      return await postScoped(path, body)
+    },
+
+    async get(path, params = null) {
+      return await api.jewelry.get(path, params)
+    },
+
     async fetchWip({ staleDays = 180, riskWindowDays = 30, start = null, end = null, growthThresholdPercent = 20 } = {}) {
       return await postScoped('ProductionInsight/Wip', {
         staleDays,

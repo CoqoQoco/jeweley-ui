@@ -1,0 +1,72 @@
+// target-presets.js — preset ของ TargetDrawer (ตั้งค่าเป้า/มาตรฐานรายแถว: draft → preview → บันทึกพร้อมหมายเหตุ → ประวัติ)
+// แต่ละ preset ผูก source/ฟังก์ชัน store/ชื่อ draft param/ข้อความ i18n — เพิ่มเป้าอื่น (เช่น เป้าส่งตรงเวลา) = เพิ่ม preset ใหม่
+import { buildDraftStandardsPayload, hasDraftChanges } from '@/components/insight/lead-time-helpers.js'
+import { hasStandardEditAccess } from '@/services/permission/standard-edit-access.js'
+
+const W = 'view.productionInsight.wip'
+
+export function buildSavedMap(list, keyField, valueField) {
+  const map = {}
+  ;(list || []).forEach((item) => {
+    map[item[keyField]] = item[valueField]
+  })
+  return map
+}
+
+export const TARGET_PRESETS = {
+  stageStandards: {
+    // ชื่อ state ของ page ที่เก็บ draft (source StageLeadTime อ่านเป็น draftStandards ใน params) · source ที่เก็บค่าที่บันทึกจริง
+    draftStateKey: 'draftStandards',
+    savedSource: 'StageStandards',
+    reloadSources: ['StageLeadTime', 'StageStandards'],
+    keyField: 'deptKey',
+    valueField: 'standardDays',
+    min: 1,
+    max: 365,
+    debounceMs: 400,
+    width: '440px',
+    canEdit: () => hasStandardEditAccess(),
+    // แถวใน drawer = แผนกของ StageLeadTime + ค่ามาตรฐานจริง/ค่าอ้างอิง (ค่ากลาง · P90)
+    rows(ctx, t) {
+      const saved = buildSavedMap(ctx.data.StageStandards, 'deptKey', 'standardDays')
+      return (ctx.data.StageLeadTime?.departments || []).map((d) => ({
+        key: d.key,
+        label: t(`view.executive.department.${d.key}`),
+        savedValue: saved[d.key] ?? d.standardDays,
+        reference: { median: d.median?.total, p90: d.p90?.total }
+      }))
+    },
+    savedMap: (ctx) => buildSavedMap(ctx.data.StageStandards, 'deptKey', 'standardDays'),
+    buildPayload: buildDraftStandardsPayload,
+    hasChanges: hasDraftChanges,
+    save: (store, { items, remark }) => store.saveStageStandards({ items, remark }),
+    history: (store, key) => store.fetchStageStandardHistory(key),
+    historyColumns: [
+      { field: 'effectiveFrom', header: `${W}.standardsHistoryColDate`, minWidth: '120px', date: true },
+      { field: 'standardDays', header: `${W}.standardsHistoryColDays`, minWidth: '80px', align: 'right' },
+      { field: 'createBy', header: `${W}.standardsHistoryColBy`, minWidth: '120px' },
+      { field: 'remark', header: `${W}.standardsHistoryColRemark`, minWidth: '180px' }
+    ],
+    historyDataKey: 'effectiveFrom',
+    text: {
+      button: `${W}.standardsButton`,
+      buttonTip: 'view.productionInsight.help.standardsButton',
+      title: `${W}.standardsPanelTitle`,
+      readOnly: `${W}.standardsReadOnlyNote`,
+      reference: `${W}.standardsReferenceText`,
+      remarkLabel: `${W}.standardsRemarkLabel`,
+      remarkPlaceholder: `${W}.standardsRemarkPlaceholder`,
+      remarkRequired: `${W}.standardsRemarkRequired`,
+      saveBtn: `${W}.standardsSaveBtn`,
+      cancelBtn: `${W}.standardsCancelDraftBtn`,
+      saveSuccess: `${W}.standardsSaveSuccess`,
+      historyLink: `${W}.standardsHistoryLink`,
+      historyTitle: `${W}.standardsHistoryTitle`,
+      historyEmpty: `${W}.standardsHistoryEmpty`
+    }
+  }
+}
+
+export function getTargetPreset(name) {
+  return TARGET_PRESETS[name] || null
+}

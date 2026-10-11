@@ -69,7 +69,7 @@ import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { PermissionService } from '@/services/permission/permission.js'
 import { formatDate } from '@/services/utils/dayjs.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
-import { resolvePlanLinkState, PLAN_DETAIL_ROUTE_NAME, EXECUTIVE_PLAN_DETAIL_ROUTE_NAME } from './wip-plan-table-helpers.js'
+import { resolvePlanLinkState, PLAN_DETAIL_ROUTE_NAME, EXECUTIVE_PLAN_DETAIL_ROUTE_NAME } from '@/components/insight/plan-table-helpers.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import InfoTipGeneric from '@/components/generic/InfoTipGeneric.vue'

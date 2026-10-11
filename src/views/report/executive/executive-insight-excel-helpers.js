@@ -7,7 +7,7 @@
 // ตำแหน่ง, จำนวนนับ = number ตรงๆ; ค่า null = '' (ช่องว่าง) ไม่ coerce เป็น 0
 import { formatDate } from '@/services/utils/dayjs.js'
 import { resolveFindingParams } from '@/components/insight/insight-helpers.js'
-import { resolvePlanWorkersDisplay } from '@/views/production/insight/components/wip-plan-table-helpers.js'
+import { resolvePlanWorkersDisplay } from '@/components/insight/plan-table-helpers.js'
 import { resolveGemName, resolveGemShapeName, resolveGemStatusLabelKey } from '@/views/production/insight/components/materials-helpers.js'
 import { formatOverBucketsRatio } from '@/views/production/insight/components/gold-helpers.js'
 import { resolveGoldColumnValue, sortWorkersByWagesDesc } from '@/views/production/insight/components/workers-helpers.js'

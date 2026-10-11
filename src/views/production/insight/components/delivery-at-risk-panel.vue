@@ -124,13 +124,13 @@ import {
   resolvePlanLinkState,
   PLAN_DETAIL_ROUTE_NAME,
   EXECUTIVE_PLAN_DETAIL_ROUTE_NAME
-} from './wip-plan-table-helpers.js'
+} from '@/components/insight/plan-table-helpers.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import InfoTipGeneric from '@/components/generic/InfoTipGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
-import PlanWorkersCell from './plan-workers-cell.vue'
+import PlanWorkersCell from '@/components/insight/plan-workers-cell.vue'
 
 const DEPARTMENT_KEYS = ['design', 'trim', 'rawPolish', 'gemSort', 'setting', 'plating', 'costCard']
 

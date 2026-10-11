@@ -48,7 +48,7 @@ import {
   isSparklineEdgePoint,
   buildSparklineDiscreteMarkers,
   prependRangeStartPoint
-} from './wip-trend-helpers.js'
+} from '@/components/insight/trend-helpers.js'
 
 import ChartGeneric from '@/components/prime-vue/ChartGeneric.vue'
 

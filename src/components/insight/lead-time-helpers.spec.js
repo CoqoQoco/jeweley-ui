@@ -12,7 +12,7 @@ import {
   mapSeriesField,
   buildDraftStandardsPayload,
   hasDraftChanges
-} from './wip-lead-time-helpers.js'
+} from '@/components/insight/lead-time-helpers.js'
 
 describe('resolveStandardChipVariant', () => {
   it('is "pass" when at or under standard', () => {

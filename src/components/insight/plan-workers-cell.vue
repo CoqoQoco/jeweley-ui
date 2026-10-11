@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import { resolvePlanWorkersDisplay } from './wip-plan-table-helpers.js'
+import { resolvePlanWorkersDisplay } from '@/components/insight/plan-table-helpers.js'
 
 export default {
   name: 'PlanWorkersCell',

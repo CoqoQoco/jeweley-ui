@@ -89,7 +89,7 @@ import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { PermissionService } from '@/services/permission/permission.js'
 import { formatDate } from '@/services/utils/dayjs.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
-import { resolvePlanLinkState, PLAN_DETAIL_ROUTE_NAME, EXECUTIVE_PLAN_DETAIL_ROUTE_NAME } from './wip-plan-table-helpers.js'
+import { resolvePlanLinkState, PLAN_DETAIL_ROUTE_NAME, EXECUTIVE_PLAN_DETAIL_ROUTE_NAME } from '@/components/insight/plan-table-helpers.js'
 import { resolveGemName, resolveGemShapeName, resolveGemStatusVariant, resolveGemStatusLabelKey, MATERIALS_GEM_STATUS_VALUES } from './materials-helpers.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
@@ -97,7 +97,7 @@ import InfoTipGeneric from '@/components/generic/InfoTipGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
-import PlanWorkersCell from './plan-workers-cell.vue'
+import PlanWorkersCell from '@/components/insight/plan-workers-cell.vue'
 
 export default {
   name: 'MaterialsWaitingPlansPanel',

@@ -119,7 +119,7 @@ import {
   resolvePlanLinkState,
   PLAN_DETAIL_ROUTE_NAME,
   EXECUTIVE_PLAN_DETAIL_ROUTE_NAME
-} from '@/views/production/insight/components/wip-plan-table-helpers.js'
+} from '@/components/insight/plan-table-helpers.js'
 
 const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 
