@@ -11,7 +11,7 @@ import { describe, it, expect } from 'vitest'
 import { createI18n } from 'vue-i18n'
 
 import th from './th.js'
-import { resolveFindingParams } from '@/components/insight/insight-helpers.js'
+import { resolveFindingParams, formatUnitLabel } from '@/components/insight/insight-helpers.js'
 
 const i18n = createI18n({
   legacy: false,
@@ -91,7 +91,7 @@ describe('capacity i18n param interpolation (vue-i18n ตัวจริง)', (
 })
 
 describe('CAP_GROUP_BACKLOG_GROWING end-to-end (resolveFindingParams + vue-i18n)', () => {
-  const translateBy = (value, kind = 'by') => t(kind === 'unit' ? 'view.productionInsight.capacity.unitMixed' : `view.productionInsight.capacity.breakdownBy.${value}`)
+  const translateBy = (value, kind = 'by') => (kind === 'unit' ? formatUnitLabel(value, t) : t(`view.productionInsight.capacity.breakdownBy.${value}`))
   const render = (params) => t('view.productionInsight.rules.CAP_GROUP_BACKLOG_GROWING', resolveFindingParams(params, undefined, undefined, undefined, undefined, translateBy))
 
   it('renders the example sentence with the translated dimension and unit', () => {
@@ -105,5 +105,10 @@ describe('CAP_GROUP_BACKLOG_GROWING end-to-end (resolveFindingParams + vue-i18n)
     expect(text).toContain('(Gold size)')
     expect(text).toContain('12,345 ชิ้น/คู่')
     expect(render({ by: 'gold', key: 'YG', name: 'YG', months: 2, addedPieces: 5, unit: 'เส้น' })).toContain('(ทอง)')
+  })
+
+  it('translates raw plan unit codes PC./PR. into ชิ้น/คู่ in the sentence', () => {
+    expect(render({ by: 'productType', key: 'R', name: 'แหวน', months: 3, addedPieces: 10, unit: 'PR.' })).toContain('10 คู่')
+    expect(render({ by: 'productType', key: 'N', name: 'สร้อย', months: 3, addedPieces: 10, unit: 'PC.' })).toContain('10 ชิ้น')
   })
 })

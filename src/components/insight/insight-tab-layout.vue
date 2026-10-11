@@ -86,7 +86,7 @@
 </template>
 
 <script>
-import { resolveStatusIcon, resolveFindingParams, resolveHelpKey, buildFindingKey } from './insight-helpers.js'
+import { resolveStatusIcon, resolveFindingParams, resolveHelpKey, buildFindingKey, formatUnitLabel } from './insight-helpers.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import InfoTipGeneric from '@/components/generic/InfoTipGeneric.vue'
@@ -188,7 +188,8 @@ export default {
 
     // by = มิติการแยกของ CAP_GROUP_BACKLOG_GROWING ('productType'|'gold'|'goldSize') — reuse ป้ายของกล่อง "แยกตามสินค้า"
     translateBreakdownBy(value, kind = 'by') {
-      return this.$t(kind === 'unit' ? 'view.productionInsight.capacity.unitMixed' : `view.productionInsight.capacity.breakdownBy.${value}`)
+      if (kind === 'unit') return formatUnitLabel(value, (key) => this.$t(key))
+      return this.$t(`view.productionInsight.capacity.breakdownBy.${value}`)
     },
 
     resolveParams(code, params) {

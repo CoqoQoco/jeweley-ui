@@ -67,7 +67,7 @@
 
 <script>
 import { CHART_PALETTE } from '@/services/utils/chart-colors.js'
-import { formatBucketMonthLabels } from '@/components/insight/insight-helpers.js'
+import { formatBucketMonthLabels, formatUnitLabel } from '@/components/insight/insight-helpers.js'
 import { buildBreakdownChartData } from './capacity-helpers.js'
 import { CAPACITY_BREAKDOWN_BY_VALUES } from '../insight-filters.js'
 
@@ -168,7 +168,7 @@ export default {
   methods: {
     unitLabel(unit) {
       if (!unit) return '—'
-      return unit === 'mixed' ? this.$t('view.productionInsight.capacity.unitMixed') : unit
+      return formatUnitLabel(unit, (key) => this.$t(key))
     },
 
     formatCount(value) {

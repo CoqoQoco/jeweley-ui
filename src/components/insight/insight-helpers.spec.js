@@ -14,7 +14,9 @@ import {
   buildFindingKey,
   formatInsightNumber,
   formatInsightPercent,
-  resolveHelpKey
+  resolveHelpKey,
+  resolveUnitKind,
+  formatUnitLabel
 } from './insight-helpers.js'
 
 describe('resolveFindingSeverityIcon', () => {
@@ -416,7 +418,8 @@ describe('resolveHelpKey', () => {
 })
 
 describe('resolveFindingParams — breakdown by / mixed unit / Pieces suffix', () => {
-  const translateBy = (value, kind = 'by') => (kind === 'unit' ? 'ชิ้น/คู่' : `BY:${value}`)
+  const unitNames = { piece: 'ชิ้น', pair: 'คู่', mixed: 'ชิ้น/คู่' }
+  const translateBy = (value, kind = 'by') => (kind === 'unit' ? formatUnitLabel(value, (key) => unitNames[key.split('.').pop()]) : `BY:${value}`)
 
   it('translates by and the mixed unit through the same translator', () => {
     const resolved = resolveFindingParams({ by: 'gold', unit: 'mixed', addedPieces: 1500 }, undefined, undefined, undefined, undefined, translateBy)
@@ -432,5 +435,31 @@ describe('resolveFindingParams — breakdown by / mixed unit / Pieces suffix', (
 
   it('CAP_GROUP_BACKLOG_GROWING has a help text key', () => {
     expect(resolveHelpKey('CAP_GROUP_BACKLOG_GROWING')).toBe('view.productionInsight.help.CAP_GROUP_BACKLOG_GROWING')
+  })
+})
+
+describe('unit code labels (plan.product_qty_unit)', () => {
+  const t = (key) => ({ piece: 'ชิ้น', pair: 'คู่', mixed: 'ชิ้น/คู่' })[key.split('.').pop()]
+
+  it('resolveUnitKind normalises case and trailing dot', () => {
+    ;['PC', 'PC.', 'pcs', 'Piece'].forEach((u) => expect(resolveUnitKind(u)).toBe('piece'))
+    ;['PR', 'PR.', 'pair', 'PRS'].forEach((u) => expect(resolveUnitKind(u)).toBe('pair'))
+    expect(resolveUnitKind('mixed')).toBe('mixed')
+    expect(resolveUnitKind('STRAND')).toBeNull()
+    expect(resolveUnitKind('')).toBeNull()
+    expect(resolveUnitKind(null)).toBeNull()
+  })
+
+  it('formatUnitLabel translates known codes and keeps unknown ones as-is', () => {
+    expect(formatUnitLabel('PC.', t)).toBe('ชิ้น')
+    expect(formatUnitLabel('PR.', t)).toBe('คู่')
+    expect(formatUnitLabel('mixed', t)).toBe('ชิ้น/คู่')
+    expect(formatUnitLabel('เส้น', t)).toBe('เส้น')
+    expect(formatUnitLabel(undefined, t)).toBe('')
+  })
+
+  it('resolveFindingParams translates a raw unit code through the translator', () => {
+    const translate = (value, kind) => (kind === 'unit' ? formatUnitLabel(value, t) : value)
+    expect(resolveFindingParams({ by: 'gold', unit: 'PR.' }, undefined, undefined, undefined, undefined, translate).unit).toBe('คู่')
   })
 })

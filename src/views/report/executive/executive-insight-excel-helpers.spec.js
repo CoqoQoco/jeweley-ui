@@ -230,7 +230,7 @@ describe('sheet 4 (breakdown block): buildCapacityExcelRows', () => {
   const breakdown = {
     by: 'productType',
     rows: [
-      { key: 'RING', name: 'แหวน', unit: 'วง', inflowPieces: 360, outputPieces: 300, inflowPiecesPerMonth: 120, outputPiecesPerMonth: 100, netPiecesPerMonth: 20, activeWipPieces: 300, activeWipPlans: 40 },
+      { key: 'RING', name: 'แหวน', unit: 'PR.', inflowPieces: 360, outputPieces: 300, inflowPiecesPerMonth: 120, outputPiecesPerMonth: 100, netPiecesPerMonth: 20, activeWipPieces: 300, activeWipPlans: 40 },
       { key: '', name: 'ไม่ระบุ', unit: 'mixed', inflowPieces: 30, outputPieces: 36, inflowPiecesPerMonth: 10, outputPiecesPerMonth: 12, netPiecesPerMonth: -2, activeWipPieces: 30, activeWipPlans: 6 }
     ]
   }
@@ -240,7 +240,7 @@ describe('sheet 4 (breakdown block): buildCapacityExcelRows', () => {
     const title = rows.findIndex((r) => r.c1 === 'แยกตามสินค้า: ประเภทสินค้า')
     expect(title).toBeGreaterThan(0)
     expect(rows[title + 1]).toMatchObject({ c1: 'ประเภทสินค้า', c2: 'หน่วย', c5: 'สุทธิ ±' })
-    expect(rows[title + 2]).toEqual({ c1: 'แหวน', c2: 'วง', c3: 120, c4: 100, c5: 20, c6: 300, c7: 40 })
+    expect(rows[title + 2]).toEqual({ c1: 'แหวน', c2: 'คู่', c3: 120, c4: 100, c5: 20, c6: 300, c7: 40 })
     expect(rows[title + 3]).toMatchObject({ c1: 'ไม่ระบุ', c2: 'ชิ้น/คู่', c5: -2 })
   })
 
@@ -253,7 +253,7 @@ describe('sheet 4 (breakdown block): buildCapacityExcelRows', () => {
 
   it('renders CAP_GROUP_BACKLOG_GROWING with the translated dimension in the findings sheet', () => {
     const rows = buildInsightFindingsExcelRows(
-      [{ key: 'capacity', problems: [{ code: 'CAP_GROUP_BACKLOG_GROWING', severity: 'warning', params: { by: 'productType', key: 'RING', name: 'แหวน', months: 3, addedPieces: 120, unit: 'คู่' } }] }],
+      [{ key: 'capacity', problems: [{ code: 'CAP_GROUP_BACKLOG_GROWING', severity: 'warning', params: { by: 'productType', key: 'RING', name: 'แหวน', months: 3, addedPieces: 120, unit: 'PR.' } }] }],
       t
     )
     expect(rows[0].text).toBe('แหวน (ประเภทสินค้า) งานเข้ามากกว่าผลิตออก 3 เดือนติด งานค้างเพิ่ม 120 คู่')

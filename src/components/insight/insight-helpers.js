@@ -164,6 +164,22 @@ function applyNumericSuffixFormatting(resolved) {
 // (maxWorkerNames ต่าง code กันได้ เช่น ACT_TALK_WORKER โชว์ได้ถึง 5 คน ส่วน finding ทั่วไปโชว์แค่ 3) แล้วใส่
 // ตัวคั่นหลักพัน/ปัดทศนิยมให้ param ที่ชื่อลงท้าย Money/Gram/Percent อัตโนมัติ — ค่า param อื่น (count/days/...)
 // ปล่อยผ่านตรงๆ
+// รหัสหน่วยจาก plan.product_qty_unit → ชนิด: PC/PC./PCS/PIECE = piece, PR/PR./PRS/PAIR = pair, 'mixed' = mixed, อื่นๆ = null (แสดงตามเดิม)
+export function resolveUnitKind(unit) {
+  if (unit === null || unit === undefined || unit === '') return null
+  const code = String(unit).trim().toUpperCase().replace(/\.$/, '')
+  if (code === 'MIXED') return 'mixed'
+  if (['PC', 'PCS', 'PIECE'].includes(code)) return 'piece'
+  if (['PR', 'PRS', 'PAIR'].includes(code)) return 'pair'
+  return null
+}
+
+// ชื่อหน่วยที่แสดง — t = ฟังก์ชันแปล (key, params) · รหัสที่ไม่รู้จักคืนค่าเดิม
+export function formatUnitLabel(unit, t) {
+  const kind = resolveUnitKind(unit)
+  return kind ? t(`view.productionInsight.capacity.unitName.${kind}`) : (unit ?? '')
+}
+
 export function resolveFindingParams(
   params,
   translateDept,
@@ -194,7 +210,10 @@ export function resolveFindingParams(
   // unit === 'mixed' (กลุ่มที่ไม่มีหน่วยใดเกิน 50%) แปลเป็น "ชิ้น/คู่" — translator เดียวกัน แยกด้วยอาร์กิวเมนต์ที่ 2
   if (resolved.by !== undefined && typeof translateBreakdownBy === 'function') {
     resolved.by = translateBreakdownBy(resolved.by, 'by')
-    if (resolved.unit === 'mixed') resolved.unit = translateBreakdownBy('mixed', 'unit')
+  }
+  // unit (รหัสหน่วยของใบงาน เช่น "PC."/"PR." หรือ 'mixed') แปลเป็นชื่อหน่วย (ชิ้น/คู่/ชิ้น/คู่) ผ่าน translator เดียวกัน
+  if (resolved.unit !== undefined && typeof translateBreakdownBy === 'function') {
+    resolved.unit = translateBreakdownBy(resolved.unit, 'unit')
   }
   if (resolved.workers !== undefined) {
     resolved.workers = formatWorkerNameList(resolved.workers, resolved.count, maxWorkerNames)

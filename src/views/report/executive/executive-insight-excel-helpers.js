@@ -6,7 +6,7 @@
 // ตัวเลขตามธรรมเนียม sheet เดิมของไฟล์นี้: gram/percent = toFixed(2) string, เงิน = formatMoneyFull, วัน = ปัด 1
 // ตำแหน่ง, จำนวนนับ = number ตรงๆ; ค่า null = '' (ช่องว่าง) ไม่ coerce เป็น 0
 import { formatDate } from '@/services/utils/dayjs.js'
-import { resolveFindingParams } from '@/components/insight/insight-helpers.js'
+import { resolveFindingParams, formatUnitLabel } from '@/components/insight/insight-helpers.js'
 import { resolvePlanWorkersDisplay } from '@/components/insight/plan-table-helpers.js'
 import { resolveGemName, resolveGemShapeName, resolveGemStatusLabelKey } from '@/views/production/insight/components/materials-helpers.js'
 import { formatOverBucketsRatio } from '@/views/production/insight/components/gold-helpers.js'
@@ -101,7 +101,7 @@ export function renderInsightText(t, code, params) {
     (workerType) => t(`view.productionInsight.gold.workerType.${workerType}`),
     (metal) => t(`view.productionInsight.gold.metalLabel.${metal}`),
     code === 'ACT_TALK_WORKER' ? 5 : undefined,
-    (value, kind = 'by') => t(kind === 'unit' ? 'view.productionInsight.capacity.unitMixed' : `view.productionInsight.capacity.breakdownBy.${value}`)
+    (value, kind = 'by') => (kind === 'unit' ? formatUnitLabel(value, t) : t(`view.productionInsight.capacity.breakdownBy.${value}`))
   )
   return t(`${RULES_PREFIX}.${code}`, resolved)
 }
@@ -218,7 +218,7 @@ export function buildCapacityExcelRows(kpi, costCardToDone, departments, t, brea
   ])
   const breakdownRows = (breakdown?.rows || []).map((r) => [
     r.name || r.key || label(t, 'capBreakdownEmptyGroup'),
-    r.unit === 'mixed' ? t('view.productionInsight.capacity.unitMixed') : r.unit || '',
+    formatUnitLabel(r.unit, t),
     count(r.inflowPiecesPerMonth),
     count(r.outputPiecesPerMonth),
     count(r.netPiecesPerMonth),

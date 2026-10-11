@@ -257,6 +257,11 @@ export default {
       piece: 'ชิ้น'
     },
 
+    unitName: {
+      piece: 'ชิ้น',
+      pair: 'คู่',
+      mixed: 'ชิ้น/คู่'
+    },
     unitMixed: 'ชิ้น/คู่',
     kpiInflowSubPlans: '+ {plans} ใบงาน',
     deptColExitsPlan: 'ใบออก/เดือน',

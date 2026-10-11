@@ -257,6 +257,11 @@ export default {
       piece: 'Pieces'
     },
 
+    unitName: {
+      piece: 'pcs',
+      pair: 'pairs',
+      mixed: 'pieces/pairs'
+    },
     unitMixed: 'pieces/pairs',
     kpiInflowSubPlans: '+ {plans} plans',
     deptColExitsPlan: 'Exits/month',
