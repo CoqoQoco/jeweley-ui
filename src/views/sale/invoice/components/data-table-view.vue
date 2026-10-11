@@ -215,10 +215,11 @@ export default {
           template: 'deliveryDateTemplate'
         },
         {
-          field: 'remark',
-          header: this.$t('view.sale.invoice.remark'),
-          sortable: true,
-          minWidth: '150px'
+          field: 'paymentStatus',
+          header: this.$t('view.sale.invoice.paymentStatusLabel'),
+          sortable: false,
+          minWidth: '120px',
+          template: 'paymentStatusTemplate'
         },
         {
           field: 'currencyUnit',
@@ -252,11 +253,10 @@ export default {
           template: 'outstandingAmountTemplate'
         },
         {
-          field: 'paymentStatus',
-          header: this.$t('view.sale.invoice.paymentStatusLabel'),
-          sortable: false,
-          minWidth: '120px',
-          template: 'paymentStatusTemplate'
+          field: 'remark',
+          header: this.$t('view.sale.invoice.remark'),
+          sortable: true,
+          minWidth: '150px'
         },
         {
           field: 'overdueDays',
