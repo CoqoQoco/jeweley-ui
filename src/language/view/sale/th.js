@@ -1633,6 +1633,7 @@ export const document = {
   imageLoading: 'กำลังโหลดรูป',
   addImage: 'เพิ่มรูป',
   productSize: 'ขนาดสินค้า',
+  priceGroup: 'ราคา (แสดงใน PDF เมื่อเปิดตัวเลือกแสดงราคา)',
   dimensionHeight: 'ความสูง',
   dimensionWidth: 'ความกว้าง',
   imageCaption: 'คำบรรยาย',

@@ -66,6 +66,11 @@
         <p class="size-hint mb-0 mt-1">{{ $t('view.sale.document.imageHint') }}</p>
       </div>
 
+      <div v-if="canEditPrice" class="size-group mb-3">
+        <span class="title-text d-block mb-2">{{ $t('view.sale.document.priceGroup') }}</span>
+        <PriceInputGroupGeneric :item="item" @update="onPriceUpdate" />
+      </div>
+
       <div class="images-row">
         <div v-for="(preview, imgIdx) in imagePreviews" :key="imgIdx" class="image-slot">
           <div class="image-upload-area">
@@ -133,11 +138,13 @@
 
 <script>
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import PriceInputGroupGeneric from '@/components/generic/PriceInputGroupGeneric.vue'
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
 
 export default {
   name: 'CatalogItemCard',
 
-  components: { ButtonGeneric },
+  components: { ButtonGeneric, PriceInputGroupGeneric },
 
   props: {
     item: {
@@ -157,6 +164,10 @@ export default {
   emits: ['update:item', 'move-up', 'move-down', 'remove', 'upload-image'],
 
   computed: {
+    canEditPrice() {
+      return hasMarginAccess()
+    },
+
     imagePreviews() {
       return this.item.imagePreviews || []
     }
@@ -165,6 +176,10 @@ export default {
   methods: {
     updateField(field, value) {
       this.$emit('update:item', { ...this.item, [field]: value })
+    },
+
+    onPriceUpdate(patch) {
+      this.$emit('update:item', { ...this.item, ...patch })
     },
 
     removeImageAt(imgIdx) {

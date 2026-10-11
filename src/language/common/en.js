@@ -73,6 +73,31 @@ export default {
     of: 'of',
     entries: 'entries'
   },
+  price: {
+    currency: 'Currency',
+    full: 'Full price',
+    discount: 'Discount',
+    sale: 'Sale price',
+    modePrice: 'Price',
+    modePercent: '%',
+    percentPlaceholder: 'Discount %',
+    percentNeedFull: 'Enter full price first',
+    percentOff: '≈ {percent}% off',
+    preview: 'Preview',
+    errorSaleExceedsFull: 'Sale must be ≤ Full',
+    errorNegative: 'Price must not be negative',
+    invalidBlock: 'Some items have invalid prices. Please fix them before saving.'
+  },
+  catalogPdf: {
+    title: 'PDF options',
+    showPrice: 'Show prices',
+    showStrike: 'Show discount as strike-through',
+    countWithPrice: '{count} item(s) with price',
+    countWithoutPrice: '{count} item(s) without price (price will not be shown)',
+    reasonNoPrice: 'No item has a price yet, so prices cannot be shown',
+    reasonNoPermission: 'You do not have permission to view prices',
+    confirm: 'Generate PDF'
+  },
   lang: {
     th: 'ไทย',
     en: 'English'

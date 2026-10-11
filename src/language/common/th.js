@@ -73,6 +73,31 @@ export default {
     of: 'จากทั้งหมด',
     entries: 'รายการ'
   },
+  price: {
+    currency: 'สกุลเงิน',
+    full: 'ราคาเต็ม',
+    discount: 'ส่วนลด',
+    sale: 'ราคาขาย',
+    modePrice: 'ราคา',
+    modePercent: '%',
+    percentPlaceholder: 'ส่วนลด %',
+    percentNeedFull: 'กรอกราคาเต็มก่อน',
+    percentOff: '≈ {percent}% off',
+    preview: 'ตัวอย่าง',
+    errorSaleExceedsFull: 'ราคาขายต้องไม่เกินราคาเต็ม',
+    errorNegative: 'ราคาต้องไม่ติดลบ',
+    invalidBlock: 'ราคาของบางรายการไม่ถูกต้อง กรุณาแก้ไขก่อนบันทึก'
+  },
+  catalogPdf: {
+    title: 'ตัวเลือกการสร้าง PDF',
+    showPrice: 'แสดงราคา',
+    showStrike: 'แสดงส่วนลดแบบขีดฆ่าราคาเต็ม',
+    countWithPrice: 'มีราคา {count} รายการ',
+    countWithoutPrice: 'ไม่มีราคา {count} รายการ (จะไม่แสดงราคา)',
+    reasonNoPrice: 'ยังไม่มีสินค้าที่กรอกราคา จึงเปิดแสดงราคาไม่ได้',
+    reasonNoPermission: 'คุณไม่มีสิทธิ์ดูราคา',
+    confirm: 'สร้าง PDF'
+  },
   lang: {
     th: 'ไทย',
     en: 'English'

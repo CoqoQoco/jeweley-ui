@@ -39,6 +39,16 @@
       @closeModal="isShowStockPicker = false"
       @select="onStockSelected"
     />
+
+    <catalogPdfOptionsModal
+      :isShow="isShowPdfOptions"
+      :canViewPrice="canEditPrice"
+      :pricedCount="priceCounts.withPrice"
+      :unpricedCount="priceCounts.withoutPrice"
+      :confirmLabel="pdfAction === 'download' ? $t('view.sale.document.downloadPdf') : $t('view.sale.document.previewPdf')"
+      @closeModal="isShowPdfOptions = false"
+      @confirm="onConfirmPdf"
+    />
   </div>
 </template>
 
@@ -46,6 +56,10 @@
 import { useSaleDocumentCatalogStore } from '@/stores/modules/api/sale/sale-document-catalog-store.js'
 import { success, warning } from '@/services/alert/sweetAlerts.js'
 import { ProductCatalogPdfBuilder } from '@/services/helper/pdf/product-catalog/product-catalog-pdf-builder.js'
+import { countPriced, validatePrice } from '@/services/helper/catalog-price.js'
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
+
+import catalogPdfOptionsModal from '@/components/modal/catalog-pdf-options-modal.vue'
 
 import documentInfoSection from './components/document-info-section.vue'
 import itemsSection from './components/items-section.vue'
@@ -67,7 +81,8 @@ export default {
   components: {
     documentInfoSection,
     itemsSection,
-    stockPickerView
+    stockPickerView,
+    catalogPdfOptionsModal
   },
 
   setup() {
@@ -80,6 +95,8 @@ export default {
       docForm: defaultDocForm(),
       catalogItems: [],
       isShowStockPicker: false,
+      isShowPdfOptions: false,
+      pdfAction: 'preview',
       savedId: null
     }
   },
@@ -87,6 +104,14 @@ export default {
   computed: {
     isEditMode() {
       return !!this.$route.params.id
+    },
+
+    canEditPrice() {
+      return hasMarginAccess()
+    },
+
+    priceCounts() {
+      return countPriced(this.catalogItems)
     }
   },
 
@@ -141,6 +166,9 @@ export default {
           dimension1: item.dimension1 || '',
           dimension2: item.dimension2 || '',
           dimension3: item.dimension3 || '',
+          priceFull: item.priceFull ?? null,
+          priceSale: item.priceSale ?? null,
+          priceCurrency: item.priceCurrency || 'THB',
           sortOrder: item.sortOrder ?? idx,
           imageBlobPaths: blobPaths,
           imagePreviews: new Array(blobPaths.length).fill(null)
@@ -164,6 +192,10 @@ export default {
       }
       if (!this.docForm.documentMonth || !this.docForm.documentYear) {
         warning(this.$t('view.sale.document.validation.monthYearRequired'), this.$t('common.label.incompleteData'))
+        return false
+      }
+      if (this.canEditPrice && this.catalogItems.some((item) => validatePrice(item) !== null)) {
+        warning(this.$t('common.price.invalidBlock'), this.$t('common.label.incompleteData'))
         return false
       }
       return true
@@ -190,6 +222,11 @@ export default {
           dimension1: item.dimension1,
           dimension2: item.dimension2,
           dimension3: item.dimension3,
+          ...(this.canEditPrice && {
+            priceFull: item.priceFull ?? null,
+            priceSale: item.priceSale ?? null,
+            priceCurrency: item.priceCurrency || 'THB'
+          }),
           sortOrder: idx,
           imageBlobPaths: item.imageBlobPaths || []
         }))
@@ -218,14 +255,29 @@ export default {
     async onPreviewPDF() {
       if (!this.validateForm()) return
       if (this.hasItemWithoutImage()) {
-        warning(this.$t('view.sale.document.validation.itemWithoutImage'), this.$t('common.label.incompleteData'), () => this.generatePreviewPDF())
+        warning(this.$t('view.sale.document.validation.itemWithoutImage'), this.$t('common.label.incompleteData'), () => this.openPdfOptions('preview'))
         return
       }
-      await this.generatePreviewPDF()
+      this.openPdfOptions('preview')
     },
 
-    async generatePreviewPDF() {
-      const builder = new ProductCatalogPdfBuilder(this.docForm, this.catalogItems)
+    openPdfOptions(action) {
+      this.pdfAction = action
+      this.isShowPdfOptions = true
+    },
+
+    async onConfirmPdf({ showPrice, showStrike }) {
+      this.isShowPdfOptions = false
+      const options = { showPrice, showStrike }
+      if (this.pdfAction === 'download') {
+        await this.generateDownloadPDF(options)
+      } else {
+        await this.generatePreviewPDF(options)
+      }
+    },
+
+    async generatePreviewPDF(options) {
+      const builder = new ProductCatalogPdfBuilder(this.docForm, this.catalogItems, options)
       await builder.preparePDF()
       builder.openPDF()
     },
@@ -233,14 +285,14 @@ export default {
     async onDownloadPDF() {
       if (!this.validateForm()) return
       if (this.hasItemWithoutImage()) {
-        warning(this.$t('view.sale.document.validation.itemWithoutImage'), this.$t('common.label.incompleteData'), () => this.generateDownloadPDF())
+        warning(this.$t('view.sale.document.validation.itemWithoutImage'), this.$t('common.label.incompleteData'), () => this.openPdfOptions('download'))
         return
       }
-      await this.generateDownloadPDF()
+      this.openPdfOptions('download')
     },
 
-    async generateDownloadPDF() {
-      const builder = new ProductCatalogPdfBuilder(this.docForm, this.catalogItems)
+    async generateDownloadPDF(options) {
+      const builder = new ProductCatalogPdfBuilder(this.docForm, this.catalogItems, options)
       await builder.preparePDF()
       const filename = `${this.docForm.headerLabel || 'catalog'}_${this.docForm.documentMonth}_${this.docForm.documentYear}.pdf`
       builder.downloadPDF(filename)
@@ -255,6 +307,9 @@ export default {
         dimension1: '',
         dimension2: '',
         dimension3: '',
+        priceFull: null,
+        priceSale: null,
+        priceCurrency: 'THB',
         sortOrder: this.catalogItems.length,
         imageBlobPaths: [],
         imagePreviews: []

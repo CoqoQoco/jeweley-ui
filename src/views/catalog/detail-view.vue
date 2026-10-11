@@ -17,7 +17,14 @@
       </div>
       <div class="detail-header-actions">
         <ButtonGeneric variant="green" icon="bi-plus-lg" :label="$t('view.catalog.btn.addProduct')" @click="onAddProducts" />
-        <ButtonGeneric variant="main" icon="bi-save" :label="$t('view.catalog.btn.saveOrder')" class="ml-2" @click="onSaveItemsOrder" />
+        <ButtonGeneric
+          variant="main"
+          icon="bi-save"
+          :label="$t('view.catalog.btn.saveOrder')"
+          class="ml-2"
+          :disabled="hasInvalidPrice"
+          @click="onSaveItemsOrder"
+        />
         <ButtonGeneric variant="outline" icon="bi-file-pdf" :label="$t('view.catalog.btn.generatePdf')" class="ml-2" @click="onGeneratePdf" />
       </div>
     </div>
@@ -96,6 +103,22 @@
             placeholder="—"
           />
         </template>
+
+        <template #priceCurrencyTemplate="{ data: rowData }">
+          <PriceInputGroupGeneric part="currency" :item="rowData" @update="Object.assign(rowData, $event)" />
+        </template>
+
+        <template #priceFullTemplate="{ data: rowData }">
+          <PriceInputGroupGeneric part="full" :item="rowData" @update="Object.assign(rowData, $event)" />
+        </template>
+
+        <template #priceDiscountTemplate="{ data: rowData }">
+          <PriceInputGroupGeneric part="discount" :item="rowData" @update="Object.assign(rowData, $event)" />
+        </template>
+
+        <template #priceSaleTemplate="{ data: rowData }">
+          <PriceInputGroupGeneric part="sale" :item="rowData" @update="Object.assign(rowData, $event)" />
+        </template>
       </BaseDataTable>
     </div>
 
@@ -110,6 +133,15 @@
       :productCode="selectedProductCode"
       @closeModal="onCloseCatalogImage"
     ></catalogImageModal>
+
+    <catalogPdfOptionsModal
+      :isShow="isShow.pdfOptions"
+      :canViewPrice="canEditPrice"
+      :pricedCount="priceCounts.withPrice"
+      :unpricedCount="priceCounts.withoutPrice"
+      @closeModal="isShow.pdfOptions = false"
+      @confirm="onConfirmPdf"
+    ></catalogPdfOptionsModal>
   </div>
 </template>
 
@@ -117,19 +149,24 @@
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import PriceInputGroupGeneric from '@/components/generic/PriceInputGroupGeneric.vue'
+import catalogPdfOptionsModal from '@/components/modal/catalog-pdf-options-modal.vue'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 
 import { useCatalogStore } from '@/stores/modules/api/catalog-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { ProductCatalogPdfBuilder } from '@/services/helper/pdf/product-catalog/product-catalog-pdf-builder.js'
+import { countPriced, validatePrice } from '@/services/helper/catalog-price.js'
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
 
 import productPickerModal from './modal/product-picker-modal.vue'
 import catalogImageModal from './modal/catalog-image-modal.vue'
 
 const interfaceIsShow = {
   productPicker: false,
-  catalogImage: false
+  catalogImage: false,
+  pdfOptions: false
 }
 
 export default {
@@ -137,6 +174,8 @@ export default {
     BaseDataTable,
     ButtonGeneric,
     InputTextGeneric,
+    PriceInputGroupGeneric,
+    catalogPdfOptionsModal,
     productPickerModal,
     catalogImageModal
   },
@@ -148,6 +187,28 @@ export default {
   },
 
   computed: {
+    canEditPrice() {
+      return hasMarginAccess()
+    },
+
+    priceCounts() {
+      return countPriced(this.items)
+    },
+
+    hasInvalidPrice() {
+      return this.canEditPrice && this.items.some((item) => validatePrice(item) !== null)
+    },
+
+    priceColumns() {
+      if (!this.canEditPrice) return []
+      return [
+        { field: 'priceCurrency', header: this.$t('common.price.currency'), sortable: false, width: '110px' },
+        { field: 'priceFull', header: this.$t('common.price.full'), sortable: false, width: '150px' },
+        { field: 'priceDiscount', header: this.$t('common.price.discount'), sortable: false, width: '210px' },
+        { field: 'priceSale', header: this.$t('common.price.sale'), sortable: false, width: '170px' }
+      ]
+    },
+
     columns() {
       return [
         {
@@ -191,7 +252,8 @@ export default {
           header: this.$t('view.catalog.field.dimension3'),
           sortable: false,
           width: '130px'
-        }
+        },
+        ...this.priceColumns
       ]
     }
   },
@@ -285,6 +347,10 @@ export default {
     },
 
     onSaveItemsOrder() {
+      if (this.hasInvalidPrice) {
+        warning(this.$t('common.price.invalidBlock'))
+        return
+      }
       confirmThenSubmit(
         '',
         this.$t('view.catalog.confirm.saveOrder'),
@@ -309,7 +375,12 @@ export default {
             sortOrder: item.sortOrder,
             dimension1: item.dimension1,
             dimension2: item.dimension2,
-            dimension3: item.dimension3
+            dimension3: item.dimension3,
+            ...(this.canEditPrice && {
+              priceFull: item.priceFull ?? null,
+              priceSale: item.priceSale ?? null,
+              priceCurrency: item.priceCurrency || 'THB'
+            })
           }))
         }
       })
@@ -321,13 +392,18 @@ export default {
       }
     },
 
-    async onGeneratePdf() {
+    onGeneratePdf() {
       if (!this.items || !this.items.length) {
         warning(this.$t('view.catalog.warning.noItems'))
         return
       }
+      this.isShow.pdfOptions = true
+    },
 
-      const builder = new ProductCatalogPdfBuilder(this.catalog, this.items)
+    async onConfirmPdf({ showPrice, showStrike }) {
+      this.isShow.pdfOptions = false
+
+      const builder = new ProductCatalogPdfBuilder(this.catalog, this.items, { showPrice, showStrike })
       await builder.preparePDF()
       builder.openPDF()
     },

@@ -1640,6 +1640,7 @@ export const document = {
   imageLoading: 'Loading image',
   addImage: 'Add Image',
   productSize: 'Product Size',
+  priceGroup: 'Price (shown in PDF when Show prices is on)',
   dimensionHeight: 'Height',
   dimensionWidth: 'Width',
   imageCaption: 'Caption',

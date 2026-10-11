@@ -10,6 +10,7 @@
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { summarizeMaterials } from '@/services/utils/material-summary.js'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
+import { resolvePrice } from '@/services/helper/catalog-price.js'
 
 // Brand colour constants — adjust once confirmed with client
 const CATALOG_MAROON = '#9B2C20'
@@ -24,8 +25,14 @@ const CONTENT_W = 762 // PAGE_W - 40 (left margin) - 40 (right margin)
 const DIMTXT_W = 36 // width reserved for the dimension label text beside the vertical measure line
 const VLINE_W = 10 // width of the vertical measure line column
 
+// Left column height budget (measured with a render harness): from this many material rows the price block
+// no longer fits on the page, so the material rows are tightened (only when a price block is drawn).
+const PRICE_TIGHT_MATERIAL_ROWS = 10
+
 export class ProductCatalogPdfBuilder {
-  constructor(catalog, items) {
+  constructor(catalog, items, { showPrice = false, showStrike = true } = {}) {
+    this.showPrice = showPrice
+    this.showStrike = showStrike
     this.catalog = catalog || {}
     this.items = items
       ? [...items].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
@@ -258,6 +265,32 @@ export class ProductCatalogPdfBuilder {
     return { svg, width: 16, height: 16 }
   }
 
+  // ---------- price block ----------
+
+  // Shopee-style: full price struck through (grey) + sale price (maroon, bold). null when price is off/empty.
+  getPriceBlock(item) {
+    if (!this.showPrice) return null
+    const price = resolvePrice(item)
+    if (price.kind === 'none') return null
+
+    const saleLine = (text) => ({ text, fontSize: 18, bold: true, color: CATALOG_MAROON })
+
+    if (price.kind === 'strike' && this.showStrike) {
+      return {
+        margin: [8, 12, 0, 0],
+        stack: [
+          { text: price.fullText, fontSize: 11, color: '#999999', decoration: 'lineThrough' },
+          { ...saleLine(price.saleText), margin: [0, 2, 0, 0] }
+        ]
+      }
+    }
+
+    return {
+      margin: [8, 12, 0, 0],
+      stack: [saleLine(price.kind === 'strike' ? price.saleText : price.amountText)]
+    }
+  }
+
   // ---------- product page ----------
 
   getProductPage(item, isLast) {
@@ -356,6 +389,8 @@ export class ProductCatalogPdfBuilder {
 
     // --- Material summary: 1 row per material (ชื่อวัสดุจริง, PDF_FONT, no-wrap) ---
     const materials = Array.isArray(item.materialSummary) ? item.materialSummary : summarizeMaterials([])
+    const priceBlock = this.getPriceBlock(item)
+    const rowPadding = priceBlock && materials.length >= PRICE_TIGHT_MATERIAL_ROWS ? 1 : 4
     if (materials.length) {
       const nameCell = (t) => ({ text: t, fontSize: 9, color: '#1a1a1a' })
       const qtyCell = (t) => ({ text: t, fontSize: 9, color: '#1a1a1a', alignment: 'right', noWrap: true })
@@ -371,11 +406,13 @@ export class ProductCatalogPdfBuilder {
           vLineWidth: () => 0,
           paddingLeft: () => 8,
           paddingRight: () => 8,
-          paddingTop: () => 4,
-          paddingBottom: () => 4
+          paddingTop: () => rowPadding,
+          paddingBottom: () => rowPadding
         }
       })
     }
+
+    if (priceBlock) leftStack.push(priceBlock)
 
     const leftCol = {
       width: '30%',
