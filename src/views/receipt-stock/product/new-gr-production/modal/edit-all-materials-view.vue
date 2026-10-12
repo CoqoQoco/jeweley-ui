@@ -295,6 +295,8 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
+import { formatGoldBarcodeText, isGoldOrSilverMaterial } from '../gold-barcode-text.js'
+
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 export default {
@@ -319,6 +321,10 @@ export default {
     breakdownData: {
       type: Array,
       default: () => []
+    },
+    isSilverPlan: {
+      type: Boolean,
+      default: false
     },
     masterMaterialType: {
       type: Array,
@@ -449,7 +455,10 @@ export default {
         typeNameDescription: material.typeNameDescription,
         typeCode: material.typeCode,
         typeCodeName: material.typeCodeName,
-        typeBarcode: material.typeBarcode || this.generateBarcode(material),
+        typeBarcode:
+          this.isSilverPlan && isGoldOrSilverMaterial(material)
+            ? this.generateBarcode(material)
+            : material.typeBarcode || this.generateBarcode(material),
         qty: material.qty || 0,
         qtyUnit: material.qtyUnit || '',
         qtyPrice: material.qtyPrice || 0,
@@ -522,9 +531,10 @@ export default {
 
         case 'Gold':
         case 'Silver':
-          display = `${material.qtyWeight || ''}${
-            material.qtyWeightUnit ? ` ${material.qtyWeightUnit}` : ''
-          }${material.type ? ` ${material.type}` : ''}`
+          display = formatGoldBarcodeText(
+            { ...material, qtyWeight: material.qtyWeight || '' },
+            this.isSilverPlan
+          )
           break
 
         case 'Gem':

@@ -64,6 +64,7 @@
       :isShow="isShow.editAllMaterials"
       :selectedStocks="selectedItems"
       :breakdownData="data.breakDown || []"
+      :isSilverPlan="isSilverPlan"
       :masterMaterialType="masterMaterialType"
       :masterGold="masterGold"
       :masterDiamondGrade="masterDiamondGrade"
@@ -102,6 +103,7 @@ import modalBarcodePrint from './modal/barcode-print-view.vue'
 import modalSearchProductName from './modal/search-product-name-view.vue'
 import modalEditAllMaterials from './modal/edit-all-materials-view.vue'
 import modalAdjustBreakdown from './modal/adjust-breakdown-view.vue'
+import { formatGoldBarcodeText, isGoldOrSilverMaterial } from './gold-barcode-text.js'
 
 const interfaceBarcode = {
   madeIn: 'MADE IN THAILAND',
@@ -139,6 +141,9 @@ export default {
   },
 
   computed: {
+    isSilverPlan() {
+      return this.data?.type === 'Silver'
+    },
     masterGold() {
       return this.masterStore.gold
     },
@@ -331,6 +336,7 @@ export default {
       itemsToPreSelect: [],
       masterMaterialType: [
         { value: 'Gold', description: 'Gold' },
+        { value: 'Silver', description: 'Silver' },
         { value: 'Diamond', description: 'Diamond' },
         { value: 'Gem', description: 'Gem ' },
         { value: 'Worker', description: 'Worker ' },
@@ -695,6 +701,13 @@ export default {
       }
     },
 
+    resolveTypeBarcode(material) {
+      if (this.isSilverPlan && isGoldOrSilverMaterial(material)) {
+        return this.getBarcode(material)
+      }
+      return material.typeBarcode || this.getBarcode(material)
+    },
+
     getBarcode(item) {
       let display = ''
 
@@ -707,9 +720,7 @@ export default {
       }
 
       if (item.type === 'Gold' || item.type === 'Silver') {
-        display = `${item.qtyWeight ?? ``}${item.qtyWeightUnit ? ` ${item.qtyWeightUnit}` : ``}${
-          item.type ? ` ${item.type}` : ``
-        }`
+        display = formatGoldBarcodeText(item, this.isSilverPlan)
       }
 
       if (item.type === 'Gem') {
@@ -788,6 +799,8 @@ export default {
         barcodeGems: [],
         materials: (item.materials || []).map((m) => ({
           ...m,
+          typeBarcode:
+            this.isSilverPlan && isGoldOrSilverMaterial(m) ? this.getBarcode(m) : m.typeBarcode,
           regionOrigin: m.regionOrigin !== undefined ? m.regionOrigin : (m.region || '')
         }))
       }))
@@ -900,7 +913,7 @@ export default {
           typeNameDescription: material.typeNameDescription,
           typeCode: material.typeCode,
           typeCodeName: material.typeCodeName,
-          typeBarcode: material.typeBarcode || this.getBarcode(material),
+          typeBarcode: this.resolveTypeBarcode(material),
           qty: material.qty || 0,
           qtyUnit: material.qtyUnit || 'pc',
           qtyPrice: material.qtyPrice || 0,
@@ -972,7 +985,7 @@ export default {
             typeNameDescription: material.typeNameDescription,
             typeCode: material.typeCode,
             typeCodeName: material.typeCodeName,
-            typeBarcode: material.typeBarcode || this.getBarcode(material),
+            typeBarcode: this.resolveTypeBarcode(material),
             qty: material.qty || 0,
             qtyUnit: material.qtyUnit || 'pc',
             qtyPrice: material.qtyPrice || 0,

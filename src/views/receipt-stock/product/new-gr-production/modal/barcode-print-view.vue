@@ -307,7 +307,7 @@ export default {
           gems: [],
           price: item.productPrice ?? null,
           salePrice: item.productPrice ?? null,
-          isSilver: item.productionTypeSize === 'SILVER' ? true : false,
+          isSilver: String(item.productionTypeSize || '').toUpperCase() === 'SILVER',
           barcodeType: this.selectedType
         }
 

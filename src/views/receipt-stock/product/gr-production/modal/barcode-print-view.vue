@@ -287,7 +287,7 @@ export default {
           size: item.size,
           gold: '',
           gems: [],
-          isSilver: item.productionTypeSize === 'SILVER' ? true : false
+          isSilver: String(item.productionTypeSize || '').toUpperCase() === 'SILVER'
         }
 
         // Process materials if available

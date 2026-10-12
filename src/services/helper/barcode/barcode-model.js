@@ -19,7 +19,7 @@ export function buildBarcodeModel(stock) {
 
   return {
     goldType: stock?.productionTypeSize,
-    isSilver: stock?.productionTypeSize === 'SILVER',
+    isSilver: String(stock?.productionTypeSize || '').toUpperCase() === 'SILVER',
     gold: goldParts.join(' '),
     gems,
     madeIn: 'MADE IN THAILAND',
