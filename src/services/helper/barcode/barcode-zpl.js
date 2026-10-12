@@ -58,6 +58,9 @@ const GT800_V_CODE_LINE_X = 256
 const GT800_V_CODE_LINE_Y = 83
 const GT800_V_CODE_LINE_FONT = [15, 15]
 
+// จำลองตัวหนาของบรรทัดพลอย GT800: พิมพ์ซ้ำอีกชั้นเลื่อนขวา 1 dot (ตัวอักษรบางจนจาง) — ใช้เฉพาะคอลัมน์พลอย
+const GT800_GEM_BOLD_OFFSET_X = 1
+
 // คอลัมน์พลอย — เลือก 2 ระดับอัตโนมัติตามความยาวบาร์โค้ด/ข้อความ
 const GEM_START_Y = 31
 const GEM_LEVELS = {
@@ -362,8 +365,11 @@ function gt800Header(s, rotate180) {
 function buildGemFieldsZpl(layout, s) {
   let fields = ''
   let y = GEM_START_Y
+  const boldDx = Math.max(1, s(GT800_GEM_BOLD_OFFSET_X))
   layout.formattedGems.forEach((gem) => {
-    fields += `^FO${s(layout.gemColumnX)},${s(y)}^A0N,${s(layout.gemFont[0])},${s(layout.gemFont[1])}^FD${gem}^FS`
+    const field = (x) => `^FO${x},${s(y)}^A0N,${s(layout.gemFont[0])},${s(layout.gemFont[1])}^FD${gem}^FS`
+    const x = s(layout.gemColumnX)
+    fields += field(x) + field(x + boldDx)
     y += layout.gemLineHeight
   })
   return fields
