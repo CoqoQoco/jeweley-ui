@@ -479,34 +479,31 @@ describe('layoutGt800 / generateGt800ZPL — แท็บ original ใหม่ 
     expect(zpl).toContain('^FO440,46^A0N,16,17^FD0.15 ct.^FS')
   })
 
-  it('generateGt800ZPL: บรรทัดพลอยพิมพ์ซ้ำ 2 ชั้น x และ x+1 (จำลองตัวหนา) ที่ dpiScale 1', () => {
+  it('generateGt800ZPL: บรรทัดพลอยพิมพ์ครั้งเดียวต่อบรรทัด (ไม่พิมพ์ซ้ำจำลองตัวหนา)', () => {
     const zpl = generateGt800ZPL(form, 1)
-    expect(zpl).toContain('^FO440,31^A0N,16,17^FD0.24 ct.^FS^FO441,31^A0N,16,17^FD0.24 ct.^FS')
-    expect(zpl).toContain('^FO440,46^A0N,16,17^FD0.15 ct.^FS^FO441,46^A0N,16,17^FD0.15 ct.^FS')
-    expect(zpl.split('^FD0.24 ct.^FS').length - 1).toBe(2)
+    expect(zpl).toContain('^FO440,31^A0N,16,17^FD0.24 ct.^FS')
+    expect(zpl).toContain('^FO440,46^A0N,16,17^FD0.15 ct.^FS')
+    expect(zpl).not.toContain('^FO441,')
+    expect(zpl.split('^FD0.24 ct.^FS').length - 1).toBe(1)
   })
 
-  it('generateGt800ZPL/Vertical: ที่ dpiScale 1.5 ชั้นที่สองเลื่อนอย่างน้อย 1 dot', () => {
+  it('generateGt800ZPL/Vertical: ที่ dpiScale 1.5 พลอยพิมพ์ครั้งเดียว', () => {
     const scale = 1.5
     const x = Math.round(440 * scale)
     const y = Math.round(31 * scale)
     const font = `${Math.round(16 * scale)},${Math.round(17 * scale)}`
     const zpl = generateGt800ZPL(form, scale)
-    expect(zpl).toContain(`^FO${x},${y}^A0N,${font}^FD0.24 ct.^FS^FO${x + 2},${y}^A0N,${font}^FD0.24 ct.^FS`)
+    expect(zpl).toContain(`^FO${x},${y}^A0N,${font}^FD0.24 ct.^FS`)
+    expect(zpl.split('^FD0.24 ct.^FS').length - 1).toBe(1)
     const vertical = generateGt800ZPLVertical(form, scale)
-    expect(vertical.split('^FD0.24 ct.^FS').length - 1).toBe(2)
+    expect(vertical.split('^FD0.24 ct.^FS').length - 1).toBe(1)
   })
 
-  it('generateGt800ZPL: dpiScale ต่ำ (0.5) ยังเลื่อนอย่างน้อย 1 dot', () => {
-    const zpl = generateGt800ZPL(form, 0.5)
-    const x = Math.round(440 * 0.5)
-    expect(zpl).toContain(`^FO${x},`)
-    expect(zpl).toContain(`^FO${x + 1},`)
-  })
-
-  it('generateGt800ZPLVertical: พลอยซ้ำ 2 ชั้นที่ x และ x+1 (ROOMY x=422)', () => {
+  it('generateGt800ZPLVertical: พลอยพิมพ์ครั้งเดียว (ROOMY x=422)', () => {
     const zpl = generateGt800ZPLVertical(form, 1)
-    expect(zpl).toContain('^FO422,31^A0N,16,17^FD0.24 ct.^FS^FO423,31^A0N,16,17^FD0.24 ct.^FS')
+    expect(zpl).toContain('^FO422,31^A0N,16,17^FD0.24 ct.^FS')
+    expect(zpl).not.toContain('^FO423,31')
+    expect(zpl.split('^FD0.24 ct.^FS').length - 1).toBe(1)
   })
 
   it('generateGt800ZPL: ไม่แตะบรรทัดอื่น (ชื่อ/ทอง/บาร์โค้ด พิมพ์ครั้งเดียว)', () => {
