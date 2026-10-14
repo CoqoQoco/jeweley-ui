@@ -229,15 +229,18 @@
                 </template>
 
                 <template #gradeTemplate="{ data }">
-                  <DropdownGeneric
+                  <AutoCompleteGeneric
                     v-if="data.type === 'Diamond'"
-                    v-model="data.typeCode"
-                    :options="masterDiamondGrade"
-                    optionLabel="description"
-                    optionValue="nameEn"
+                    :modelValue="data.typeCode"
+                    :staticOptions="diamondGradeOptions(data.typeCode)"
+                    :useStaticList="true"
+                    optionLabel="nameEn"
+                    :dropdown="true"
+                    :forceSelection="false"
+                    :minLength="0"
                     :placeholder="$t('view.stock.product.selectDiamond')"
-                    :showClear="!!data.typeCode"
                     class="w-full"
+                    @update:modelValue="val => onGradeChange(val, data)"
                   />
                   <span v-else class="text-muted text-center d-block">—</span>
                 </template>
@@ -314,6 +317,7 @@ import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { compressOptimalImage } from '@/services/helper/file/compress-image.js'
@@ -335,6 +339,7 @@ export default {
     imagePreview,
     BaseDataTable,
     DropdownGeneric,
+    AutoCompleteGeneric,
     InputTextGeneric,
     FormFieldGeneric,
     ButtonGeneric,
@@ -388,11 +393,11 @@ export default {
       return [
         { field: 'type', header: this.$t('view.stock.product.materialType'), sortable: false, width: '120px' },
         { field: 'typeCode', header: this.$t('view.stock.product.materialCode'), sortable: false, minWidth: '150px' },
-        { field: 'grade', header: this.$t('view.stock.product.materialGrade'), sortable: false, width: '150px' },
+        { field: 'grade', header: this.$t('view.stock.product.materialGrade'), sortable: false, width: '170px' },
         { field: 'size', header: this.$t('view.stock.product.size'), sortable: false, width: '100px' },
         { field: 'region', header: this.$t('view.stock.product.origin'), sortable: false, width: '120px' },
-        { field: 'qty', header: this.$t('common.field.quantity'), sortable: false, width: '180px' },
-        { field: 'weight', header: this.$t('common.field.weight'), sortable: false, width: '180px' },
+        { field: 'qty', header: this.$t('common.field.quantity'), sortable: false, width: '200px' },
+        { field: 'weight', header: this.$t('common.field.weight'), sortable: false, width: '230px' },
         { field: 'price', header: this.$t('common.field.price'), sortable: false, width: '120px' },
         { field: 'action', header: '', sortable: false, width: '60px' }
       ]
@@ -486,6 +491,19 @@ export default {
         return [...base, { value: current, label: current }]
       }
       return base
+    },
+
+    diamondGradeOptions(current) {
+      if (current && !this.masterDiamondGrade.some((opt) => opt.nameEn === current)) {
+        return [...this.masterDiamondGrade, { nameEn: current, description: current }]
+      }
+      return this.masterDiamondGrade
+    },
+
+    onGradeChange(value, material) {
+      const next = value && typeof value === 'object' ? value.nameEn || '' : value || ''
+      if (material.typeCode === next) return
+      material.typeCode = next
     },
 
     removeMaterialItem(item, index) {
@@ -735,11 +753,12 @@ export default {
   gap: var(--sp-xs);
 
   > :first-child {
-    flex: 2;
+    flex: 1;
+    min-width: 90px;
   }
 
   > :last-child {
-    flex: 1;
+    flex: 0 0 70px;
   }
 }
 

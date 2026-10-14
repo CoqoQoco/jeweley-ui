@@ -12,15 +12,16 @@ const GT800_LABEL_HEIGHT = 104
 
 const GT800_MADE_IN_X = 25
 const GT800_MADE_IN_Y = 50
-const GT800_MADE_IN_FONT = [15, 15]
+const GT800_MADE_IN_FONT = [17, 17]
 
 // แท็บ original — ชื่อสินค้า + บาร์โค้ด + เลขที่ผลิต-ราคา + บรรทัดทอง
 // พิกัดชุดนี้เหมือนแท็บ original-qr ทุกจุด (verify กับกระดาษจริงแล้ว) — พับครึ่งป้ายที่ x≈425
 // ฝั่งซ้าย (ชื่อ/บาร์โค้ด/เลขที่ผลิต/ทอง) ต้องจบก่อน x≈420 พลอยอยู่ฝั่งขวาที่ GT800_O_GEM_X
 const GT800_O_NAME_X = 256
 const GT800_O_NAME_Y = 31
-const GT800_O_NAME_FONT = [14, 14]
-const GT800_O_NAME_CHAR_W = 7.2 // dot ต่อตัวอักษรโดยประมาณ ใช้ย่อฟอนต์อัตโนมัติเมื่อชื่อยาวเกินพื้นที่
+const GT800_O_NAME_FONT = [16, 16]
+const GT800_O_NAME_REF_FONT = 14 // ฟอนต์อ้างอิงที่ GT800_O_NAME_CHAR_W วัดมา (ไม่เปลี่ยนตาม GT800_O_NAME_FONT)
+const GT800_O_NAME_CHAR_W = 7.2 // dot ต่อตัวอักษรที่ฟอนต์ GT800_O_NAME_REF_FONT ใช้ย่อฟอนต์อัตโนมัติเมื่อชื่อยาวเกินพื้นที่
 const GT800_O_NAME_MIN_FONT = 10
 const GT800_O_NAME_RIGHT_LIMIT = 420 // ขอบขวาสุดของฝั่งซ้าย (ต้องจบก่อนแนวพับ x≈425)
 
@@ -35,18 +36,18 @@ const GT800_O_CODE_LINE_Y = 68
 
 const GT800_O_GOLD_LINE_X = 256
 const GT800_O_GOLD_LINE_Y = 86
-const GT800_O_GOLD_LINE_FONT = [14, 14] // ไม่มี goldType นำหน้าอีกแล้ว (ชื่อสินค้ามีกะรัตอยู่ในตัวแล้ว)
+const GT800_O_GOLD_LINE_FONT = [16, 16] // ไม่มี goldType นำหน้าอีกแล้ว (ชื่อสินค้ามีกะรัตอยู่ในตัวแล้ว)
 
 const GT800_O_GEM_X = 440 // คอลัมน์พลอยฝั่งขวาของแนวพับ คงที่ทุก level (ไม่ขยับตาม ROOMY/TIGHT เหมือนเดิม)
 
 // template แนวตั้ง (4 แท็บราคา)
 const GT800_V_NAME_X = 256
 const GT800_V_NAME_Y = 31
-const GT800_V_NAME_FONT = [14, 14]
+const GT800_V_NAME_FONT = [16, 16]
 
 const GT800_V_GOLD_X = 256
 const GT800_V_GOLD_Y = 46
-const GT800_V_GOLD_FONT = [14, 14]
+const GT800_V_GOLD_FONT = [16, 16]
 
 const GT800_V_BARCODE_X = 262
 const GT800_V_BARCODE_Y = 61
@@ -56,7 +57,7 @@ const GT800_V_BARCODE_HEIGHT = 18
 
 const GT800_V_CODE_LINE_X = 256
 const GT800_V_CODE_LINE_Y = 83
-const GT800_V_CODE_LINE_FONT = [15, 15]
+const GT800_V_CODE_LINE_FONT = [17, 17]
 
 // จำลองตัวหนาของบรรทัดพลอย GT800: พิมพ์ซ้ำอีกชั้นเลื่อนขวา 1 dot (ตัวอักษรบางจนจาง) — ใช้เฉพาะคอลัมน์พลอย
 const GT800_GEM_BOLD_OFFSET_X = 1
@@ -64,8 +65,8 @@ const GT800_GEM_BOLD_OFFSET_X = 1
 // คอลัมน์พลอย — เลือก 2 ระดับอัตโนมัติตามความยาวบาร์โค้ด/ข้อความ
 const GEM_START_Y = 31
 const GEM_LEVELS = {
-  ROOMY: { name: 'ROOMY', x: 422, gemFont: [14, 15], lineHeight: 15, priceFontHorizontal: [16, 16] },
-  TIGHT: { name: 'TIGHT', x: 472, gemFont: [12, 11], lineHeight: 14, priceFontHorizontal: [15, 13] }
+  ROOMY: { name: 'ROOMY', x: 422, gemFont: [16, 17], lineHeight: 15, priceFontHorizontal: [18, 18] },
+  TIGHT: { name: 'TIGHT', x: 472, gemFont: [14, 13], lineHeight: 14, priceFontHorizontal: [17, 15] }
 }
 
 // เกณฑ์เลือก ROOMY/TIGHT (ปรับได้ที่เดียว)
@@ -77,12 +78,15 @@ const GT800_ROOMY_BARCODE_SAFETY = 10
 const GT800_ROOMY_BARCODE_END_MAX = 422
 const GT800_ROOMY_LINE_COUNT_THRESHOLD = 3
 const GT800_ROOMY_LINE_MAX_LEN = 20
-const GT800_ROOMY_GEM_MAX_LEN = 24
+const GT800_ROOMY_GEM_MAX_LEN = 21
+const GT800_GEM_RIGHT_EDGE = 594 // ขอบขวาสุดที่ข้อความพลอยยังไม่ถูกตัด (หัวป้ายสีขาวจบที่ x≈596)
+const GT800_GEM_CHAR_W_RATIO = 0.46 // dot ต่อ 1 หน่วยความกว้างฟอนต์ (วัดจากภาพ Labelary) ใช้ย่อความกว้างอัตโนมัติเมื่อบรรทัดพลอยยาว
+const GT800_GEM_MIN_WIDTH = 9
 
 // แท็บ original-qr — บล็อกข้อความชิดซ้าย 4 บรรทัด (ไม่มีพลอย) + QR วางกลางพื้นที่ว่างด้านขวาของบล็อก
 const GT800_QR_NAME_X = 256
 const GT800_QR_NAME_Y = 31
-const GT800_QR_NAME_FONT = [14, 14]
+const GT800_QR_NAME_FONT = [16, 16]
 
 const GT800_QR_BARCODE_X = 262
 const GT800_QR_BARCODE_Y = 47
@@ -92,18 +96,18 @@ const GT800_QR_BARCODE_HEIGHT = 18 // สูงเท่า template แนว�
 
 const GT800_QR_CODE_LINE_X = 256
 const GT800_QR_CODE_LINE_Y = 68
-const GT800_QR_CODE_LINE_FONT = [15, 15]
+const GT800_QR_CODE_LINE_FONT = [17, 17]
 
 const GT800_QR_GOLD_LINE_X = 256
 const GT800_QR_GOLD_LINE_Y = 86
-const GT800_QR_GOLD_LINE_FONT = [14, 14] // ไม่มี goldType (18K) นำหน้าเหมือน template อื่น
+const GT800_QR_GOLD_LINE_FONT = [16, 16] // ไม่มี goldType (18K) นำหน้าเหมือน template อื่น
 
 // ประมาณความกว้างข้อความแต่ละบรรทัด (dot ต่อตัวอักษร ที่ dpiScale=1) แบบระมัดระวัง เพื่อหาขอบขวาสุดของบล็อกข้อความ (blockRight)
-const GT800_QR_NAME_CHAR_W = 7.2
+const GT800_QR_NAME_CHAR_W = 8.2
 const GT800_QR_BARCODE_CHAR_W = 11 // ความกว้าง Code128 subset B โดยประมาณที่ module 1 คือ 11n+35 modules
 const GT800_QR_BARCODE_QUIET = 35
-const GT800_QR_CODE_LINE_CHAR_W = 7.8
-const GT800_QR_GOLD_LINE_CHAR_W = 6.2
+const GT800_QR_CODE_LINE_CHAR_W = 8.9
+const GT800_QR_GOLD_LINE_CHAR_W = 7.1
 
 const GT800_QR_MIN_GAP = 10 // ระยะห่างขั้นต่ำจากท้ายบล็อกข้อความถึง QR
 const GT800_QR_RIGHT_EDGE = 594 // ขอบขวาสุดที่ยังใช้ได้ของหัวป้ายสีขาว (เผื่อขอบเล็กน้อยจาก x≈596)
@@ -271,14 +275,25 @@ function chooseGemLevel({ code, gems, checkLines, ignoreBarcodeFit = false }) {
   return { level, barcodeEnd, formattedGems }
 }
 
+// ย่อความกว้างฟอนต์พลอยเมื่อบรรทัดที่ยาวสุดจะล้นขอบขวาของป้าย (ความสูงคงเดิม)
+function fitGemFont(font, longestLen, x) {
+  const budget = GT800_GEM_RIGHT_EDGE - x - GT800_GEM_BOLD_OFFSET_X
+  const fitWidth = Math.floor(budget / (Math.max(1, longestLen) * GT800_GEM_CHAR_W_RATIO))
+  return [font[0], Math.max(GT800_GEM_MIN_WIDTH, Math.min(font[1], fitWidth))]
+}
+
+function longestLength(lines) {
+  return lines.reduce((max, line) => Math.max(max, line.length), 0)
+}
+
 // ย่อฟอนต์ชื่อสินค้าอัตโนมัติถ้ากว้างเกินพื้นที่ก่อนแนวพับ x≈420 (แท็บ original เท่านั้น)
 function computeGt800NameFont(name) {
   const budget = GT800_O_NAME_RIGHT_LIMIT - GT800_O_NAME_X
-  const estWidth = name.length * GT800_O_NAME_CHAR_W * (GT800_O_NAME_FONT[0] / 14)
+  const estWidth = name.length * GT800_O_NAME_CHAR_W * (GT800_O_NAME_FONT[0] / GT800_O_NAME_REF_FONT)
   if (estWidth <= budget) return GT800_O_NAME_FONT
   const size = Math.max(
     GT800_O_NAME_MIN_FONT,
-    Math.floor((GT800_O_NAME_FONT[0] * budget) / (name.length * GT800_O_NAME_CHAR_W))
+    Math.floor((GT800_O_NAME_REF_FONT * budget) / (name.length * GT800_O_NAME_CHAR_W))
   )
   return [size, size]
 }
@@ -321,7 +336,7 @@ export function layoutGt800(formValue, template) {
       nameFont,
       goldLine,
       gemColumnX: GT800_O_GEM_X,
-      gemFont: level.gemFont,
+      gemFont: fitGemFont(level.gemFont, longestLength(formattedGems), GT800_O_GEM_X),
       gemLineHeight: level.lineHeight,
       codeLineFont: level.priceFontHorizontal,
       formattedGems
@@ -348,7 +363,7 @@ export function layoutGt800(formValue, template) {
     goldSizeLine,
     barcodeEnd,
     gemColumnX: level.x,
-    gemFont: level.gemFont,
+    gemFont: fitGemFont(level.gemFont, longestLength(formattedGems), level.x),
     gemLineHeight: level.lineHeight,
     codeLineFont: GT800_V_CODE_LINE_FONT,
     formattedGems

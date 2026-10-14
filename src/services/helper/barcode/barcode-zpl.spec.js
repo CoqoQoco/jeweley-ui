@@ -353,7 +353,7 @@ describe('generateGt800ZPL / generateGt800ZPLVertical', () => {
   it('generateGt800ZPL: dpiScale=1 header ตรงตามสเปก', () => {
     const zpl = generateGt800ZPL(form, 1)
     expect(zpl.startsWith('^XA^LL104^MD15^LT0^XZ^XA')).toBe(true)
-    expect(zpl).toContain('^FO25,50^A0N,15,15^FD')
+    expect(zpl).toContain('^FO25,50^A0N,17,17^FD')
   })
 
   it('generateGt800ZPL: ใช้เลขที่ผลิตเก่าก่อนเมื่อมี', () => {
@@ -405,7 +405,7 @@ describe('layoutGt800 / generateGt800ZPL — แท็บ original ใหม่ 
   it('layoutGt800: ชื่อสั้นไม่ย่อฟอนต์ + คอลัมน์พลอยคงที่ x=440', () => {
     const layout = layoutGt800(form, 'original')
     expect(layout.productNameEn).toBe('Ring Test')
-    expect(layout.nameFont).toEqual([14, 14])
+    expect(layout.nameFont).toEqual([16, 16])
     expect(layout.goldLine).toBe('PG #55')
     expect(layout.gemColumnX).toBe(440)
   })
@@ -415,10 +415,18 @@ describe('layoutGt800 / generateGt800ZPL — แท็บ original ใหม่ 
     expect(layout.nameFont).toEqual([10, 10])
   })
 
-  it('layoutGt800: ชื่อว่าง → ไม่ย่อฟอนต์ (ยังเป็น [14,14] แม้ไม่ได้ใช้)', () => {
+  it('layoutGt800: พลอยสั้น → ROOMY ฟอนต์ [16,17] / พลอยยาวมาก → TIGHT และย่อความกว้างไม่ให้ล้นขอบขวา', () => {
+    expect(layoutGt800(form, 'original').gemFont).toEqual([16, 17])
+    const long = layoutGt800({ ...form, gems: ['ThisIsAVeryLongGemNameCt.5.00'] }, 'original')
+    expect(long.levelName).toBe('TIGHT')
+    expect(long.gemFont[0]).toBe(14)
+    expect(440 + 29 * long.gemFont[1] * 0.46).toBeLessThanOrEqual(594)
+  })
+
+  it('layoutGt800: ชื่อว่าง → ไม่ย่อฟอนต์ (ยังเป็น [16,16] แม้ไม่ได้ใช้)', () => {
     const layout = layoutGt800({ ...form, productNameEn: '' }, 'original')
     expect(layout.productNameEn).toBe('')
-    expect(layout.nameFont).toEqual([14, 14])
+    expect(layout.nameFont).toEqual([16, 16])
   })
 
   it('layoutGt800: goldLine ตัวอย่างจาก spec — gold "0.61 g. Gold" + size "#55" → "0.61 g. Gold #55"', () => {
@@ -439,9 +447,9 @@ describe('layoutGt800 / generateGt800ZPL — แท็บ original ใหม่ 
     expect(layoutGt800({ gold: '0.61 g. Gold', size: '  #  ' }, 'original').goldLine).toBe('0.61 g. Gold')
   })
 
-  it('generateGt800ZPL: มีชื่อสินค้า → ฟิลด์ชื่อที่ x256,y31 font 14,14', () => {
+  it('generateGt800ZPL: มีชื่อสินค้า → ฟิลด์ชื่อที่ x256,y31 font 16,16', () => {
     const zpl = generateGt800ZPL(form, 1)
-    expect(zpl).toContain('^FO256,31^A0N,14,14^FDRing Test^FS')
+    expect(zpl).toContain('^FO256,31^A0N,16,16^FDRing Test^FS')
   })
 
   it('generateGt800ZPL: ไม่มีชื่อสินค้า → ไม่มีฟิลด์ที่ x256,y31', () => {
@@ -456,25 +464,25 @@ describe('layoutGt800 / generateGt800ZPL — แท็บ original ใหม่ 
 
   it('generateGt800ZPL: เลขที่ผลิต-ราคา ที่ x256,y68', () => {
     const zpl = generateGt800ZPL(form, 1)
-    expect(zpl).toContain('^FO256,68^A0N,16,16^FDAH21142 - 1234R^FS')
+    expect(zpl).toContain('^FO256,68^A0N,18,18^FDAH21142 - 1234R^FS')
   })
 
   it('generateGt800ZPL: บรรทัดทอง x256,y86 ไม่มี goldType นำหน้าอีกแล้ว', () => {
     const zpl = generateGt800ZPL(form, 1)
-    expect(zpl).toContain('^FO256,86^A0N,14,14^FDPG #55^FS')
+    expect(zpl).toContain('^FO256,86^A0N,16,16^FDPG #55^FS')
     expect(zpl).not.toContain('18K')
   })
 
   it('generateGt800ZPL: คอลัมน์พลอยอยู่ที่ x=440 (ไม่ใช่ 422/472 เหมือนเดิม)', () => {
     const zpl = generateGt800ZPL(form, 1)
-    expect(zpl).toContain('^FO440,31^A0N,14,15^FD0.24 ct.^FS')
-    expect(zpl).toContain('^FO440,46^A0N,14,15^FD0.15 ct.^FS')
+    expect(zpl).toContain('^FO440,31^A0N,16,17^FD0.24 ct.^FS')
+    expect(zpl).toContain('^FO440,46^A0N,16,17^FD0.15 ct.^FS')
   })
 
   it('generateGt800ZPL: บรรทัดพลอยพิมพ์ซ้ำ 2 ชั้น x และ x+1 (จำลองตัวหนา) ที่ dpiScale 1', () => {
     const zpl = generateGt800ZPL(form, 1)
-    expect(zpl).toContain('^FO440,31^A0N,14,15^FD0.24 ct.^FS^FO441,31^A0N,14,15^FD0.24 ct.^FS')
-    expect(zpl).toContain('^FO440,46^A0N,14,15^FD0.15 ct.^FS^FO441,46^A0N,14,15^FD0.15 ct.^FS')
+    expect(zpl).toContain('^FO440,31^A0N,16,17^FD0.24 ct.^FS^FO441,31^A0N,16,17^FD0.24 ct.^FS')
+    expect(zpl).toContain('^FO440,46^A0N,16,17^FD0.15 ct.^FS^FO441,46^A0N,16,17^FD0.15 ct.^FS')
     expect(zpl.split('^FD0.24 ct.^FS').length - 1).toBe(2)
   })
 
@@ -482,7 +490,7 @@ describe('layoutGt800 / generateGt800ZPL — แท็บ original ใหม่ 
     const scale = 1.5
     const x = Math.round(440 * scale)
     const y = Math.round(31 * scale)
-    const font = `${Math.round(14 * scale)},${Math.round(15 * scale)}`
+    const font = `${Math.round(16 * scale)},${Math.round(17 * scale)}`
     const zpl = generateGt800ZPL(form, scale)
     expect(zpl).toContain(`^FO${x},${y}^A0N,${font}^FD0.24 ct.^FS^FO${x + 2},${y}^A0N,${font}^FD0.24 ct.^FS`)
     const vertical = generateGt800ZPLVertical(form, scale)
@@ -498,7 +506,7 @@ describe('layoutGt800 / generateGt800ZPL — แท็บ original ใหม่ 
 
   it('generateGt800ZPLVertical: พลอยซ้ำ 2 ชั้นที่ x และ x+1 (ROOMY x=422)', () => {
     const zpl = generateGt800ZPLVertical(form, 1)
-    expect(zpl).toContain('^FO422,31^A0N,14,15^FD0.24 ct.^FS^FO423,31^A0N,14,15^FD0.24 ct.^FS')
+    expect(zpl).toContain('^FO422,31^A0N,16,17^FD0.24 ct.^FS^FO423,31^A0N,16,17^FD0.24 ct.^FS')
   })
 
   it('generateGt800ZPL: ไม่แตะบรรทัดอื่น (ชื่อ/ทอง/บาร์โค้ด พิมพ์ครั้งเดียว)', () => {
@@ -538,15 +546,15 @@ describe('layoutGt800Qr / generateGt800ZPLQr — layout ใหม่ (บล็�
     publicUrl: 'https://app.duangkeaw.com/p/DK-18K-20A-12810-ABCDEFGH'
   }
 
-  it('layoutGt800Qr: กรณี typical → blockRight≈378.4, qrX=457', () => {
+  it('layoutGt800Qr: กรณี typical → blockRight≈395.4, qrX=466', () => {
     const layout = layoutGt800Qr(typical)
-    expect(layout.blockRight).toBeCloseTo(378.4, 1)
-    expect(layout.qrX).toBe(457)
+    expect(layout.blockRight).toBeCloseTo(395.4, 1)
+    expect(layout.qrX).toBe(466)
   })
 
-  it('layoutGt800Qr: กรณี worst → qrX=511', () => {
+  it('layoutGt800Qr: กรณี worst → qrX=528', () => {
     const layout = layoutGt800Qr(worst)
-    expect(layout.qrX).toBe(511)
+    expect(layout.qrX).toBe(528)
   })
 
   it('layoutGt800Qr: ข้อความยาวมาก → qrX ชนเพดาน 534', () => {
@@ -563,16 +571,16 @@ describe('layoutGt800Qr / generateGt800ZPLQr — layout ใหม่ (บล็�
   it('generateGt800ZPLQr: header + MADE IN เหมือน generateGt800ZPL', () => {
     const zpl = generateGt800ZPLQr(worst, 1)
     expect(zpl.startsWith('^XA^LL104^MD15^LT0^XZ^XA')).toBe(true)
-    expect(zpl).toContain(`^FO25,50^A0N,15,15^FD${worst.madeIn}^FS`)
+    expect(zpl).toContain(`^FO25,50^A0N,17,17^FD${worst.madeIn}^FS`)
   })
 
   it('generateGt800ZPLQr: 4 บรรทัดข้อความตรงตำแหน่งที่กำหนด และไม่มี goldType นำหน้าบรรทัดทอง', () => {
     const zpl = generateGt800ZPLQr(worst, 1)
     const code = 'DK-18K-20A-12810'
-    expect(zpl).toContain(`^FO256,31^A0N,14,14^FD${worst.productNameEn}^FS`)
+    expect(zpl).toContain(`^FO256,31^A0N,16,16^FD${worst.productNameEn}^FS`)
     expect(zpl).toContain(`^FO262,47^BY1,3.0:1,18^BCN,18,N,N^FD${code}^FS`)
-    expect(zpl).toContain(`^FO256,68^A0N,15,15^FD${code} - 123456R^FS`)
-    expect(zpl).toContain('^FO256,86^A0N,14,14^FD12.35 g. Gold #52^FS')
+    expect(zpl).toContain(`^FO256,68^A0N,17,17^FD${code} - 123456R^FS`)
+    expect(zpl).toContain('^FO256,86^A0N,16,16^FD12.35 g. Gold #52^FS')
   })
 
   it('generateGt800ZPLQr: productNameEn ว่าง → ไม่มีฟิลด์บรรทัดชื่อ', () => {
@@ -586,14 +594,14 @@ describe('layoutGt800Qr / generateGt800ZPLQr — layout ใหม่ (บล็�
     expect(zpl).not.toContain('ct.')
   })
 
-  it('generateGt800ZPLQr: กรณี typical → ^FO457,13^BQN,2,2^FDLA,<url>^FS', () => {
+  it('generateGt800ZPLQr: กรณี typical → ^FO466,13^BQN,2,2^FDLA,<url>^FS', () => {
     const zpl = generateGt800ZPLQr(typical, 1)
-    expect(zpl).toContain(`^FO457,13^BQN,2,2^FDLA,${typical.publicUrl}^FS`)
+    expect(zpl).toContain(`^FO466,13^BQN,2,2^FDLA,${typical.publicUrl}^FS`)
   })
 
-  it('generateGt800ZPLQr: กรณี worst → ^FO511,13^BQN,2,2^FDLA,<url>^FS', () => {
+  it('generateGt800ZPLQr: กรณี worst → ^FO528,13^BQN,2,2^FDLA,<url>^FS', () => {
     const zpl = generateGt800ZPLQr(worst, 1)
-    expect(zpl).toContain(`^FO511,13^BQN,2,2^FDLA,${worst.publicUrl}^FS`)
+    expect(zpl).toContain(`^FO528,13^BQN,2,2^FDLA,${worst.publicUrl}^FS`)
   })
 
   it('generateGt800ZPLQr: dpiScale 1.5 คูณทั้งตำแหน่งข้อความและ QR (ตำแหน่ง+magnification)', () => {
@@ -602,7 +610,7 @@ describe('layoutGt800Qr / generateGt800ZPLQr — layout ใหม่ (บล็�
     const zpl = generateGt800ZPLQr(worst, scale)
     const expectedMag = Math.max(1, Math.round(layout.mag * scale))
 
-    expect(zpl).toContain(`^FO${Math.round(256 * scale)},${Math.round(31 * scale)}^A0N,${Math.round(14 * scale)},${Math.round(14 * scale)}^FD`)
+    expect(zpl).toContain(`^FO${Math.round(256 * scale)},${Math.round(31 * scale)}^A0N,${Math.round(16 * scale)},${Math.round(16 * scale)}^FD`)
     expect(zpl).toContain(
       `^FO${Math.round(layout.qrX * scale)},${Math.round(13 * scale)}^BQN,2,${expectedMag}^FDLA,${worst.publicUrl}^FS`
     )

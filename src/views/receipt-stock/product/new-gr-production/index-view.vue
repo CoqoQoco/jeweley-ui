@@ -246,13 +246,13 @@ export default {
           field: 'typeCode',
           header: this.$t('view.receiptStock.product.grProduction.matTypeCode'),
           sortable: false,
-          width: '130px'
+          width: '170px'
         },
         {
           field: 'qty',
           header: this.$t('view.receiptStock.product.grProduction.colQty'),
           sortable: false,
-          width: '150px',
+          width: '160px',
           align: 'center'
         },
         {
@@ -266,7 +266,7 @@ export default {
           field: 'qtyWeight',
           header: this.$t('view.receiptStock.product.grProduction.colQtyWeight'),
           sortable: false,
-          width: '150px',
+          width: '210px',
           align: 'center'
         },
         {

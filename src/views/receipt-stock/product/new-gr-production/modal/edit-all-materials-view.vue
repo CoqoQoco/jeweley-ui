@@ -94,14 +94,16 @@
                 />
               </div>
               <div v-else-if="materialData.type === 'Diamond'">
-                <DropdownGeneric
+                <AutoCompleteGeneric
                   :modelValue="materialData.typeCode"
-                  :options="diamondGradeOptions(materialData.typeCode)"
-                  optionLabel="description"
-                  optionValue="nameEn"
-                  :placeholder="$t('view.receiptStock.product.grProduction.matTypeCode')"
-                  :showClear="true"
-                  @update:modelValue="val => { materialData.typeCode = val; updateMaterialBarcode(materialData) }"
+                  :staticOptions="diamondGradeOptions(materialData.typeCode)"
+                  :useStaticList="true"
+                  optionLabel="nameEn"
+                  :dropdown="true"
+                  :forceSelection="false"
+                  :minLength="0"
+                  :placeholder="$t('view.receiptStock.product.grProduction.matDiamondGrade')"
+                  @update:modelValue="val => onGradeChange(val, materialData)"
                 />
               </div>
               <div v-else-if="materialData.type === 'Gem'">
@@ -294,6 +296,7 @@ import { defineAsyncComponent } from 'vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 
 import { formatGoldBarcodeText, isGoldOrSilverMaterial } from '../gold-barcode-text.js'
 
@@ -306,7 +309,8 @@ export default {
     modal,
     BaseDataTable,
     DropdownGeneric,
-    InputTextGeneric
+    InputTextGeneric,
+    AutoCompleteGeneric
   },
 
   props: {
@@ -365,17 +369,17 @@ export default {
         {
           field: 'typeCode',
           header: this.$t('view.receiptStock.product.grProduction.matTypeCode'),
-          width: '150px'
+          width: '170px'
         },
         {
           field: 'qty',
           header: this.$t('view.receiptStock.product.grProduction.colQty'),
-          width: '120px'
+          width: '140px'
         },
         {
           field: 'weight',
           header: this.$t('view.receiptStock.product.grProduction.colQtyWeight'),
-          width: '120px'
+          width: '170px'
         },
         {
           field: 'price',
@@ -513,6 +517,13 @@ export default {
         return [...this.masterDiamondGrade, { nameEn: current, description: current }]
       }
       return this.masterDiamondGrade
+    },
+
+    onGradeChange(value, material) {
+      const next = value && typeof value === 'object' ? value.nameEn || '' : value || ''
+      if (material.typeCode === next) return
+      material.typeCode = next
+      this.updateMaterialBarcode(material)
     },
 
     generateBarcode(material) {

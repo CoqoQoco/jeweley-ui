@@ -80,15 +80,17 @@
                   />
                 </div>
                 <div v-else-if="materialData.type === 'Diamond'">
-                  <DropdownGeneric
+                  <AutoCompleteGeneric
                     :modelValue="materialData.typeCode"
-                    :options="diamondGradeOptions(materialData.typeCode)"
-                    optionLabel="description"
-                    optionValue="nameEn"
+                    :staticOptions="diamondGradeOptions(materialData.typeCode)"
+                    :useStaticList="true"
+                    optionLabel="nameEn"
+                    :dropdown="true"
+                    :forceSelection="false"
+                    :minLength="0"
                     class="w-full"
-                    :placeholder="$t('view.receiptStock.product.grProduction.colMaterialCode')"
-                    :showClear="true"
-                    @update:modelValue="materialData.typeCode = $event; updateMaterialBarcode(materialData)"
+                    :placeholder="$t('view.receiptStock.product.grProduction.matDiamondGrade')"
+                    @update:modelValue="val => onGradeChange(val, materialData)"
                   />
                 </div>
                 <div v-else-if="materialData.type === 'Gem'">
@@ -395,6 +397,7 @@ import modal from '@/components/modal/modal-view.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 
 export default {
   name: 'AdjustBreakdownModal',
@@ -403,7 +406,8 @@ export default {
     modal,
     BaseDataTable,
     DropdownGeneric,
-    InputTextGeneric
+    InputTextGeneric,
+    AutoCompleteGeneric
   },
 
   props: {
@@ -514,13 +518,13 @@ export default {
         {
           field: 'typeCode',
           header: this.$t('view.receiptStock.product.grProduction.colMaterialCode'),
-          minWidth: '130px',
+          minWidth: '170px',
           sortable: false
         },
         {
           field: 'qty',
           header: this.$t('view.receiptStock.product.grProduction.colQty'),
-          minWidth: '150px',
+          minWidth: '160px',
           sortable: false,
           align: 'center'
         },
@@ -534,7 +538,7 @@ export default {
         {
           field: 'qtyWeight',
           header: this.$t('view.receiptStock.product.grProduction.colQtyWeight'),
-          minWidth: '150px',
+          minWidth: '210px',
           sortable: false,
           align: 'center'
         },
@@ -710,6 +714,13 @@ export default {
       return this.masterDiamondGrade
     },
 
+    onGradeChange(value, material) {
+      const next = value && typeof value === 'object' ? value.nameEn || '' : value || ''
+      if (material.typeCode === next) return
+      material.typeCode = next
+      this.updateMaterialBarcode(material)
+    },
+
     updateStockSelection(newSelection) {
       this.selectedStockItems = newSelection
       this.selectedStockNumbers = newSelection.map((item) => item.stockReceiptNumber)
@@ -808,8 +819,13 @@ export default {
   display: flex;
   gap: 2px;
 
+  :deep(.form-control) {
+    flex: 1;
+    min-width: 90px;
+  }
+
   .unit-input {
-    flex: 0 0 70px;
+    flex: 0 0 64px;
 
     :deep(.p-inputtext) {
       text-align: center;

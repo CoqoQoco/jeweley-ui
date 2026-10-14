@@ -85,15 +85,17 @@
               />
             </div>
             <div v-else-if="materialData.type === 'Diamond'">
-              <DropdownGeneric
+              <AutoCompleteGeneric
                 :modelValue="materialData.typeCode"
-                :options="diamondGradeOptions(materialData.typeCode)"
-                optionLabel="description"
-                optionValue="nameEn"
+                :staticOptions="diamondGradeOptions(materialData.typeCode)"
+                :useStaticList="true"
+                optionLabel="nameEn"
+                :dropdown="true"
+                :forceSelection="false"
+                :minLength="0"
                 class="w-full"
-                :placeholder="$t('view.receiptStock.product.grProduction.matTypeCode')"
-                :showClear="materialData.typeCode ? true : false"
-                @update:modelValue="materialData.typeCode = $event; emitUpdateTypeBarcode(materialData)"
+                :placeholder="$t('view.receiptStock.product.grProduction.matDiamondGrade')"
+                @update:modelValue="val => onGradeChange(val, materialData)"
               />
             </div>
             <div v-else-if="materialData.type === 'Gem'">
@@ -396,6 +398,13 @@ export default {
       this.emitUpdateTypeBarcode(materialData)
     },
 
+    onGradeChange(value, materialData) {
+      const next = value && typeof value === 'object' ? value.nameEn || '' : value || ''
+      if (materialData.typeCode === next) return
+      materialData.typeCode = next
+      this.emitUpdateTypeBarcode(materialData)
+    },
+
     onTypeChange(newType, materialData) {
       const group = (type) => {
         if (type === 'Gold' || type === 'Silver') return 'Gold'
@@ -492,11 +501,11 @@ export default {
 
   :deep(.form-control) {
     flex: 1;
-    min-width: 60px;
+    min-width: 90px;
   }
 
   .unit-input {
-    flex: 0 0 70px;
+    flex: 0 0 64px;
 
     :deep(.p-inputtext) {
       text-align: center;
