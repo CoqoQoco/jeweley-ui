@@ -165,6 +165,7 @@ export default {
 
 .column-cell__negative {
   color: var(--base-red);
+  font-weight: 700;
 }
 
 .column-cell__badge {

@@ -9,7 +9,7 @@
 -->
 <template>
   <div class="target-drawer">
-    <ButtonGeneric variant="outline" icon="bi-gear" :label="$t(presetDef.text.button)" :title="$t(presetDef.text.buttonTip)" @click="onOpen" />
+    <ButtonGeneric variant="outline" icon="bi-gear" :label="$t(presetDef.text.button)" :title="presetDef.text.buttonTip ? $t(presetDef.text.buttonTip) : ''" @click="onOpen" />
 
     <DrawerGeneric :show="isOpen" :title="$t(presetDef.text.title)" :width="presetDef.width" headerVariant="main" :isShowActionPart="canEdit" @close="onClose">
       <template #content>
@@ -19,7 +19,7 @@
             {{ $t(presetDef.text.readOnly) }}
           </p>
 
-          <div v-for="row in rows" :key="row.key" class="target-drawer__field">
+          <div v-for="row in rows" :key="row.key" class="target-drawer__field" :class="{ 'target-drawer__field--single': rows.length === 1 }">
             <FormFieldGeneric :label="row.label">
               <InputTextGeneric
                 v-if="canEdit"
@@ -29,10 +29,10 @@
                 :max="presetDef.max"
                 @update:modelValue="onDraftInput"
               />
-              <span v-else class="target-drawer__readonly-value">{{ row.savedValue ?? '—' }}</span>
+              <span v-else class="target-drawer__readonly-value">{{ presetDef.savedText(row) }}</span>
             </FormFieldGeneric>
             <p class="target-drawer__reference">
-              {{ $t(presetDef.text.reference, { median: formatDays(row.reference.median), p90: formatDays(row.reference.p90) }) }}
+              {{ presetDef.referenceText(row, ctx, translate) }}
             </p>
             <ButtonGeneric variant="plain" :label="$t(presetDef.text.historyLink)" @click="onOpenHistory(row)" />
           </div>
@@ -59,7 +59,9 @@
         <div v-if="!historyRows.length" class="target-drawer__empty">{{ $t(presetDef.text.historyEmpty) }}</div>
         <div v-else class="responsive-table-wrapper">
           <BaseDataTable :items="historyRows" :columns="historyColumns" :paginator="false" :dataKey="presetDef.historyDataKey">
-            <template v-for="col in dateColumns" :key="col.field" #[`${col.field}Template`]="{ data }">{{ formatDate(data[col.field]) }}</template>
+            <template v-for="col in formattedColumns" :key="col.field" #[`${col.field}Template`]="{ data }">
+              <div :class="{ 'text-right': col.align === 'right' }">{{ formatCell(col, data) }}</div>
+            </template>
           </BaseDataTable>
         </div>
       </template>
@@ -72,9 +74,8 @@ import { defineAsyncComponent } from 'vue'
 
 import { useProductionInsightApiStore } from '@/stores/modules/api/production/production-insight-api.js'
 import { success, warning } from '@/services/alert/sweetAlerts.js'
-import { formatDate } from '@/services/utils/dayjs.js'
 import { getTargetPreset } from './target-presets.js'
-import { buildDraftEmission, validateRemark, formatReferenceDays } from './target-drawer-helpers.js'
+import { buildDraftEmission, emptyDraftOf, validateRemark, formatHistoryCell } from './target-drawer-helpers.js'
 
 import DrawerGeneric from '@/components/generic/DrawerGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
@@ -138,8 +139,9 @@ export default {
       return this.presetDef.historyColumns.map((col) => ({ field: col.field, header: this.$t(col.header), sortable: false, minWidth: col.minWidth, align: col.align }))
     },
 
-    dateColumns() {
-      return this.presetDef.historyColumns.filter((col) => col.date)
+    // คอลัมน์ประวัติที่ต้องจัดรูปแบบเอง (วันที่ / ต่อท้าย % / จัดชิดขวา)
+    formattedColumns() {
+      return this.presetDef.historyColumns.filter((col) => col.date || col.suffix)
     }
   },
 
@@ -148,8 +150,11 @@ export default {
   },
 
   methods: {
-    formatDate,
-    formatDays: formatReferenceDays,
+    formatCell: formatHistoryCell,
+
+    translate(key, params) {
+      return this.$t(key, params)
+    },
 
     resetDraftFromSaved() {
       this.draftMap = { ...this.savedMap }
@@ -168,7 +173,7 @@ export default {
 
     onClose() {
       this.isOpen = false
-      this.emitDraft([])
+      this.emitDraft(emptyDraftOf(this.presetDef))
     },
 
     onDraftInput() {
@@ -178,7 +183,7 @@ export default {
 
     onCancelDraft() {
       this.resetDraftFromSaved()
-      this.emitDraft([])
+      this.emitDraft(emptyDraftOf(this.presetDef))
     },
 
     async onOpenHistory(row) {
@@ -196,7 +201,7 @@ export default {
       await this.presetDef.save(this.productionInsightStore, { items: this.presetDef.buildPayload(this.draftMap), remark: this.remark })
       success(this.$t(this.presetDef.text.saveSuccess))
       this.isOpen = false
-      this.emitDraft([])
+      this.emitDraft(emptyDraftOf(this.presetDef))
       this.ctx.reload(this.presetDef.reloadSources)
     }
   }
@@ -231,6 +236,11 @@ export default {
   gap: 2px;
   padding-bottom: var(--sp-md);
   border-bottom: 1px solid var(--color-border);
+}
+
+.target-drawer__field--single {
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
 .target-drawer__readonly-value {

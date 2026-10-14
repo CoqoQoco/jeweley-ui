@@ -3,6 +3,10 @@
 import { CHART_TOKENS } from '@/services/utils/chart-colors.js'
 
 export function formatChartValue(value, format = 'count') {
+  if (format === 'percent') {
+    if (value === null || value === undefined) return '—'
+    return `${new Intl.NumberFormat('th-TH', { maximumFractionDigits: 1 }).format(value)}%`
+  }
   if (value === null || value === undefined) return format === 'days' ? '—' : new Intl.NumberFormat('th-TH').format(0)
   const digits = format === 'days' ? 1 : 0
   return new Intl.NumberFormat('th-TH', { maximumFractionDigits: digits }).format(value)
@@ -46,7 +50,7 @@ export function buildTrendOptions({ node, points, categories, ctx, t }) {
   const target = node.targetLine && node.targetLine.value(ctx)
 
   const options = {
-    chart: { type: 'line', stacked: !!node.stacked, toolbar: { show: false } },
+    chart: { type: node.chartType || 'line', stacked: !!node.stacked, toolbar: { show: false } },
     colors: visible.map((s) => CHART_TOKENS[s.color || 'primary']),
     stroke: {
       width: visible.map((s) => (s.type === 'bar' ? 0 : s.dashed ? 2 : 3)),
@@ -60,7 +64,7 @@ export function buildTrendOptions({ node, points, categories, ctx, t }) {
           { seriesName: t(firstOnAxis0.label), ...axisTitle(0), labels: { formatter: axisFormatterOf(firstOnAxis0) } },
           { seriesName: t(firstOnAxis1.label), opposite: true, ...axisTitle(1), labels: { formatter: axisFormatterOf(firstOnAxis1) } }
         ]
-      : { labels: { formatter: axisFormatter } },
+      : { ...(node.yMax != null ? { max: node.yMax } : {}), labels: { formatter: axisFormatter } },
     tooltip: { y: perSeriesTooltip ? visible.map((s) => ({ formatter: tooltipFormatter(seriesFormat(s)) })) : { formatter } },
     annotations:
       Number.isFinite(target)

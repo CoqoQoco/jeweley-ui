@@ -1100,3 +1100,17 @@ params ของ source) + `wip-page.smoke.spec` (mount config จริงท�
 - helper ของ topic ย้ายไป `topics/materials-helpers.js` (+ ตัวสร้างบรรทัดพลอย/ป้าย/รายการชิป/แถวความต้องการ) · Excel helper ชี้ path ใหม่
 - ลบ: `sections/materials-section.vue` · `components/materials-{kpi-group,trend-chart,waiting-plans-panel,gem-demand-panel,gem-low-cover-panel}.vue`
 - ต่างจากเดิมเล็กน้อย: ชิปสถานะในตารางความต้องการใช้ขนาด/น้ำหนักตัวอักษรของ column chip กลาง (เดิมเป็น CSS ของ panel) · เพิ่ม anchor `insight-report-matKpi` ให้การ์ด KPI (API ส่ง reportRef นี้อยู่แล้วแต่เดิมไม่มีจุดเลื่อน)
+
+## Revision 12 (2026-10-14): หมวด delivery ย้ายเข้า InsightPage (config-driven)
+
+`topics/delivery.config.js` แทน `delivery-section.vue` + 10 คอมโพเนนต์ — API/ตัวเลข/หน้าตาเดิม · block id/anchor: `deliveryTrend` (group ครอบ 2 กล่องกราฟ) · `lateCustomers` · `atRisk` · `latePlans` · `stuckCostCard`
+- sources: `Delivery` (start/end/bucket/riskHorizonDays + `draftTargetPercent` เฉพาะตอนมี draft) · `DeliveryTarget` (GET เป้าที่บันทึกจริง) · ตาราง 3 ตารางยิง endpoint ของตัวเอง
+  (atRisk = departmentKeys+riskHorizonDays · latePlans = start/end · stuckCostCard = ไม่มีพารามิเตอร์)
+- เพิ่มใน template: `TargetDrawer` โหมดค่าเดียว (`preset.mode:'scalar'`, preset `deliveryTarget`: แถวเดียว key `value`, draft state `draftTargetPercent` number|null, min 0 max 100, ข้อความอ้างอิง % ตรงเวลาปัจจุบัน,
+  บันทึกพร้อมหมายเหตุ → `SaveDeliveryTarget`, ประวัติ `DeliveryTargetHistory` (คอลัมน์ `suffix:'%'`), สิทธิ์ `hasStandardEditAccess`, หลังบันทึก reload Delivery + DeliveryTarget) · `emptyDraft` ต่อ preset ([] หรือ null) ·
+  `BlockToolbar` (hint + chip + action) ใช้ร่วม TableBlock/TrendBlock — ชิป "ร่าง" = `toolbar.chip(ctx,t)` อยู่ข้างข้อความแนะนำเหมือนเดิม (เทียบ targetPercent กับเป้าที่บันทึกด้วย `shouldShowDeliveryDraftChip`) ·
+  `TrendBlock` `chartType`/`yMax`/format `percent` · `KpiBlock` `gridColumns` (3 คอลัมน์) · `TableBlock` `emptyText` · column `percent{digits}` และ `emphasisWhen(raw,row)` (แดง+หนา)
+- `helpParams` ({ days: riskHorizonDays }) อยู่ใน config · helper ย้ายไป `topics/delivery-helpers.js` (+spec)
+- ลบ: `sections/delivery-section.vue` · `components/delivery-{kpi-group,trend-panel,ontime-chart,lead-chart,target-panel,target-history-modal,late-customers-panel,at-risk-panel,late-plans-panel (+spec),stuck-costcard-panel}.vue`
+- ต่างจากเดิมโดยตั้งใจ: เปลี่ยนแผนก (departmentKeys) ไม่ยิง Delivery ซ้ำอีกแล้ว (body ของ Delivery ไม่มี departmentKeys — ของเดิม deep-watch ยิงซ้ำโดยได้ response เดิม) ยิงเฉพาะ atRisk · ค่า null ในคอลัมน์ remainingDays/projectedLateDays แสดง "—" (เดิมว่าง) ·
+  แถบเครื่องมือของกล่องแนวโน้มใช้ BlockToolbar กลาง (หน้าตาเท่าเดิม)

@@ -3,13 +3,14 @@
     points(ctx)            → array ของจุดข้อมูล
     categories(points,ctx,t) → ป้ายแกน x
     series[{ field|value, type:'bar'|'line', axis:0|1, label, dashed, color, opacity, negate, nullAs, visible(points) }]
-    stacked, yFormat 'count'|'days' (series.format แยกต่อชุดได้), axisTitles[key0,key1], columnWidth, tooltipAbs, targetLine{value(ctx),label}, height
+    chartType 'line'|'bar' (ชนิดกราฟหลัก) · toolbar{ hint, chip(ctx,t), actions[targetDrawer] } · yMax · stacked, yFormat 'count'|'days'|'percent' (series.format แยกต่อชุดได้), axisTitles[key0,key1], columnWidth, tooltipAbs, targetLine{value(ctx),label}, height
     hint(ctx,t) / summary(ctx,t) → ข้อความใต้กราฟ · null ในข้อมูล = ช่องว่างของกราฟเสมอ (ไม่ coerce เป็น 0 เว้น nullAs)
   ใช้ standalone หรือซ้อนใน DetailBlock
 -->
 <template>
   <BlockFrame v-bind="frame">
-    <ChartGeneric type="line" :series="chartSeries" :options="chartOptions" :height="node.height || 320" :loading="loading" :emptyText="$t('common.label.noData')" />
+    <BlockToolbar v-if="node.toolbar" :toolbar="node.toolbar" :ctx="ctx" />
+    <ChartGeneric :type="node.chartType || 'line'" :series="chartSeries" :options="chartOptions" :height="node.height || 320" :loading="loading" :emptyText="$t('common.label.noData')" />
     <p v-if="hintText" class="trend-block__hint">{{ hintText }}</p>
     <p v-if="summaryText" class="trend-block__summary">{{ summaryText }}</p>
   </BlockFrame>
@@ -20,6 +21,7 @@ import { buildTrendSeries, buildTrendOptions } from './trend-block-helpers.js'
 import blockMixin from './block-mixin.js'
 
 import BlockFrame from './BlockFrame.vue'
+import BlockToolbar from './BlockToolbar.vue'
 import ChartGeneric from '@/components/prime-vue/ChartGeneric.vue'
 
 export default {
@@ -27,7 +29,7 @@ export default {
 
   mixins: [blockMixin],
 
-  components: { BlockFrame, ChartGeneric },
+  components: { BlockFrame, BlockToolbar, ChartGeneric },
 
   computed: {
     t() {

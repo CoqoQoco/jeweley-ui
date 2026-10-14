@@ -94,3 +94,20 @@ describe('buildTrendOptions: per-series format, axis titles, column width', () =
     expect(options.stroke.dashArray).toEqual([0, 0, 6])
   })
 })
+
+describe('percent format / yMax / chartType', () => {
+  it('formatChartValue percent has 1 decimal and a dash for null', () => {
+    expect(formatChartValue(85.26, 'percent')).toBe('85.3%')
+    expect(formatChartValue(null, 'percent')).toBe('—')
+  })
+
+  it('applies yMax to a single axis and the main chart type', () => {
+    const node = { chartType: 'bar', yMax: 100, yFormat: 'percent', series: [{ field: 'a', type: 'bar', label: 'l.a' }] }
+    const options = buildTrendOptions({ node, points: [], categories: [], ctx: {}, t })
+    expect(options.chart.type).toBe('bar')
+    expect(options.yaxis.max).toBe(100)
+    expect(options.yaxis.labels.formatter(50)).toBe('50%')
+    expect(options.tooltip.y.formatter(80)).toBe('80%')
+    expect(buildTrendOptions({ node: { ...node, yMax: undefined }, points: [], categories: [], ctx: {}, t }).yaxis).not.toHaveProperty('max')
+  })
+})

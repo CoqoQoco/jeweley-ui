@@ -2,6 +2,7 @@
 // แต่ละ preset ผูก source/ฟังก์ชัน store/ชื่อ draft param/ข้อความ i18n — เพิ่มเป้าอื่น (เช่น เป้าส่งตรงเวลา) = เพิ่ม preset ใหม่
 import { buildDraftStandardsPayload, hasDraftChanges } from '@/components/insight/lead-time-helpers.js'
 import { hasStandardEditAccess } from '@/services/permission/standard-edit-access.js'
+import { formatReferenceDays } from './target-drawer-helpers.js'
 
 const W = 'view.productionInsight.wip'
 
@@ -37,6 +38,9 @@ export const TARGET_PRESETS = {
       }))
     },
     savedMap: (ctx) => buildSavedMap(ctx.data.StageStandards, 'deptKey', 'standardDays'),
+    emptyDraft: [],
+    savedText: (row) => row.savedValue ?? '—',
+    referenceText: (row, ctx, t) => t(`${W}.standardsReferenceText`, { median: formatReferenceDays(row.reference.median), p90: formatReferenceDays(row.reference.p90) }),
     buildPayload: buildDraftStandardsPayload,
     hasChanges: hasDraftChanges,
     save: (store, { items, remark }) => store.saveStageStandards({ items, remark }),
@@ -64,6 +68,55 @@ export const TARGET_PRESETS = {
       historyTitle: `${W}.standardsHistoryTitle`,
       historyEmpty: `${W}.standardsHistoryEmpty`
     }
+  }
+}
+
+const D = 'view.productionInsight.delivery'
+
+const percentText = (value) => (value != null ? `${new Intl.NumberFormat('th-TH', { maximumFractionDigits: 1 }).format(value)}%` : '—')
+
+// preset ค่าเดียว (scalar) ระดับทั้งบริษัท — เป้า % ส่งตรงเวลา: แถวเดียว key 'value' ไม่มี deptKey · draft state เป็น number|null
+// (null = ไม่มี draft) ส่งไปกับ source Delivery เป็น draftTargetPercent · บันทึกพร้อมหมายเหตุ (SaveDeliveryTarget)
+TARGET_PRESETS.deliveryTarget = {
+  mode: 'scalar',
+  draftStateKey: 'draftTargetPercent',
+  savedSource: 'DeliveryTarget',
+  reloadSources: ['Delivery', 'DeliveryTarget'],
+  min: 0,
+  max: 100,
+  debounceMs: 400,
+  width: '400px',
+  emptyDraft: null,
+  canEdit: () => hasStandardEditAccess(),
+  rows: (ctx, t) => [{ key: 'value', label: t(`${D}.targetLabel`), savedValue: ctx.data.DeliveryTarget?.targetPercent ?? null, reference: null }],
+  savedMap: (ctx) => ({ value: ctx.data.DeliveryTarget?.targetPercent ?? null }),
+  hasChanges: (draftMap, savedMap) => (draftMap.value ?? null) !== (savedMap.value ?? null),
+  buildPayload: (draftMap) => draftMap.value,
+  savedText: (row) => `${row.savedValue ?? '—'}%`,
+  // % ตรงเวลาจริงในช่วงที่เลือกตอนนี้ (Delivery.kpi.onTimePercent) เป็นข้อความอ้างอิง
+  referenceText: (row, ctx, t) => t(`${D}.targetReferenceText`, { percent: percentText(ctx.data.Delivery?.kpi?.onTimePercent) }),
+  save: (store, { items, remark }) => store.saveDeliveryTarget({ targetPercent: items, remark }),
+  history: (store) => store.fetchDeliveryTargetHistory(),
+  historyColumns: [
+    { field: 'effectiveFrom', header: `${D}.targetHistoryColDate`, minWidth: '120px', date: true },
+    { field: 'targetPercent', header: `${D}.targetHistoryColPercent`, minWidth: '80px', align: 'right', suffix: '%' },
+    { field: 'createBy', header: `${D}.targetHistoryColBy`, minWidth: '120px' },
+    { field: 'remark', header: `${D}.targetHistoryColRemark`, minWidth: '180px' }
+  ],
+  historyDataKey: 'effectiveFrom',
+  text: {
+    button: `${D}.targetButton`,
+    title: `${D}.targetPanelTitle`,
+    readOnly: `${D}.targetReadOnlyNote`,
+    remarkLabel: `${W}.standardsRemarkLabel`,
+    remarkPlaceholder: `${D}.targetRemarkPlaceholder`,
+    remarkRequired: `${W}.standardsRemarkRequired`,
+    saveBtn: `${D}.targetSaveBtn`,
+    cancelBtn: `${D}.targetCancelDraftBtn`,
+    saveSuccess: `${D}.targetSaveSuccess`,
+    historyLink: `${D}.targetHistoryLink`,
+    historyTitle: `${D}.targetHistoryTitle`,
+    historyEmpty: `${D}.targetHistoryEmpty`
   }
 }
 

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 
 vi.mock('@/services/permission/standard-edit-access.js', () => ({ hasStandardEditAccess: () => true }))
 
-import { buildDraftEmission, validateRemark, formatReferenceDays } from './target-drawer-helpers.js'
+import { buildDraftEmission, emptyDraftOf, validateRemark, formatReferenceDays, formatHistoryCell } from './target-drawer-helpers.js'
 import { TARGET_PRESETS, getTargetPreset, buildSavedMap } from './target-presets.js'
 
 describe('target-drawer helpers', () => {
@@ -66,5 +66,56 @@ describe('stageStandards preset', () => {
   it('buildSavedMap', () => {
     expect(buildSavedMap([{ k: 'a', v: 1 }], 'k', 'v')).toEqual({ a: 1 })
     expect(buildSavedMap(null, 'k', 'v')).toEqual({})
+  })
+})
+
+describe('scalar preset (deliveryTarget)', () => {
+  const preset = getTargetPreset('deliveryTarget')
+
+  it('maps to the current DeliveryTarget endpoints and the draftTargetPercent state', () => {
+    expect(preset.mode).toBe('scalar')
+    expect(preset.draftStateKey).toBe('draftTargetPercent')
+    expect(preset.savedSource).toBe('DeliveryTarget')
+    expect(preset.reloadSources).toEqual(['Delivery', 'DeliveryTarget'])
+    expect([preset.min, preset.max]).toEqual([0, 100])
+  })
+
+  it('emits the number when it differs from the saved target and null when it does not', () => {
+    expect(emptyDraftOf(preset)).toBeNull()
+    expect(emptyDraftOf(TARGET_PRESETS.stageStandards)).toEqual([])
+    expect(buildDraftEmission(preset, { value: 85 }, { value: 90 })).toBe(85)
+    expect(buildDraftEmission(preset, { value: 90 }, { value: 90 })).toBeNull()
+    expect(buildDraftEmission(preset, { value: 0 }, { value: 90 })).toBe(0)
+    expect(buildDraftEmission(preset, { value: null }, { value: null })).toBeNull()
+  })
+
+  it('has one row without a key per department and shows the saved value as a percent', () => {
+    const ctx = { data: { DeliveryTarget: { targetPercent: 92.5 }, Delivery: { kpi: { onTimePercent: 81.26 } } } }
+    const rows = preset.rows(ctx, (key) => key)
+    expect(rows).toHaveLength(1)
+    expect(preset.savedMap(ctx)).toEqual({ value: 92.5 })
+    expect(preset.savedText(rows[0])).toBe('92.5%')
+    expect(preset.savedText({ savedValue: null })).toBe('—%')
+    const t = (key, params) => `${key}:${params.percent}`
+    expect(preset.referenceText(rows[0], ctx, t)).toBe('view.productionInsight.delivery.targetReferenceText:81.3%')
+    expect(preset.referenceText(rows[0], { data: { Delivery: { kpi: {} } } }, t)).toBe('view.productionInsight.delivery.targetReferenceText:—')
+  })
+
+  it('save sends targetPercent + remark to the existing store action; history ignores the row key', async () => {
+    const store = { saveDeliveryTarget: vi.fn().mockResolvedValue(true), fetchDeliveryTargetHistory: vi.fn().mockResolvedValue([]) }
+    await preset.save(store, { items: 88, remark: 'r' })
+    await preset.history(store, 'value')
+    expect(store.saveDeliveryTarget).toHaveBeenCalledWith({ targetPercent: 88, remark: 'r' })
+    expect(store.fetchDeliveryTargetHistory).toHaveBeenCalledWith()
+  })
+})
+
+describe('formatHistoryCell', () => {
+  it('formats dates, suffixes and plain values', () => {
+    expect(formatHistoryCell({ field: 'd', date: true }, { d: '2026-10-01T00:00:00' })).toBe('01/10/2026')
+    expect(formatHistoryCell({ field: 'd', date: true }, {})).toBe('')
+    expect(formatHistoryCell({ field: 'p', suffix: '%' }, { p: 90 })).toBe('90%')
+    expect(formatHistoryCell({ field: 'p', suffix: '%' }, { p: null })).toBe('')
+    expect(formatHistoryCell({ field: 'r' }, { r: 'x' })).toBe('x')
   })
 })

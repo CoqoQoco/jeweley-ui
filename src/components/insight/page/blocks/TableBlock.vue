@@ -8,12 +8,9 @@
 -->
 <template>
   <BlockFrame v-bind="frame">
-    <div v-if="node.toolbar" class="table-block__toolbar">
-      <p v-if="toolbarHint" class="table-block__hint">{{ toolbarHint }}</p>
-      <template v-for="(action, index) in node.toolbar.actions || []" :key="index">
-        <TargetDrawer v-if="action.type === 'targetDrawer'" :preset="action.preset" :ctx="ctx" />
-      </template>
-    </div>
+    <BlockToolbar v-if="node.toolbar" :toolbar="node.toolbar" :ctx="ctx" />
+
+    <div v-if="isEmpty" class="table-block__empty">{{ $t(node.emptyText) }}</div>
 
     <template v-for="(section, sIndex) in sections" :key="sIndex">
       <p v-if="section.kind === 'text'" :class="['table-block__text', `table-block__text--${section.tone || 'plain'}`]">
@@ -21,7 +18,7 @@
         {{ sectionText(section) }}
       </p>
 
-      <div v-else class="responsive-table-wrapper">
+      <div v-else-if="!isEmpty" class="responsive-table-wrapper">
         <BaseDataTable
           :items="sectionRows(section)"
           :columns="sectionColumns(section)"
@@ -50,13 +47,12 @@
 </template>
 
 <script>
-import { resolveText } from '../insight-page-helpers.js'
 import { buildBlockColumns, buildHeaderSlotColumns, isRowSelected, resolveCellHighlight, resolveRowSelection, resolveTableSections, cellSlotName, headerSlotName } from './table-block-helpers.js'
 import { resolveHeader } from '../columns.js'
 import blockMixin from './block-mixin.js'
 
 import BlockFrame from './BlockFrame.vue'
-import TargetDrawer from './TargetDrawer.vue'
+import BlockToolbar from './BlockToolbar.vue'
 import ColumnCell from '../ColumnCell.vue'
 import InfoTipGeneric from '@/components/generic/InfoTipGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
@@ -66,7 +62,7 @@ export default {
 
   mixins: [blockMixin],
 
-  components: { BlockFrame, TargetDrawer, ColumnCell, InfoTipGeneric, BaseDataTable },
+  components: { BlockFrame, BlockToolbar, ColumnCell, InfoTipGeneric, BaseDataTable },
 
   computed: {
     sections() {
@@ -77,8 +73,9 @@ export default {
       return !!this.ctx.loading?.[this.node.source]
     },
 
-    toolbarHint() {
-      return resolveText(this.node.toolbar?.hint, this.ctx, (key, params) => this.$t(key, params))
+    // emptyText (i18n key) แทนที่ตารางทั้งหมดด้วยข้อความกลางๆ เมื่อไม่มีแถวเลย (ตารางเดียว)
+    isEmpty() {
+      return !!this.node.emptyText && !this.sections.some((section) => section.kind === 'table' && this.sectionRows(section).length)
     }
   },
 
@@ -124,19 +121,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.table-block__toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-md);
-  margin-bottom: var(--sp-md);
-}
-
-.table-block__hint {
-  margin: 0;
-  font-size: var(--fs-sm);
+.table-block__empty {
+  padding: var(--sp-xl) 0;
+  text-align: center;
   color: var(--base-sub-color);
-  font-style: italic;
 }
 
 .table-block__text {

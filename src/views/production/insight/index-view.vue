@@ -66,9 +66,10 @@
         :filter="filters.wip"
         :active="activeSection === 'wip'"
       />
-      <DeliverySection
+      <InsightPage
         v-if="visitedSections.has('delivery')"
         v-show="activeSection === 'delivery'"
+        :config="deliveryConfig"
         :filter="filters.delivery"
         :active="activeSection === 'delivery'"
       />
@@ -375,7 +376,7 @@ import DateRangeGeneric from '@/components/prime-vue/DateRangeGeneric.vue'
 import InsightPage from '@/components/insight/page/InsightPage.vue'
 import { wipConfig } from './topics/wip.config.js'
 import { materialsConfig } from './topics/materials.config.js'
-import DeliverySection from './sections/delivery-section.vue'
+import { deliveryConfig } from './topics/delivery.config.js'
 import GoldSection from './sections/gold-section.vue'
 import CapacitySection from './sections/capacity-section.vue'
 import WorkersSection from './sections/workers-section.vue'
@@ -398,7 +399,6 @@ export default {
     MultiSelectGeneric,
     DateRangeGeneric,
     InsightPage,
-    DeliverySection,
     GoldSection,
     CapacitySection,
     WorkersSection,
@@ -413,6 +413,7 @@ export default {
     return {
       wipConfig,
       materialsConfig,
+      deliveryConfig,
       activeSection: 'wip',
       // ว่างตั้งต้นเสมอ — created() เป็นคน add หมวดที่ resolve จาก query จริง (applyQueryToState) ก่อน mount
       // ครั้งแรก กัน WipSection (หรือหมวดไหนก็ตาม) mount+ยิง endpoint ทิ้งทั้งที่ผู้ใช้เปิดมาที่หมวดอื่น

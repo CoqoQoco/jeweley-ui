@@ -10,7 +10,7 @@
       <span class="kpi-block__as-of">{{ asOfText }}</span>
     </template>
 
-    <div class="kpi-block__grid">
+    <div class="kpi-block__grid" :style="gridStyle">
       <StatCardGeneric
         v-for="card in cards"
         :key="card.key"
@@ -55,6 +55,11 @@ export default {
       return buildKpiAsOf(this.node, this.ctx, (key, params) => this.$t(key, params))
     },
 
+    // node.gridColumns (เช่น 3) = จำนวนคอลัมน์คงที่ (≤1024px เหลือ 2) แทน auto-fit
+    gridStyle() {
+      return this.node.gridColumns ? { '--kpi-columns': this.node.gridColumns } : null
+    },
+
     footNote() {
       return buildKpiFootNote(this.node, this.ctx, (key, params) => this.$t(key, params))
     }
@@ -87,6 +92,15 @@ export default {
 .kpi-block__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  align-items: stretch;
   gap: var(--sp-md);
+
+  &[style*='--kpi-columns'] {
+    grid-template-columns: repeat(var(--kpi-columns), minmax(0, 1fr));
+
+    @media (max-width: 1024px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
 }
 </style>

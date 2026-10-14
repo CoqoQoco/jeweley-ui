@@ -137,3 +137,19 @@ describe('chipList / bold / chip border', () => {
     expect(col.resolveCell(d, {}, t).borderColor).toBe(col.resolveCell(d, {}, t).color)
   })
 })
+
+describe('percent digits / emphasisWhen', () => {
+  it('percent uses 2 decimals by default and digits override', () => {
+    expect(col.resolveCell(col.percent('p', 'h'), { p: 40.256 }, t).text).toBe('40.26%')
+    expect(col.resolveCell(col.percent('p', 'h', { digits: 1 }), { p: 40.256 }, t).text).toBe('40.3%')
+    expect(col.resolveCell(col.percent('p', 'h', { digits: 1 }), {}, t).text).toBe('—')
+  })
+
+  it('emphasisWhen(raw,row) wins over negativeClass and never applies to missing values', () => {
+    const c = col.number('n', 'h', 'count', { emphasisWhen: (raw) => raw > 0 })
+    expect(col.resolveCell(c, { n: 3 }, t).negative).toBe(true)
+    expect(col.resolveCell(c, { n: -3 }, t).negative).toBe(false)
+    expect(col.resolveCell(c, {}, t).negative).toBe(false)
+    expect(col.resolveCell(col.number('n', 'h', 'count', { emphasisWhen: () => true }), { n: 0 }, t).negative).toBe(true)
+  })
+})

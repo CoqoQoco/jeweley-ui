@@ -105,9 +105,9 @@ export function formatNumberValue(value, format = 'count') {
   return new Intl.NumberFormat('th-TH', NUMBER_FORMATS[format] || NUMBER_FORMATS.count).format(value)
 }
 
-export function formatPercentValue(value) {
+export function formatPercentValue(value, digits = 2) {
   if (value === null || value === undefined) return null
-  return `${new Intl.NumberFormat('th-TH', { maximumFractionDigits: 2 }).format(value)}%`
+  return `${new Intl.NumberFormat('th-TH', { maximumFractionDigits: digits }).format(value)}%`
 }
 
 // row.label (ถ้ามี — เช่น แถว "รวม" ของตารางพัฒนาการ หรือแถวที่ config แปลชื่อแผนกไว้แล้ว) ชนะการแปล department.*
@@ -134,12 +134,13 @@ export function resolveCell(col, row, t, ctx) {
         tip: missing && col.nullTip ? resolveColText(col.nullTip, row, t, ctx) : '',
         suffix: !missing && col.suffix ? col.suffix(row, t) : '',
         badge: col.badge ? col.badge(row, t, ctx) : '',
-        negative: !missing && col.negativeClass && raw < 0,
+        // emphasisWhen(raw,row) เน้นค่า (แดง+หนา) เมื่อเงื่อนไขเป็นจริง · negativeClass = เน้นเมื่อค่าติดลบ
+        negative: !missing && (col.emphasisWhen ? !!col.emphasisWhen(raw, row) : !!col.negativeClass && raw < 0),
         asAction: !missing && !!col.onClick && (col.actionWhen ? col.actionWhen(row, raw) : raw > 0)
       }
     }
     case 'percent':
-      return { kind: 'percent', text: formatPercentValue(readValue(col, row)) ?? '—' }
+      return { kind: 'percent', text: formatPercentValue(readValue(col, row), col.digits ?? 2) ?? '—' }
     case 'date': {
       const raw = readValue(col, row)
       return { kind: 'date', text: raw ? formatDate(raw) : col.nullAs ?? '—' }

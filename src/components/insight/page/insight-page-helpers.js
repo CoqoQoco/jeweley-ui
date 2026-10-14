@@ -99,3 +99,8 @@ export function resolveFrameProps(node, ctx, t) {
     notes: (node.notes || []).map((note) => resolveText(note, ctx, t)).filter(Boolean)
   }
 }
+
+// ป้ายแกน x แบบ dd/MM (th-TH) ของ bucketEnd — ใช้กับกราฟรายช่วงที่ไม่ใช่รายเดือน
+export function formatBucketDayMonth(bucketEnd) {
+  return bucketEnd ? new Intl.DateTimeFormat('th-TH', { day: '2-digit', month: '2-digit' }).format(new Date(bucketEnd)) : ''
+}
