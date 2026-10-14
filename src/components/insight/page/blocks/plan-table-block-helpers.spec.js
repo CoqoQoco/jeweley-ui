@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildPlanTableBody, buildResetPagingKey, buildPlanTableRequest, buildToggleOptions, resolveFocusChip } from './plan-table-block-helpers.js'
+import { buildPlanTableBody, buildResetPagingKey, buildPlanTableRequest, buildToggleOptions, resolveFocusChip, mapPlanTableRows, resolveNumberInput } from './plan-table-block-helpers.js'
 
 const t = (key, params) => (params ? `${key}:${JSON.stringify(params)}` : key)
 
@@ -44,5 +44,26 @@ describe('plan-table-block helpers', () => {
     expect(resolveFocusChip(focusNode, { state: { f: '' } }, t)).toBeNull()
     expect(resolveFocusChip(focusNode, { state: { f: 'trim' } }, t)).toEqual({ value: 'trim', text: 'k.chip:{"v":"trim"}', clearTip: 'k.clear' })
     expect(resolveFocusChip({}, { state: {} }, t)).toBeNull()
+  })
+})
+
+describe('mapRows / number toolbar', () => {
+  it('mapPlanTableRows applies node.mapRows and is a pass-through otherwise', () => {
+    const items = [{ a: 1 }]
+    expect(mapPlanTableRows({}, items, {}, t)).toBe(items)
+    expect(mapPlanTableRows({ mapRows: (rows, ctx) => rows.map((r) => ({ ...r, k: ctx.k })) }, items, { k: 'x' }, t)).toEqual([{ a: 1, k: 'x' }])
+  })
+
+  it('resolveNumberInput only accepts valid numbers >= min that differ from the current value', () => {
+    const cfg = { min: 1 }
+    expect(resolveNumberInput(cfg, 45, 30)).toBe(45)
+    expect(resolveNumberInput(cfg, '45', 30)).toBe(45)
+    expect(resolveNumberInput(cfg, 30, 30)).toBeNull()
+    expect(resolveNumberInput(cfg, '', 30)).toBeNull()
+    expect(resolveNumberInput(cfg, null, 30)).toBeNull()
+    expect(resolveNumberInput(cfg, 0, 30)).toBeNull()
+    expect(resolveNumberInput(cfg, -5, 30)).toBeNull()
+    expect(resolveNumberInput(cfg, 'abc', 30)).toBeNull()
+    expect(resolveNumberInput({}, 1, 30)).toBe(1)
   })
 })

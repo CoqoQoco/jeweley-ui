@@ -45,7 +45,7 @@
   <div v-else-if="cell.kind === 'number'" :class="numberClass">
     <ButtonGeneric v-if="cell.asAction" variant="plain" :label="cell.text" :title="col.actionTitle ? $t(col.actionTitle) : ''" @click.stop="col.onClick(data, ctx)" />
     <template v-else>
-      <span :style="cell.color ? { color: cell.color } : null">{{ cell.text }}</span>
+      <span :style="numberStyle">{{ cell.text }}</span>
       <InfoTipGeneric v-if="cell.tip" :text="cell.tip" />
       <template v-if="cell.suffix">
         {{ ' ' }}<span class="column-cell__suffix">{{ cell.suffix }}</span>
@@ -56,7 +56,15 @@
 
   <div v-else-if="cell.kind === 'percent'" class="text-right">{{ cell.text }}</div>
 
-  <span v-else-if="cell.kind === 'chip'" class="column-cell__chip" :style="{ color: cell.color, borderColor: cell.color }">{{ cell.text }}</span>
+  <span v-else-if="cell.kind === 'chip'" class="column-cell__chip" :style="{ color: cell.color, borderColor: cell.borderColor }">{{ cell.text }}</span>
+
+  <div v-else-if="cell.kind === 'chipList'" class="column-cell__chip-list">
+    <span v-if="!cell.lines.length">—</span>
+    <div v-for="(line, index) in cell.lines" :key="index" class="column-cell__chip-line">
+      <span>{{ line.label }}</span>
+      <span v-if="line.chipText" :class="['column-cell__line-chip', `column-cell__line-chip--${line.variant || 'grey'}`]">{{ line.chipText }}</span>
+    </div>
+  </div>
 
   <template v-else-if="cell.kind === 'shareBar'">
     <span v-if="!cell.hasData" class="column-cell__no-data">
@@ -105,6 +113,13 @@ export default {
   computed: {
     cell() {
       return resolveCell(this.col, this.data, (key, params) => this.$t(key, params), this.ctx)
+    },
+
+    numberStyle() {
+      const style = {}
+      if (this.cell.color) style.color = this.cell.color
+      if (this.cell.bold) style.fontWeight = 700
+      return Object.keys(style).length ? style : null
     },
 
     numberClass() {
@@ -181,6 +196,43 @@ export default {
   border-radius: var(--radius-lg);
   font-size: var(--fs-sm);
   font-weight: 700;
+}
+
+.column-cell__chip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.column-cell__chip-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-xs);
+}
+
+.column-cell__line-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px var(--sp-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+
+  &--green {
+    color: var(--base-green);
+    border-color: var(--base-green);
+  }
+
+  &--warning {
+    color: var(--base-warning);
+    border-color: var(--base-warning);
+  }
+
+  &--grey {
+    color: var(--base-sub-color);
+  }
 }
 
 .column-cell__no-data {

@@ -46,3 +46,51 @@ export function resolveGemStatusLabelKey(status, unmatchedReason) {
   }
   return status || 'unmatched'
 }
+
+// ---- builders สำหรับ config (materials.config.js) ----
+
+const countFormat = (value) => (value != null ? new Intl.NumberFormat('th-TH').format(value) : '—')
+
+// ข้อความป้ายของ 1 บรรทัดพลอย: "{ชื่อ} {ทรง} {ขนาด} {โลหะ} ×{จำนวน}" — ชื่อ/ทรงแปลผ่าน master (ไม่เจอ = รหัสดิบ)
+export function buildGemLineLabel(gem, masters, t) {
+  const name = resolveGemName(masters?.gem, gem.gem)
+  const shape = resolveGemShapeName(masters?.gemShape, gem.shape)
+  const metal = gem.metal ? t(`view.productionInsight.gold.metalLabel.${gem.metal}`) : ''
+  return `${[name, shape, gem.size, metal].filter(Boolean).join(' ')} ×${countFormat(gem.qty)}`
+}
+
+// ข้อความชิปสถานะของพลอย 1 บรรทัด — short แสดงจำนวนที่มี, unmatched แยกตามเหตุผล (ชนิด/ขนาด-รูปทรง)
+export function buildGemStatusChipText(gem, t) {
+  if (gem.status === 'short') return t('view.productionInsight.materials.gemStatusShortWithAvailable', { available: countFormat(gem.available) })
+  return t(`view.productionInsight.materials.gemStatus.${resolveGemStatusLabelKey(gem.status, gem.unmatchedReason)}`)
+}
+
+// รายการของคอลัมน์ chipList "พลอย" ของตารางใบงานรอเบิก
+export function buildGemChipItems(row, masters, t) {
+  return (row.gems || []).map((gem) => ({
+    label: buildGemLineLabel(gem, masters, t),
+    variant: resolveGemStatusVariant(gem.status),
+    chipText: buildGemStatusChipText(gem, t)
+  }))
+}
+
+// ป้ายพลอยของตารางความต้องการ (ไม่มีจำนวนต่อท้าย)
+export function buildGemDemandLabel(row, masters, t) {
+  const name = resolveGemName(masters?.gem, row.gem)
+  const shape = resolveGemShapeName(masters?.gemShape, row.shape)
+  const metal = row.metal ? t(`view.productionInsight.gold.metalLabel.${row.metal}`) : ''
+  return [name, shape, row.size, metal].filter(Boolean).join(' ')
+}
+
+// แถวตารางความต้องการ: เติม rowKey (gem-shape-size-metal-index) + gemLabel
+export function mapGemDemandRows(items, masters, t) {
+  return (items || []).map((row, index) => ({
+    ...row,
+    rowKey: `${row.gem}-${row.shape}-${row.size}-${row.metal}-${index}`,
+    gemLabel: buildGemDemandLabel(row, masters, t)
+  }))
+}
+
+// สีชิปตาม variant (token เดียวกับเดิม): green / warning / grey(ข้อความสีรอง ขอบ border)
+export const GEM_STATUS_COLOR = { green: 'var(--base-green)', warning: 'var(--base-warning)', grey: 'var(--base-sub-color)' }
+export const GEM_STATUS_BORDER = { green: 'var(--base-green)', warning: 'var(--base-warning)', grey: 'var(--color-border)' }

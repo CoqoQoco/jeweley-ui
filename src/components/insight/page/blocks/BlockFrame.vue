@@ -3,11 +3,14 @@
   (ข้อความ note/title ถูก resolve มาแล้วจาก block) — id เว้นว่างได้ (block ที่อยู่ใน group ซึ่งมี anchor ของ group เอง)
 
   Props: id, title, titleTip, icon, accent, headerStyle, notes (string[])
-  Slot: default
+  Slots: default · header-actions (มุมขวาบนของหัวกรอบ — ส่งต่อให้ SectionCardGeneric)
 -->
 <template>
   <div :id="anchorId" class="block-frame">
     <SectionCardGeneric :title="title" :titleTip="titleTip" :icon="icon" :accent="accent" :headerStyle="headerStyle">
+      <template v-if="$slots['header-actions']" #header-actions>
+        <slot name="header-actions" />
+      </template>
       <p v-for="(note, index) in notes" :key="index" class="block-frame__note">{{ note }}</p>
       <slot />
     </SectionCardGeneric>

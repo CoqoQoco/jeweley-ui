@@ -20,7 +20,7 @@
   departmentKeys/employmentTypes ของหมวด workers ส่งไป server จริง (ต่างจาก capacity ที่ departmentKeys เป็น
   client-side ล้วน — ดู workers-section.vue) — ตาราง waiting/demand/lowCover ของหมวด materials ใช้ตัวกรอง
   local state ของตัวเองทั้งหมด (gemStatus/status/coverDays) ไม่ผ่านแผงตัวกรองหลักเลย เพราะเป็น snapshot
-  ปัจจุบัน ไม่ query ตามช่วงเวลา (ดู materials-section.vue)
+  ปัจจุบัน ไม่ query ตามช่วงเวลา (ดู topics/materials.config.js)
 
   โหลดข้อมูลเฉพาะหมวดที่เปิด (mount ครั้งแรกแล้วค้างด้วย v-show/visitedSections) — URL sync: อ่าน query
   ครั้งเดียวใน created() แล้ว $router.replace ตอนเปลี่ยน คงค่า query key อื่นของ host ไว้เสมอ (เช่น
@@ -93,9 +93,10 @@
         :filter="filters.workers"
         :active="activeSection === 'workers'"
       />
-      <MaterialsSection
+      <InsightPage
         v-if="visitedSections.has('materials')"
         v-show="activeSection === 'materials'"
+        :config="materialsConfig"
         :filter="filters.materials"
         :active="activeSection === 'materials'"
       />
@@ -373,11 +374,11 @@ import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import DateRangeGeneric from '@/components/prime-vue/DateRangeGeneric.vue'
 import InsightPage from '@/components/insight/page/InsightPage.vue'
 import { wipConfig } from './topics/wip.config.js'
+import { materialsConfig } from './topics/materials.config.js'
 import DeliverySection from './sections/delivery-section.vue'
 import GoldSection from './sections/gold-section.vue'
 import CapacitySection from './sections/capacity-section.vue'
 import WorkersSection from './sections/workers-section.vue'
-import MaterialsSection from './sections/materials-section.vue'
 
 const DEPARTMENT_KEYS = ['design', 'trim', 'rawPolish', 'gemSort', 'setting', 'plating', 'costCard']
 
@@ -401,7 +402,6 @@ export default {
     GoldSection,
     CapacitySection,
     WorkersSection,
-    MaterialsSection
   },
 
   setup() {
@@ -412,6 +412,7 @@ export default {
   data() {
     return {
       wipConfig,
+      materialsConfig,
       activeSection: 'wip',
       // ว่างตั้งต้นเสมอ — created() เป็นคน add หมวดที่ resolve จาก query จริง (applyQueryToState) ก่อน mount
       // ครั้งแรก กัน WipSection (หรือหมวดไหนก็ตาม) mount+ยิง endpoint ทิ้งทั้งที่ผู้ใช้เปิดมาที่หมวดอื่น

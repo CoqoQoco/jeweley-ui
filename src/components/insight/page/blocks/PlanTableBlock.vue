@@ -17,6 +17,12 @@
       />
     </div>
 
+    <div v-if="node.toolbar && node.toolbar.number" class="plan-table-block__toolbar">
+      <FormFieldGeneric :label="$t(node.toolbar.number.label)" class="plan-table-block__number">
+        <InputTextGeneric v-model.number="numberDraft" type="number" :min="node.toolbar.number.min" @update:modelValue="onNumberInput" />
+      </FormFieldGeneric>
+    </div>
+
     <div v-if="focusChip" class="plan-table-block__focus-chip">
       <span>{{ focusChip.text }}</span>
       <ButtonGeneric variant="plain" icon="bi-x-lg" :title="$t(focusChip.clearTip)" @click="ctx.setState(node.focus.stateKey, '')" />
@@ -24,7 +30,7 @@
 
     <div class="responsive-table-wrapper">
       <BaseDataTable
-        :items="items"
+        :items="rows"
         :totalRecords="total"
         :columns="tableColumns"
         :perPage="take"
@@ -50,13 +56,15 @@
 <script>
 import { useProductionInsightApiStore } from '@/stores/modules/api/production/production-insight-api.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
-import { buildResetPagingKey, buildPlanTableRequest, buildToggleOptions, resolveFocusChip } from './plan-table-block-helpers.js'
+import { buildResetPagingKey, buildPlanTableRequest, buildToggleOptions, resolveFocusChip, mapPlanTableRows, resolveNumberInput } from './plan-table-block-helpers.js'
 import { buildBlockColumns, buildHeaderSlotColumns, cellSlotName, headerSlotName } from './table-block-helpers.js'
 import blockMixin from './block-mixin.js'
 
 import BlockFrame from './BlockFrame.vue'
 import ColumnCell from '../ColumnCell.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import InfoTipGeneric from '@/components/generic/InfoTipGeneric.vue'
 import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
@@ -66,7 +74,7 @@ export default {
 
   mixins: [dataTablePaging, blockMixin],
 
-  components: { BlockFrame, ColumnCell, ButtonGeneric, InfoTipGeneric, ToggleGroupGeneric, BaseDataTable },
+  components: { BlockFrame, ColumnCell, ButtonGeneric, FormFieldGeneric, InputTextGeneric, InfoTipGeneric, ToggleGroupGeneric, BaseDataTable },
 
   setup() {
     const productionInsightStore = useProductionInsightApiStore()
@@ -77,11 +85,17 @@ export default {
     return {
       items: [],
       total: 0,
-      needsRefetch: false
+      needsRefetch: false,
+      numberDraft: this.node.toolbar?.number ? this.ctx.state[this.node.toolbar.number.stateKey] : null,
+      numberTimer: null
     }
   },
 
   computed: {
+    rows() {
+      return mapPlanTableRows(this.node, this.items, this.ctx, (key, params) => this.$t(key, params))
+    },
+
     tableColumns() {
       return buildBlockColumns(this.node.columns, (key) => this.$t(key))
     },
@@ -126,8 +140,22 @@ export default {
     }
   },
 
+  beforeUnmount() {
+    if (this.numberTimer) clearTimeout(this.numberTimer)
+  },
+
   methods: {
     cellSlot: cellSlotName,
+
+    // พิมพ์ตัวเลขใน toolbar → debounce แล้วตั้ง state เฉพาะค่าที่ valid และต่างจากเดิม (กันยิงทุกการกดแป้น/ค่าว่าง)
+    onNumberInput() {
+      const config = this.node.toolbar.number
+      if (this.numberTimer) clearTimeout(this.numberTimer)
+      this.numberTimer = setTimeout(() => {
+        const next = resolveNumberInput(config, this.numberDraft, this.ctx.state[config.stateKey])
+        if (next !== null) this.ctx.setState(config.stateKey, next)
+      }, config.debounceMs ?? 400)
+    },
     headerSlot: headerSlotName,
 
     async fetchData() {
@@ -158,6 +186,10 @@ export default {
   border-radius: var(--radius-lg);
   background: var(--color-highlight-bg);
   font-size: var(--fs-sm);
+}
+
+.plan-table-block__number {
+  max-width: 200px;
 }
 
 .plan-table-block__col-header {

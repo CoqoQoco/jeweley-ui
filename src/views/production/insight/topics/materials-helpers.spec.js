@@ -1,6 +1,17 @@
 import { describe, it, expect } from 'vitest'
 
-import { resolveGemName, resolveGemShapeName, resolveMatchedLinesPercent, resolveGemStatusVariant, resolveGemStatusLabelKey } from './materials-helpers.js'
+import {
+  resolveGemName,
+  resolveGemShapeName,
+  resolveMatchedLinesPercent,
+  resolveGemStatusVariant,
+  resolveGemStatusLabelKey,
+  buildGemLineLabel,
+  buildGemStatusChipText,
+  buildGemChipItems,
+  buildGemDemandLabel,
+  mapGemDemandRows
+} from './materials-helpers.js'
 
 describe('resolveGemName', () => {
   it('resolves the Thai name from gem master data (field nameTh)', () => {
@@ -77,5 +88,38 @@ describe('resolveGemStatusLabelKey', () => {
   it('falls back to "unmatched" for a missing/unknown status', () => {
     expect(resolveGemStatusLabelKey(null)).toBe('unmatched')
     expect(resolveGemStatusLabelKey('')).toBe('unmatched')
+  })
+})
+
+describe('config builders (gem chip list / demand rows)', () => {
+  const t = (key, params) => (params ? `${key}:${JSON.stringify(params)}` : key)
+  const masters = { gem: [{ code: 'RB', nameTh: 'ทับทิม' }], gemShape: [{ code: 'RD', description: 'กลม' }] }
+
+  it('line label resolves master names, shows size/metal and quantity; falls back to raw codes', () => {
+    expect(buildGemLineLabel({ gem: 'RB', shape: 'RD', size: '3mm', metal: 'GOLD', qty: 1234 }, masters, t)).toBe('ทับทิม กลม 3mm view.productionInsight.gold.metalLabel.GOLD ×1,234')
+    expect(buildGemLineLabel({ gem: 'ZZ', shape: 'XX', qty: 2 }, { gem: [], gemShape: [] }, t)).toBe('ZZ XX ×2')
+    expect(buildGemLineLabel({ gem: 'ZZ', qty: 2 }, undefined, t)).toBe('ZZ ×2')
+  })
+
+  it('status chip text: short shows the available quantity, unmatched splits by reason', () => {
+    expect(buildGemStatusChipText({ status: 'short', available: 3 }, t)).toBe('view.productionInsight.materials.gemStatusShortWithAvailable:{"available":"3"}')
+    expect(buildGemStatusChipText({ status: 'unmatched', unmatchedReason: 'gem' }, t)).toBe('view.productionInsight.materials.gemStatus.unmatchedGem')
+    expect(buildGemStatusChipText({ status: 'unmatched', unmatchedReason: 'spec' }, t)).toBe('view.productionInsight.materials.gemStatus.unmatchedSpec')
+    expect(buildGemStatusChipText({ status: 'ready' }, t)).toBe('view.productionInsight.materials.gemStatus.ready')
+  })
+
+  it('chip items: one per gem line with the status variant', () => {
+    const items = buildGemChipItems({ gems: [{ gem: 'RB', qty: 1, status: 'ready' }, { gem: 'ZZ', qty: 1, status: 'short', available: 0 }] }, masters, t)
+    expect(items.map((i) => i.variant)).toEqual(['green', 'warning'])
+    expect(buildGemChipItems({}, masters, t)).toEqual([])
+  })
+
+  it('demand rows get a stable rowKey and a gem label without quantity', () => {
+    const rows = mapGemDemandRows([{ gem: 'RB', shape: 'RD', size: '3', metal: 'GOLD' }, { gem: 'RB', shape: 'RD', size: '3', metal: 'GOLD' }], masters, t)
+    expect(rows[0].rowKey).toBe('RB-RD-3-GOLD-0')
+    expect(rows[1].rowKey).toBe('RB-RD-3-GOLD-1')
+    expect(rows[0].gemLabel).toBe(buildGemDemandLabel({ gem: 'RB', shape: 'RD', size: '3', metal: 'GOLD' }, masters, t))
+    expect(rows[0].gemLabel).toContain('ทับทิม กลม 3')
+    expect(mapGemDemandRows(null, masters, t)).toEqual([])
   })
 })

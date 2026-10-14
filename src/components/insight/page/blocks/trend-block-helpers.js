@@ -31,8 +31,16 @@ export function buildTrendOptions({ node, points, categories, ctx, t }) {
   const visible = resolveVisibleSeries(node.series, points)
   const format = node.yFormat || 'count'
   const hasSecondAxis = visible.some((s) => s.axis === 1)
-  const formatter = (v) => formatChartValue(node.tooltipAbs && v != null ? Math.abs(v) : v, format)
+  // series.format (count|days) ต่อชุด — ไม่ระบุ = node.yFormat · แกนอ่านจากชุดแรกของแกนนั้น
+  const seriesFormat = (s) => s.format || format
+  const tooltipFormatter = (fmt) => (v) => formatChartValue(node.tooltipAbs && v != null ? Math.abs(v) : v, fmt)
+  const formatter = tooltipFormatter(format)
   const axisFormatter = (v) => formatChartValue(v, format)
+  const axisTitle = (index) => (node.axisTitles && node.axisTitles[index] ? { title: { text: t(node.axisTitles[index]) } } : {})
+  const axisFormatterOf = (s) => (v) => formatChartValue(v, seriesFormat(s))
+  const firstOnAxis0 = visible.find((s) => (s.axis || 0) === 0) || visible[0]
+  const firstOnAxis1 = visible.find((s) => s.axis === 1)
+  const perSeriesTooltip = visible.some((s) => s.format)
   const anyDashed = visible.some((s) => s.dashed)
   const anyOpacity = visible.some((s) => s.opacity !== undefined)
   const target = node.targetLine && node.targetLine.value(ctx)
@@ -45,15 +53,15 @@ export function buildTrendOptions({ node, points, categories, ctx, t }) {
       curve: 'smooth',
       ...(anyDashed ? { dashArray: visible.map((s) => (s.dashed ? 6 : 0)) } : {})
     },
-    plotOptions: { bar: { columnWidth: '55%' } },
+    plotOptions: { bar: { columnWidth: node.columnWidth || '55%' } },
     xaxis: { categories },
     yaxis: hasSecondAxis
       ? [
-          { seriesName: t(visible[0].label), labels: { formatter: axisFormatter } },
-          { seriesName: t(visible.find((s) => s.axis === 1).label), opposite: true, labels: { formatter: axisFormatter } }
+          { seriesName: t(firstOnAxis0.label), ...axisTitle(0), labels: { formatter: axisFormatterOf(firstOnAxis0) } },
+          { seriesName: t(firstOnAxis1.label), opposite: true, ...axisTitle(1), labels: { formatter: axisFormatterOf(firstOnAxis1) } }
         ]
       : { labels: { formatter: axisFormatter } },
-    tooltip: { y: { formatter } },
+    tooltip: { y: perSeriesTooltip ? visible.map((s) => ({ formatter: tooltipFormatter(seriesFormat(s)) })) : { formatter } },
     annotations:
       Number.isFinite(target)
         ? {

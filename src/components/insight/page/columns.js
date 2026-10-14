@@ -7,7 +7,7 @@ import { formatDate } from '@/services/utils/dayjs.js'
 import { resolveStatusLine, buildLastActionLine, resolvePlanWorkersDisplay } from '@/components/insight/plan-table-helpers.js'
 import { calcWaitWorkShare, resolveStandardChipColorToken } from '@/components/insight/lead-time-helpers.js'
 
-export const COLUMN_KINDS = ['planLink', 'text', 'product', 'dept', 'workers', 'lastUpdate', 'date', 'number', 'percent', 'chip', 'sparkline', 'shareBar']
+export const COLUMN_KINDS = ['planLink', 'text', 'product', 'dept', 'workers', 'lastUpdate', 'date', 'number', 'percent', 'chip', 'chipList', 'sparkline', 'shareBar']
 
 const EXEC = 'view.executive.production'
 const INSIGHT_WIP = 'view.productionInsight.wip'
@@ -42,6 +42,9 @@ export const days = (field, header, o = {}) => ({ kind: 'number', field, header,
 export const number = (field, header, format = 'count', o = {}) => ({ kind: 'number', field, header, format, align: 'right', minWidth: '90px', ...o })
 export const percent = (field, header, o = {}) => ({ kind: 'percent', field, header, align: 'right', minWidth: '80px', ...o })
 export const chip = (field, header, variantFn, textFn, o = {}) => ({ kind: 'chip', field, header, variant: variantFn, text: textFn, minWidth: '100px', ...o })
+// chipList: หลายบรรทัดต่อ 1 เซลล์ (ป้าย + ชิปสถานะต่อบรรทัด) — items(row, ctx, t) → [{ label, chipText, variant }]
+// variant 'green'|'warning'|'grey' (ชิปสีตาม token) · ไม่มีรายการ = '—'
+export const chipList = (field, header, itemsFn, o = {}) => ({ kind: 'chipList', field, header, items: itemsFn, minWidth: '200px', ...o })
 export const sparkline = (field, header, valuesFn, o = {}) => ({ kind: 'sparkline', field, header, values: valuesFn, minWidth: '100px', ...o })
 export const text = (field, header, o = {}) => ({ kind: 'text', field, header, minWidth: '110px', ...o })
 export const shareBar = (field, header, o = {}) => ({ kind: 'shareBar', field, header, minWidth: '90px', ...o })
@@ -126,6 +129,7 @@ export function resolveCell(col, row, t, ctx) {
         kind: 'number',
         text: missing ? String(fallback) : withUnit(col.display ? col.display(row, t, raw) : formatted, col, t),
         color: !missing && col.color ? col.color(row) : '',
+        bold: !missing && !!col.bold,
         badgeTone: col.badgeTone || 'warning',
         tip: missing && col.nullTip ? resolveColText(col.nullTip, row, t, ctx) : '',
         suffix: !missing && col.suffix ? col.suffix(row, t) : '',
@@ -155,7 +159,12 @@ export function resolveCell(col, row, t, ctx) {
       }
     case 'chip': {
       const variant = col.variant ? col.variant(row) : 'pass'
-      return { kind: 'chip', text: col.text ? col.text(row, t) : '', color: col.color ? col.color(variant, row) : resolveStandardChipColorToken(variant) }
+      const color = col.color ? col.color(variant, row) : resolveStandardChipColorToken(variant)
+      return { kind: 'chip', text: col.text ? col.text(row, t) : '', color, borderColor: col.borderColor ? col.borderColor(variant, row) : color }
+    }
+    case 'chipList': {
+      const lines = (col.items ? col.items(row, ctx, t) : []) || []
+      return { kind: 'chipList', lines }
     }
     case 'shareBar': {
       const share = calcWaitWorkShare(col.wait(row), col.work(row))

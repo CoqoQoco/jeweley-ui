@@ -7,6 +7,7 @@
     titleKey          — i18n key ของหัวข้อ
     findings          — { source } ชื่อ source ที่ response มี status/problems/forecasts/actions
     helpParams(filter) — params เสริมของข้อความคำอธิบาย (view.productionInsight.help.<CODE>)
+    masters           — ['fetchGem', 'fetchGemShape'] ชื่อ action ของ master-store ที่ต้องโหลดก่อนใช้ (cache-aware) → ctx.masters (state ของ master store)
     sources           — { Name: { endpoint, method:'post'|'get', params(filter, state) } } ยิงทีละ source เมื่อ "params ของตัวเอง" เปลี่ยน
                         (key = JSON ของ params → 1 request ต่อ endpoint ต่อการกด 1 ครั้ง · แท็บไม่ active = ติดธง stale แล้วยิงตอนกลับมา active)
     state             — { key: { initial, resetOn: { source, value(data, current) } } } state ร่วมของ block (แถวที่เลือก/โฟกัส/draft)
@@ -36,6 +37,7 @@
 
 <script>
 import { useProductionInsightApiStore } from '@/stores/modules/api/production/production-insight-api.js'
+import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { computeSourceKeys, diffSourceKeys, buildStateResets, buildInitialState, nodeKey } from './insight-page-helpers.js'
 
 import InsightTabLayout from '../insight-tab-layout.vue'
@@ -48,7 +50,8 @@ export default {
 
   setup() {
     const productionInsightStore = useProductionInsightApiStore()
-    return { productionInsightStore }
+    const masterStore = useMasterApiStore()
+    return { productionInsightStore, masterStore }
   },
 
   props: {
@@ -94,6 +97,7 @@ export default {
         loading: this.loadingMap,
         state: this.state,
         active: this.active,
+        masters: this.masterStore,
         setState: this.setState,
         reload: this.reload,
         t: this.translate
@@ -122,6 +126,11 @@ export default {
       this.staleSources = []
       names.forEach((name) => this.fetchSource(name))
     }
+  },
+
+  created() {
+    // master data ที่ block ต้องใช้ (เช่น ชื่อพลอย) — cache-aware อยู่แล้ว เรียกซ้ำได้
+    ;(this.config.masters || []).forEach((action) => this.masterStore[action]?.())
   },
 
   methods: {

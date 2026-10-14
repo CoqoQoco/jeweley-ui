@@ -112,3 +112,28 @@ describe('resolveCell', () => {
     expect(col.resolveCell(col.text('x', 'h', { value: () => 'a / b' }), {}, t).text).toBe('a / b')
   })
 })
+
+describe('chipList / bold / chip border', () => {
+  it('chipList resolves one line per item (label + chip), empty list stays empty', () => {
+    const c = col.chipList('gems', 'h', (row, ctx, tt) => (row.gems || []).map((g) => ({ label: `${g}${ctx.suffix}`, chipText: tt('chip'), variant: 'green' })))
+    expect(col.resolveCell(c, { gems: ['a', 'b'] }, t, { suffix: '!' }).lines).toEqual([
+      { label: 'a!', chipText: 'chip', variant: 'green' },
+      { label: 'b!', chipText: 'chip', variant: 'green' }
+    ])
+    expect(col.resolveCell(c, {}, t, { suffix: '' }).lines).toEqual([])
+    expect(col.COLUMN_KINDS).toContain('chipList')
+  })
+
+  it('number bold only applies when a value exists', () => {
+    const c = col.number('n', 'h', 'count', { bold: true })
+    expect(col.resolveCell(c, { n: 1 }, t).bold).toBe(true)
+    expect(col.resolveCell(c, {}, t).bold).toBe(false)
+  })
+
+  it('chip can use its own colour and border colour', () => {
+    const c = col.chip('s', 'h', () => 'grey', () => 'x', { color: () => 'C', borderColor: () => 'B' })
+    expect(col.resolveCell(c, {}, t)).toMatchObject({ color: 'C', borderColor: 'B' })
+    const d = col.chip('s', 'h', () => 'pass', () => 'x')
+    expect(col.resolveCell(d, {}, t).borderColor).toBe(col.resolveCell(d, {}, t).color)
+  })
+})

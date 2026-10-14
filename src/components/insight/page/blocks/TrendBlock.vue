@@ -3,7 +3,7 @@
     points(ctx)            → array ของจุดข้อมูล
     categories(points,ctx,t) → ป้ายแกน x
     series[{ field|value, type:'bar'|'line', axis:0|1, label, dashed, color, opacity, negate, nullAs, visible(points) }]
-    stacked, yFormat 'count'|'days', tooltipAbs, targetLine{value(ctx),label}, height
+    stacked, yFormat 'count'|'days' (series.format แยกต่อชุดได้), axisTitles[key0,key1], columnWidth, tooltipAbs, targetLine{value(ctx),label}, height
     hint(ctx,t) / summary(ctx,t) → ข้อความใต้กราฟ · null ในข้อมูล = ช่องว่างของกราฟเสมอ (ไม่ coerce เป็น 0 เว้น nullAs)
   ใช้ standalone หรือซ้อนใน DetailBlock
 -->

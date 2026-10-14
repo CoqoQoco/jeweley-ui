@@ -1089,3 +1089,14 @@ params ของ source) + `wip-page.smoke.spec` (mount config จริงท�
 - ลบแล้ว (ไม่มี import ค้าง): `sections/wip-section.vue` · `wip-trend-panel.vue` + `.spec` · `department-wip-chart.vue` · `department-flow-chart.vue` · `wip-lead-time-panel.vue` · `wip-lead-time-table.vue` ·
   `wip-lead-time-chart.vue` · `wip-capacity-panel.vue` · `wip-standards-panel.vue` · `wip-standard-history-modal.vue` · `wip-stale-plans-panel.vue` · `wip-due-risk-panel.vue` · `wip-abnormal-dwell-panel.vue`
 - warning "Extraneous non-props attributes (class)" ของ DrawerGeneric จาก `FilterPanelGeneric` เป็นของเดิม (ไฟล์ไม่ถูกแก้ ส่ง `class` ลง DrawerGeneric ตั้งแต่ commit d12f2a2a) ไม่เกี่ยวกับ InsightPage
+
+## Revision 11 (2026-10-14): หมวด materials ย้ายเข้า InsightPage (config-driven)
+
+`topics/materials.config.js` แทน `materials-section.vue` + 5 คอมโพเนนต์ — API/ตัวเลข/หน้าตาเดิม: Materials ยิงครั้งเดียว (params start/end/bucket=month; metal เติมที่ store) ได้ findings/kpi/series/asOf ·
+ตาราง waiting/demand/lowCover เป็น snapshot ไม่มี start/end ใช้ state ของหน้า (waitingStatus/demandStatus/coverDays) · block id = matKpi/matTrend/matWaiting/matDemand/matLowCover
+- เพิ่มใน template: `KpiBlock` (`asOf`+`asOfLabel` มุมขวาบน, `footNote` ใต้การ์ด, `unit`, format `percent0`) · `BlockFrame` slot `header-actions` · `TrendBlock` (`series.format` ต่อชุด/แกน, `axisTitles`, `columnWidth`, tooltip ต่อชุด) ·
+  column kind `chipList` (หลายบรรทัด: ป้าย + ชิป) + option `bold`/`borderColor` · `PlanTableBlock` (`mapRows(items,ctx,t)`, `toolbar.number{stateKey,label,min,debounceMs}` — ยิงเมื่อค่า valid >= min และต่างจากเดิม 1 การเปลี่ยน = 1 request) ·
+  `InsightPage` `config.masters` (['fetchGem','fetchGemShape']) → `ctx.masters`
+- helper ของ topic ย้ายไป `topics/materials-helpers.js` (+ ตัวสร้างบรรทัดพลอย/ป้าย/รายการชิป/แถวความต้องการ) · Excel helper ชี้ path ใหม่
+- ลบ: `sections/materials-section.vue` · `components/materials-{kpi-group,trend-chart,waiting-plans-panel,gem-demand-panel,gem-low-cover-panel}.vue`
+- ต่างจากเดิมเล็กน้อย: ชิปสถานะในตารางความต้องการใช้ขนาด/น้ำหนักตัวอักษรของ column chip กลาง (เดิมเป็น CSS ของ panel) · เพิ่ม anchor `insight-report-matKpi` ให้การ์ด KPI (API ส่ง reportRef นี้อยู่แล้วแต่เดิมไม่มีจุดเลื่อน)

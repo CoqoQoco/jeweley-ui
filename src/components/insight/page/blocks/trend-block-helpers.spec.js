@@ -67,3 +67,30 @@ describe('buildTrendOptions', () => {
     expect(buildTrendOptions({ node, points: [], categories: [], ctx: {}, t }).colors).toEqual([CHART_TOKENS.primary])
   })
 })
+
+describe('buildTrendOptions: per-series format, axis titles, column width', () => {
+  const node = {
+    columnWidth: '45%',
+    axisTitles: ['t.plans', 't.days'],
+    series: [
+      { field: 'a', type: 'bar', label: 'l.a', axis: 0, format: 'count' },
+      { field: 'b', type: 'line', label: 'l.b', axis: 1, format: 'days' },
+      { field: 'c', type: 'line', label: 'l.c', axis: 1, format: 'days', dashed: true }
+    ]
+  }
+
+  it('keeps a count axis and a days axis with titles, and a formatter per series in the tooltip', () => {
+    const options = buildTrendOptions({ node, points: [], categories: [], ctx: {}, t })
+    expect(options.plotOptions.bar.columnWidth).toBe('45%')
+    expect(options.yaxis).toHaveLength(2)
+    expect(options.yaxis[0].title.text).toBe('t.plans')
+    expect(options.yaxis[1]).toMatchObject({ opposite: true, title: { text: 't.days' } })
+    expect(options.yaxis[0].labels.formatter(1234)).toBe('1,234')
+    expect(options.yaxis[1].labels.formatter(1.26)).toBe('1.3')
+    expect(options.tooltip.y).toHaveLength(3)
+    expect(options.tooltip.y[0].formatter(1234)).toBe('1,234')
+    expect(options.tooltip.y[1].formatter(null)).toBe('—')
+    expect(options.stroke.width).toEqual([0, 3, 2])
+    expect(options.stroke.dashArray).toEqual([0, 0, 6])
+  })
+})
