@@ -350,8 +350,8 @@ export default {
       receiveOutsource: 'Receive Outsource Goods'
     },
     reportGr: {
-      title: 'Goods Receipt Report',
-      searchDesc: 'Search and review goods receipt records from production into stock',
+      title: 'Goods Receipt Report – Production',
+      searchDesc: 'Search and review production goods receipts into stock, with gold, stone weights and sales price',
       receiptDate: 'Receipt Date',
       stockNumber: 'Stock No.',
       productNumber: 'Product Code',
@@ -369,12 +369,41 @@ export default {
       colProductionType: 'Gold/Silver Color',
       colProductionTypeSize: 'Gold/Silver Type',
       colLocation: 'Storage',
-      colProductPrice: 'Price',
+      colProductPrice: 'Sales Price',
       colCreateBy: 'Received By',
       colRemark: 'Remark',
       studLarge: 'Large Stud',
       studMedium: 'Medium Stud',
-      studSmall: 'Small Stud'
+      studSmall: 'Small Stud',
+      colDetail: 'Description',
+      colVendor: 'Vendor',
+      colPoNumber: 'PO No.',
+      colGoldType: 'Gold Type',
+      colGoldWeight: 'Gold Wt.',
+      stoneDiamond: 'Diamond',
+      stoneRuby: 'Ruby',
+      stoneSapphire: 'Sapphire',
+      stoneEmerald: 'Emerald',
+      stoneOther: 'Other',
+      qtyShort: 'Qty',
+      weightShort: 'Wt.',
+      colQty: 'Qty',
+      colSalesPrice: 'Sales Price',
+      grandTotal: 'Grand Total',
+      pdfTitle: 'Goods Receipt Item Report',
+      pdfStyleNo: 'Style No./Mold',
+      pdfGold: 'Gold (Wt.)',
+      pdfGoldTypeShort: 'Type',
+      pdfPage: 'Page',
+      pdfDate: 'Date',
+      pdfPeriod: 'Receipt date',
+      modeProduction: 'Production',
+      modeOutsource: 'Outsource',
+      btnPdf: 'Print PDF'
+    },
+    reportGrOutsource: {
+      title: 'Goods Receipt Report – Outsource',
+      searchDesc: 'Search and review outsource goods receipts into stock, with gold, stone weights and sales price'
     }
   }
 }

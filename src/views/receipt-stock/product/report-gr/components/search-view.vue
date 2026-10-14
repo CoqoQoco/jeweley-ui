@@ -53,6 +53,14 @@
         :disabled="!receiptProductionStore.dataReceiptHistory.total"
         @click="onExport"
       />
+      <ButtonGeneric
+        variant="outline"
+        icon="bi-file-earmark-pdf"
+        class="ml-2"
+        :title="$t('view.receiptStock.product.reportGr.btnPdf')"
+        :disabled="!receiptProductionStore.dataReceiptHistory.total"
+        @click="onPdf"
+      />
     </template>
   </SearchBarGeneric>
 
@@ -71,16 +79,6 @@
     <template #content>
       <div>
         <div class="form-row two-col">
-          <div>
-            <span class="title-text">{{ $t('view.receiptStock.product.reportGr.receiptType') }}</span>
-            <MultiSelectGeneric
-              v-model="form.receiptType"
-              :options="receiptTypeMaster"
-              optionLabel="description"
-              optionValue="value"
-            />
-          </div>
-
           <div>
             <span class="title-text">{{ $t('view.receiptStock.product.reportGr.mold') }}</span>
             <InputTextGeneric v-model.trim="form.mold" placeholder="EX: CN-2400XX" />
@@ -168,14 +166,11 @@ export default {
     }
   },
 
-  emits: ['search', 'clear', 'export'],
+  emits: ['search', 'clear', 'export', 'pdf'],
 
   computed: {
     masterProductType() {
       return this.masterStore.productType
-    },
-    receiptTypeMaster() {
-      return [{ value: 'production', description: this.$t('view.receiptStock.product.reportGr.receiptTypeProduction') }]
     }
   },
 
@@ -207,6 +202,9 @@ export default {
     },
     onExport() {
       this.$emit('export', this.form)
+    },
+    onPdf() {
+      this.$emit('pdf', this.form)
     },
     onClear() {
       this.$emit('clear')

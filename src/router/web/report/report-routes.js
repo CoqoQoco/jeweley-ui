@@ -23,6 +23,8 @@ const PrePlanFunnelReport = () =>
 // ---- stock product reports ----
 const ProductDashboard = () => import('@/views/receipt-stock/product/dashboard/index-view.vue')
 const ReportGR = () => import('@/views/receipt-stock/product/report-gr/index-view.vue')
+const ReportGROutsource = () =>
+  import('@/views/receipt-stock/product/report-gr-outsource/index-view.vue')
 const StorageMoveReport = () => import('@/views/stock/storage-move-report/index-view.vue')
 const StockBalanceSummaryReport = () =>
   import('@/views/receipt-stock/product/balance-summary/index-view.vue')
@@ -354,8 +356,21 @@ const routes = [
         component: ReportGR,
         meta: {
           Displayname: {
-            en: 'Goods Receipt Report',
-            th: 'รายงานรับสินค้า'
+            en: 'Goods Receipt Report – Production',
+            th: 'รายงานรับสินค้า – งานผลิต'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT]
+        }
+      },
+      {
+        path: '/goods-receipt-outsource-report',
+        name: 'goods-receipt-outsource-report',
+        component: ReportGROutsource,
+        meta: {
+          Displayname: {
+            en: 'Goods Receipt Report – Outsource',
+            th: 'รายงานรับสินค้า – งานนอก'
           },
           minorShow: true,
           permissions: [PERMISSIONS.STOCK_PRODUCT]

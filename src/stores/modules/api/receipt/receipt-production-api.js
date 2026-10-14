@@ -4,7 +4,7 @@ import { formatDate } from '@/services/utils/dayjs.js'
 //import swAlert from '@/services/alert/sweetAlerts.js'
 //import { CsvHelper } from '@/services/utils/export-excel.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
-import { formatDecimal } from '@/services/utils/decimal.js'
+import { buildExcelRows } from '@/services/helper/goods-receipt-report/goods-receipt-report.js'
 
 export const useReceiptProductionApiStore = defineStore('receiptProduction', {
   state: () => ({
@@ -112,8 +112,7 @@ export const useReceiptProductionApiStore = defineStore('receiptProduction', {
         this.dataReceiptHistoryTotalRecord = 0
       }
     },
-    async fetchConfirmHistoryExport({ sort, formValue }) {
-      //console.log('fetchDataListPlan', formValue)
+    async fetchConfirmHistoryAll({ sort, formValue }) {
       const param = {
         take: 0,
         skip: 0,
@@ -122,39 +121,25 @@ export const useReceiptProductionApiStore = defineStore('receiptProduction', {
           ...formValue
         }
       }
-      const res = await api.jewelry.post('ReceiptProduction/ListHistory', param, {
+      return await api.jewelry.post('ReceiptProduction/ListHistory', param, {
         skipLoading: false
       })
+    },
+    async fetchConfirmHistoryExport({ sort, formValue, labels }) {
+      const res = await this.fetchConfirmHistoryAll({ sort, formValue })
 
-      if (res) {
-        const dataExcel = res.data.map((item) => ({
-          วันรับสินค้า: formatDate(item.receiptDate),
-          เลขที่ผลิต: item.stockNumber,
-          รหัสสินค้า: item.productNumber,
-          'ชื่อสินค้า EN': item.productNameEn,
-          'ชื่อสินค้า TH': item.productNameTh,
-          ประเภทสินค้า: item.productTypeName,
-          ขนาด: item.size,
-          เเม่พิมพ์: item.mold,
-          'สีของทอง/เงิน': item.productionType,
-          'ประเภททอง/เงิน': item.productionTypeSize,
-          'W.O.': `${item.wo}-${item.woNumber}`,
-          จัดเก็บ: item.location,
-          ราคา: item.productPrice ? formatDecimal(item.productPrice, 2) : '',
-          ผู้รับสินค้า: item.createBy,
-          หมายเหตุ: item.remark
-        }))
+      if (res?.data?.length) {
+        const dataExcel = buildExcelRows(res.data, res.aggregates, labels, 'production')
 
         const options = {
-          filename: `รายงานรับสินค้า_[${formatDate(new Date())}].xlsx`,
-          sheetName: 'รายงานรับสินค้า',
-          // ลบ columnWidths ออกเพื่อให้ใช้ค่า default width จาก ExcelHelper
+          filename: `${labels.pdfTitle}_[${formatDate(new Date())}].xlsx`,
+          sheetName: labels.pdfTitle,
           styles: {
             ...ExcelHelper.defaultStyles,
             headerFill: {
               type: 'pattern',
               pattern: 'solid',
-              fgColor: { argb: '921313' } // สีน้ำเงินเข้ม
+              fgColor: { argb: '921313' }
             }
           }
         }

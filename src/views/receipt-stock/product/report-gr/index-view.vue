@@ -5,8 +5,13 @@
       @search="onSearchFilter"
       @clear="onClearFilter"
       @export="onExport"
+      @pdf="onPdf"
     ></search>
-    <dataTable v-model:modelForm="search" v-model:modelFormExport="formExport"></dataTable>
+    <dataTable
+      v-model:modelForm="search"
+      v-model:modelFormExport="formExport"
+      v-model:modelFormPdf="formPdf"
+    ></dataTable>
   </div>
 </template>
 
@@ -17,7 +22,7 @@ import dataTable from './components/data-table-view.vue'
 const interfaceForm = {
   receiptDateStart: new Date(new Date().setDate(new Date().getDate())),
   receiptDateEnd: new Date(),
-  receiptType: null,
+  receiptType: ['production'],
 
   stockNumber: null,
   mold: null,
@@ -48,6 +53,7 @@ export default {
       isExport: false,
       form: { ...interfaceForm },
       formExport: { ...interfaceForm },
+      formPdf: { ...interfaceForm },
       search: {}
     }
   },
@@ -66,6 +72,10 @@ export default {
     onExport(data) {
       //console.log('onExport', data)
       this.formExport = { ...data }
+    },
+
+    onPdf(data) {
+      this.formPdf = { ...data }
     }
   },
 

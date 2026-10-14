@@ -350,8 +350,8 @@ export default {
       receiveOutsource: 'รับสินค้างานนอก'
     },
     reportGr: {
-      title: 'รายงานรับสินค้า',
-      searchDesc: 'ค้นหาและตรวจสอบรายการรับสินค้าเข้าคลังจากงานผลิต',
+      title: 'รายงานรับสินค้า – งานผลิต',
+      searchDesc: 'ค้นหาและตรวจสอบรายการรับสินค้างานผลิตเข้าคลัง พร้อมน้ำหนักทอง พลอย และราคาขาย',
       receiptDate: 'วันที่รับสินค้า',
       stockNumber: 'เลขที่ผลิต',
       productNumber: 'รหัสสินค้า',
@@ -369,12 +369,41 @@ export default {
       colProductionType: 'สีของทอง/เงิน',
       colProductionTypeSize: 'ประเภททอง/เงิน',
       colLocation: 'จัดเก็บ',
-      colProductPrice: 'ราคา',
+      colProductPrice: 'ราคาขาย',
       colCreateBy: 'ผู้รับสินค้า',
       colRemark: 'หมายเหตุ',
       studLarge: 'แป้นใหญ่',
       studMedium: 'แป้นกลาง',
-      studSmall: 'แป้นเล็ก'
+      studSmall: 'แป้นเล็ก',
+      colDetail: 'รายละเอียด',
+      colVendor: 'ผู้ขาย',
+      colPoNumber: 'เลขที่ PO',
+      colGoldType: 'ประเภททอง',
+      colGoldWeight: 'น.น.ทอง',
+      stoneDiamond: 'เพชร',
+      stoneRuby: 'ทับทิม',
+      stoneSapphire: 'ไพลิน',
+      stoneEmerald: 'มรกต',
+      stoneOther: 'อื่นๆ',
+      qtyShort: 'Qty',
+      weightShort: 'น.น.',
+      colQty: 'Qty',
+      colSalesPrice: 'ราคาขาย',
+      grandTotal: 'Grand Total',
+      pdfTitle: 'รายงานรายการสินค้านำเข้า',
+      pdfStyleNo: 'Style No./แม่พิมพ์',
+      pdfGold: 'ทอง (น.น.)',
+      pdfGoldTypeShort: 'ประเภท',
+      pdfPage: 'หน้า',
+      pdfDate: 'วันที่',
+      pdfPeriod: 'วันที่รับสินค้า',
+      modeProduction: 'งานผลิต',
+      modeOutsource: 'งานนอก',
+      btnPdf: 'พิมพ์ PDF'
+    },
+    reportGrOutsource: {
+      title: 'รายงานรับสินค้า – งานนอก',
+      searchDesc: 'ค้นหาและตรวจสอบรายการรับสินค้างานนอกเข้าคลัง พร้อมน้ำหนักทอง พลอย และราคาขาย'
     }
   }
 }

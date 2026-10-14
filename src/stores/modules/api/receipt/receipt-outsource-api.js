@@ -3,6 +3,7 @@ import api from '@/axios/axios-helper.js'
 import { formatDate } from '@/services/utils/dayjs.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
+import { buildExcelRows } from '@/services/helper/goods-receipt-report/goods-receipt-report.js'
 
 export const useReceiptOutsourceApiStore = defineStore('receiptOutsource', {
   state: () => ({
@@ -40,6 +41,19 @@ export const useReceiptOutsourceApiStore = defineStore('receiptOutsource', {
       }
     },
 
+    async fetchHistoryAll({ sort, formValue }) {
+      const param = {
+        take: 0,
+        skip: 0,
+        sort,
+        search: {
+          ...formValue
+        }
+      }
+      return await api.jewelry.post('ReceiptOutsource/ListHistory', param, {
+        skipLoading: false
+      })
+    },
     async fetchHistoryExport({ sort, formValue }) {
       const param = {
         take: 0,
@@ -73,6 +87,29 @@ export const useReceiptOutsourceApiStore = defineStore('receiptOutsource', {
         const options = {
           filename: `รายงานรับสินค้างานนอก_[${formatDate(new Date())}].xlsx`,
           sheetName: 'รับสินค้างานนอก',
+          styles: {
+            ...ExcelHelper.defaultStyles,
+            headerFill: {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: '921313' }
+            }
+          }
+        }
+
+        ExcelHelper.exportToExcel(dataExcel, options)
+      }
+    },
+
+    async fetchReportExport({ sort, formValue, labels }) {
+      const res = await this.fetchHistoryAll({ sort, formValue })
+
+      if (res?.data?.length) {
+        const dataExcel = buildExcelRows(res.data, res.aggregates, labels, 'outsource')
+
+        const options = {
+          filename: `${labels.pdfTitle}_[${formatDate(new Date())}].xlsx`,
+          sheetName: labels.pdfTitle,
           styles: {
             ...ExcelHelper.defaultStyles,
             headerFill: {
