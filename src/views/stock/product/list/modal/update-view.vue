@@ -391,15 +391,15 @@ export default {
     },
     materialColumns() {
       return [
-        { field: 'type', header: this.$t('view.stock.product.materialType'), sortable: false, width: '120px' },
-        { field: 'typeCode', header: this.$t('view.stock.product.materialCode'), sortable: false, minWidth: '150px' },
-        { field: 'grade', header: this.$t('view.stock.product.materialGrade'), sortable: false, width: '170px' },
-        { field: 'size', header: this.$t('view.stock.product.size'), sortable: false, width: '100px' },
-        { field: 'region', header: this.$t('view.stock.product.origin'), sortable: false, width: '120px' },
-        { field: 'qty', header: this.$t('common.field.quantity'), sortable: false, width: '200px' },
-        { field: 'weight', header: this.$t('common.field.weight'), sortable: false, width: '230px' },
-        { field: 'price', header: this.$t('common.field.price'), sortable: false, width: '120px' },
-        { field: 'action', header: '', sortable: false, width: '60px' }
+        { field: 'type', header: this.$t('view.stock.product.materialType'), sortable: false, width: '110px', minWidth: '110px' },
+        { field: 'typeCode', header: this.$t('view.stock.product.materialCode'), sortable: false, width: '140px', minWidth: '140px' },
+        { field: 'grade', header: this.$t('view.stock.product.materialGrade'), sortable: false, width: '150px', minWidth: '150px' },
+        { field: 'size', header: this.$t('view.stock.product.size'), sortable: false, width: '80px', minWidth: '80px' },
+        { field: 'region', header: this.$t('view.stock.product.origin'), sortable: false, width: '90px', minWidth: '90px' },
+        { field: 'qty', header: this.$t('common.field.quantity'), sortable: false, width: '180px', minWidth: '180px' },
+        { field: 'weight', header: this.$t('common.field.weight'), sortable: false, width: '190px', minWidth: '190px' },
+        { field: 'price', header: this.$t('common.field.price'), sortable: false, width: '110px', minWidth: '110px' },
+        { field: 'action', header: '', sortable: false, width: '50px', minWidth: '50px' }
       ]
     },
     masterMaterialType() {
