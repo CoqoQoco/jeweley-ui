@@ -184,3 +184,32 @@ describe('header / tip functions and text render', () => {
     expect(col.resolveCell(col.text('u', 'h', { render: (row, tt) => `${row.u}-${tt('x')}` }), { u: 'PC' }, t).text).toBe('PC-x')
   })
 })
+
+describe('altText / text extras / percent style / stacked icon / chipList small', () => {
+  it('altText: string replaces the cell (empty = blank), null/undefined keeps the normal value', () => {
+    const c = col.number('n', 'h', 'decimal', { altText: (row) => (row.skip ? '' : row.note ? 'ไม่ได้ชั่ง' : null) })
+    expect(col.resolveCell(c, { n: 1, skip: true }, t)).toEqual({ kind: 'note', text: '' })
+    expect(col.resolveCell(c, { n: 1, note: true }, t)).toEqual({ kind: 'note', text: 'ไม่ได้ชั่ง' })
+    expect(col.resolveCell(c, { n: 1.5 }, t)).toMatchObject({ kind: 'number', text: '1.5' })
+  })
+
+  it('text keeps the plain shape unless secondary / cellTip / strong are configured', () => {
+    expect(col.resolveCell(col.text('a', 'h'), { a: 'x' }, t)).toEqual({ kind: 'text', text: 'x' })
+    const c = col.text('a', 'h', { secondary: (row) => row.code, cellTip: (row, tt) => (row.tip ? tt('tip.key') : ''), strong: true })
+    expect(col.resolveCell(c, { a: 'x', code: 'W1', tip: true }, t)).toEqual({ kind: 'text', text: 'x', secondary: 'W1', tip: 'tip.key', strong: true })
+    expect(col.resolveCell(c, { a: 'x' }, t)).toEqual({ kind: 'text', text: 'x', strong: true })
+  })
+
+  it('percent supports colour / bold (value or function)', () => {
+    const c = col.percent('p', 'h', { color: (row) => (row.over ? 'red' : ''), bold: (row) => row.over })
+    expect(col.resolveCell(c, { p: 5.123, over: true }, t)).toEqual({ kind: 'percent', text: '5.12%', color: 'red', bold: true })
+    expect(col.resolveCell(col.percent('p', 'h'), { p: null }, t)).toEqual({ kind: 'percent', text: '—', color: '', bold: false })
+  })
+
+  it('stacked primaryIcon / muted and chipList small pass through', () => {
+    const c = col.stacked('w', 'h', (row) => ({ primary: row.w, secondary: row.n, primaryIcon: row.q ? 'bi-hourglass-split' : undefined, muted: !!row.q }), { strong: false })
+    expect(col.resolveCell(c, { w: 'CG9K', q: true }, t)).toMatchObject({ primaryIcon: 'bi-hourglass-split', muted: true })
+    expect(col.resolveCell(c, { w: 'W1', n: 'สมชาย' }, t)).toMatchObject({ primaryIcon: '', muted: false, secondary: 'สมชาย' })
+    expect(col.resolveCell(col.chipList('c', 'h', () => [], { small: true }), {}, t)).toEqual({ kind: 'chipList', lines: [], small: true })
+  })
+})

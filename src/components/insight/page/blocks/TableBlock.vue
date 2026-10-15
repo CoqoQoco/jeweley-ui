@@ -18,7 +18,7 @@
         {{ sectionText(section) }}
       </p>
 
-      <div v-else-if="!isEmpty" class="responsive-table-wrapper">
+      <div v-else-if="!isEmpty" :class="['responsive-table-wrapper', { 'table-block__table--clickable': !!(node.selectable || node.onRowClick) }]">
         <BaseDataTable
           :items="sectionRows(section)"
           :columns="sectionColumns(section)"
@@ -166,6 +166,10 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-xs);
+}
+
+.table-block__table--clickable :deep(.p-datatable-tbody > tr) {
+  cursor: pointer;
 }
 
 :deep(.insight-table__row--selected) {

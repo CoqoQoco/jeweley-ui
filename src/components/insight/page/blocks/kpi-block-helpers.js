@@ -34,7 +34,7 @@ export function buildKpiCards(node, ctx, t) {
   return (node.cards || []).map((card, index) => ({
     key: card.id || `card-${index}`,
     icon: card.icon || 'bi-speedometer2',
-    label: t(card.label),
+    label: typeof card.label === 'function' ? card.label(ctx, t) : t(card.label),
     value: withKpiUnit(formatKpiValue(card.value(ctx), card.format), card, t),
     sub: card.sub ? card.sub(ctx, t) : '',
     tone: card.tone ? card.tone(ctx) : 'main',

@@ -15,7 +15,7 @@
   field อื่นใน draft contract) — ทุกหมวดถือ range state (rangePreset/start/end/bucket) แยกกันเองใน
   filters.wip/filters.delivery/filters.gold/filters.capacity/filters.workers/filters.materials แต่ sync ผ่าน
   URL query key ร่วมกัน (range/start/end ไม่มี prefix ตาม range-presets.js) เฉพาะของหมวดที่เปิดอยู่ ณ ขณะนั้น
-  เท่านั้น (ดู syncStateToQuery) — ตัวเลือกช่าง (workerCodes) ของหมวด gold มาจากข้อมูลที่ gold-section.vue ยิง
+  เท่านั้น (ดู syncStateToQuery) — ตัวเลือกช่าง (workerCodes) ของหมวด gold มาจากข้อมูลที่ topics/gold.config.js ยิง
   Gold สำเร็จแล้ว emit ขึ้นมา (goldWorkerOptions) ไม่ใช่ list คงที่แบบแผนกของ wip/delivery/capacity/workers —
   departmentKeys/employmentTypes ของหมวด workers ส่งไป server จริง (ต่างจาก capacity ที่ departmentKeys เป็น
   client-side ล้วน — ดู topics/workers.config.js) — ตาราง waiting/demand/lowCover ของหมวด materials ใช้ตัวกรอง
@@ -73,9 +73,10 @@
         :filter="filters.delivery"
         :active="activeSection === 'delivery'"
       />
-      <GoldSection
+      <InsightPage
         v-if="visitedSections.has('gold')"
         v-show="activeSection === 'gold'"
+        :config="goldConfig"
         :filter="goldSectionFilter"
         :active="activeSection === 'gold'"
         @workers-loaded="onGoldWorkersLoaded"
@@ -381,7 +382,7 @@ import { materialsConfig } from './topics/materials.config.js'
 import { deliveryConfig } from './topics/delivery.config.js'
 import { workersConfig } from './topics/workers.config.js'
 import { capacityConfig } from './topics/capacity.config.js'
-import GoldSection from './sections/gold-section.vue'
+import { goldConfig } from './topics/gold.config.js'
 
 const DEPARTMENT_KEYS = ['design', 'trim', 'rawPolish', 'gemSort', 'setting', 'plating', 'costCard']
 
@@ -401,7 +402,6 @@ export default {
     MultiSelectGeneric,
     DateRangeGeneric,
     InsightPage,
-    GoldSection,
   },
 
   setup() {
@@ -416,6 +416,7 @@ export default {
       deliveryConfig,
       workersConfig,
       capacityConfig,
+      goldConfig,
       activeSection: 'wip',
       // ว่างตั้งต้นเสมอ — created() เป็นคน add หมวดที่ resolve จาก query จริง (applyQueryToState) ก่อน mount
       // ครั้งแรก กัน WipSection (หรือหมวดไหนก็ตาม) mount+ยิง endpoint ทิ้งทั้งที่ผู้ใช้เปิดมาที่หมวดอื่น
@@ -435,8 +436,8 @@ export default {
       draftCapacityFilter: buildDefaultCapacityFilter(),
       draftWorkersFilter: buildDefaultWorkersFilter(),
       draftMaterialsFilter: buildDefaultMaterialsFilter(),
-      // ตัวเลือกช่างของหมวด gold — มาจาก Gold.workers ที่ gold-section.vue emit ขึ้นมาหลังยิงสำเร็จ (ไม่ใช่
-      // list คงที่แบบแผนกของ wip/delivery) ว่างก่อน gold-section.vue ยิงครั้งแรก
+      // ตัวเลือกช่างของหมวด gold — มาจาก Gold.workers ที่ topics/gold.config.js emit ขึ้นมาหลังยิงสำเร็จ (ไม่ใช่
+      // list คงที่แบบแผนกของ wip/delivery) ว่างก่อน topics/gold.config.js ยิงครั้งแรก
       goldWorkerOptions: [],
       // ตัวเลือกตัวกรอง สินค้า/ทอง/Gold size ของหมวด capacity — มาจาก Capacity.filterOptions (API คำนวณโดยไม่สนตัวกรอง
       // สินค้า จึงไม่หดเมื่อกรองอยู่) ที่ capacity-section emit ขึ้นมา — key เป็นชื่อฟิลด์ตัวกรอง (productTypes/golds/goldSizes)
@@ -463,8 +464,8 @@ export default {
       return [80, 50].map((workerType) => ({ value: String(workerType), label: this.$t(`view.productionInsight.gold.workerType.${workerType}`) }))
     },
 
-    // โลหะของหมวดทองมาจากตัวสลับทั้งหน้า (/executive) — รวม = แสดงทอง (gold-section มี note) — object ใหม่เฉพาะเมื่อ
-    // filters.gold หรือโลหะเปลี่ยน (computed) กัน deep-watcher ของ gold-section ยิงซ้ำ
+    // โลหะของหมวดทองมาจากตัวสลับทั้งหน้า (/executive) — รวม = แสดงทอง (gold.config มี note) — object ใหม่เฉพาะเมื่อ
+    // filters.gold หรือโลหะเปลี่ยน (computed) กัน watcher ของ InsightPage (gold) ยิงซ้ำ
     goldSectionFilter() {
       return { ...this.filters.gold, metal: resolveGoldTabMetal(this.metalScopeStore.metal) }
     },

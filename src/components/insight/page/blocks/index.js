@@ -6,6 +6,7 @@ import PlanTableBlock from './PlanTableBlock.vue'
 import ChartBlock from './ChartBlock.vue'
 import DetailBlock from './DetailBlock.vue'
 import SparkCardsBlock from './SparkCardsBlock.vue'
+import NoteBlock from './NoteBlock.vue'
 
 export const BLOCK_COMPONENTS = {
   kpi: KpiBlock,
@@ -14,7 +15,8 @@ export const BLOCK_COMPONENTS = {
   planTable: PlanTableBlock,
   chart: ChartBlock,
   detail: DetailBlock,
-  sparkCards: SparkCardsBlock
+  sparkCards: SparkCardsBlock,
+  note: NoteBlock
 }
 
 export { BLOCK_TYPES } from './block-types.js'

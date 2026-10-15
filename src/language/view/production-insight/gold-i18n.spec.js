@@ -11,7 +11,7 @@ import { createI18n } from 'vue-i18n'
 
 import th from './th.js'
 import executiveTh from '../executive/th.js'
-import { STAGE_TARGET_WORKER_TYPE_ORDER, resolveStageTargetDeptKey } from '../../../views/production/insight/components/gold-stage-helpers.js'
+import { STAGE_TARGET_WORKER_TYPE_ORDER, resolveStageTargetDeptKey } from '../../../views/production/insight/topics/gold-stage-helpers.js'
 
 const i18n = createI18n({
   legacy: false,

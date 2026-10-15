@@ -4,7 +4,9 @@ import { formatDate } from '@/services/utils/dayjs.js'
 // draft ที่ส่งขึ้น page state: ว่างเมื่อไม่มีการเปลี่ยนแปลงจากค่าที่บันทึก (ปิด preview)
 // ไม่มีการเปลี่ยนแปลง = preset.emptyDraft (รายการ: [] · ค่าเดียว: null)
 export function buildDraftEmission(preset, draftMap, savedMap) {
-  return preset.hasChanges(draftMap, savedMap) ? preset.buildPayload(draftMap) : emptyDraftOf(preset)
+  if (!preset.hasChanges(draftMap, savedMap)) return emptyDraftOf(preset)
+  // buildDraftPayload (ถ้ามี) = payload ของ preview ที่ต่างจาก payload ตอนบันทึก (เช่น ส่งเฉพาะกลุ่มที่ถูกแก้)
+  return preset.buildDraftPayload ? preset.buildDraftPayload(draftMap, savedMap) : preset.buildPayload(draftMap)
 }
 
 export function emptyDraftOf(preset) {

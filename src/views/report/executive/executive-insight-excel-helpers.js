@@ -9,7 +9,7 @@ import { formatDate } from '@/services/utils/dayjs.js'
 import { resolveFindingParams, formatUnitLabel } from '@/components/insight/insight-helpers.js'
 import { resolvePlanWorkersDisplay } from '@/components/insight/plan-table-helpers.js'
 import { resolveGemName, resolveGemShapeName, resolveGemStatusLabelKey } from '@/views/production/insight/topics/materials-helpers.js'
-import { formatOverBucketsRatio } from '@/views/production/insight/components/gold-helpers.js'
+import { formatOverBucketsRatio } from '@/views/production/insight/topics/gold-helpers.js'
 import { resolveGoldColumnValue, sortWorkersByWagesDesc } from '@/views/production/insight/topics/workers-helpers.js'
 import { formatMoneyFull } from './executive-helpers.js'
 

@@ -119,3 +119,17 @@ describe('formatHistoryCell', () => {
     expect(formatHistoryCell({ field: 'r' }, { r: 'x' })).toBe('x')
   })
 })
+
+describe('buildDraftEmission with buildDraftPayload', () => {
+  it('uses the preview-specific payload when the preset has one, empty draft when nothing changed', () => {
+    const preset = {
+      emptyDraft: [],
+      hasChanges: (draft, saved) => draft.a !== saved.a,
+      buildPayload: () => ['save'],
+      buildDraftPayload: (draft) => ['preview', draft.a]
+    }
+    expect(buildDraftEmission(preset, { a: 2 }, { a: 1 })).toEqual(['preview', 2])
+    expect(buildDraftEmission(preset, { a: 1 }, { a: 1 })).toEqual([])
+    expect(buildDraftEmission({ ...preset, buildDraftPayload: undefined }, { a: 2 }, { a: 1 })).toEqual(['save'])
+  })
+})

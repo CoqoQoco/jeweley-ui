@@ -126,6 +126,11 @@ export function resolveDeptLabel(row, col, t) {
 
 // คืน object บอกว่า cell ต้องแสดงอะไร — ColumnCell.vue แค่ map เป็น template
 export function resolveCell(col, row, t, ctx) {
+  // altText(row, t): string = แสดงข้อความนี้แทนค่า (เช่น "ไม่ได้ชั่งน้ำหนัก"; '' = เซลล์ว่าง) · null/undefined = แสดงค่าปกติ
+  if (col.altText) {
+    const alt = col.altText(row, t)
+    if (alt !== null && alt !== undefined) return { kind: 'note', text: alt }
+  }
   switch (col.kind) {
     case 'number': {
       const raw = readValue(col, row)
@@ -149,7 +154,12 @@ export function resolveCell(col, row, t, ctx) {
       }
     }
     case 'percent':
-      return { kind: 'percent', text: formatPercentValue(readValue(col, row), col.digits ?? 2) ?? '—' }
+      return {
+        kind: 'percent',
+        text: formatPercentValue(readValue(col, row), col.digits ?? 2) ?? '—',
+        color: col.color ? col.color(row) : '',
+        bold: typeof col.bold === 'function' ? !!col.bold(row) : !!col.bold
+      }
     case 'date': {
       const raw = readValue(col, row)
       return { kind: 'date', text: raw ? formatDate(raw) : col.nullAs ?? '—' }
@@ -174,11 +184,12 @@ export function resolveCell(col, row, t, ctx) {
     }
     case 'stacked': {
       const lines = col.lines(row) || {}
-      return { kind: 'stacked', primary: lines.primary ?? '', secondary: lines.secondary ?? '', strong: !!col.strong }
+      // lines.primaryIcon (bi-*) + lines.muted = บรรทัดหลักแบบจาง/เอียงนำด้วยไอคอน (เช่น แถวคิวที่ยังไม่มีช่างรับ)
+      return { kind: 'stacked', primary: lines.primary ?? '', secondary: lines.secondary ?? '', strong: !!col.strong, primaryIcon: lines.primaryIcon || '', muted: !!lines.muted }
     }
     case 'chipList': {
       const lines = (col.items ? col.items(row, ctx, t) : []) || []
-      return { kind: 'chipList', lines }
+      return { kind: 'chipList', lines, small: !!col.small }
     }
     case 'shareBar': {
       const share = calcWaitWorkShare(col.wait(row), col.work(row))
@@ -199,9 +210,16 @@ export function resolveCell(col, row, t, ctx) {
       return { kind: 'planLink', label: row.woText || row.woNumber || row.wo || '' }
     default: {
       // render(row, t) = ข้อความที่ประกอบเอง (เช่น ชื่อหน่วยที่แปลแล้ว) แทนการอ่านค่าตรงๆ
-      if (col.render) return { kind: 'text', text: col.render(row, t) }
+      // secondary(row) = ข้อความรองตัวเล็กต่อท้ายในบรรทัดเดียวกัน · cellTip(row, t) = ไอคอน ⓘ ต่อท้ายค่า · strong = ตัวหนา
+      const extras = {}
+      const secondary = col.secondary ? col.secondary(row) : ''
+      const tip = col.cellTip ? col.cellTip(row, t) : ''
+      if (secondary) extras.secondary = secondary
+      if (tip) extras.tip = tip
+      if (col.strong) extras.strong = true
+      if (col.render) return { kind: 'text', text: col.render(row, t), ...extras }
       const raw = readValue(col, row)
-      return { kind: 'text', text: raw === null || raw === undefined || raw === '' ? col.nullAs ?? '' : String(raw) }
+      return { kind: 'text', text: raw === null || raw === undefined || raw === '' ? col.nullAs ?? '' : String(raw), ...extras }
     }
   }
 }

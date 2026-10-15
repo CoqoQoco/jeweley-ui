@@ -19,23 +19,28 @@
             {{ $t(presetDef.text.readOnly) }}
           </p>
 
-          <div v-for="row in rows" :key="row.key" class="target-drawer__field" :class="{ 'target-drawer__field--single': rows.length === 1 }">
-            <FormFieldGeneric :label="row.label">
-              <InputTextGeneric
-                v-if="canEdit"
-                v-model.number="draftMap[row.key]"
-                type="number"
-                :min="presetDef.min"
-                :max="presetDef.max"
-                @update:modelValue="onDraftInput"
-              />
-              <span v-else class="target-drawer__readonly-value">{{ presetDef.savedText(row) }}</span>
-            </FormFieldGeneric>
-            <p class="target-drawer__reference">
-              {{ presetDef.referenceText(row, ctx, translate) }}
-            </p>
-            <ButtonGeneric variant="plain" :label="$t(presetDef.text.historyLink)" @click="onOpenHistory(row)" />
-          </div>
+          <template v-for="(row, index) in rows" :key="row.key">
+            <!-- row.section / row.group = หัวข้อกลุ่ม (เช่น "เป้าตามใบ slip" > "ทอง") แสดงเมื่อต่างจากแถวก่อนหน้า -->
+            <p v-if="row.section && row.section !== rows[index - 1]?.section" :class="['target-drawer__section-title', { 'target-drawer__section-title--divided': index > 0 }]">{{ row.section }}</p>
+            <p v-if="row.group && (row.group !== rows[index - 1]?.group || row.section !== rows[index - 1]?.section)" class="target-drawer__group-title">{{ row.group }}</p>
+            <div class="target-drawer__field" :class="{ 'target-drawer__field--single': rows.length === 1 }">
+              <FormFieldGeneric :label="row.label">
+                <InputTextGeneric
+                  v-if="canEdit"
+                  v-model.number="draftMap[row.key]"
+                  type="number"
+                  :min="presetDef.min"
+                  :max="presetDef.max"
+                  @update:modelValue="onDraftInput"
+                />
+                <span v-else class="target-drawer__readonly-value">{{ presetDef.savedText(row) }}</span>
+              </FormFieldGeneric>
+              <p v-if="referenceText(row)" class="target-drawer__reference">
+                {{ referenceText(row) }}
+              </p>
+              <ButtonGeneric variant="plain" :label="$t(presetDef.text.historyLink)" @click="onOpenHistory(row)" />
+            </div>
+          </template>
 
           <FormFieldGeneric v-if="canEdit" :label="$t(presetDef.text.remarkLabel)" :required="true" :error="remarkError">
             <TextareaGeneric v-model="remark" :rows="3" :placeholder="$t(presetDef.text.remarkPlaceholder)" />
@@ -156,6 +161,10 @@ export default {
       return this.$t(key, params)
     },
 
+    referenceText(row) {
+      return this.presetDef.referenceText(row, this.ctx, this.translate)
+    },
+
     resetDraftFromSaved() {
       this.draftMap = { ...this.savedMap }
       this.remark = ''
@@ -187,8 +196,8 @@ export default {
     },
 
     async onOpenHistory(row) {
-      this.historyLabel = row.label
-      this.historyRows = (await this.presetDef.history(this.productionInsightStore, row.key)) || []
+      this.historyLabel = row.historyLabel || row.label
+      this.historyRows = (await this.presetDef.history(this.productionInsightStore, row.key, row)) || []
       this.isHistoryOpen = true
     },
 
@@ -241,6 +250,26 @@ export default {
 .target-drawer__field--single {
   padding-bottom: 0;
   border-bottom: 0;
+}
+
+.target-drawer__section-title {
+  margin: 0;
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--base-font-color);
+
+  &--divided {
+    padding-top: var(--sp-lg);
+    border-top: 1px solid var(--color-border);
+  }
+}
+
+.target-drawer__group-title {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--base-sub-color);
+  text-transform: uppercase;
 }
 
 .target-drawer__readonly-value {

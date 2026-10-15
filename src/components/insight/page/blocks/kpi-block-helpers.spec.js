@@ -61,3 +61,10 @@ describe('money0', () => {
     expect(formatKpiValue(null, 'money0')).toBe('—')
   })
 })
+
+describe('card label as a function', () => {
+  it('label(ctx, t) lets a card interpolate page values', () => {
+    const cards = buildKpiCards({ cards: [{ id: 'a', label: (ctx, tt) => tt('k', { metal: ctx.m }), value: () => 1 }] }, { m: 'GOLD' }, (key, params) => (params ? `${key}:${JSON.stringify(params)}` : key))
+    expect(cards[0].label).toBe('k:{"metal":"GOLD"}')
+  })
+})

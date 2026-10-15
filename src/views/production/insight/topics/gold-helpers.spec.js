@@ -151,3 +151,36 @@ describe('hasGoldDraftChanges', () => {
     expect(hasGoldDraftChanges(null, null)).toBe(false)
   })
 })
+
+describe('display helpers used by gold.config.js', () => {
+  const t = (key, params) => (params ? `${key}:${JSON.stringify(params)}` : key)
+
+  it('formatGoldPercent keeps up to 2 decimals, optional unit, dash for null', async () => {
+    const { formatGoldPercent } = await import('./gold-helpers.js')
+    expect(formatGoldPercent(3.987)).toBe('3.99%')
+    expect(formatGoldPercent(3.987, false)).toBe('3.99')
+    expect(formatGoldPercent(null)).toBe('—')
+  })
+
+  it('formatGoldGram appends the gram unit; formatGoldCount groups thousands', async () => {
+    const { formatGoldGram, formatGoldCount } = await import('./gold-helpers.js')
+    expect(formatGoldGram(12.345, t)).toBe('12.35 view.productionInsight.gold.gramUnit')
+    expect(formatGoldGram(null, t)).toBe('—')
+    expect(formatGoldCount(1234)).toBe('1,234')
+    expect(formatGoldCount(null)).toBe('—')
+  })
+
+  it('formatNetMoneyLabel: positive = returned, negative = deducted, zero/null = dash', async () => {
+    const { formatNetMoneyLabel } = await import('./gold-helpers.js')
+    expect(formatNetMoneyLabel(1500, t)).toBe('view.productionInsight.gold.netMoneyPositive:{"amount":"1,500"}')
+    expect(formatNetMoneyLabel(-20, t)).toBe('view.productionInsight.gold.netMoneyNegative:{"amount":"20"}')
+    expect(formatNetMoneyLabel(0, t)).toBe('—')
+    expect(formatNetMoneyLabel(null, t)).toBe('—')
+  })
+
+  it('resolveGoldKpiRow fills a missing worker type with zeros/nulls', async () => {
+    const { resolveGoldKpiRow } = await import('./gold-helpers.js')
+    expect(resolveGoldKpiRow([], 50)).toMatchObject({ workerType: 50, lossPercent: null, excessGram: 0, coveragePercent: null })
+    expect(resolveGoldKpiRow([{ workerType: 80, lossPercent: 2 }], 80).lossPercent).toBe(2)
+  })
+})

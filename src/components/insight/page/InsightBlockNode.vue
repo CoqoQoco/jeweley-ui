@@ -4,7 +4,7 @@
     { group: true, id, blocks: [...], card? }    → กลุ่มที่มี anchor insight-report-<id> ของตัวเอง เรียงลงมา ห่าง 24px (card = กล่องเดียวครอบทั้งกลุ่ม)
     { type: 'slot', component, props, events }   → escape hatch: component อะไรก็ได้
     { type: 'kpi'|'trend'|'table'|'planTable'|'chart'|'detail'|'sparkCards', ... } → block มาตรฐาน (BLOCK_COMPONENTS)
-  node.visible(ctx) = false → ไม่เรนเดอร์ · node.detail (ของ table) เรนเดอร์ต่อท้ายเป็น DetailBlock
+  node.visible(ctx) = false → ไม่เรนเดอร์ · node.detail (ของ table) เรนเดอร์ต่อท้ายเป็น DetailBlock (กราฟเดียว) หรือ detail.blocks[] (หลาย block ในกล่องเดียว)
   ทุก block ที่มี id ได้ DOM id insight-report-<id> (จาก BlockFrame / group)
 -->
 <template>
@@ -29,7 +29,15 @@
 
     <template v-else-if="blockComponent">
       <component :is="blockComponent" :node="node" :ctx="ctx" />
-      <DetailBlock v-if="node.detail" :node="node.detail" :ctx="ctx" />
+      <template v-if="node.detail">
+        <!-- detail.blocks = กล่องรายละเอียดเดียวที่มีหลาย block ซ้อน (กราฟ + ตาราง) — ctx.selected = แถวที่เลือก, title(ctx, t) อ่านจาก ctx.selected -->
+        <BlockFrame v-if="node.detail.blocks && detailRow" v-bind="detailFrameProps">
+          <div class="insight-node__card-body">
+            <InsightBlockNode v-for="(child, index) in node.detail.blocks" :key="keyOf(child, index)" :node="child" :ctx="detailCtx" />
+          </div>
+        </BlockFrame>
+        <DetailBlock v-else-if="!node.detail.blocks" :node="node.detail" :ctx="ctx" />
+      </template>
     </template>
   </template>
 </template>
@@ -66,6 +74,18 @@ export default {
 
     cardProps() {
       return resolveFrameProps(this.node.card, this.ctx, (key, params) => this.$t(key, params))
+    },
+
+    detailRow() {
+      return this.node.detail && this.node.detail.blocks && this.node.detail.selected ? this.node.detail.selected(this.ctx) : null
+    },
+
+    detailCtx() {
+      return { ...this.ctx, selected: this.detailRow }
+    },
+
+    detailFrameProps() {
+      return resolveFrameProps(this.node.detail, this.detailCtx, (key, params) => this.$t(key, params))
     },
 
     slotProps() {

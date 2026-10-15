@@ -1,7 +1,7 @@
 <!--
   PlanTableBlock — ตารางใบงานแบบ paged (useDataTablePaging) ใน BlockFrame ตาม config:
     endpoint ('ProductionInsight/StalePlans' ฯลฯ) · params(filter,state) → body ไม่รวม take/skip/sort · columns[] จาก column library
-    dataKey (default 'planId') · toolbar{ toggle{ stateKey, options[{value,label}], aria } } · focus{ stateKey, chipText, clearTip }
+    dataKey (default 'planId') · toolbar{ toggle{ stateKey, options[{value,label}], aria }, checkbox{ stateKey, label } } · focus{ stateKey, chipText, clearTip }
   resetPagingKey = JSON ของ params ทั้งหมด (watch ตัวเดียว) → เปลี่ยนหลาย field พร้อมกันยิงรอบเดียว · ถ้าแท็บไม่ active
   จะติดธง needsRefetch แล้วยิงตอนกลับมา active (stale-refetch เดียวกับ InsightPage)
   metal ถูกเติมโดย store (metal-scope) อยู่แล้ว ไม่เติมซ้ำที่นี่
@@ -14,6 +14,14 @@
         :options="toggleOptions"
         :ariaLabel="$t(node.toolbar.toggle.aria)"
         @update:modelValue="ctx.setState(node.toolbar.toggle.stateKey, $event)"
+      />
+    </div>
+
+    <div v-if="node.toolbar && node.toolbar.checkbox" class="plan-table-block__toolbar">
+      <CheckboxGeneric
+        :modelValue="!!ctx.state[node.toolbar.checkbox.stateKey]"
+        :label="$t(node.toolbar.checkbox.label)"
+        @update:modelValue="ctx.setState(node.toolbar.checkbox.stateKey, !!$event)"
       />
     </div>
 
@@ -67,6 +75,7 @@ import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import InfoTipGeneric from '@/components/generic/InfoTipGeneric.vue'
 import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 export default {
@@ -74,7 +83,7 @@ export default {
 
   mixins: [dataTablePaging, blockMixin],
 
-  components: { BlockFrame, ColumnCell, ButtonGeneric, FormFieldGeneric, InputTextGeneric, InfoTipGeneric, ToggleGroupGeneric, BaseDataTable },
+  components: { BlockFrame, ColumnCell, ButtonGeneric, FormFieldGeneric, InputTextGeneric, InfoTipGeneric, ToggleGroupGeneric, CheckboxGeneric, BaseDataTable },
 
   setup() {
     const productionInsightStore = useProductionInsightApiStore()

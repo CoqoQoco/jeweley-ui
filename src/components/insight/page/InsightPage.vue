@@ -55,7 +55,7 @@ export default {
     return { productionInsightStore, masterStore }
   },
 
-  emits: ['update-filter', 'filter-options-loaded'],
+  emits: ['update-filter', 'filter-options-loaded', 'workers-loaded'],
 
   props: {
     config: { type: Object, required: true },

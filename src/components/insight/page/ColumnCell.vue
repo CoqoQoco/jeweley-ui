@@ -29,6 +29,10 @@
 
   <span v-else-if="cell.kind === 'stacked'" class="column-cell__stacked">
     <strong v-if="col.strong">{{ cell.primary }}</strong>
+    <span v-else-if="cell.primaryIcon" :class="{ 'column-cell__muted': cell.muted }">
+      <i :class="['bi', cell.primaryIcon]"></i>
+      {{ cell.primary }}
+    </span>
     <span v-else>{{ cell.primary }}</span>
     <small v-if="cell.secondary" class="text-muted">{{ cell.secondary }}</small>
   </span>
@@ -60,11 +64,13 @@
     </template>
   </div>
 
-  <div v-else-if="cell.kind === 'percent'" class="text-right">{{ cell.text }}</div>
+  <div v-else-if="cell.kind === 'percent'" class="text-right" :style="percentStyle">{{ cell.text }}</div>
+
+  <div v-else-if="cell.kind === 'note'" class="column-cell__alt-note">{{ cell.text }}</div>
 
   <span v-else-if="cell.kind === 'chip'" class="column-cell__chip" :style="{ color: cell.color, borderColor: cell.borderColor }">{{ cell.text }}</span>
 
-  <div v-else-if="cell.kind === 'chipList'" class="column-cell__chip-list">
+  <div v-else-if="cell.kind === 'chipList'" :class="['column-cell__chip-list', { 'column-cell__chip-list--small': cell.small }]">
     <span v-if="!cell.lines.length">—</span>
     <div v-for="(line, index) in cell.lines" :key="index" class="column-cell__chip-line">
       <span>{{ line.label }}</span>
@@ -84,6 +90,15 @@
   </template>
 
   <ChartGeneric v-else-if="cell.kind === 'sparkline'" type="line" :series="[{ data: cell.values }]" :options="sparklineOptions" :height="32" />
+
+  <span v-else-if="cell.secondary || cell.tip" class="column-cell__inline">
+    <strong v-if="cell.strong">{{ cell.text }}</strong>
+    <template v-else>{{ cell.text }}</template>
+    <small v-if="cell.secondary" class="text-muted">{{ cell.secondary }}</small>
+    <InfoTipGeneric v-if="cell.tip" :text="cell.tip" />
+  </span>
+
+  <strong v-else-if="cell.strong">{{ cell.text }}</strong>
 
   <template v-else>{{ cell.text }}</template>
 </template>
@@ -128,6 +143,13 @@ export default {
       return Object.keys(style).length ? style : null
     },
 
+    percentStyle() {
+      const style = {}
+      if (this.cell.color) style.color = this.cell.color
+      if (this.cell.bold) style.fontWeight = 700
+      return Object.keys(style).length ? style : null
+    },
+
     numberClass() {
       return [{ 'text-right': this.col.align === 'right', 'column-cell__negative': this.cell.negative }]
     },
@@ -162,6 +184,16 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.column-cell__muted {
+  color: var(--base-sub-color);
+  font-style: italic;
+}
+
+.column-cell__alt-note {
+  color: var(--base-sub-color);
+  font-style: italic;
 }
 
 .column-cell__inline {
@@ -215,6 +247,16 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+// small = หลายบรรทัดตัวเลขเล็กชิดขวา (เช่น "ค้างไม่รับคืน" 2 บรรทัด)
+.column-cell__chip-list--small {
+  gap: 2px;
+  font-size: var(--fs-sm);
+
+  .column-cell__chip-line {
+    justify-content: flex-end;
+  }
 }
 
 .column-cell__chip-line {

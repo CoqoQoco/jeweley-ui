@@ -120,6 +120,12 @@ TARGET_PRESETS.deliveryTarget = {
   }
 }
 
+// preset ของ topic ที่ตั้งค่าเป้าซับซ้อน (เช่น หลายกลุ่ม/หลาย scope) ประกาศในโฟลเดอร์ topic แล้วลงทะเบียนตอน import config
+// — กัน component กลางต้อง import จาก views
+export function registerTargetPreset(name, preset) {
+  TARGET_PRESETS[name] = preset
+}
+
 export function getTargetPreset(name) {
   return TARGET_PRESETS[name] || null
 }

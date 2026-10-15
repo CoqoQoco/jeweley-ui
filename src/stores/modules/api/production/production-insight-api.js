@@ -242,7 +242,7 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
 
     // items = [{scope:'SLIP',workerType,metal,targetPercent}, {scope:'STAGE',workerType,metal,targetPercent}]
     // ในอาร์เรย์เดียวกัน (workerType ของ STAGE คือรหัสแผนก 60/80/90) — ต้องมีสิทธิ์ production:standard-edit —
-    // เช็คฝั่ง UI ก่อนเรียกเสมอ (ดู gold-target-panel.vue)
+    // เช็คฝั่ง UI ก่อนเรียกเสมอ (ดู topics/gold-target-preset.js)
     async saveGoldLossTargets({ items, remark }) {
       return await api.jewelry.post('ProductionInsight/SaveGoldLossTargets', { items, remark })
     },

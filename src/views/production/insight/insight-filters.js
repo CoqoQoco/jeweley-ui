@@ -132,7 +132,7 @@ export function clearedDeliveryFilterQueryKeys(filter = {}) {
 
 // ---- Gold tab filter (workerTypes / workerCodes / olderThanDays / range) ----
 // workerCodes options มาจาก Gold.workers (ข้อมูลที่เพิ่งโหลดมา) ไม่ใช่ list คงที่แบบ department ของ wip/
-// delivery — index-view.vue เก็บ options ที่ gold-section.vue emit ขึ้นมาหลังยิง Gold สำเร็จ — โลหะของหมวดนี้
+// delivery — index-view.vue เก็บ options ที่ topics/gold.config.js emit ขึ้นมาหลังยิง Gold สำเร็จ — โลหะของหมวดนี้
 // ไม่อยู่ใน filter แล้ว: มาจากตัวสลับโลหะทั้งหน้า /executive (ทอง|เงิน|รวม → รวมแสดงทอง) ผ่าน
 // index-view.vue goldSectionFilter
 

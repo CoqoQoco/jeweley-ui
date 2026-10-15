@@ -1,40 +1,43 @@
 <!--
   BlockToolbar — แถบเครื่องมือใต้หัวกรอบของ block (TableBlock/TrendBlock): บรรทัดแนะนำ + ชิป (เช่น "ร่าง") + ปุ่ม action
   toolbar config: { hint: key|fn(ctx,t), chip: fn(ctx,t) → ข้อความชิป ('' = ไม่แสดง), actions: [{ type:'targetDrawer', preset }],
-    multiselect{ stateKey, options(ctx,t), placeholder }, toggle{ stateKey, options, aria } } — ตัวกรอง client-side (การกรองจริงอยู่ที่ TableBlock)
+    multiselect{ stateKey, options(ctx,t), placeholder }, toggle{ stateKey, options, aria, value(ctx)?, onChange(ctx,v)? }, inline } — ตัวกรอง client-side (การกรองจริงอยู่ที่ TableBlock)
+  inline:true = ตัวกรองซ้าย + (บรรทัดแนะนำ + ปุ่ม) ขวา อยู่บรรทัดเดียวกัน (กราฟที่มี toggle + ปุ่มตั้งเป้า)
 
   Props: toolbar (Object), ctx (Object)
 -->
 <template>
-  <div v-if="hasFilters" class="block-toolbar block-toolbar--filters">
-    <MultiSelectGeneric
-      v-if="toolbar.multiselect"
-      :modelValue="ctx.state[toolbar.multiselect.stateKey]"
-      :options="multiselectOptions"
-      optionLabel="label"
-      optionValue="value"
-      :placeholder="$t(toolbar.multiselect.placeholder)"
-      :showClear="true"
-      class="block-toolbar__multiselect"
-      @update:modelValue="ctx.setState(toolbar.multiselect.stateKey, $event)"
-    />
-    <ToggleGroupGeneric
-      v-if="toolbar.toggle"
-      :modelValue="toggleValue"
-      :options="toggleOptions"
-      :ariaLabel="$t(toolbar.toggle.aria)"
-      @update:modelValue="onToggle"
-    />
-  </div>
+  <div :class="['block-toolbar-wrap', { 'block-toolbar-wrap--inline': toolbar.inline }]">
+    <div v-if="hasFilters" class="block-toolbar block-toolbar--filters">
+      <MultiSelectGeneric
+        v-if="toolbar.multiselect"
+        :modelValue="ctx.state[toolbar.multiselect.stateKey]"
+        :options="multiselectOptions"
+        optionLabel="label"
+        optionValue="value"
+        :placeholder="$t(toolbar.multiselect.placeholder)"
+        :showClear="true"
+        class="block-toolbar__multiselect"
+        @update:modelValue="ctx.setState(toolbar.multiselect.stateKey, $event)"
+      />
+      <ToggleGroupGeneric
+        v-if="toolbar.toggle"
+        :modelValue="toggleValue"
+        :options="toggleOptions"
+        :ariaLabel="$t(toolbar.toggle.aria)"
+        @update:modelValue="onToggle"
+      />
+    </div>
 
-  <div v-if="hasHint || (toolbar.actions || []).length" class="block-toolbar">
-    <p v-if="hasHint" class="block-toolbar__hint">
-      {{ hintText }}
-      <span v-if="chipText" class="block-toolbar__chip">{{ chipText }}</span>
-    </p>
-    <template v-for="(action, index) in toolbar.actions || []" :key="index">
-      <TargetDrawer v-if="action.type === 'targetDrawer'" :preset="action.preset" :ctx="ctx" />
-    </template>
+    <div v-if="hasHint || (toolbar.actions || []).length" class="block-toolbar">
+      <p v-if="hasHint" class="block-toolbar__hint">
+        {{ hintText }}
+        <span v-if="chipText" class="block-toolbar__chip">{{ chipText }}</span>
+      </p>
+      <template v-for="(action, index) in toolbar.actions || []" :key="index">
+        <TargetDrawer v-if="action.type === 'targetDrawer'" :preset="action.preset" :ctx="ctx" />
+      </template>
+    </div>
   </div>
 </template>
 
@@ -100,6 +103,23 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.block-toolbar-wrap {
+  display: contents;
+}
+
+.block-toolbar-wrap--inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-md);
+  margin-bottom: var(--sp-md);
+
+  .block-toolbar {
+    margin-bottom: 0;
+  }
+}
+
 .block-toolbar {
   display: flex;
   align-items: center;

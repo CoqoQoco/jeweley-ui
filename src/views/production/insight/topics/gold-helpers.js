@@ -73,3 +73,45 @@ export function hasGoldDraftChanges(draftMap, savedMap) {
   }
   return false
 }
+
+// ---- แสดงผล (ใช้ใน gold.config.js) — t ส่งเข้ามาเป็น param ----
+
+// % ทศนิยมสูงสุด 2 ตำแหน่งให้ตรงกับตัวเลขใน rules.* (เช่น 3.98%) — withUnit=false ใช้ฝังในประโยค i18n ที่มี "%" ต่อท้ายอยู่แล้ว
+export function formatGoldPercent(value, withUnit = true) {
+  if (value == null) return '—'
+  const formatted = new Intl.NumberFormat('th-TH', { maximumFractionDigits: 2 }).format(value)
+  return withUnit ? `${formatted}%` : formatted
+}
+
+export function formatGoldCount(value) {
+  return value != null ? new Intl.NumberFormat('th-TH').format(value) : '—'
+}
+
+export function formatGoldGram(value, t) {
+  return value != null ? `${new Intl.NumberFormat('th-TH', { maximumFractionDigits: 2 }).format(value)} ${t('view.productionInsight.gold.gramUnit')}` : '—'
+}
+
+// ยอดสุทธิ: บวก = "ช่างได้คืน", ลบ = "หักช่าง" · null/0 = '—'
+export function formatNetMoneyLabel(netMoney, t) {
+  if (netMoney == null || netMoney === 0) return '—'
+  const amount = formatGoldCount(Math.abs(netMoney))
+  return netMoney > 0 ? t('view.productionInsight.gold.netMoneyPositive', { amount }) : t('view.productionInsight.gold.netMoneyNegative', { amount })
+}
+
+// แถว KPI ต่อประเภทช่าง (ค่าเริ่มต้นเมื่อ Gold.kpi ไม่มีแถวของประเภทนั้น)
+export function resolveGoldKpiRow(kpi, workerType) {
+  const empty = {
+    workerType,
+    slipCount: 0,
+    workerCount: 0,
+    lossPercent: null,
+    allowedPercent: null,
+    targetPercent: null,
+    excessGram: 0,
+    excessMoney: 0,
+    coverageJobs: 0,
+    coverageTotalJobs: 0,
+    coveragePercent: null
+  }
+  return { ...empty, ...(kpi || []).find((k) => k.workerType === workerType) }
+}

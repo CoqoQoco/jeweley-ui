@@ -1138,3 +1138,23 @@ params ของ source) + `wip-page.smoke.spec` (mount config จริงท�
 - helper ย้ายไป `topics/capacity-helpers.js` (+spec) · แผงจำลอง `components/capacity-whatif-panel.vue` คงไว้ (ใช้เป็น slot; แก้ตัวเลข = 0 request)
 - ลบ: `sections/capacity-section.vue` · `components/capacity-{kpi-group,trend-chart,department-panel,department-table,department-chart,breakdown-panel,costcard-panel,costcard-pending-panel}.vue`
 - ต่างจากเดิมเล็กน้อย: กล่อง cost card เป็น `group.card` ครอบ block แบบ bare (หน้าตาเท่าเดิม) · เพิ่ม anchor `insight-report-capKpi` · yaxis ต่อ series ตามที่ Apex ต้องการ
+
+## Revision 15 (2026-10-15): หมวด gold (ทองและ Loss) ย้ายเข้า InsightPage (config-driven) — ครบทั้ง 6 หมวด
+
+`topics/gold.config.js` แทน `gold-section.vue` + 16 คอมโพเนนต์ — API/ตัวเลข/หน้าตาเดิม · block id/anchor: `goldKpi` (เพิ่ม anchor ให้การ์ด KPI — API ส่ง reportRef นี้อยู่แล้วแต่เดิมไม่มีจุดเลื่อน) · `goldStage` (ตารางแผนก + กล่องรายละเอียดแผนก) ·
+`goldStageOutliers` · `goldStagePending` · `goldTrend` · `goldWorkers` · `goldOverSlips` · `goldUncovered` · กราฟ % ทุกแผนกไม่มี anchor (เหมือนเดิม)
+- sources: `Gold` (start/end/bucket/workerTypes/workerCodes/metal + `draftTargets` เฉพาะตอนมี draft) · `GoldByStage` (start/end/metal + `draftTargets` ชุดเดียวกัน) · `GoldLossTargets` (GET เป้าที่บันทึกจริง 2 scope) ·
+  ตาราง 4 ตารางยิง endpoint ของตัวเองผ่าน PlanTableBlock (outliers/pending = metal+start/end+departmentKeys ว่าง · pending เพิ่ม olderThanDays+includeQueue · overSlips = workerTypes/workerCodes/metal/start/end · uncovered เพิ่ม olderThanDays)
+- metal: ทุก endpoint ได้ `filter.metal` (goldSectionFilter ของ index-view: รวม = ทอง) — ค่าที่ config ส่งเองชนะ store · `onSourceLoaded` ส่ง `Gold.workers` ขึ้น index-view (`workers-loaded`) เติมตัวเลือกช่างในตัวกรอง · `helpParams` = { days: olderThanDays }
+- state: `draftTargets` (array เดียวรวม 2 scope) · `trendWorkerType` (80) · `stageDept` (default = แผนกเกินเป้ามากสุด คงไว้ตราบที่ยังมีในข้อมูลใหม่ — เหมือน watch เดิม) · `includeQueue` (false)
+- เพิ่มใน template: block `note` (`{type:'note', visible, text}`) · `KpiBlock rows[{label,cards}]` + `card.label` เป็น fn · `TrendBlock` series `hidden` (ซ่อนตอนเริ่ม กด legend เปิดได้ — ผ่าน chart.events.mounted), format `gram`/`percent2`,
+  `targetLine{color,axis}` (วาดบนแกนขวา/สีเตือน) · `BlockToolbar toolbar.inline` (toggle ซ้าย + hint/ปุ่ม ขวาบรรทัดเดียว) · `detail.blocks[]` (กล่องรายละเอียดเดียวหลาย block: กราฟ + ตารางช่างของแผนก, `ctx.selected`) ·
+  column `altText(row,t)` (ข้อความแทนตัวเลข เช่น ไม่ได้ชั่งน้ำหนัก; '' = เซลล์ว่าง) · text `secondary`/`cellTip`/`strong` · percent `color`/`bold` · stacked `primaryIcon`/`muted` · chipList `small` ·
+  `PlanTableBlock toolbar.checkbox{stateKey,label}` (includeQueue) · `TableBlock` เคอร์เซอร์ pointer เมื่อแถวคลิกได้ · `TargetDrawer`: หัวข้อกลุ่ม `row.section`/`row.group`, `preset.buildDraftPayload`, `preset.history(store,key,row)`, `row.historyLabel`, `registerTargetPreset(name, preset)`
+- `TargetDrawer` preset `goldLossTargets` (อยู่ที่ `topics/gold-target-preset.js` ลงทะเบียนตอน import config): SLIP 4 แถว (ประเภทช่าง × โลหะ) + STAGE 6 แถว (แผนก × โลหะ) แบ่งหัวข้อตามโลหะ · draft = array เดียวส่งทั้ง Gold และ GoldByStage (เปลี่ยน state ครั้งเดียว → ยิงอย่างละ 1 หลัง debounce) ·
+  บันทึกครั้งเดียวรวม items 2 scope ต้องมีหมายเหตุ (SaveGoldLossTargets) · ประวัติ/สิทธิ์ `hasStandardEditAccess` เหมือนเดิม · ปิด/ยกเลิก = ทิ้ง draft ทั้ง 2 กลุ่ม · หลังบันทึก reload Gold + GoldByStage + GoldLossTargets · preset stageStandards/deliveryTarget ไม่เปลี่ยน
+- helper ย้ายไป `topics/gold-helpers.js` · `topics/gold-stage-helpers.js` (+spec) · Excel helper (`executive-insight-excel-helpers.js`) และ `gold-i18n.spec.js` ชี้ path ใหม่
+- ลบ: `sections/gold-section.vue` · `components/gold-{kpi-group,stage-panel,stage-department-panel,stage-table,stage-detail-chart,stage-worker-table,stage-trend-chart,stage-outlier-jobs-panel,stage-pending-return-panel,trend-panel,trend-chart,target-panel,target-history-modal,worker-ranking-panel,over-slips-panel,uncovered-jobs-panel}.vue`
+- ต่างจากเดิมโดยตั้งใจ: เปลี่ยน `olderThanDays` ไม่ยิง Gold/GoldByStage ซ้ำแล้ว (ทั้งคู่ไม่ใช้ค่านี้ — เดิม deep-watch ยิงซ้ำโดยได้ response เดิม) ยิงเฉพาะ pending + uncovered ·
+  การ์ด KPI ใบแรกมี anchor `goldKpi` (กดแล้วเลื่อนมาที่กล่อง KPI เอง; เดิมกดแล้วไม่เกิดอะไร) · ช่องว่างระหว่างหัวข้อกลุ่ม/ช่องกรอกในแผงตั้งเป้าใช้ระยะของ drawer กลาง (gap lg) · ชื่อช่างใต้รหัส (ตารางผิดปกติ/ค้างไม่รับคืน) และรายการค้างไม่รับคืน 2 บรรทัดใช้สไตล์ column กลาง (ขนาด/สีเท่าเดิม)
+- ผลกระทบข้ามแท็บ: ทุกอย่างที่เพิ่มเป็น opt-in (config เดิมไม่ใช้) · ยกเว้น `TableBlock` ที่แถวคลิกได้ (selectable/onRowClick) ได้ cursor pointer ทุกแท็บ และ `InsightPage` ประกาศ emit `workers-loaded` เพิ่ม

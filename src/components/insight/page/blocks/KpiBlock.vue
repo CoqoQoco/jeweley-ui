@@ -1,5 +1,6 @@
 <!--
   KpiBlock — กลุ่มการ์ด KPI (StatCardGeneric) ใน SectionCard แบบ dashboard (กันกรอบซ้อน) ตาม config:
+    rows[{ id, label (key|fn(ctx,t)), cards }] หรือ fn(ctx,t) → หลายแถวการ์ดที่มีหัวข้อย่อยต่อแถว (แทน cards ตรงๆ)
     cards[{ id, icon, label, value(ctx), format, unit, sub(ctx,t), tone(ctx) 'main'|'warning'|'green'|'grey', reportRef }]
     variant:'summary' + items(ctx,t) → ตัวเลขสรุปแบบข้อความ (block bare) · gridColumns
     asOf(ctx) → เวลาประมวลผลมุมขวาบน (asOfLabel = key ที่มี {date}) · footNote → note บรรทัดใต้การ์ด (key หรือ fn)
@@ -19,26 +20,32 @@
       </div>
     </div>
 
-    <div v-else class="kpi-block__grid" :style="gridStyle">
-      <StatCardGeneric
-        v-for="card in cards"
-        :key="card.key"
-        :icon="card.icon"
-        :value="card.value"
-        :label="card.label"
-        :subLabel="card.sub"
-        :variant="card.tone"
-        :loading="loading"
-        :clickable="!!card.reportRef"
-        @click="goto(card.reportRef)"
-      />
-    </div>
+    <template v-else>
+      <div v-for="row in kpiRows" :key="row.key" class="kpi-block__row">
+        <p v-if="row.label" class="kpi-block__row-title">{{ row.label }}</p>
+        <div class="kpi-block__grid" :style="gridStyle">
+          <StatCardGeneric
+            v-for="card in row.cards"
+            :key="card.key"
+            :icon="card.icon"
+            :value="card.value"
+            :label="card.label"
+            :subLabel="card.sub"
+            :variant="card.tone"
+            :loading="loading"
+            :clickable="!!card.reportRef"
+            @click="goto(card.reportRef)"
+          />
+        </div>
+      </div>
+    </template>
     <p v-if="footNote" class="kpi-block__foot-note">{{ footNote }}</p>
   </BlockFrame>
 </template>
 
 <script>
 import { buildKpiCards, buildKpiAsOf, buildKpiFootNote } from './kpi-block-helpers.js'
+import { resolveText } from '../insight-page-helpers.js'
 import blockMixin from './block-mixin.js'
 
 import BlockFrame from './BlockFrame.vue'
@@ -63,6 +70,18 @@ export default {
     // variant 'summary' = ตัวเลขสรุปแบบข้อความ (ไม่ใช่ StatCard) ใน block bare — items(ctx,t) → [{ label, value, sub? }]
     summaryItems() {
       return (this.node.items ? this.node.items(this.ctx, (key, params) => this.$t(key, params)) : []).map((item, index) => ({ key: `i-${index}`, ...item }))
+    },
+
+    // หลายแถวการ์ด (node.rows) หรือแถวเดียวจาก node.cards — แต่ละแถว { key, label, cards }
+    kpiRows() {
+      const t = (key, params) => this.$t(key, params)
+      if (!this.node.rows) return [{ key: 'main', label: '', cards: this.cards }]
+      const rows = typeof this.node.rows === 'function' ? this.node.rows(this.ctx, t) : this.node.rows
+      return rows.map((row, index) => ({
+        key: row.id || `row-${index}`,
+        label: resolveText(row.label, this.ctx, t),
+        cards: buildKpiCards({ cards: row.cards }, this.ctx, t)
+      }))
     },
 
     asOfText() {
@@ -123,6 +142,17 @@ export default {
 .kpi-block__summary-sub {
   font-size: var(--fs-sm);
   color: var(--base-sub-color);
+}
+
+.kpi-block__row + .kpi-block__row {
+  margin-top: var(--sp-lg);
+}
+
+.kpi-block__row-title {
+  margin: 0 0 var(--sp-sm);
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--base-font-color);
 }
 
 .kpi-block__as-of {

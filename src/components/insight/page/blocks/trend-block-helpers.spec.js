@@ -160,3 +160,50 @@ describe('axisTitles as functions / legend', () => {
     expect(options.legend).toEqual({ position: 'bottom' })
   })
 })
+
+describe('gram / percent2 formats, hidden series, targetLine colour + axis', () => {
+  const tt = (key) => key
+
+  it('formats grams and % with up to 2 decimals and dashes for null', () => {
+    expect(formatChartValue(5.678, 'gram')).toBe('5.68')
+    expect(formatChartValue(3.456, 'percent2')).toBe('3.46%')
+    expect(formatChartValue(null, 'gram')).toBe('—')
+    expect(formatChartValue(undefined, 'percent2')).toBe('—')
+  })
+
+  it('hidden series are hidden through chart.events.mounted by series name; nothing is registered without hidden', () => {
+    const points = [{ v: 1 }]
+    const withHidden = buildTrendOptions({ node: { series: [{ name: 'a', field: 'v' }, { name: 'b', field: 'v', hidden: true }] }, points, categories: [], ctx: {}, t: tt })
+    const hidden = []
+    const chart = { hideSeries: (name) => hidden.push(name), w: { globals: { seriesNames: ['a', 'b'], collapsedSeriesIndices: [] } } }
+    withHidden.chart.events.mounted(chart)
+    expect(hidden).toEqual(['b'])
+    // updateOptions ล้างสถานะ collapsed → updated ต้องซ่อนซ้ำ · แต่ไม่ซ่อนซ้ำถ้าซ่อนอยู่แล้ว
+    withHidden.chart.events.updated(chart)
+    expect(hidden).toEqual(['b', 'b'])
+    chart.w.globals.collapsedSeriesIndices = [1]
+    withHidden.chart.events.updated(chart)
+    expect(hidden).toEqual(['b', 'b'])
+    // ผู้ใช้กด legend เปิดเองแล้ว → ไม่ซ่อนทับ
+    const touched = {}
+    const opts = buildTrendOptions({ node: { series: [{ name: 'b', field: 'v', hidden: true }] }, points: [{ v: 1 }], categories: [], ctx: {}, t: tt, touched })
+    opts.chart.events.legendClick({}, 0, { globals: { seriesNames: ['b'] } })
+    opts.chart.events.updated({ hideSeries: (name) => hidden.push('x' + name), w: { globals: { seriesNames: ['b'], collapsedSeriesIndices: [] } } })
+    expect(hidden).toEqual(['b', 'b'])
+    const without = buildTrendOptions({ node: { series: [{ name: 'a', field: 'v' }] }, points, categories: [], ctx: {}, t: tt })
+    expect(without.chart.events).toBeUndefined()
+  })
+
+  it('targetLine.color picks the token; targetLine.axis=1 anchors on the first right-axis series index', () => {
+    const series = [
+      { name: 'g', type: 'bar', field: 'v', axis: 0 },
+      { name: 'p', type: 'line', field: 'v', axis: 1 }
+    ]
+    const node = { series, targetLine: { value: () => 3, label: 'l', color: 'warning', axis: 1 } }
+    const options = buildTrendOptions({ node, points: [{ v: 1 }], categories: [], ctx: {}, t: tt })
+    expect(options.annotations.yaxis[0]).toMatchObject({ y: 3, yAxisIndex: 1, borderColor: CHART_TOKENS.warning })
+    const single = buildTrendOptions({ node: { series: [{ name: 'a', field: 'v' }], targetLine: { value: () => 3, label: 'l' } }, points: [{ v: 1 }], categories: [], ctx: {}, t: tt })
+    expect(single.annotations.yaxis[0].borderColor).toBe(CHART_TOKENS.red)
+    expect(single.annotations.yaxis[0].yAxisIndex).toBeUndefined()
+  })
+})
