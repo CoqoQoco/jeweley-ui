@@ -13,6 +13,8 @@ const PlanOrderTransferTracking = () =>
 //const ReportProduction = () => import('@/views/report-production/IndexView.vue')
 //const ReportProductionGoldCost = () => import('@/views/report-production-gold-cost/IndexView.vue')
 
+const PlanBackdateClose = () => import('@/views/production/plan-backdate-close/index-view.vue')
+
 const PlanOrderPrice = () => import('@/views/production/plan-price/IndexView.vue')
 
 const GoldLossTangCreate = () => import('@/views/production/report/gold-loss-tang-report/index-view.vue')
@@ -125,6 +127,19 @@ const routes = [
           },
           minorShow: true,
           permissions: [PERMISSIONS.PRODUCTION_VIEW]
+        }
+      },
+      {
+        path: '/plan-backdate-close',
+        name: 'plan-backdate-close',
+        component: PlanBackdateClose,
+        meta: {
+          Displayname: {
+            en: 'Backdate Close Jobs',
+            th: 'ปิดใบงานย้อนหลัง'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.PRODUCTION_BACKDATE_CLOSE]
         }
       },
       {

@@ -15,6 +15,8 @@ export const PERMISSIONS = {
   PRODUCTION_EDIT: 'production:edit',
   // แก้ไขมาตรฐานเวลาผลิตต่อแผนก (wip lead-time) — Executive + Dev เท่านั้น
   PRODUCTION_STANDARD_EDIT: 'production:standard-edit',
+  // ปิดใบงานย้อนหลัง (ปิดเป็นสำเร็จโดยไม่รับเข้าคลัง)
+  PRODUCTION_BACKDATE_CLOSE: 'production:backdate-close',
 
   // Pre-Plan (ใบสั่งผลิต)
   PRE_PLAN_VIEW: 'pre-plan:view',
@@ -117,6 +119,7 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.PRODUCTION_CREATE,
     PERMISSIONS.PRODUCTION_EDIT,
     PERMISSIONS.PRODUCTION_STANDARD_EDIT,
+    PERMISSIONS.PRODUCTION_BACKDATE_CLOSE,
 
     PERMISSIONS.PRE_PLAN_VIEW,
     PERMISSIONS.PRE_PLAN_CREATE,
