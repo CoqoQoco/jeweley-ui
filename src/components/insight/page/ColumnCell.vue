@@ -27,6 +27,12 @@
     <small v-if="cell.secondary" class="text-muted">{{ cell.secondary }}</small>
   </template>
 
+  <span v-else-if="cell.kind === 'stacked'" class="column-cell__stacked">
+    <strong v-if="col.strong">{{ cell.primary }}</strong>
+    <span v-else>{{ cell.primary }}</span>
+    <small v-if="cell.secondary" class="text-muted">{{ cell.secondary }}</small>
+  </span>
+
   <template v-else-if="cell.kind === 'dept'">
     <strong v-if="col.bold">{{ cell.text }}</strong>
     <template v-else>{{ cell.text }}</template>
@@ -45,7 +51,7 @@
   <div v-else-if="cell.kind === 'number'" :class="numberClass">
     <ButtonGeneric v-if="cell.asAction" variant="plain" :label="cell.text" :title="col.actionTitle ? $t(col.actionTitle) : ''" @click.stop="col.onClick(data, ctx)" />
     <template v-else>
-      <span :style="numberStyle">{{ cell.text }}</span>
+      <span :style="numberStyle">{{ cell.text }}</span><sup v-if="cell.sup">{{ cell.sup }}</sup>
       <InfoTipGeneric v-if="cell.tip" :text="cell.tip" />
       <template v-if="cell.suffix">
         {{ ' ' }}<span class="column-cell__suffix">{{ cell.suffix }}</span>
@@ -152,6 +158,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.column-cell__stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .column-cell__inline {
   display: inline-flex;
   align-items: center;

@@ -10,7 +10,7 @@ import { resolveFindingParams, formatUnitLabel } from '@/components/insight/insi
 import { resolvePlanWorkersDisplay } from '@/components/insight/plan-table-helpers.js'
 import { resolveGemName, resolveGemShapeName, resolveGemStatusLabelKey } from '@/views/production/insight/topics/materials-helpers.js'
 import { formatOverBucketsRatio } from '@/views/production/insight/components/gold-helpers.js'
-import { resolveGoldColumnValue, sortWorkersByWagesDesc } from '@/views/production/insight/components/workers-helpers.js'
+import { resolveGoldColumnValue, sortWorkersByWagesDesc } from '@/views/production/insight/topics/workers-helpers.js'
 import { formatMoneyFull } from './executive-helpers.js'
 
 export const INSIGHT_EXCEL_TOPICS = ['wip', 'delivery', 'capacity', 'gold', 'workers', 'materials']

@@ -54,3 +54,10 @@ describe('kpi extras (unit / asOf / footNote / percent0)', () => {
     expect(buildKpiFootNote({}, {}, t)).toBe('')
   })
 })
+
+describe('money0', () => {
+  it('formats as baht with no decimals', () => {
+    expect(formatKpiValue(12345.6, 'money0')).toBe('฿12,346')
+    expect(formatKpiValue(null, 'money0')).toBe('—')
+  })
+})

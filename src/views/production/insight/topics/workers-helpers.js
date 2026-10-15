@@ -86,3 +86,65 @@ export function collectWageDeptKeys(series) {
   })
   return keys
 }
+
+// ---- builders สำหรับ config (workers.config.js) ----
+
+export function formatWorkersMoney(value) {
+  return value != null ? `฿${new Intl.NumberFormat('th-TH', { maximumFractionDigits: 0 }).format(value)}` : '—'
+}
+
+export function formatWorkersPercent(value) {
+  return value != null ? `${new Intl.NumberFormat('th-TH', { maximumFractionDigits: 1 }).format(value)}%` : '—'
+}
+
+const countFormat = (value) => (value != null ? new Intl.NumberFormat('th-TH').format(value) : '—')
+
+// sub-label การ์ดค่าแรง: 2 แผนกที่ใช้ค่าแรงมากสุด (ไม่ hardcode แผนก) + "ไม่รวมเงินเดือน" เมื่อ excludesSalaried
+export function buildWagesSubLabel(kpi, t) {
+  const parts = topWagesByDept(kpi?.wagesByDept).map((d) => `${t(`view.executive.department.${d.deptKey}`)} ${formatWorkersPercent(d.share)}`)
+  if (kpi?.excludesSalaried) parts.push(t('view.productionInsight.workers.excludesSalariedNote'))
+  return parts.join(' · ')
+}
+
+export function buildActiveWorkersSubLabel(kpi, t) {
+  const byDept = kpi?.activeWorkersByDept || []
+  if (!byDept.length) return ''
+  return byDept.map((d) => `${t(`view.executive.department.${d.deptKey}`)} ${countFormat(d.count)}`).join(', ')
+}
+
+// แถวตารางช่าง: เรียงค่าแรงมากไปน้อย + rowKey (code-deptKey) + ป้ายแผนก
+export function buildWorkersTableRows(workers, t) {
+  return sortWorkersByWagesDesc(workers).map((w) => ({
+    ...w,
+    rowKey: `${w.code}-${w.deptKey}`,
+    deptLabel: t(`view.executive.department.${w.deptKey}`)
+  }))
+}
+
+// series ของกราฟค่าแรง: แท่งต่อแผนก (stacked, สีจาก palette ตามลำดับ) + เส้น wagePerPlan (แกนขวา) — แผนกอ่านจากข้อมูลเอง
+export function buildWagesTrendSeriesDefs(series, seriesTotal, t, palette, warningToken = 'warning') {
+  const buckets = collectWageBuckets(series)
+  const bars = collectWageDeptKeys(series).map((key, index) => ({
+    name: t(`view.executive.department.${key}`),
+    type: 'bar',
+    axis: 0,
+    format: 'money',
+    colorValue: palette[index],
+    data: alignWageSeriesToBuckets(series, key, buckets)
+  }))
+  const line = {
+    label: 'view.productionInsight.workers.seriesWagePerPlan',
+    type: 'line',
+    axis: 1,
+    format: 'money',
+    color: warningToken,
+    data: mapWorkersSeriesTotalField(seriesTotal, 'wagePerPlan')
+  }
+  return [...bars, line]
+}
+
+// ช่างที่เลือกอยู่ยังอยู่ในชุดข้อมูลใหม่หรือไม่ (code + deptKey) — ไม่อยู่ = เคลียร์การเลือก (null)
+export function resolveSelectedWorker(current, workers) {
+  if (!current) return null
+  return (workers || []).some((w) => w.code === current.code && w.deptKey === current.deptKey) ? current : null
+}

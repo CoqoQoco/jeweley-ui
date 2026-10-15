@@ -153,3 +153,19 @@ describe('percent digits / emphasisWhen', () => {
     expect(col.resolveCell(col.number('n', 'h', 'count', { emphasisWhen: () => true }), { n: 0 }, t).negative).toBe(true)
   })
 })
+
+describe('stacked / bold fn / sup', () => {
+  it('stacked resolves primary + secondary and registers the kind', () => {
+    const c = col.stacked('name', 'h', (row) => ({ primary: row.name, secondary: row.code }))
+    expect(col.resolveCell(c, { name: 'สมชาย', code: 'W1' }, t)).toMatchObject({ kind: 'stacked', primary: 'สมชาย', secondary: 'W1', strong: true })
+    expect(col.resolveCell(col.stacked('n', 'h', () => ({ primary: 'a' }), { strong: false }), {}, t)).toMatchObject({ secondary: '', strong: false })
+    expect(col.COLUMN_KINDS).toContain('stacked')
+  })
+
+  it('bold can be a per-row function and sup is shown only with a value', () => {
+    const c = col.number('n', 'h', 'count', { bold: (row) => row.flag, sup: (row) => (row.s ? 's' : '') })
+    expect(col.resolveCell(c, { n: 1, flag: true, s: true }, t)).toMatchObject({ bold: true, sup: 's' })
+    expect(col.resolveCell(c, { n: 1, flag: false }, t)).toMatchObject({ bold: false, sup: '' })
+    expect(col.resolveCell(c, {}, t)).toMatchObject({ bold: false, sup: '' })
+  })
+})

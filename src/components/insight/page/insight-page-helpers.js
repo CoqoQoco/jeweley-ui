@@ -17,10 +17,14 @@ export function resolveText(spec, ctx, t) {
 
 // key ของแต่ละ source = JSON ของ params(filter, state) — เปลี่ยนเมื่อ params จริงของ source นั้นเปลี่ยนเท่านั้น
 // (field ของ filter ที่ source ไม่ได้ใช้ไม่กระทบ) = ตัวกำหนด "1 request ต่อ endpoint ต่อการกด 1 ครั้ง"
+export const DISABLED_SOURCE_KEY = '__disabled__'
+
+// source.enabled(filter, state) = false → key คงที่ DISABLED_SOURCE_KEY (ไม่ยิง · เคลียร์ผลเดิม) — ใช้กับ source ที่ขึ้นกับการเลือก
+// (เช่น WorkerMonthly ที่ยิงเมื่อคลิกแถวช่างแล้วเท่านั้น)
 export function computeSourceKeys(sources, filter, state) {
   const keys = {}
   Object.entries(sources || {}).forEach(([name, source]) => {
-    keys[name] = JSON.stringify(source.params ? source.params(filter, state) : null)
+    keys[name] = source.enabled && !source.enabled(filter, state) ? DISABLED_SOURCE_KEY : JSON.stringify(source.params ? source.params(filter, state) : null)
   })
   return keys
 }

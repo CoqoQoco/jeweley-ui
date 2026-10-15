@@ -3,6 +3,10 @@
 import { CHART_TOKENS } from '@/services/utils/chart-colors.js'
 
 export function formatChartValue(value, format = 'count') {
+  if (format === 'money') {
+    if (value === null || value === undefined) return '—'
+    return `฿${new Intl.NumberFormat('th-TH', { maximumFractionDigits: 0 }).format(value)}`
+  }
   if (format === 'percent') {
     if (value === null || value === undefined) return '—'
     return `${new Intl.NumberFormat('th-TH', { maximumFractionDigits: 1 }).format(value)}%`
@@ -13,12 +17,24 @@ export function formatChartValue(value, format = 'count') {
 }
 
 // series ที่ผ่านเงื่อนไข visible(points) — ใช้ตัดชุดที่ไม่มีข้อมูลเลยออกพร้อม legend
+// node.series = array หรือ function(ctx, points, t) → array (series ที่สร้างจากข้อมูล เช่น แท่งต่อแผนกที่ไม่ hardcode)
+export function resolveSeriesDefs(node, points, ctx, t) {
+  return typeof node.series === 'function' ? node.series(ctx, points, t) || [] : node.series || []
+}
+
+// ชื่อ series: s.name (ข้อความสำเร็จรูป) ชนะ s.label (i18n key)
+export function seriesName(s, t) {
+  return s.name ?? t(s.label)
+}
+
 export function resolveVisibleSeries(series, points) {
   return (series || []).filter((s) => (typeof s.visible === 'function' ? s.visible(points) : true))
 }
 
 // ค่าของ series ต่อจุด — field ตรงๆ หรือ value(point) · nullAs: undefined = เก็บ null เป็นช่องว่างของกราฟ (ไม่ coerce เป็น 0)
 export function readSeriesData(s, points) {
+  if (Array.isArray(s.data)) return s.data
+  if (typeof s.data === 'function') return s.data(points)
   return (points || []).map((p) => {
     const raw = typeof s.value === 'function' ? s.value(p) : p?.[s.field]
     const value = raw === undefined ? null : raw
@@ -28,7 +44,7 @@ export function readSeriesData(s, points) {
 }
 
 export function buildTrendSeries(series, points, t) {
-  return resolveVisibleSeries(series, points).map((s) => ({ name: t(s.label), type: s.type || 'line', data: readSeriesData(s, points) }))
+  return resolveVisibleSeries(series, points).map((s) => ({ name: seriesName(s, t), type: s.type || 'line', data: readSeriesData(s, points) }))
 }
 
 export function buildTrendOptions({ node, points, categories, ctx, t }) {
@@ -51,7 +67,7 @@ export function buildTrendOptions({ node, points, categories, ctx, t }) {
 
   const options = {
     chart: { type: node.chartType || 'line', stacked: !!node.stacked, toolbar: { show: false } },
-    colors: visible.map((s) => CHART_TOKENS[s.color || 'primary']),
+    colors: visible.map((s) => s.colorValue || CHART_TOKENS[s.color || 'primary']),
     stroke: {
       width: visible.map((s) => (s.type === 'bar' ? 0 : s.dashed ? 2 : 3)),
       curve: 'smooth',
@@ -60,10 +76,15 @@ export function buildTrendOptions({ node, points, categories, ctx, t }) {
     plotOptions: { bar: { columnWidth: node.columnWidth || '55%' } },
     xaxis: { categories },
     yaxis: hasSecondAxis
-      ? [
-          { seriesName: t(firstOnAxis0.label), ...axisTitle(0), labels: { formatter: axisFormatterOf(firstOnAxis0) } },
-          { seriesName: t(firstOnAxis1.label), opposite: true, ...axisTitle(1), labels: { formatter: axisFormatterOf(firstOnAxis1) } }
-        ]
+      ? // 1 รายการต่อ series (Apex จับคู่ตามลำดับ) — ชุดแรกของแต่ละแกนมี title/labels, ชุดที่เหลือแชร์แกนด้วย seriesName + ซ่อน
+        visible.map((s) => {
+          const axis = s.axis === 1 ? 1 : 0
+          const first = axis === 1 ? firstOnAxis1 : firstOnAxis0
+          const base = { seriesName: seriesName(first, t), ...(axis === 1 ? { opposite: true } : {}) }
+          return first === s
+            ? { ...base, ...axisTitle(axis), labels: { formatter: axisFormatterOf(first) } }
+            : { ...base, show: false, labels: { formatter: axisFormatterOf(first) } }
+        })
       : { ...(node.yMax != null ? { max: node.yMax } : {}), labels: { formatter: axisFormatter } },
     tooltip: { y: perSeriesTooltip ? visible.map((s) => ({ formatter: tooltipFormatter(seriesFormat(s)) })) : { formatter } },
     annotations:

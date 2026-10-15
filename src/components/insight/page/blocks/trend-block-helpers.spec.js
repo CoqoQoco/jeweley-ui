@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { CHART_TOKENS } from '@/services/utils/chart-colors.js'
-import { formatChartValue, resolveVisibleSeries, readSeriesData, buildTrendSeries, buildTrendOptions } from './trend-block-helpers.js'
+import { formatChartValue, resolveVisibleSeries, readSeriesData, buildTrendSeries, buildTrendOptions, resolveSeriesDefs, seriesName } from './trend-block-helpers.js'
 
 const t = (key) => key
 
@@ -82,7 +82,9 @@ describe('buildTrendOptions: per-series format, axis titles, column width', () =
   it('keeps a count axis and a days axis with titles, and a formatter per series in the tooltip', () => {
     const options = buildTrendOptions({ node, points: [], categories: [], ctx: {}, t })
     expect(options.plotOptions.bar.columnWidth).toBe('45%')
-    expect(options.yaxis).toHaveLength(2)
+    // 1 รายการต่อ series: ชุดแรกของแต่ละแกนมี title/labels, ชุดที่เหลือแชร์แกนและซ่อน
+    expect(options.yaxis).toHaveLength(3)
+    expect(options.yaxis[2]).toMatchObject({ show: false, opposite: true, seriesName: 'l.b' })
     expect(options.yaxis[0].title.text).toBe('t.plans')
     expect(options.yaxis[1]).toMatchObject({ opposite: true, title: { text: 't.days' } })
     expect(options.yaxis[0].labels.formatter(1234)).toBe('1,234')
@@ -109,5 +111,38 @@ describe('percent format / yMax / chartType', () => {
     expect(options.yaxis.labels.formatter(50)).toBe('50%')
     expect(options.tooltip.y.formatter(80)).toBe('80%')
     expect(buildTrendOptions({ node: { ...node, yMax: undefined }, points: [], categories: [], ctx: {}, t }).yaxis).not.toHaveProperty('max')
+  })
+})
+
+describe('dynamic series / money / colorValue', () => {
+  it('series can be a function of (ctx, points, t) and entries can carry their own data and name', () => {
+    const node = { series: (ctx, points) => [{ name: `n${points.length}`, data: [1, null], type: 'bar' }, { label: 'l.x', field: 'a' }] }
+    const defs = resolveSeriesDefs(node, [{ a: 5 }], {}, t)
+    expect(defs).toHaveLength(2)
+    expect(seriesName(defs[0], t)).toBe('n1')
+    expect(seriesName(defs[1], t)).toBe('l.x')
+    expect(readSeriesData(defs[0], [{}, {}])).toEqual([1, null])
+    expect(readSeriesData({ data: (points) => points.map((p) => p.a) }, [{ a: 2 }])).toEqual([2])
+    expect(resolveSeriesDefs({ series: [{ field: 'a' }] }, [], {}, t)).toHaveLength(1)
+    expect(resolveSeriesDefs({}, [], {}, t)).toEqual([])
+  })
+
+  it('money format and raw colour values', () => {
+    expect(formatChartValue(12345.6, 'money')).toBe('฿12,346')
+    expect(formatChartValue(null, 'money')).toBe('—')
+    const node = { stacked: true, series: [{ name: 'A', type: 'bar', colorValue: '#123456', axis: 0, format: 'money' }, { label: 'l.w', type: 'line', color: 'warning', axis: 1, format: 'money' }] }
+    const options = buildTrendOptions({ node, points: [], categories: [], ctx: {}, t })
+    expect(options.colors[0]).toBe('#123456')
+    expect(options.stroke.width).toEqual([0, 3])
+    expect(options.yaxis).toHaveLength(2)
+    expect(options.yaxis[1].opposite).toBe(true)
+    expect(options.tooltip.y[1].formatter(1000)).toBe('฿1,000')
+  })
+
+  it('stacked bars on one axis keep a single visible axis (others share it hidden), like the old workers chart', () => {
+    const node = { series: [{ name: 'A', type: 'bar' }, { name: 'B', type: 'bar' }, { name: 'C', type: 'bar' }, { label: 'l.w', type: 'line', axis: 1 }] }
+    const options = buildTrendOptions({ node, points: [], categories: [], ctx: {}, t })
+    expect(options.yaxis.map((y) => !!y.show === false && y.show !== undefined)).toEqual([false, true, true, false])
+    expect(options.yaxis[3].opposite).toBe(true)
   })
 })

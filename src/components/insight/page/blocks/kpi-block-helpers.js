@@ -7,6 +7,7 @@ export function formatKpiValue(value, format = 'count') {
   if (value === null || value === undefined) return '—'
   if (format === 'text') return String(value)
   if (format === 'percent') return `${new Intl.NumberFormat('th-TH', { maximumFractionDigits: 1 }).format(value)}%`
+  if (format === 'money0') return `฿${new Intl.NumberFormat('th-TH', { maximumFractionDigits: 0 }).format(value)}`
   if (format === 'percent0') return `${new Intl.NumberFormat('th-TH', { maximumFractionDigits: 0 }).format(value)}%`
   return formatNumberValue(value, format) ?? '—'
 }

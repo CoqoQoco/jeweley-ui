@@ -1114,3 +1114,15 @@ params ของ source) + `wip-page.smoke.spec` (mount config จริงท�
 - ลบ: `sections/delivery-section.vue` · `components/delivery-{kpi-group,trend-panel,ontime-chart,lead-chart,target-panel,target-history-modal,late-customers-panel,at-risk-panel,late-plans-panel (+spec),stuck-costcard-panel}.vue`
 - ต่างจากเดิมโดยตั้งใจ: เปลี่ยนแผนก (departmentKeys) ไม่ยิง Delivery ซ้ำอีกแล้ว (body ของ Delivery ไม่มี departmentKeys — ของเดิม deep-watch ยิงซ้ำโดยได้ response เดิม) ยิงเฉพาะ atRisk · ค่า null ในคอลัมน์ remainingDays/projectedLateDays แสดง "—" (เดิมว่าง) ·
   แถบเครื่องมือของกล่องแนวโน้มใช้ BlockToolbar กลาง (หน้าตาเท่าเดิม)
+
+## Revision 13 (2026-10-15): หมวด workers ย้ายเข้า InsightPage (config-driven)
+
+`topics/workers.config.js` แทน `workers-section.vue` + 6 คอมโพเนนต์ — API/ตัวเลข/หน้าตาเดิม · block id: `wrkKpi` (เพิ่ม anchor ให้การ์ด KPI — API ส่ง reportRef นี้อยู่แล้ว) · `wrkTrend` · `wrkTable` · `wrkUnpaid`
+- sources: `Workers` (start/end/departmentKeys/employmentTypes; concentration ไม่แสดงเหมือนเดิม) · `WorkerMonthly` (**`enabled` เมื่อมีช่างที่เลือกเท่านั้น**; code+deptKey+start+end อยู่ใน key เดียว → คลิกแถว/เปลี่ยนช่วงเวลา = 1 request) · ตารางงานที่ยังไม่บันทึกค่าแรงผ่าน PlanTableBlock
+- state: `selectedWorker` ({code,deptKey,name}; ไม่ auto-select; โหลด Workers ใหม่แล้วช่างหายไป = เคลียร์การเลือกและ WorkerMonthly หยุด/เคลียร์ผลเดิม) · `tableDept`/`tableType` (ตัวกรองบนจอ ไม่ยิง request)
+- เพิ่มใน template: loader `source.enabled(filter,state)` (ปิด = ไม่ยิง + เคลียร์ผลเดิม) · `TrendBlock` `series` เป็น function(ctx,points,t) ได้ (แท่งต่อแผนกที่ไม่ hardcode), `name`/`colorValue`/`data` ต่อ series, format `money`, **yaxis 1 รายการต่อ series**
+  (ชุดแรกของแต่ละแกนมี title/labels ที่เหลือแชร์แกนและซ่อน — ตรงกับ pattern เดิมของกราฟ workers/materials/capacity) · `TableBlock` `toolbar.multiselect{stateKey,options(ctx,t),filter}` และ `toolbar.toggle{stateKey,options,filter}` กรองฝั่ง client ·
+  `selectable{value(row), same(selected,row)}` เก็บ object ใน state · section ข้อความ tone `foot` (note ใต้ตาราง) · column kind `stacked` (2 บรรทัด) · number `bold(row)` เป็น fn + `sup` (เช่น "s" ของ Loss ทองจากใบ slip) · KpiBlock format `money0`
+- helper ย้ายไป `topics/workers-helpers.js` (+ ตัวสร้าง sub-label/แถวตาราง/series/การเลือก) · Excel helper ชี้ path ใหม่
+- ลบ: `sections/workers-section.vue` · `components/workers-{kpi-group,trend-chart,table-panel,table,detail-chart,unpaid-jobs-panel}.vue` (ไม่แตะ gold-stage-worker-table / gold-worker-ranking-panel)
+- ต่างจากเดิมเล็กน้อย: ชิปประเภทช่างในตารางใช้สไตล์ column chip กลาง · ไฮไลต์ isRateOutlier/isConcentrated ใช้สีเตือน+ตัวหนาเหมือนเดิมผ่าน color/bold ของเซลล์ · แกนกราฟรายเดือนของ materials/capacity ที่ใช้ TrendBlock มี yaxis ครบต่อ series (เดิมสั้นกว่า) ตามที่ Apex ต้องการ

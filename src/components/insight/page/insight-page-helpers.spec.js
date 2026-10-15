@@ -13,7 +13,8 @@ import {
   collectBlockIds,
   findDuplicates,
   nodeKey,
-  resolveFrameProps
+  resolveFrameProps,
+  DISABLED_SOURCE_KEY
 } from './insight-page-helpers.js'
 
 const t = (key, params) => (params ? `${key}:${JSON.stringify(params)}` : key)
@@ -119,5 +120,19 @@ describe('isoOrNull', () => {
   it('returns null for empty values and an ISO string otherwise', () => {
     expect(isoOrNull(null)).toBeNull()
     expect(typeof isoOrNull(new Date('2026-10-01T00:00:00'))).toBe('string')
+  })
+})
+
+describe('enabled sources', () => {
+  const sources = { M: { enabled: (f, s) => !!s.picked, params: (f, s) => ({ code: s.picked?.code, start: f.start }) } }
+
+  it('a disabled source has the constant key and flips once when a selection appears or changes', () => {
+    const off = computeSourceKeys(sources, { start: 1 }, { picked: null })
+    expect(off.M).toBe(DISABLED_SOURCE_KEY)
+    const on = computeSourceKeys(sources, { start: 1 }, { picked: { code: 'A' } })
+    expect(diffSourceKeys(off, on)).toEqual(['M'])
+    expect(diffSourceKeys(on, computeSourceKeys(sources, { start: 1 }, { picked: { code: 'B' } }))).toEqual(['M'])
+    expect(diffSourceKeys(on, computeSourceKeys(sources, { start: 2 }, { picked: { code: 'A' } }))).toEqual(['M'])
+    expect(diffSourceKeys(off, computeSourceKeys(sources, { start: 9 }, { picked: null }))).toEqual([])
   })
 })

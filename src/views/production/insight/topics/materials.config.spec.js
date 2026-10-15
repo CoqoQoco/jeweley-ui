@@ -141,7 +141,7 @@ describe('materials KPI cards and trend (same figures as the old components)', (
     expect(series[2].data).toEqual([null, 15])
     const options = buildTrendOptions({ node: trend, points, categories: trend.categories(points), ctx, t })
     expect(options.stroke.dashArray).toEqual([0, 0, 6])
-    expect(options.yaxis).toHaveLength(2)
+    expect(options.yaxis).toHaveLength(3)
     expect(options.xaxis.categories).toHaveLength(2)
   })
 })

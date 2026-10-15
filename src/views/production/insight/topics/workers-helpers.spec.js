@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest'
 
 import {
+  formatWorkersMoney,
+  formatWorkersPercent,
+  buildWagesSubLabel,
+  buildActiveWorkersSubLabel,
+  buildWorkersTableRows,
+  buildWagesTrendSeriesDefs,
+  resolveSelectedWorker,
   topWagesByDept,
   resolveGoldColumnValue,
   filterWorkersByEmploymentType,
@@ -187,5 +194,56 @@ describe('mapWorkersSeriesTotalField', () => {
 
   it('returns [] for empty/missing input', () => {
     expect(mapWorkersSeriesTotalField(null, 'wagePerPlan')).toEqual([])
+  })
+})
+
+describe('config builders', () => {
+  const t = (key) => key
+
+  it('money / percent formatting', () => {
+    expect(formatWorkersMoney(12345.6)).toBe('฿12,346')
+    expect(formatWorkersMoney(null)).toBe('—')
+    expect(formatWorkersPercent(12.34)).toBe('12.3%')
+    expect(formatWorkersPercent(undefined)).toBe('—')
+  })
+
+  it('wages sub-label: top 2 departments by share + the excludes-salaried note', () => {
+    const kpi = { wagesByDept: [{ deptKey: 'trim', share: 10 }, { deptKey: 'setting', share: 60 }, { deptKey: 'plating', share: 30 }], excludesSalaried: true }
+    expect(buildWagesSubLabel(kpi, t)).toBe('view.executive.department.setting 60% · view.executive.department.plating 30% · view.productionInsight.workers.excludesSalariedNote')
+    expect(buildWagesSubLabel({ wagesByDept: [] }, t)).toBe('')
+  })
+
+  it('active workers sub-label lists departments with counts', () => {
+    expect(buildActiveWorkersSubLabel({ activeWorkersByDept: [{ deptKey: 'trim', count: 3 }, { deptKey: 'setting', count: 12 }] }, t)).toBe('view.executive.department.trim 3, view.executive.department.setting 12')
+    expect(buildActiveWorkersSubLabel({}, t)).toBe('')
+  })
+
+  it('table rows sorted by wages desc with rowKey and department label', () => {
+    const rows = buildWorkersTableRows([{ code: 'A', deptKey: 'trim', wages: 1 }, { code: 'B', deptKey: 'setting', wages: 9 }], t)
+    expect(rows.map((r) => r.rowKey)).toEqual(['B-setting', 'A-trim'])
+    expect(rows[0].deptLabel).toBe('view.executive.department.setting')
+  })
+
+  it('trend series: one stacked bar per department found in the data (palette colours) + the wage-per-plan line on the right axis', () => {
+    const series = [
+      { bucketEnd: 'b1', deptKey: 'trim', wages: 10 },
+      { bucketEnd: 'b2', deptKey: 'trim', wages: 20 },
+      { bucketEnd: 'b2', deptKey: 'setting', wages: 5 }
+    ]
+    const defs = buildWagesTrendSeriesDefs(series, [{ wagePerPlan: 100 }, { wagePerPlan: null }], t, ['#a', '#b'])
+    expect(defs.map((d) => d.type)).toEqual(['bar', 'bar', 'line'])
+    expect(defs[0]).toMatchObject({ name: 'view.executive.department.trim', colorValue: '#a', data: [10, 20], axis: 0 })
+    expect(defs[1]).toMatchObject({ colorValue: '#b', data: [null, 5] })
+    expect(defs[2]).toMatchObject({ axis: 1, data: [100, null], color: 'warning' })
+    expect(buildWagesTrendSeriesDefs([], [], t, ['#a'])).toHaveLength(1)
+  })
+
+  it('selected worker survives a reload only when still present (code + deptKey)', () => {
+    const workers = [{ code: 'A', deptKey: 'trim' }]
+    const current = { code: 'A', deptKey: 'trim', name: 'x' }
+    expect(resolveSelectedWorker(current, workers)).toBe(current)
+    expect(resolveSelectedWorker({ code: 'A', deptKey: 'setting' }, workers)).toBeNull()
+    expect(resolveSelectedWorker(null, workers)).toBeNull()
+    expect(resolveSelectedWorker(current, undefined)).toBeNull()
   })
 })

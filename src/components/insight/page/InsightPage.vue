@@ -8,7 +8,7 @@
     findings          — { source } ชื่อ source ที่ response มี status/problems/forecasts/actions
     helpParams(filter) — params เสริมของข้อความคำอธิบาย (view.productionInsight.help.<CODE>)
     masters           — ['fetchGem', 'fetchGemShape'] ชื่อ action ของ master-store ที่ต้องโหลดก่อนใช้ (cache-aware) → ctx.masters (state ของ master store)
-    sources           — { Name: { endpoint, method:'post'|'get', params(filter, state) } } ยิงทีละ source เมื่อ "params ของตัวเอง" เปลี่ยน
+    sources           — { Name: { endpoint, method:'post'|'get', params(filter, state), enabled?(filter, state) } } (enabled=false → ไม่ยิงและเคลียร์ผลเดิม) ยิงทีละ source เมื่อ "params ของตัวเอง" เปลี่ยน
                         (key = JSON ของ params → 1 request ต่อ endpoint ต่อการกด 1 ครั้ง · แท็บไม่ active = ติดธง stale แล้วยิงตอนกลับมา active)
     state             — { key: { initial, resetOn: { source, value(data, current) } } } state ร่วมของ block (แถวที่เลือก/โฟกัส/draft)
     blocks            — ดู InsightBlockNode (row/group/slot/block มาตรฐาน)
@@ -38,7 +38,7 @@
 <script>
 import { useProductionInsightApiStore } from '@/stores/modules/api/production/production-insight-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
-import { computeSourceKeys, diffSourceKeys, buildStateResets, buildInitialState, nodeKey } from './insight-page-helpers.js'
+import { computeSourceKeys, diffSourceKeys, buildStateResets, buildInitialState, nodeKey, DISABLED_SOURCE_KEY } from './insight-page-helpers.js'
 
 import InsightTabLayout from '../insight-tab-layout.vue'
 import InsightBlockNode from './InsightBlockNode.vue'
@@ -113,8 +113,12 @@ export default {
         const changed = diffSourceKeys(this.lastKeys, next)
         this.lastKeys = { ...next }
         if (!changed.length) return
-        if (this.active) changed.forEach((name) => this.fetchSource(name))
-        else this.staleSources = [...new Set([...this.staleSources, ...changed])]
+        // source ที่ถูกปิด (enabled=false) เคลียร์ผลเดิมทันที ไม่ยิง — ที่เหลือยิงตามปกติ/ติดธง stale ถ้าแท็บไม่ active
+        const disabled = changed.filter((name) => next[name] === DISABLED_SOURCE_KEY)
+        disabled.forEach((name) => this.clearSource(name))
+        const toFetch = changed.filter((name) => !disabled.includes(name))
+        if (this.active) toFetch.forEach((name) => this.fetchSource(name))
+        else this.staleSources = [...new Set([...this.staleSources, ...toFetch])]
       },
       immediate: true
     },
@@ -154,9 +158,19 @@ export default {
       })
     },
 
+    clearSource(name) {
+      this.requestSeq[name] = (this.requestSeq[name] || 0) + 1
+      const { [name]: removed, ...rest } = this.responses
+      void removed
+      this.responses = rest
+      this.loadingMap = { ...this.loadingMap, [name]: false }
+      this.staleSources = this.staleSources.filter((n) => n !== name)
+    },
+
     async fetchSource(name) {
       const source = this.config.sources[name]
       if (!source) return
+      if (source.enabled && !source.enabled(this.filter, this.state)) return
       const seq = (this.requestSeq[name] || 0) + 1
       this.requestSeq[name] = seq
       this.loadingMap = { ...this.loadingMap, [name]: true }

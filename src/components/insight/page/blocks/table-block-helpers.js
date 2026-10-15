@@ -10,10 +10,14 @@ export function buildHeaderSlotColumns(columns) {
 }
 
 // คลาส CSS ของแถวที่เลือก (selectable) — null/undefined state = ไม่มีแถวไหนถูกเลือก
+// selectable: { stateKey, value(row)?, same(stateValue, row)? } — default เก็บ row[dataKey] แล้วเทียบเท่ากัน ·
+// ใช้ value/same เมื่อต้องเก็บ object (เช่น { code, deptKey, name }) ใน state
 export function isRowSelected(node, ctx, row) {
   if (!node.selectable) return false
   const selected = ctx.state?.[node.selectable.stateKey]
-  return selected !== null && selected !== undefined && selected === row[node.dataKey || 'key']
+  if (selected === null || selected === undefined) return false
+  if (node.selectable.same) return !!node.selectable.same(selected, row)
+  return selected === row[node.dataKey || 'key']
 }
 
 // คลาส highlight ต่อเซลล์ — config.highlight(row, col, ctx) → true/คืนชื่อคลาส
@@ -28,7 +32,7 @@ export function resolveCellHighlight(node, row, col, ctx) {
 export function resolveRowSelection(node, event) {
   if (!node.selectable) return null
   const row = event?.data
-  const value = row?.[node.dataKey || 'key']
+  const value = node.selectable.value ? node.selectable.value(row) : row?.[node.dataKey || 'key']
   if (value === undefined || value === null) return null
   return { stateKey: node.selectable.stateKey, value }
 }
@@ -42,4 +46,15 @@ export const headerSlotName = (col) => `header-${col.field}`
 export function resolveTableSections(node) {
   if (node.sections) return node.sections.map((section) => ({ kind: 'table', ...section }))
   return [{ kind: 'table', rows: node.rows, columns: node.columns, dataKey: node.dataKey }]
+}
+
+// ตัวกรองฝั่ง client ใน toolbar (ไม่ยิง request): multiselect{ stateKey, filter(rows, value) } และ toggle{ stateKey, filter(rows, value) }
+// กรองต่อเนื่องตามลำดับ multiselect → toggle บนแถวทุกตารางของ block
+export function applyToolbarFilters(toolbar, rows, ctx) {
+  let result = rows
+  ;['multiselect', 'toggle'].forEach((kind) => {
+    const config = toolbar?.[kind]
+    if (config && typeof config.filter === 'function') result = config.filter(result, ctx.state?.[config.stateKey])
+  })
+  return result
 }

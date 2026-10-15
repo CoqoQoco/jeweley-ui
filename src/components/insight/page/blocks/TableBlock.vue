@@ -3,7 +3,7 @@
     rows(ctx)         → แถว · columns[] จาก column library (columns.js) · dataKey (default 'key')
     selectable{stateKey} → คลิกแถว = ctx.setState(stateKey, row[dataKey]) (แถวที่เลือกมีพื้นหลัง highlight)
     highlight(row,col,ctx) → เน้นเซลล์ · rowClass(row,ctx) · source → ชื่อ source ที่ใช้โชว์ loading
-    toolbar{ hint, actions:[{ type:'targetDrawer', preset }] } → บรรทัดแนะนำ + ปุ่มเปิด drawer ตั้งค่าเป้า/มาตรฐาน
+    toolbar{ hint, chip, actions:[{ type:'targetDrawer', preset }], multiselect{ stateKey, options(ctx,t), filter(rows,value), placeholder }, toggle{ stateKey, options[{value,label}], filter(rows,value), aria } } (ตัวกรอง client-side ไม่ยิง request) → บรรทัดแนะนำ + ปุ่มเปิด drawer ตั้งค่าเป้า/มาตรฐาน
     node.detail (กล่องรายละเอียดของแถวที่เลือก) ถูกเรนเดอร์โดย InsightBlockNode ต่อท้าย block นี้เป็น DetailBlock
 -->
 <template>
@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import { buildBlockColumns, buildHeaderSlotColumns, isRowSelected, resolveCellHighlight, resolveRowSelection, resolveTableSections, cellSlotName, headerSlotName } from './table-block-helpers.js'
+import { buildBlockColumns, buildHeaderSlotColumns, isRowSelected, resolveCellHighlight, resolveRowSelection, resolveTableSections, applyToolbarFilters, cellSlotName, headerSlotName } from './table-block-helpers.js'
 import { resolveHeader } from '../columns.js'
 import blockMixin from './block-mixin.js'
 
@@ -83,8 +83,9 @@ export default {
     cellSlot: cellSlotName,
     headerSlot: headerSlotName,
 
+    // แถวของตารางหลังผ่านตัวกรอง client-side ของ toolbar (multiselect/toggle)
     sectionRows(section) {
-      return section.rows(this.ctx) || []
+      return applyToolbarFilters(this.node.toolbar, section.rows(this.ctx) || [], this.ctx)
     },
 
     sectionColumns(section) {
@@ -136,6 +137,11 @@ export default {
     display: flex;
     align-items: center;
     gap: var(--sp-xs);
+  }
+
+  &--foot {
+    margin: var(--sp-sm) 0 0;
+    font-style: italic;
   }
 
   &--subtitle {

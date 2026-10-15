@@ -18,7 +18,7 @@
   เท่านั้น (ดู syncStateToQuery) — ตัวเลือกช่าง (workerCodes) ของหมวด gold มาจากข้อมูลที่ gold-section.vue ยิง
   Gold สำเร็จแล้ว emit ขึ้นมา (goldWorkerOptions) ไม่ใช่ list คงที่แบบแผนกของ wip/delivery/capacity/workers —
   departmentKeys/employmentTypes ของหมวด workers ส่งไป server จริง (ต่างจาก capacity ที่ departmentKeys เป็น
-  client-side ล้วน — ดู workers-section.vue) — ตาราง waiting/demand/lowCover ของหมวด materials ใช้ตัวกรอง
+  client-side ล้วน — ดู topics/workers.config.js) — ตาราง waiting/demand/lowCover ของหมวด materials ใช้ตัวกรอง
   local state ของตัวเองทั้งหมด (gemStatus/status/coverDays) ไม่ผ่านแผงตัวกรองหลักเลย เพราะเป็น snapshot
   ปัจจุบัน ไม่ query ตามช่วงเวลา (ดู topics/materials.config.js)
 
@@ -88,9 +88,10 @@
         @update-filter="onCapacityFilterUpdate"
         @filter-options-loaded="onCapacityFilterOptionsLoaded"
       />
-      <WorkersSection
+      <InsightPage
         v-if="visitedSections.has('workers')"
         v-show="activeSection === 'workers'"
+        :config="workersConfig"
         :filter="filters.workers"
         :active="activeSection === 'workers'"
       />
@@ -377,9 +378,9 @@ import InsightPage from '@/components/insight/page/InsightPage.vue'
 import { wipConfig } from './topics/wip.config.js'
 import { materialsConfig } from './topics/materials.config.js'
 import { deliveryConfig } from './topics/delivery.config.js'
+import { workersConfig } from './topics/workers.config.js'
 import GoldSection from './sections/gold-section.vue'
 import CapacitySection from './sections/capacity-section.vue'
-import WorkersSection from './sections/workers-section.vue'
 
 const DEPARTMENT_KEYS = ['design', 'trim', 'rawPolish', 'gemSort', 'setting', 'plating', 'costCard']
 
@@ -401,7 +402,6 @@ export default {
     InsightPage,
     GoldSection,
     CapacitySection,
-    WorkersSection,
   },
 
   setup() {
@@ -414,6 +414,7 @@ export default {
       wipConfig,
       materialsConfig,
       deliveryConfig,
+      workersConfig,
       activeSection: 'wip',
       // ว่างตั้งต้นเสมอ — created() เป็นคน add หมวดที่ resolve จาก query จริง (applyQueryToState) ก่อน mount
       // ครั้งแรก กัน WipSection (หรือหมวดไหนก็ตาม) mount+ยิง endpoint ทิ้งทั้งที่ผู้ใช้เปิดมาที่หมวดอื่น
