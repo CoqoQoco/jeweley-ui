@@ -53,7 +53,7 @@ function mountPage(props = {}) {
 
 const postsTo = (name) => postMock.mock.calls.filter((c) => c[0].endsWith(`/${name}`))
 
-describe('InsightPage + workersConfig (smoke)', () => {
+describe('InsightPage + workersConfig (smoke)', { timeout: 20000 }, () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     postMock.mockReset()

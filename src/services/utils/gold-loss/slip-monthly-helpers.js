@@ -1,6 +1,5 @@
 // slip-monthly-helpers.js — pure logic ของกราฟ Gold Loss จากใบ (SLIP) — สกัดออกมาจาก
-// gold-loss-dashboard/components/overview-tab-view.vue แบบ verbatim (ไม่เปลี่ยนสูตรคำนวณ) เพื่อให้
-// ใช้ร่วมกันได้ทั้ง gold-loss-dashboard (ต้นทาง) และหน้าภาพรวมผู้บริหาร /executive (ผู้ใช้ใหม่)
+// หน้า gold-loss-dashboard เดิม (ลบแล้ว) แบบ verbatim (ไม่เปลี่ยนสูตรคำนวณ) ใช้ในหน้าภาพรวมผู้บริหาร /executive
 //
 // "เกณฑ์ในใบ" (threshold%) = Σ allowed / Σ allowedBase × 100 (ถ่วงน้ำหนักตามน้ำหนักทอง ไม่ใช่ค่าเฉลี่ยตรงๆ —
 // ยืนยันแล้วบน prod: เฉลี่ยตรงๆ 3.06% vs ถ่วงน้ำหนัก 2.48%) ช่างแต่ง: allowed=totalAllowedLoss,

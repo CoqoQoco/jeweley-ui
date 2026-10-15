@@ -1,7 +1,6 @@
 <!--
-  slip-compare-chart — กราฟ "เทียบ Loss รายเดือน: ช่างแต่ง vs ช่างฝัง" สกัดจาก
-  gold-loss-dashboard/components/overview-tab-view.vue เป็น shared component (props-driven, ไม่ fetch เอง)
-  ใช้ร่วมกันทั้ง gold-loss-dashboard (ต้นทาง) และหน้าภาพรวมผู้บริหาร /executive
+  slip-compare-chart — กราฟ "เทียบ Loss รายเดือน: ช่างแต่ง vs ช่างฝัง" เป็น shared component (props-driven, ไม่ fetch เอง) ใช้ในหน้าภาพรวมผู้บริหาร /executive
+  (เดิมสกัดจากหน้า gold-loss-dashboard ที่ถูกลบไปแล้ว)
 
   Props:
     tangRows   — Array ของ row ที่ normalize แล้ว (shape กลาง {workerCode, year, month, issued, loss, allowed, allowedBase, ...})
@@ -9,7 +8,7 @@
     monthKeys  — Array<string> ของ 'YYYY-MM' เรียงตามลำดับที่จะแสดงบนแกน x (caller เป็นคนกำหนดช่วง)
 -->
 <template>
-  <SectionCardGeneric :title="$t('view.production.goldLossDashboard.overview.chartSlipCompareTitle')" icon="bi-bar-chart-line" accent="green" headerStyle="legend">
+  <SectionCardGeneric :title="$t('view.production.goldLossShared.chartSlipCompareTitle')" icon="bi-bar-chart-line" accent="green" headerStyle="legend">
     <ChartGeneric type="line" :series="series" :options="options" :height="360" :emptyText="$t('common.label.noData')" />
   </SectionCardGeneric>
 </template>
@@ -56,8 +55,8 @@ export default {
 
     // เดือนที่ไม่มีใบของแผนกนั้น (ไม่มีแถว หรือ issued = 0) ให้ %loss/เกณฑ์เป็น null ไม่ใช่ 0 กันเส้นดิ่งลง 0% หลอกตา
     series() {
-      const tangLabel = this.$t('view.production.goldLossDashboard.overview.slipDeptTang')
-      const setterLabel = this.$t('view.production.goldLossDashboard.overview.slipDeptSetter')
+      const tangLabel = this.$t('view.production.goldLossShared.slipDeptTang')
+      const setterLabel = this.$t('view.production.goldLossShared.slipDeptSetter')
 
       const tangLossData = this.monthKeys.map((k) => roundDecimal((this.tangMonthlyTotals.get(k) || {}).loss || 0))
       const setterLossData = this.monthKeys.map((k) => roundDecimal((this.setterMonthlyTotals.get(k) || {}).loss || 0))
@@ -83,22 +82,22 @@ export default {
         { name: tangLabel, type: 'column', data: tangLossData },
         { name: setterLabel, type: 'column', data: setterLossData },
         {
-          name: this.$t('view.production.goldLossDashboard.overview.chartSlipComparePctSeries', { dept: tangLabel }),
+          name: this.$t('view.production.goldLossShared.chartSlipComparePctSeries', { dept: tangLabel }),
           type: 'line',
           data: tangPctData
         },
         {
-          name: this.$t('view.production.goldLossDashboard.overview.chartSlipComparePctSeries', { dept: setterLabel }),
+          name: this.$t('view.production.goldLossShared.chartSlipComparePctSeries', { dept: setterLabel }),
           type: 'line',
           data: setterPctData
         },
         {
-          name: this.$t('view.production.goldLossDashboard.overview.chartSlipCompareThresholdSeries', { dept: tangLabel }),
+          name: this.$t('view.production.goldLossShared.chartSlipCompareThresholdSeries', { dept: tangLabel }),
           type: 'line',
           data: tangThresholdData
         },
         {
-          name: this.$t('view.production.goldLossDashboard.overview.chartSlipCompareThresholdSeries', { dept: setterLabel }),
+          name: this.$t('view.production.goldLossShared.chartSlipCompareThresholdSeries', { dept: setterLabel }),
           type: 'line',
           data: setterThresholdData
         }
@@ -106,12 +105,12 @@ export default {
     },
 
     options() {
-      const tangLabel = this.$t('view.production.goldLossDashboard.overview.slipDeptTang')
-      const setterLabel = this.$t('view.production.goldLossDashboard.overview.slipDeptSetter')
-      const pctTangName = this.$t('view.production.goldLossDashboard.overview.chartSlipComparePctSeries', { dept: tangLabel })
-      const pctSetterName = this.$t('view.production.goldLossDashboard.overview.chartSlipComparePctSeries', { dept: setterLabel })
-      const thresholdTangName = this.$t('view.production.goldLossDashboard.overview.chartSlipCompareThresholdSeries', { dept: tangLabel })
-      const thresholdSetterName = this.$t('view.production.goldLossDashboard.overview.chartSlipCompareThresholdSeries', { dept: setterLabel })
+      const tangLabel = this.$t('view.production.goldLossShared.slipDeptTang')
+      const setterLabel = this.$t('view.production.goldLossShared.slipDeptSetter')
+      const pctTangName = this.$t('view.production.goldLossShared.chartSlipComparePctSeries', { dept: tangLabel })
+      const pctSetterName = this.$t('view.production.goldLossShared.chartSlipComparePctSeries', { dept: setterLabel })
+      const thresholdTangName = this.$t('view.production.goldLossShared.chartSlipCompareThresholdSeries', { dept: tangLabel })
+      const thresholdSetterName = this.$t('view.production.goldLossShared.chartSlipCompareThresholdSeries', { dept: setterLabel })
 
       const series = this.series
       const weightValues = [...series[0].data, ...series[1].data]
@@ -137,7 +136,7 @@ export default {
             seriesName: tangLabel,
             min: 0,
             max: weightMax,
-            title: { text: this.$t('view.production.goldLossByStage.unitGram') },
+            title: { text: this.$t('view.production.goldLossShared.unitGram') },
             labels: { formatter: (v) => formatDecimalTH(v) }
           },
           {
@@ -181,7 +180,7 @@ export default {
             formatter: (value, opts) => {
               if (value === null || value === undefined) return '—'
               const seriesIndex = opts && typeof opts.seriesIndex === 'number' ? opts.seriesIndex : 0
-              return seriesIndex <= 1 ? `${formatDecimalTH(value)} ${this.$t('view.production.goldLossByStage.unitGram')}` : `${Number(value).toFixed(2)}%`
+              return seriesIndex <= 1 ? `${formatDecimalTH(value)} ${this.$t('view.production.goldLossShared.unitGram')}` : `${Number(value).toFixed(2)}%`
             }
           }
         }

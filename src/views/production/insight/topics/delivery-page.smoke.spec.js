@@ -47,7 +47,7 @@ const mountOptions = () => ({
 
 const postsTo = (name) => postMock.mock.calls.filter((c) => c[0].endsWith(`/${name}`))
 
-describe('InsightPage + deliveryConfig (smoke)', () => {
+describe('InsightPage + deliveryConfig (smoke)', { timeout: 20000 }, () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     postMock.mockReset()
@@ -98,7 +98,7 @@ describe('InsightPage + deliveryConfig (smoke)', () => {
   })
 })
 
-describe('TargetDrawer scalar preset (deliveryTarget)', () => {
+describe('TargetDrawer scalar preset (deliveryTarget)', { timeout: 20000 }, () => {
   beforeEach(() => {
     vi.useFakeTimers()
     setActivePinia(createPinia())

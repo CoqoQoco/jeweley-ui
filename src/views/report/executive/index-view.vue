@@ -455,8 +455,8 @@ export default {
       const goldLossRankingMonthKeys =
         this.goldLossRankingRange === 'thisMonth' ? goldLossCompareMonthKeys.slice(-1) : goldLossCompareMonthKeys.slice(-3)
       const goldLossDeptLabels = {
-        tang: this.$t('view.production.goldLossDashboard.overview.slipDeptTang'),
-        setter: this.$t('view.production.goldLossDashboard.overview.slipDeptSetter')
+        tang: this.$t('view.production.goldLossShared.slipDeptTang'),
+        setter: this.$t('view.production.goldLossShared.slipDeptSetter')
       }
 
       const paymentStateLabels = {

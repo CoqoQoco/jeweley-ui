@@ -1,7 +1,6 @@
 <!--
   gold-loss-trend-view — สรุป Gold Loss จากใบ (SLIP) 6 เดือนล่าสุด (รวมเดือนปัจจุบันที่ยังไม่ครบ) ในหน้า
-  ภาพรวมผู้บริหาร ใช้กราฟชุดเดียวกับ gold-loss-dashboard (slip-compare-chart / slip-worker-ranking-chart)
-  ผ่าน shared component — ไม่มี logic คำนวณซ้ำ
+  ภาพรวมผู้บริหาร ใช้ shared component (slip-compare-chart / slip-worker-ranking-chart) — ไม่มี logic คำนวณซ้ำ
 
   ยิง endpoint ต่อช่างแบบ groupByMonth:true ครั้งเดียวตอน mount (lazy ตาม tab การผลิตของหน้านี้) ครอบคลุม
   ทั้งช่วง 6 เดือน แล้ว slice ฝั่ง client ด้วย filterRowsByMonthKeys สำหรับตัวเลือกช่วงกราฟอันดับ

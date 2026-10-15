@@ -1,5 +1,5 @@
 <!--
-  ToggleGroupGeneric — segmented toggle (สกัดจาก gold-loss-dashboard `.group-by-toggle`, 2nd usage)
+  ToggleGroupGeneric — segmented toggle (สกัดจาก `.group-by-toggle` ของหน้า gold-loss-dashboard เดิม)
   ใช้แทนปุ่ม toggle กลุ่ม (เช่น สลับมุมมอง/สลับแยกตาม) ที่เขียน markup เอง
 
   ตัวอย่างการใช้งาน:

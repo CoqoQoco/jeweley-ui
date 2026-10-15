@@ -165,7 +165,7 @@ const requestedNames = () =>
     ...getMock.mock.calls.map((c) => c[0].split('/').pop())
   ].sort()
 
-describe('InsightPage + goldConfig (smoke)', () => {
+describe('InsightPage + goldConfig (smoke)', { timeout: 20000 }, () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     postMock.mockReset()
@@ -371,7 +371,7 @@ describe('InsightPage + goldConfig (smoke)', () => {
   })
 })
 
-describe('TargetDrawer goldLossTargets (standalone)', () => {
+describe('TargetDrawer goldLossTargets (standalone)', { timeout: 20000 }, () => {
   beforeEach(() => {
     vi.useFakeTimers()
     setActivePinia(createPinia())

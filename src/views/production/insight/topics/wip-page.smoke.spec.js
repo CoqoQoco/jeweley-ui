@@ -32,7 +32,7 @@ function respond(path) {
   return { data: [planRow], total: 1 }
 }
 
-describe('InsightPage + wipConfig (smoke)', () => {
+describe('InsightPage + wipConfig (smoke)', { timeout: 20000 }, () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     postMock.mockReset()

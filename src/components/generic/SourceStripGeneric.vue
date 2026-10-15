@@ -1,6 +1,6 @@
 <!--
   SourceStripGeneric — แถบคาดบนสุดของ tab/หน้าที่ต้องประกาศ "ต้นทางข้อมูล"
-  ใช้เมื่อหน้าจอรวมข้อมูลจากหลายต้นทางที่คีย์คนละที่ (เช่น gold-loss-dashboard: PLAN vs SLIP)
+  ใช้เมื่อหน้าจอรวมข้อมูลจากหลายต้นทางที่คีย์คนละที่ (เช่น Gold Loss: PLAN vs SLIP)
   บอก 3 อย่างเสมอ: ที่มา (ตาราง) · คีย์จากหน้าไหน · นับอะไร/ไม่นับอะไร + ปุ่ม ⓘ กางคำอธิบายยาว
 
   ตัวอย่างการใช้งาน:
@@ -10,7 +10,7 @@
   <SourceStripGeneric source="both" />
 
   Props:
-    source — 'plan' | 'slip-tang' | 'slip-setter' | 'slip' | 'both' (slip = ทั้ง 2 แผนกรวมกัน; ข้อความอยู่ใน i18n namespace goldLossDashboard.sourceStrip)
+    source — 'plan' | 'slip-tang' | 'slip-setter' | 'slip' | 'both' (slip = ทั้ง 2 แผนกรวมกัน; ข้อความอยู่ใน i18n namespace goldLossShared.sourceStrip)
 
   Slots: ไม่มี (ข้อความมาจาก i18n ทั้งหมด เพื่อบังคับให้ทุก source ต้องมีข้อความกำกับ)
 -->
@@ -27,7 +27,7 @@
         @click="expanded = !expanded"
       >
         <i class="bi" :class="expanded ? 'bi-chevron-up' : 'bi-info-circle'"></i>
-        {{ expanded ? $t('view.production.goldLossDashboard.sourceStrip.hideInfo') : $t('view.production.goldLossDashboard.sourceStrip.showInfo') }}
+        {{ expanded ? $t('view.production.goldLossShared.sourceStrip.hideInfo') : $t('view.production.goldLossShared.sourceStrip.showInfo') }}
       </button>
     </div>
     <p v-if="expanded" class="source-strip-generic__detail">{{ detailText }}</p>
@@ -102,11 +102,11 @@ export default {
     },
 
     summaryText() {
-      return this.$t(`view.production.goldLossDashboard.sourceStrip.${this.i18nKey}.summary`)
+      return this.$t(`view.production.goldLossShared.sourceStrip.${this.i18nKey}.summary`)
     },
 
     detailText() {
-      return this.$t(`view.production.goldLossDashboard.sourceStrip.${this.i18nKey}.detail`)
+      return this.$t(`view.production.goldLossShared.sourceStrip.${this.i18nKey}.detail`)
     }
   }
 }

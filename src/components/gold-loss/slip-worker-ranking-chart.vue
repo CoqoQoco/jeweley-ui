@@ -1,7 +1,6 @@
 <!--
-  slip-worker-ranking-chart — กราฟ "อันดับ Loss ต่อช่าง" สกัดจาก
-  gold-loss-dashboard/components/overview-tab-view.vue เป็น shared component (props-driven, ไม่ fetch เอง)
-  ใช้ร่วมกันทั้ง gold-loss-dashboard (ต้นทาง) และหน้าภาพรวมผู้บริหาร /executive
+  slip-worker-ranking-chart — กราฟ "อันดับ Loss ต่อช่าง" เป็น shared component (props-driven, ไม่ fetch เอง) ใช้ในหน้าภาพรวมผู้บริหาร /executive
+  (เดิมสกัดจากหน้า gold-loss-dashboard ที่ถูกลบไปแล้ว)
 
   Props:
     tangRows   — Array ของ row ที่ normalize แล้ว (shape กลาง) ฝั่งช่างแต่ง — ช่วงที่จะจัดอันดับ (caller กรองมาก่อนแล้วถ้าต้องการ)
@@ -10,23 +9,23 @@
 
   Slots:
     #controls — ตัวควบคุมเพิ่มเติม (เช่น range toggle เดือนนี้/3 เดือนฝั่ง executive) วางแถวเดียวกับ dept
-                toggle ก่อนเกณฑ์ในใบชิดขวา — ไม่ใส่ก็ไม่มีอะไรเปลี่ยนจากเดิม (gold-loss-dashboard ไม่ใช้ slot นี้)
+                toggle ก่อนเกณฑ์ในใบชิดขวา — ไม่ใส่ก็ไม่มีอะไรเปลี่ยนจากเดิม
 
   Emits: update:dept
 -->
 <template>
-  <SectionCardGeneric :title="$t('view.production.goldLossDashboard.overview.chartSlipByWorkerTitle')" icon="bi-people" accent="green" headerStyle="legend">
+  <SectionCardGeneric :title="$t('view.production.goldLossShared.chartSlipByWorkerTitle')" icon="bi-people" accent="green" headerStyle="legend">
     <div class="slip-dept-toggle-row">
-      <span class="title-text">{{ $t('view.production.goldLossDashboard.overview.slipDeptLabel') }}</span>
+      <span class="title-text">{{ $t('view.production.goldLossShared.slipDeptLabel') }}</span>
       <ToggleGroupGeneric
         :modelValue="dept"
         :options="deptOptions"
-        :ariaLabel="$t('view.production.goldLossDashboard.overview.slipDeptLabel')"
+        :ariaLabel="$t('view.production.goldLossShared.slipDeptLabel')"
         @update:modelValue="$emit('update:dept', $event)"
       />
       <slot name="controls"></slot>
       <span class="slip-dept-toggle-row__threshold">
-        <span class="goal-legend-tick"></span>{{ $t('view.production.goldLossDashboard.overview.slipAllowedLegend', { percent: thresholdLabel }) }}
+        <span class="goal-legend-tick"></span>{{ $t('view.production.goldLossShared.slipAllowedLegend', { percent: thresholdLabel }) }}
       </span>
     </div>
     <ChartGeneric type="bar" :series="series" :options="options" :height="chartHeight" :emptyText="$t('common.label.noData')" />
@@ -84,8 +83,8 @@ export default {
   computed: {
     deptOptions() {
       return [
-        { value: 'tang', label: this.$t('view.production.goldLossDashboard.overview.slipDeptTang') },
-        { value: 'setter', label: this.$t('view.production.goldLossDashboard.overview.slipDeptSetter') }
+        { value: 'tang', label: this.$t('view.production.goldLossShared.slipDeptTang') },
+        { value: 'setter', label: this.$t('view.production.goldLossShared.slipDeptSetter') }
       ]
     },
 
@@ -103,17 +102,17 @@ export default {
     },
 
     rankingRows() {
-      const otherLabel = this.$t('view.production.goldLossDashboard.overview.otherWorkersLabel')
+      const otherLabel = this.$t('view.production.goldLossShared.otherWorkersLabel')
       return buildWorkerRankingRows(this.selectedDeptRows, { maxBars: MAX_WORKER_BARS, otherLabel })
     },
 
     // ให้ ChartGeneric แสดง empty state ได้ถูกต้องเมื่อไม่มีช่างเลย — data point เป็น {x,y,goals} object
     // (goals ใส่เฉพาะตอน allowed > 0 กันเส้นยอมให้โผล่ตอนไม่มีเกณฑ์)
     series() {
-      const goalName = this.$t('view.production.goldLossDashboard.overview.chartGoalAllowedLoss')
+      const goalName = this.$t('view.production.goldLossShared.chartGoalAllowedLoss')
       return [
         {
-          name: this.$t('view.production.goldLossDashboard.overview.colLoss'),
+          name: this.$t('view.production.goldLossShared.colLoss'),
           data: this.rankingRows.map((r) => {
             const point = { x: r.label, y: r.loss }
             if (r.allowed > 0) {
@@ -152,7 +151,7 @@ export default {
         // (CHART_TOKENS.sub) แทนสีเดียวกับแท่งเพื่อให้อ่านออกตอนอยู่นอกแท่ง
         dataLabels: {
           enabled: true,
-          formatter: (v) => `${formatDecimalTH(v)} ${this.$t('view.production.goldLossByStage.unitGram')}`,
+          formatter: (v) => `${formatDecimalTH(v)} ${this.$t('view.production.goldLossShared.unitGram')}`,
           style: { fontSize: '12px', fontWeight: 600, colors: [CHART_TOKENS.sub] },
           offsetX: 40
         },
@@ -161,7 +160,7 @@ export default {
         // แทน xaxis.categories (ตัดออกแล้วเพราะใช้ data point object แทน)
         xaxis: {
           max: this.xaxisMax,
-          title: { text: this.$t('view.production.goldLossByStage.unitGram') },
+          title: { text: this.$t('view.production.goldLossShared.unitGram') },
           labels: { formatter: (v) => formatDecimalTH(v) }
         },
         yaxis: {
@@ -173,10 +172,10 @@ export default {
             formatter: (value, opts) => {
               const dataPointIndex = opts && typeof opts.dataPointIndex === 'number' ? opts.dataPointIndex : -1
               const row = this.rankingRows[dataPointIndex]
-              if (!row) return `${formatDecimalTH(value)} ${this.$t('view.production.goldLossByStage.unitGram')}`
-              return this.$t('view.production.goldLossDashboard.overview.chartRankingTooltip', {
-                loss: `${formatDecimalTH(row.loss)} ${this.$t('view.production.goldLossByStage.unitGram')}`,
-                allowed: `${formatDecimalTH(row.allowed)} ${this.$t('view.production.goldLossByStage.unitGram')}`,
+              if (!row) return `${formatDecimalTH(value)} ${this.$t('view.production.goldLossShared.unitGram')}`
+              return this.$t('view.production.goldLossShared.chartRankingTooltip', {
+                loss: `${formatDecimalTH(row.loss)} ${this.$t('view.production.goldLossShared.unitGram')}`,
+                allowed: `${formatDecimalTH(row.allowed)} ${this.$t('view.production.goldLossShared.unitGram')}`,
                 percent: row.thresholdPercent != null ? formatPercentTH(row.thresholdPercent) : '—'
               })
             }
