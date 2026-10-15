@@ -295,7 +295,7 @@ describe('GT800 — เลือก ROOMY/TIGHT', () => {
     }
     const layout = layoutGt800(form, 'original')
     expect(layout.levelName).toBe('ROOMY')
-    expect(layout.gemColumnX).toBe(440)
+    expect(layout.gemColumnX).toBe(428)
   })
 
   it('รหัสสั้น ไม่มีพลอย → ROOMY', () => {
@@ -315,14 +315,14 @@ describe('GT800 — เลือก ROOMY/TIGHT', () => {
     expect(layout.levelName).toBe('TIGHT')
   })
 
-  it('พลอยบรรทัดยาวเกิน 24 ตัวอักษร (หลัง formatGemText) → TIGHT แต่คอลัมน์พลอยยัง x=440 เท่าเดิม', () => {
+  it('พลอยบรรทัดยาวเกิน 24 ตัวอักษร (หลัง formatGemText) → TIGHT แต่คอลัมน์พลอยยัง x=428 เท่าเดิม', () => {
     const form = {
       stockNumber: 'AB123',
       gems: ['ThisIsAVeryLongGemNameCt.5.00']
     }
     const layout = layoutGt800(form, 'original')
     expect(layout.levelName).toBe('TIGHT')
-    expect(layout.gemColumnX).toBe(440)
+    expect(layout.gemColumnX).toBe(428)
   })
 
   it('แนวตั้ง: ชื่อสินค้ายาวเกิน 20 ตัวอักษร + พลอย 3 บรรทัด → TIGHT', () => {
@@ -390,7 +390,7 @@ describe('generateGt800ZPL / generateGt800ZPLVertical', () => {
   })
 })
 
-describe('layoutGt800 / generateGt800ZPL — แท็บ original ใหม่ (ชื่อสินค้า + gold line ไม่มี goldType + พลอย x=440)', () => {
+describe('layoutGt800 / generateGt800ZPL — แท็บ original ใหม่ (ชื่อสินค้า + gold line ไม่มี goldType + พลอย x=428)', () => {
   const form = {
     stockNumber: 'AH21142',
     salePrice: 12345,
@@ -402,12 +402,12 @@ describe('layoutGt800 / generateGt800ZPL — แท็บ original ใหม่ 
     gems: ['0.24ct.', '0.15ct.']
   }
 
-  it('layoutGt800: ชื่อสั้นไม่ย่อฟอนต์ + คอลัมน์พลอยคงที่ x=440', () => {
+  it('layoutGt800: ชื่อสั้นไม่ย่อฟอนต์ + คอลัมน์พลอยคงที่ x=428', () => {
     const layout = layoutGt800(form, 'original')
     expect(layout.productNameEn).toBe('Ring Test')
     expect(layout.nameFont).toEqual([16, 16])
     expect(layout.goldLine).toBe('PG #55')
-    expect(layout.gemColumnX).toBe(440)
+    expect(layout.gemColumnX).toBe(428)
   })
 
   it('layoutGt800: ชื่อยาว 32 ตัวอักษร (เกินพื้นที่ 164 dots) → ย่อฟอนต์เหลือ [10,10]', () => {
@@ -415,12 +415,39 @@ describe('layoutGt800 / generateGt800ZPL — แท็บ original ใหม่ 
     expect(layout.nameFont).toEqual([10, 10])
   })
 
-  it('layoutGt800: พลอยสั้น → ROOMY ฟอนต์ [16,17] / พลอยยาวมาก → TIGHT และย่อความกว้างไม่ให้ล้นขอบขวา', () => {
-    expect(layoutGt800(form, 'original').gemFont).toEqual([16, 17])
-    const long = layoutGt800({ ...form, gems: ['ThisIsAVeryLongGemNameCt.5.00'] }, 'original')
-    expect(long.levelName).toBe('TIGHT')
-    expect(long.gemFont[0]).toBe(14)
-    expect(440 + 29 * long.gemFont[1] * 0.46).toBeLessThanOrEqual(594)
+  it('layoutGt800: ฟอนต์/ระยะบรรทัดพลอยตามจำนวนบรรทัด (1-3 → 20/20, 4 → 17/17, 5+ → ลดตามพื้นที่)', () => {
+    const gems = (n) => Array.from({ length: n }, () => '0.10ct.')
+    ;[1, 2, 3].forEach((n) => {
+      const l = layoutGt800({ ...form, gems: gems(n) }, 'original')
+      expect(l.gemFont).toEqual([20, 14])
+      expect(l.gemLineHeight).toBe(20)
+    })
+    const four = layoutGt800({ ...form, gems: gems(4) }, 'original')
+    expect(four.gemFont).toEqual([17, 14])
+    expect(four.gemLineHeight).toBe(17)
+    const five = layoutGt800({ ...form, gems: gems(5) }, 'original')
+    expect(five.gemFont).toEqual([14, 14])
+    expect(five.gemLineHeight).toBe(14)
+    const seven = layoutGt800({ ...form, gems: gems(7) }, 'original')
+    expect(seven.gemFont[0]).toBe(10)
+    expect(seven.gemLineHeight).toBe(10)
+    expect(31 + 7 * seven.gemLineHeight).toBeLessThanOrEqual(104)
+  })
+
+  it('layoutGt800: บรรทัดพลอยยาว 26 ตัวไม่ถูกตัด บีบความกว้างให้พอดีขอบขวา และไม่ต่ำกว่า MIN (9)', () => {
+    const long = layoutGt800({ ...form, gems: ['19Ruby 0.365 ct., RD - 1.5', '1Diamond 0.02 ct., G,VS1'] }, 'original')
+    expect(long.formattedGems[0]).toBe('19Ruby 0.365 ct., RD - 1.5')
+    expect(long.formattedGems[0].length).toBe(26)
+    expect(long.gemFont[0]).toBe(20)
+    expect(long.gemFont[1]).toBeGreaterThanOrEqual(9)
+    expect(long.gemFont[1]).toBeLessThan(14)
+    expect(428 + 26 * long.gemFont[1] * 0.46).toBeLessThanOrEqual(594)
+    const huge = layoutGt800({ ...form, gems: ['ThisIsAVeryLongGemNameCt.5.00'] }, 'original')
+    expect(huge.gemFont[1]).toBeGreaterThanOrEqual(9)
+  })
+
+  it('layoutGt800: ฝั่งซ้าย (codeLineFont) ไม่เปลี่ยนตามฟอนต์พลอยใหม่', () => {
+    expect(layoutGt800(form, 'original').codeLineFont).toEqual([18, 18])
   })
 
   it('layoutGt800: ชื่อว่าง → ไม่ย่อฟอนต์ (ยังเป็น [16,16] แม้ไม่ได้ใช้)', () => {
@@ -473,25 +500,25 @@ describe('layoutGt800 / generateGt800ZPL — แท็บ original ใหม่ 
     expect(zpl).not.toContain('18K')
   })
 
-  it('generateGt800ZPL: คอลัมน์พลอยอยู่ที่ x=440 (ไม่ใช่ 422/472 เหมือนเดิม)', () => {
+  it('generateGt800ZPL: คอลัมน์พลอยอยู่ที่ x=428 (ไม่ใช่ 422/472 เหมือนเดิม)', () => {
     const zpl = generateGt800ZPL(form, 1)
-    expect(zpl).toContain('^FO440,31^A0N,16,17^FD0.24 ct.^FS')
-    expect(zpl).toContain('^FO440,46^A0N,16,17^FD0.15 ct.^FS')
+    expect(zpl).toContain('^FO428,31^A0N,20,14^FD0.24 ct.^FS')
+    expect(zpl).toContain('^FO428,51^A0N,20,14^FD0.15 ct.^FS')
   })
 
   it('generateGt800ZPL: บรรทัดพลอยพิมพ์ครั้งเดียวต่อบรรทัด (ไม่พิมพ์ซ้ำจำลองตัวหนา)', () => {
     const zpl = generateGt800ZPL(form, 1)
-    expect(zpl).toContain('^FO440,31^A0N,16,17^FD0.24 ct.^FS')
-    expect(zpl).toContain('^FO440,46^A0N,16,17^FD0.15 ct.^FS')
+    expect(zpl).toContain('^FO428,31^A0N,20,14^FD0.24 ct.^FS')
+    expect(zpl).toContain('^FO428,51^A0N,20,14^FD0.15 ct.^FS')
     expect(zpl).not.toContain('^FO441,')
     expect(zpl.split('^FD0.24 ct.^FS').length - 1).toBe(1)
   })
 
   it('generateGt800ZPL/Vertical: ที่ dpiScale 1.5 พลอยพิมพ์ครั้งเดียว', () => {
     const scale = 1.5
-    const x = Math.round(440 * scale)
+    const x = Math.round(428 * scale)
     const y = Math.round(31 * scale)
-    const font = `${Math.round(16 * scale)},${Math.round(17 * scale)}`
+    const font = `${Math.round(20 * scale)},${Math.round(14 * scale)}`
     const zpl = generateGt800ZPL(form, scale)
     expect(zpl).toContain(`^FO${x},${y}^A0N,${font}^FD0.24 ct.^FS`)
     expect(zpl.split('^FD0.24 ct.^FS').length - 1).toBe(1)

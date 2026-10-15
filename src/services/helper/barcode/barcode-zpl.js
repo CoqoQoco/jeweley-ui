@@ -38,7 +38,16 @@ const GT800_O_GOLD_LINE_X = 256
 const GT800_O_GOLD_LINE_Y = 86
 const GT800_O_GOLD_LINE_FONT = [16, 16] // ไม่มี goldType นำหน้าอีกแล้ว (ชื่อสินค้ามีกะรัตอยู่ในตัวแล้ว)
 
-const GT800_O_GEM_X = 440 // คอลัมน์พลอยฝั่งขวาของแนวพับ คงที่ทุก level (ไม่ขยับตาม ROOMY/TIGHT เหมือนเดิม)
+const GT800_O_GEM_X = 428 // คอลัมน์พลอยฝั่งขวาของแนวพับ (ฝั่งซ้ายจบ x≈420, พับ x≈425) คงที่ทุก level — ที่ว่างถึงขอบขวา 594 = 166 dots
+// ขนาดตัวอักษรพลอยแท็บ original ตามจำนวนบรรทัด (1 พลอย = 1 บรรทัด ห้ามตัด/wrap) — ความกว้างเริ่มต้นแล้ว fitGemFont บีบเมื่อบรรทัดยาว
+const GT800_O_GEM_WIDTH = 14
+const GT800_O_GEM_SIZE_BY_LINES = [
+  { maxLines: 3, height: 20, lineHeight: 20 },
+  { maxLines: 4, height: 17, lineHeight: 17 }
+]
+const GT800_O_GEM_MAX_STACK_HEIGHT = 70 // พื้นที่ซ้อนบรรทัดพลอยตั้งแต่ GEM_START_Y (y31 → ~y101) ใช้ลดขนาดเมื่อ 5 บรรทัดขึ้นไป
+const GT800_O_GEM_DENSE_MAX = 14 // สูงสุดของ 5 บรรทัดขึ้นไป
+const GT800_O_GEM_MIN_HEIGHT = 8
 
 // template แนวตั้ง (4 แท็บราคา)
 const GT800_V_NAME_X = 256
@@ -279,6 +288,17 @@ function fitGemFont(font, longestLen, x) {
   return [font[0], Math.max(GT800_GEM_MIN_WIDTH, Math.min(font[1], fitWidth))]
 }
 
+// ขนาด/ระยะบรรทัดพลอยแท็บ original ตามจำนวนบรรทัด
+function computeGt800OriginalGemSize(lineCount) {
+  const tier = GT800_O_GEM_SIZE_BY_LINES.find((t) => lineCount <= t.maxLines)
+  if (tier) return { height: tier.height, lineHeight: tier.lineHeight }
+  const size = Math.max(
+    GT800_O_GEM_MIN_HEIGHT,
+    Math.min(GT800_O_GEM_DENSE_MAX, Math.floor(GT800_O_GEM_MAX_STACK_HEIGHT / lineCount))
+  )
+  return { height: size, lineHeight: size }
+}
+
 function longestLength(lines) {
   return lines.reduce((max, line) => Math.max(max, line.length), 0)
 }
@@ -323,6 +343,8 @@ export function layoutGt800(formValue, template) {
     const sizeText = normalizeGt800Size(formValue?.size)
     const goldLine = [formValue?.gold || '', sizeText].filter(Boolean).join(' ')
 
+    const gemSize = computeGt800OriginalGemSize(formattedGems.length)
+
     return {
       template: 'original',
       levelName: level.name,
@@ -333,8 +355,8 @@ export function layoutGt800(formValue, template) {
       nameFont,
       goldLine,
       gemColumnX: GT800_O_GEM_X,
-      gemFont: fitGemFont(level.gemFont, longestLength(formattedGems), GT800_O_GEM_X),
-      gemLineHeight: level.lineHeight,
+      gemFont: fitGemFont([gemSize.height, GT800_O_GEM_WIDTH], longestLength(formattedGems), GT800_O_GEM_X),
+      gemLineHeight: gemSize.lineHeight,
       codeLineFont: level.priceFontHorizontal,
       formattedGems
     }
