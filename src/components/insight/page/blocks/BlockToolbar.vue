@@ -20,10 +20,10 @@
     />
     <ToggleGroupGeneric
       v-if="toolbar.toggle"
-      :modelValue="ctx.state[toolbar.toggle.stateKey]"
+      :modelValue="toggleValue"
       :options="toggleOptions"
       :ariaLabel="$t(toolbar.toggle.aria)"
-      @update:modelValue="ctx.setState(toolbar.toggle.stateKey, $event)"
+      @update:modelValue="onToggle"
     />
   </div>
 
@@ -57,6 +57,14 @@ export default {
     ctx: { type: Object, required: true }
   },
 
+  methods: {
+    onToggle(value) {
+      const toggle = this.toolbar.toggle
+      if (toggle.onChange) toggle.onChange(this.ctx, value)
+      else this.ctx.setState(toggle.stateKey, value)
+    }
+  },
+
   computed: {
     hasFilters() {
       return !!(this.toolbar.multiselect || this.toolbar.toggle)
@@ -68,6 +76,12 @@ export default {
 
     multiselectOptions() {
       return this.toolbar.multiselect.options(this.ctx, (key, params) => this.$t(key, params))
+    },
+
+    // toggle เขียน state ของหน้า (default) หรือ value(ctx)/onChange(ctx,v) เมื่อค่าอยู่นอก state (เช่น filter ของหน้า)
+    toggleValue() {
+      const toggle = this.toolbar.toggle
+      return toggle.value ? toggle.value(this.ctx) : this.ctx.state[toggle.stateKey]
     },
 
     toggleOptions() {

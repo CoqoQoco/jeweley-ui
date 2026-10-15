@@ -112,7 +112,7 @@ describe('node helpers', () => {
 describe('resolveFrameProps', () => {
   it('maps title/tip/notes through t and applies defaults', () => {
     const frame = resolveFrameProps({ id: 'x', title: 'k.title', titleTip: 'k.tip', notes: ['k.n1', () => '', 'k.n2'] }, {}, t)
-    expect(frame).toEqual({ id: 'x', title: 'k.title', titleTip: 'k.tip', icon: '', accent: 'main', headerStyle: 'legend', notes: ['k.n1', 'k.n2'] })
+    expect(frame).toEqual({ id: 'x', title: 'k.title', titleTip: 'k.tip', icon: '', accent: 'main', headerStyle: 'legend', notes: ['k.n1', 'k.n2'], bare: false, subtitle: '' })
   })
 })
 
@@ -134,5 +134,12 @@ describe('enabled sources', () => {
     expect(diffSourceKeys(on, computeSourceKeys(sources, { start: 1 }, { picked: { code: 'B' } }))).toEqual(['M'])
     expect(diffSourceKeys(on, computeSourceKeys(sources, { start: 2 }, { picked: { code: 'A' } }))).toEqual(['M'])
     expect(diffSourceKeys(off, computeSourceKeys(sources, { start: 9 }, { picked: null }))).toEqual([])
+  })
+})
+
+describe('resolveFrameProps: bare / subtitle', () => {
+  it('passes bare and resolves the subtitle (key or function)', () => {
+    expect(resolveFrameProps({ bare: true, subtitle: 'k.sub' }, {}, t)).toMatchObject({ bare: true, subtitle: 'k.sub' })
+    expect(resolveFrameProps({ subtitle: (ctx) => `s${ctx.n}` }, { n: 2 }, t)).toMatchObject({ bare: false, subtitle: 's2' })
   })
 })

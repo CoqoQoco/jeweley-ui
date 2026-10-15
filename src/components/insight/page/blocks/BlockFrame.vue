@@ -2,12 +2,17 @@
   BlockFrame — กรอบมาตรฐานของ block ใน InsightPage: anchor `insight-report-<id>` + SectionCardGeneric + note ใต้หัวข้อ
   (ข้อความ note/title ถูก resolve มาแล้วจาก block) — id เว้นว่างได้ (block ที่อยู่ใน group ซึ่งมี anchor ของ group เอง)
 
-  Props: id, title, titleTip, icon, accent, headerStyle, notes (string[])
+  Props: id, title, titleTip, icon, accent, headerStyle, notes (string[]), bare (ไม่วาด SectionCard), subtitle (ใช้กับ bare)
   Slots: default · header-actions (มุมขวาบนของหัวกรอบ — ส่งต่อให้ SectionCardGeneric)
 -->
 <template>
   <div :id="anchorId" class="block-frame">
-    <SectionCardGeneric :title="title" :titleTip="titleTip" :icon="icon" :accent="accent" :headerStyle="headerStyle">
+    <template v-if="bare">
+      <p v-if="subtitle" class="block-frame__subtitle">{{ subtitle }}</p>
+      <p v-for="(note, index) in notes" :key="index" class="block-frame__note">{{ note }}</p>
+      <slot />
+    </template>
+    <SectionCardGeneric v-else :title="title" :titleTip="titleTip" :icon="icon" :accent="accent" :headerStyle="headerStyle">
       <template v-if="$slots['header-actions']" #header-actions>
         <slot name="header-actions" />
       </template>
@@ -34,7 +39,9 @@ export default {
     icon: { type: String, default: '' },
     accent: { type: String, default: 'main' },
     headerStyle: { type: String, default: 'legend' },
-    notes: { type: Array, default: () => [] }
+    notes: { type: Array, default: () => [] },
+    bare: { type: Boolean, default: false },
+    subtitle: { type: String, default: '' }
   },
 
   computed: {
@@ -49,6 +56,13 @@ export default {
 .block-frame {
   scroll-margin-top: calc(var(--mainbar-height) + 64px);
   min-width: 0;
+}
+
+.block-frame__subtitle {
+  margin: 0 0 var(--sp-sm);
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--base-font-color);
 }
 
 .block-frame__note {

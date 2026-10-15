@@ -56,7 +56,12 @@ export function buildTrendOptions({ node, points, categories, ctx, t }) {
   const tooltipFormatter = (fmt) => (v) => formatChartValue(node.tooltipAbs && v != null ? Math.abs(v) : v, fmt)
   const formatter = tooltipFormatter(format)
   const axisFormatter = (v) => formatChartValue(v, format)
-  const axisTitle = (index) => (node.axisTitles && node.axisTitles[index] ? { title: { text: t(node.axisTitles[index]) } } : {})
+  // axisTitles[i] = i18n key หรือ function(ctx, t) (เช่น ชื่อหน่วยที่ขึ้นกับ filter)
+  const axisTitle = (index) => {
+    const spec = node.axisTitles && node.axisTitles[index]
+    if (!spec) return {}
+    return { title: { text: typeof spec === 'function' ? spec(ctx, t) : t(spec) } }
+  }
   const axisFormatterOf = (s) => (v) => formatChartValue(v, seriesFormat(s))
   const firstOnAxis0 = visible.find((s) => (s.axis || 0) === 0) || visible[0]
   const firstOnAxis1 = visible.find((s) => s.axis === 1)
@@ -102,6 +107,7 @@ export function buildTrendOptions({ node, points, categories, ctx, t }) {
           }
         : {}
   }
+  if (node.legend) options.legend = { position: node.legend }
   if (anyOpacity) options.fill = { opacity: visible.map((s) => s.opacity ?? 1) }
   return options
 }

@@ -59,20 +59,25 @@ export function needsHeaderSlot(col) {
 
 // columns ของ DataTableWithPaging — คอลัมน์ที่มี tip ต้องเคลียร์ header เป็น '' (หัวโชว์ผ่าน slot #header-<field> แทน
 // ไม่งั้นหัวขึ้นซ้ำ 2 จุด — กับดักเดิมของ BaseDataTable)
-export function toTableColumns(cols, t) {
+export function toTableColumns(cols, t, ctx) {
   return (cols || []).map((col) => ({
     field: col.field,
-    header: needsHeaderSlot(col) ? '' : resolveHeader(col, t),
+    header: needsHeaderSlot(col) ? '' : resolveHeader(col, t, ctx),
     sortable: false,
     minWidth: col.minWidth,
     align: col.align
   }))
 }
 
-// header = i18n key หรือ function(t) (เช่นหัวที่ประกอบจาก 2 key: "รอ / ทำ")
-export function resolveHeader(col, t) {
-  if (typeof col.header === 'function') return col.header(t)
+// header = i18n key หรือ function(t, ctx) (เช่นหัวที่ประกอบจาก 2 key: "รอ / ทำ")
+export function resolveHeader(col, t, ctx) {
+  if (typeof col.header === 'function') return col.header(t, ctx)
   return col.header ? t(col.header) : ''
+}
+
+// tip ของหัวคอลัมน์ = i18n key หรือ function(ctx, t) (ข้อความที่ขึ้นกับ filter)
+export function resolveTipText(col, ctx, t) {
+  return typeof col.tip === 'function' ? col.tip(ctx, t) : t(col.tip)
 }
 
 export function headerSlotColumns(cols) {
@@ -193,6 +198,8 @@ export function resolveCell(col, row, t, ctx) {
     case 'planLink':
       return { kind: 'planLink', label: row.woText || row.woNumber || row.wo || '' }
     default: {
+      // render(row, t) = ข้อความที่ประกอบเอง (เช่น ชื่อหน่วยที่แปลแล้ว) แทนการอ่านค่าตรงๆ
+      if (col.render) return { kind: 'text', text: col.render(row, t) }
       const raw = readValue(col, row)
       return { kind: 'text', text: raw === null || raw === undefined || raw === '' ? col.nullAs ?? '' : String(raw) }
     }

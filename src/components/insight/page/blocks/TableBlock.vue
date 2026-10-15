@@ -31,7 +31,7 @@
           <template v-for="col in headerColsOf(section)" :key="`h-${col.field}`" #[headerSlot(col)]>
             <span class="table-block__col-header">
               {{ headerText(col) }}
-              <InfoTipGeneric :text="$t(col.tip)" position="bottom" tone="inverse" />
+              <InfoTipGeneric :text="tipText(col)" position="bottom" tone="inverse" />
             </span>
           </template>
 
@@ -47,8 +47,8 @@
 </template>
 
 <script>
-import { buildBlockColumns, buildHeaderSlotColumns, isRowSelected, resolveCellHighlight, resolveRowSelection, resolveTableSections, applyToolbarFilters, cellSlotName, headerSlotName } from './table-block-helpers.js'
-import { resolveHeader } from '../columns.js'
+import { buildBlockColumns, buildHeaderSlotColumns, isRowSelected, resolveCellHighlight, resolveRowSelection, resolveTableSections, applyToolbarFilters, runRowClickAction, cellSlotName, headerSlotName } from './table-block-helpers.js'
+import { resolveHeader, resolveTipText } from '../columns.js'
 import blockMixin from './block-mixin.js'
 
 import BlockFrame from './BlockFrame.vue'
@@ -89,7 +89,7 @@ export default {
     },
 
     sectionColumns(section) {
-      return buildBlockColumns(section.columns, (key) => this.$t(key))
+      return buildBlockColumns(section.columns, (key) => this.$t(key), this.ctx)
     },
 
     headerColsOf(section) {
@@ -97,7 +97,11 @@ export default {
     },
 
     headerText(col) {
-      return resolveHeader(col, (key) => this.$t(key))
+      return resolveHeader(col, (key) => this.$t(key), this.ctx)
+    },
+
+    tipText(col) {
+      return resolveTipText(col, this.ctx, (key, params) => this.$t(key, params))
     },
 
     sectionText(section) {
@@ -114,6 +118,7 @@ export default {
     },
 
     onRowClick(event) {
+      if (runRowClickAction(this.node, event, this.ctx)) return
       const selection = resolveRowSelection(this.node, event)
       if (selection) this.ctx.setState(selection.stateKey, selection.value)
     }
@@ -141,6 +146,11 @@ export default {
 
   &--foot {
     margin: var(--sp-sm) 0 0;
+    font-style: italic;
+  }
+
+  &--hint {
+    margin: 0 0 var(--sp-sm);
     font-style: italic;
   }
 

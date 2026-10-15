@@ -1,8 +1,8 @@
 // table-block-helpers.js — pure logic ของ TableBlock/PlanTableBlock
 import { toTableColumns, headerSlotColumns } from '../columns.js'
 
-export function buildBlockColumns(columns, t) {
-  return toTableColumns(columns, t)
+export function buildBlockColumns(columns, t, ctx) {
+  return toTableColumns(columns, t, ctx)
 }
 
 export function buildHeaderSlotColumns(columns) {
@@ -14,7 +14,8 @@ export function buildHeaderSlotColumns(columns) {
 // ใช้ value/same เมื่อต้องเก็บ object (เช่น { code, deptKey, name }) ใน state
 export function isRowSelected(node, ctx, row) {
   if (!node.selectable) return false
-  const selected = ctx.state?.[node.selectable.stateKey]
+  // selectable.current(ctx) = ค่าที่ถือว่าเลือกอยู่จริง (เช่น ค่า default ที่คำนวณจากข้อมูล) · ไม่ระบุ = state[stateKey]
+  const selected = node.selectable.current ? node.selectable.current(ctx) : ctx.state?.[node.selectable.stateKey]
   if (selected === null || selected === undefined) return false
   if (node.selectable.same) return !!node.selectable.same(selected, row)
   return selected === row[node.dataKey || 'key']
@@ -57,4 +58,11 @@ export function applyToolbarFilters(toolbar, rows, ctx) {
     if (config && typeof config.filter === 'function') result = config.filter(result, ctx.state?.[config.stateKey])
   })
   return result
+}
+
+// onRowClick(row, ctx) ของ node = action เฉพาะ (เช่น ตั้งตัวกรองของหน้า) แทนการตั้ง state — คืน true เมื่อ handle แล้ว
+export function runRowClickAction(node, event, ctx) {
+  if (typeof node.onRowClick !== 'function' || !event?.data) return false
+  node.onRowClick(event.data, ctx)
+  return true
 }

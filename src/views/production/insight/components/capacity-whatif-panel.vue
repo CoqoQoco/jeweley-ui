@@ -78,7 +78,7 @@
 </template>
 
 <script>
-import { buildWhatIfDefaultMap, buildWhatIfRows, resolveWhatIfExcludedDeptKeys, sumWhatIfField, resolveWhatIfBottleneck } from './capacity-helpers.js'
+import { buildWhatIfDefaultMap, buildWhatIfRows, resolveWhatIfExcludedDeptKeys, sumWhatIfField, resolveWhatIfBottleneck } from '../topics/capacity-helpers.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'

@@ -1,6 +1,7 @@
 <!--
   KpiBlock — กลุ่มการ์ด KPI (StatCardGeneric) ใน SectionCard แบบ dashboard (กันกรอบซ้อน) ตาม config:
     cards[{ id, icon, label, value(ctx), format, unit, sub(ctx,t), tone(ctx) 'main'|'warning'|'green'|'grey', reportRef }]
+    variant:'summary' + items(ctx,t) → ตัวเลขสรุปแบบข้อความ (block bare) · gridColumns
     asOf(ctx) → เวลาประมวลผลมุมขวาบน (asOfLabel = key ที่มี {date}) · footNote → note บรรทัดใต้การ์ด (key หรือ fn)
   การ์ดที่มี reportRef กดแล้วเลื่อนไป DOM id insight-report-<reportRef>
 -->
@@ -10,7 +11,15 @@
       <span class="kpi-block__as-of">{{ asOfText }}</span>
     </template>
 
-    <div class="kpi-block__grid" :style="gridStyle">
+    <div v-if="node.variant === 'summary'" class="kpi-block__summary">
+      <div v-for="item in summaryItems" :key="item.key" class="kpi-block__summary-item">
+        <span class="kpi-block__summary-label">{{ item.label }}</span>
+        <span class="kpi-block__summary-value">{{ item.value }}</span>
+        <span v-if="item.sub" class="kpi-block__summary-sub">{{ item.sub }}</span>
+      </div>
+    </div>
+
+    <div v-else class="kpi-block__grid" :style="gridStyle">
       <StatCardGeneric
         v-for="card in cards"
         :key="card.key"
@@ -51,6 +60,11 @@ export default {
       return buildKpiCards(this.node, this.ctx, (key, params) => this.$t(key, params))
     },
 
+    // variant 'summary' = ตัวเลขสรุปแบบข้อความ (ไม่ใช่ StatCard) ใน block bare — items(ctx,t) → [{ label, value, sub? }]
+    summaryItems() {
+      return (this.node.items ? this.node.items(this.ctx, (key, params) => this.$t(key, params)) : []).map((item, index) => ({ key: `i-${index}`, ...item }))
+    },
+
     asOfText() {
       return buildKpiAsOf(this.node, this.ctx, (key, params) => this.$t(key, params))
     },
@@ -76,6 +90,41 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.kpi-block__summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-md);
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.kpi-block__summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-sm) var(--sp-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.kpi-block__summary-label {
+  font-size: var(--fs-sm);
+  color: var(--base-sub-color);
+}
+
+.kpi-block__summary-value {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--base-font-color);
+}
+
+.kpi-block__summary-sub {
+  font-size: var(--fs-sm);
+  color: var(--base-sub-color);
+}
+
 .kpi-block__as-of {
   font-size: var(--fs-sm);
   font-weight: 400;

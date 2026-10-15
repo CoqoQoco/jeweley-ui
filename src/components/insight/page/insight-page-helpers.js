@@ -100,7 +100,10 @@ export function resolveFrameProps(node, ctx, t) {
     icon: node.icon || '',
     accent: node.accent || 'main',
     headerStyle: node.headerStyle || 'legend',
-    notes: (node.notes || []).map((note) => resolveText(note, ctx, t)).filter(Boolean)
+    notes: (node.notes || []).map((note) => resolveText(note, ctx, t)).filter(Boolean),
+    // bare = ไม่วาด SectionCard (เนื้อหาอยู่ในกล่องของ group.card) · subtitle = หัวข้อย่อยตัวหนา (ใช้กับ bare)
+    bare: !!node.bare,
+    subtitle: resolveText(node.subtitle, ctx, t)
   }
 }
 

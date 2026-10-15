@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import * as col from '../columns.js'
-import { buildBlockColumns, buildHeaderSlotColumns, isRowSelected, resolveCellHighlight, resolveRowSelection, resolveTableSections, applyToolbarFilters, cellSlotName, headerSlotName } from './table-block-helpers.js'
+import { buildBlockColumns, buildHeaderSlotColumns, isRowSelected, resolveCellHighlight, resolveRowSelection, resolveTableSections, applyToolbarFilters, runRowClickAction, cellSlotName, headerSlotName } from './table-block-helpers.js'
 
 const t = (key) => key
 
@@ -69,5 +69,22 @@ describe('selectable with object values and client-side toolbar filters', () => 
     expect(applyToolbarFilters(toolbar, rows, { state: { dept: ['a'], type: 'Y' } })).toEqual([{ d: 'a', t: 'Y' }])
     expect(applyToolbarFilters(undefined, rows, { state: {} })).toBe(rows)
     expect(applyToolbarFilters({ multiselect: { stateKey: 'x' } }, rows, { state: {} })).toBe(rows)
+  })
+})
+
+describe('selectable.current / onRowClick action', () => {
+  it('current(ctx) decides the highlighted row (e.g. a data-derived default) instead of the raw state', () => {
+    const node = { dataKey: 'key', selectable: { stateKey: 'dept', current: (ctx) => ctx.state.dept || ctx.defaultKey } }
+    expect(isRowSelected(node, { state: {}, defaultKey: 'trim' }, { key: 'trim' })).toBe(true)
+    expect(isRowSelected(node, { state: { dept: 'setting' }, defaultKey: 'trim' }, { key: 'trim' })).toBe(false)
+    expect(isRowSelected(node, { state: { dept: 'setting' }, defaultKey: 'trim' }, { key: 'setting' })).toBe(true)
+  })
+
+  it('runRowClickAction calls node.onRowClick(row, ctx) and reports it handled', () => {
+    const onRowClick = vi.fn()
+    expect(runRowClickAction({ onRowClick }, { data: { key: 'a' } }, { c: 1 })).toBe(true)
+    expect(onRowClick).toHaveBeenCalledWith({ key: 'a' }, { c: 1 })
+    expect(runRowClickAction({}, { data: { key: 'a' } }, {})).toBe(false)
+    expect(runRowClickAction({ onRowClick }, {}, {})).toBe(false)
   })
 })

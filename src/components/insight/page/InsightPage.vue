@@ -10,6 +10,7 @@
     masters           — ['fetchGem', 'fetchGemShape'] ชื่อ action ของ master-store ที่ต้องโหลดก่อนใช้ (cache-aware) → ctx.masters (state ของ master store)
     sources           — { Name: { endpoint, method:'post'|'get', params(filter, state), enabled?(filter, state) } } (enabled=false → ไม่ยิงและเคลียร์ผลเดิม) ยิงทีละ source เมื่อ "params ของตัวเอง" เปลี่ยน
                         (key = JSON ของ params → 1 request ต่อ endpoint ต่อการกด 1 ครั้ง · แท็บไม่ active = ติดธง stale แล้วยิงตอนกลับมา active)
+    onSourceLoaded    — (name, data, emit) hook หลัง source โหลดเสร็จ · ctx.updateFilter(patch) → emit 'update-filter'
     state             — { key: { initial, resetOn: { source, value(data, current) } } } state ร่วมของ block (แถวที่เลือก/โฟกัส/draft)
     blocks            — ดู InsightBlockNode (row/group/slot/block มาตรฐาน)
   metal ถูกเติมที่ store (metal-scope) แล้ว — ไม่เติมซ้ำที่นี่
@@ -53,6 +54,8 @@ export default {
     const masterStore = useMasterApiStore()
     return { productionInsightStore, masterStore }
   },
+
+  emits: ['update-filter', 'filter-options-loaded'],
 
   props: {
     config: { type: Object, required: true },
@@ -100,6 +103,7 @@ export default {
         masters: this.masterStore,
         setState: this.setState,
         reload: this.reload,
+        updateFilter: this.updateFilter,
         t: this.translate
       }
     }
@@ -139,6 +143,11 @@ export default {
 
   methods: {
     keyOf: nodeKey,
+
+    // block ขอแก้ตัวกรองของหน้า (เช่น คลิกกลุ่มสินค้า = ตั้งตัวกรอง) → emit ให้ ProductionInsightView แก้ filters จริง
+    updateFilter(patch) {
+      this.$emit('update-filter', patch)
+    },
 
     translate(key, params) {
       return this.$t(key, params)
@@ -181,6 +190,9 @@ export default {
       if (this.requestSeq[name] !== seq) return
       this.responses = { ...this.responses, [name]: res }
       this.loadingMap = { ...this.loadingMap, [name]: false }
+
+      // hook หลังโหลด: config.onSourceLoaded(name, data, emit) — ส่ง event ขึ้น parent ได้ (เช่น filter-options-loaded)
+      if (this.config.onSourceLoaded) this.config.onSourceLoaded(name, res, (event, payload) => this.$emit(event, payload))
 
       const patch = buildStateResets(this.config.state, name, res, this.state)
       Object.entries(patch).forEach(([key, value]) => this.setState(key, value))

@@ -169,3 +169,18 @@ describe('stacked / bold fn / sup', () => {
     expect(col.resolveCell(c, {}, t)).toMatchObject({ bold: false, sup: '' })
   })
 })
+
+describe('header / tip functions and text render', () => {
+  it('header function receives (t, ctx); tip can be a function of (ctx, t)', () => {
+    const c = col.number('n', (tt, ctx) => `${tt('k')}-${ctx.unit}`, 'count', { tip: (ctx, tt) => `${tt('tip')}:${ctx.unit}` })
+    expect(col.resolveHeader(c, t, { unit: 'piece' })).toBe('k-piece')
+    expect(col.resolveTipText(c, { unit: 'piece' }, t)).toBe('tip:piece')
+    expect(col.resolveTipText({ tip: 'k.tip' }, {}, t)).toBe('k.tip')
+    expect(col.toTableColumns([c], t, { unit: 'plan' })[0].header).toBe('')
+    expect(col.toTableColumns([col.number('n', (tt, ctx) => `h-${ctx.unit}`, 'count')], t, { unit: 'plan' })[0].header).toBe('h-plan')
+  })
+
+  it('text render(row, t) overrides reading the field', () => {
+    expect(col.resolveCell(col.text('u', 'h', { render: (row, tt) => `${row.u}-${tt('x')}` }), { u: 'PC' }, t).text).toBe('PC-x')
+  })
+})

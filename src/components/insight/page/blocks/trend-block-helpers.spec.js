@@ -146,3 +146,17 @@ describe('dynamic series / money / colorValue', () => {
     expect(options.yaxis[3].opposite).toBe(true)
   })
 })
+
+describe('axisTitles as functions / legend', () => {
+  it('axis titles can depend on ctx and the legend position is passed through', () => {
+    const node = {
+      legend: 'bottom',
+      axisTitles: [(ctx) => `u-${ctx.unit}`, 'k.days'],
+      series: [{ name: 'A', type: 'bar', axis: 0 }, { name: 'B', type: 'line', axis: 1 }]
+    }
+    const options = buildTrendOptions({ node, points: [], categories: [], ctx: { unit: 'piece' }, t })
+    expect(options.yaxis[0].title.text).toBe('u-piece')
+    expect(options.yaxis[1].title.text).toBe('k.days')
+    expect(options.legend).toEqual({ position: 'bottom' })
+  })
+})

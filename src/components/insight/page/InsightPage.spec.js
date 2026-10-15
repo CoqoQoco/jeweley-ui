@@ -156,3 +156,31 @@ describe('InsightPage loader', () => {
     expect(wrapper.vm.responses.Main.status).toBe('ok')
   })
 })
+
+describe('InsightPage events (updateFilter / onSourceLoaded)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    postMock.mockReset()
+    getMock.mockReset()
+    postMock.mockResolvedValue({ status: 'ok', problems: [], forecasts: [], actions: [], first: 'trim', filterOptions: { golds: [{ key: 'YG', name: 'YG' }] } })
+    getMock.mockResolvedValue([])
+  })
+
+  it('ctx.updateFilter(patch) emits update-filter once for the parent to apply', async () => {
+    const wrapper = mountPage()
+    await flushPromises()
+    wrapper.vm.ctx.updateFilter({ breakdownBy: 'gold' })
+    expect(wrapper.emitted('update-filter')).toEqual([[{ breakdownBy: 'gold' }]])
+  })
+
+  it('config.onSourceLoaded(name, data, emit) can emit events to the parent after a source loads', async () => {
+    const onSourceLoaded = vi.fn((name, data, emit) => {
+      if (name === 'Main' && data.filterOptions) emit('filter-options-loaded', data.filterOptions)
+    })
+    const wrapper = mountPage({ config: { ...config, onSourceLoaded } })
+    await flushPromises()
+    expect(onSourceLoaded).toHaveBeenCalled()
+    expect(wrapper.emitted('filter-options-loaded')).toEqual([[{ golds: [{ key: 'YG', name: 'YG' }] }]])
+  })
+})
+

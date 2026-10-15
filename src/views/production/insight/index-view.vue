@@ -80,9 +80,10 @@
         :active="activeSection === 'gold'"
         @workers-loaded="onGoldWorkersLoaded"
       />
-      <CapacitySection
+      <InsightPage
         v-if="visitedSections.has('capacity')"
         v-show="activeSection === 'capacity'"
+        :config="capacityConfig"
         :filter="filters.capacity"
         :active="activeSection === 'capacity'"
         @update-filter="onCapacityFilterUpdate"
@@ -379,8 +380,8 @@ import { wipConfig } from './topics/wip.config.js'
 import { materialsConfig } from './topics/materials.config.js'
 import { deliveryConfig } from './topics/delivery.config.js'
 import { workersConfig } from './topics/workers.config.js'
+import { capacityConfig } from './topics/capacity.config.js'
 import GoldSection from './sections/gold-section.vue'
-import CapacitySection from './sections/capacity-section.vue'
 
 const DEPARTMENT_KEYS = ['design', 'trim', 'rawPolish', 'gemSort', 'setting', 'plating', 'costCard']
 
@@ -401,7 +402,6 @@ export default {
     DateRangeGeneric,
     InsightPage,
     GoldSection,
-    CapacitySection,
   },
 
   setup() {
@@ -415,6 +415,7 @@ export default {
       materialsConfig,
       deliveryConfig,
       workersConfig,
+      capacityConfig,
       activeSection: 'wip',
       // ว่างตั้งต้นเสมอ — created() เป็นคน add หมวดที่ resolve จาก query จริง (applyQueryToState) ก่อน mount
       // ครั้งแรก กัน WipSection (หรือหมวดไหนก็ตาม) mount+ยิง endpoint ทิ้งทั้งที่ผู้ใช้เปิดมาที่หมวดอื่น

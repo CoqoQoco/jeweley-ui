@@ -1126,3 +1126,15 @@ params ของ source) + `wip-page.smoke.spec` (mount config จริงท�
 - helper ย้ายไป `topics/workers-helpers.js` (+ ตัวสร้าง sub-label/แถวตาราง/series/การเลือก) · Excel helper ชี้ path ใหม่
 - ลบ: `sections/workers-section.vue` · `components/workers-{kpi-group,trend-chart,table-panel,table,detail-chart,unpaid-jobs-panel}.vue` (ไม่แตะ gold-stage-worker-table / gold-worker-ranking-panel)
 - ต่างจากเดิมเล็กน้อย: ชิปประเภทช่างในตารางใช้สไตล์ column chip กลาง · ไฮไลต์ isRateOutlier/isConcentrated ใช้สีเตือน+ตัวหนาเหมือนเดิมผ่าน color/bold ของเซลล์ · แกนกราฟรายเดือนของ materials/capacity ที่ใช้ TrendBlock มี yaxis ครบต่อ series (เดิมสั้นกว่า) ตามที่ Apex ต้องการ
+
+## Revision 14 (2026-10-15): หมวด capacity ย้ายเข้า InsightPage (config-driven)
+
+`topics/capacity.config.js` แทน `capacity-section.vue` + 8 คอมโพเนนต์ — API/ตัวเลข/หน้าตาเดิม · block id/anchor: `capKpi` (เพิ่ม anchor ให้การ์ด KPI) · `capTrend` · `capDepartments` · `capBreakdown` (group: ตาราง + กราฟ stacked) · `capCostCard` (group.card) · `capWhatIf` (slot)
+- sources: `Capacity` (start/end/bucket/unit/productTypes/golds/goldSizes/breakdownBy; ไม่มี departmentKeys → เปลี่ยนแผนกไม่ยิงซ้ำ) · `CostCardPendingPlans` ผ่าน PlanTableBlock · สลับใบ/ชิ้น = ยิง Capacity 1 ครั้ง (unit อยู่ใน params)
+- state: `capDept` (แผนกที่เลือกดูกราฟออก vs ช่าง; ค่าเริ่มต้น = แผนกคอขวด/แถวแรกที่ผ่านตัวกรอง) · `breakdownMetric`
+- เพิ่มใน template: `ctx.updateFilter(patch)` → emit `update-filter` (page filter อยู่ที่ index-view: คลิกแถว breakdown / สลับมิติ breakdown) · `config.onSourceLoaded(name,data,emit)` (ส่ง `Capacity.filterOptions` ออกเป็น `filter-options-loaded`) ·
+  `group.card` + block `bare` + `subtitle` (กล่องเดียวครอบหลาย block) · `KpiBlock variant:'summary'` · column text `render(row,t)` · `header`/`tip` เป็น fn(ctx) ได้ · `selectable.current(ctx)` · `node.onRowClick(row,ctx)` ·
+  `toolbar.toggle{value,onChange}` (เขียนกลับ page filter) · `axisTitles` เป็น fn · `legend`
+- helper ย้ายไป `topics/capacity-helpers.js` (+spec) · แผงจำลอง `components/capacity-whatif-panel.vue` คงไว้ (ใช้เป็น slot; แก้ตัวเลข = 0 request)
+- ลบ: `sections/capacity-section.vue` · `components/capacity-{kpi-group,trend-chart,department-panel,department-table,department-chart,breakdown-panel,costcard-panel,costcard-pending-panel}.vue`
+- ต่างจากเดิมเล็กน้อย: กล่อง cost card เป็น `group.card` ครอบ block แบบ bare (หน้าตาเท่าเดิม) · เพิ่ม anchor `insight-report-capKpi` · yaxis ต่อ series ตามที่ Apex ต้องการ
