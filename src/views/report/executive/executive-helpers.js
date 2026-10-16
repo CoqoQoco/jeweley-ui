@@ -37,7 +37,7 @@ export function resolveMetalShareHint(row, metal) {
 
 // ---- Tab navigation (TabViewGeneric — ผูก query string ?tab=) ----
 
-export const EXECUTIVE_TABS = ['production', 'sales', 'stock']
+export const EXECUTIVE_TABS = ['production', 'sales', 'stock', 'flow']
 
 // ค่า tab จาก query string — ค่าไม่ถูกต้อง/ไม่มี → fallback เป็น 'production' เสมอ
 export function resolveActiveTab(tabValue) {

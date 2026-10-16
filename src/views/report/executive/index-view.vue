@@ -24,6 +24,9 @@
       <template #stock>
         <stockHealthView :key="metal" :refreshToken="refreshToken" />
       </template>
+      <template #flow>
+        <flowView :active="activeTab === 'flow'" :refreshToken="refreshToken" />
+      </template>
     </TabViewGeneric>
   </div>
 </template>
@@ -83,6 +86,7 @@ import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 import summaryView from './components/summary-view.vue'
 import salesView from './components/sales-view.vue'
 import stockHealthView from './components/stock-health-view.vue'
+import flowView from './components/flow-view.vue'
 import productionInsightView from '@/views/production/insight/index-view.vue'
 
 const EXPORT_TAKE = 5000
@@ -128,6 +132,7 @@ export default {
     summaryView,
     salesView,
     stockHealthView,
+    flowView,
     productionInsightView
   },
 
@@ -166,7 +171,8 @@ export default {
       return [
         { value: 'production', label: this.$t('view.executive.tabs.production') },
         { value: 'sales', label: this.$t('view.executive.tabs.sales') },
-        { value: 'stock', label: this.$t('view.executive.tabs.stock') }
+        { value: 'stock', label: this.$t('view.executive.tabs.stock') },
+        { value: 'flow', label: this.$t('view.executive.tabs.flow') }
       ]
     },
 
@@ -221,6 +227,8 @@ export default {
       const metalQuery = metalToQuery(this.metal)
       if (metalQuery) query.metal = metalQuery
       else delete query.metal
+      // ?flow= เป็นของแท็บ Flow เท่านั้น (state ของฉาก 3 มิติ) — ออกจากแท็บแล้วไม่ต้องค้างใน URL
+      if (this.activeTab !== 'flow') delete query.flow
       this.$router.replace({ query }).catch(() => {})
     },
 

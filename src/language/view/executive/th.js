@@ -1,11 +1,16 @@
+import flowLang from './flow-th.js'
+
 export default {
+  flow: flowLang,
+
   title: 'ภาพรวมบริหาร',
   asOf: 'ข้อมูล ณ {date}',
 
   tabs: {
     production: '🏭 ผลิต',
     sales: '💰 ขายและเงิน',
-    stock: '📦 คลังสินค้า'
+    stock: '📦 คลังสินค้า',
+    flow: '🔀 การไหลของงาน'
   },
 
   summary: {

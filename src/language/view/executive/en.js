@@ -1,11 +1,16 @@
+import flowLang from './flow-en.js'
+
 export default {
+  flow: flowLang,
+
   title: 'Executive Overview',
   asOf: 'As of {date}',
 
   tabs: {
     production: '🏭 Production',
     sales: '💰 Sales & Money',
-    stock: '📦 Stock'
+    stock: '📦 Stock',
+    flow: '🔀 Flow'
   },
 
   summary: {

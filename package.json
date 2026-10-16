@@ -36,6 +36,7 @@
     "primevue": "^3.52.0",
     "qrcode": "^1.5.4",
     "qz-tray": "^2.2.5",
+    "three": "0.170.0",
     "vue": "^3.3.4",
     "vue-awesome-paginate": "^1.1.46",
     "vue-axios": "^3.5.2",

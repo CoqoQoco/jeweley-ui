@@ -35,6 +35,16 @@ export const useExecutiveReportApiStore = defineStore('executiveReportApi', {
 
     async fetchStockHealth() {
       return await postScoped('ExecutiveReport/StockHealth', {})
+    },
+
+    // Flow 3D — อ่านอย่างเดียว ไม่ผูก metal scope ของทั้งหน้า (ข้อมูลทั้งบริษัท); board ครั้งแรกที่เย็นอาจใช้ ~10 วินาที
+    // แล้ว cache ฝั่ง server 5 นาที — zone ต้องเป็น mold|production|receive|stock|material|sales
+    async flowBoard() {
+      return await api.jewelry.post('ExecutiveReport/FlowBoard', {})
+    },
+
+    async flowZone(zone) {
+      return await api.jewelry.post('ExecutiveReport/FlowZone', { zone })
     }
   }
 })
