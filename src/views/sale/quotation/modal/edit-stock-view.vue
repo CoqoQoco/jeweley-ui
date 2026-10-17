@@ -687,6 +687,7 @@ import { isAlloyDescription } from '@/services/helper/breakdown-alloy-detect.js'
 import { getBreakdownTermOptions } from '@/services/helper/breakdown-item-presets.js'
 import { buildGradeSyncPlan } from '@/services/helper/quotation/diamond-grade-sync.js'
 import { hasMarginAccess } from '@/services/permission/margin-access.js'
+import { resolveGoldTypeWord } from '@/services/helper/barcode/gold-type-name.js'
 
 export default {
   components: {
@@ -1133,7 +1134,7 @@ export default {
 
       if (item.type === 'Gold' || item.type === 'Silver') {
         display = `${item.weight ?? ``}${item.weightUnit ? ` ${item.weightUnit}` : ``}${
-          item.type ? ` ${item.type}` : ``
+          resolveGoldTypeWord(item.type, item.typeCode) ? ` ${resolveGoldTypeWord(item.type, item.typeCode)}` : ``
         }`
       }
 

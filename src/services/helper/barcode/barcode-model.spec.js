@@ -27,3 +27,27 @@ describe('buildBarcodeModel — isSilver', () => {
     expect(model.gems).toEqual(['RB'])
   })
 })
+
+describe('buildBarcodeModel — gold name from typeCode', () => {
+  const goldOf = (typeCode, typeBarcode = '1.72 g. Gold', type = 'Gold') =>
+    buildBarcodeModel({ materials: [{ type, typeCode, typeBarcode }] }).gold
+
+  it.each([
+    ['WG', '1.72 g. White Gold'],
+    ['YG', '1.72 g. Yellow Gold'],
+    ['PG', '1.72 g. Pink Gold'],
+    ['NG', '1.72 g. Y/P Gold'],
+    ['MG', '1.72 g. W/P Gold']
+  ])('typeCode %s -> "%s"', (code, expected) => {
+    expect(goldOf(code)).toBe(expected)
+  })
+
+  it.each(['', null, undefined, 'XX'])('typeCode %s keeps stored text', (code) => {
+    expect(goldOf(code)).toBe('1.72 g. Gold')
+  })
+
+  it('Silver with SV keeps "Silver", silver-plan text without type word is untouched', () => {
+    expect(goldOf('SV', '0.83 g. Silver', 'Silver')).toBe('0.83 g. Silver')
+    expect(goldOf('SV', '0.83 g.', 'Silver')).toBe('0.83 g.')
+  })
+})

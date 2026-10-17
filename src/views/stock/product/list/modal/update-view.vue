@@ -321,6 +321,7 @@ import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { compressOptimalImage } from '@/services/helper/file/compress-image.js'
+import { resolveGoldTypeWord } from '@/services/helper/barcode/gold-type-name.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
@@ -658,7 +659,7 @@ export default {
 
       if (item.type === 'Gold' || item.type === 'Silver') {
         display = `${item.weight ?? ``}${item.weightUnit ? ` ${item.weightUnit}` : ``}${
-          item.type ? ` ${item.type}` : ``
+          resolveGoldTypeWord(item.type, item.typeCode) ? ` ${resolveGoldTypeWord(item.type, item.typeCode)}` : ``
         }`
       }
 

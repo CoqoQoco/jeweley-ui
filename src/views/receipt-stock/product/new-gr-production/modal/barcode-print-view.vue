@@ -116,6 +116,7 @@ const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.v
 
 import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
 import { error } from '@/services/alert/sweetAlerts.js'
+import { applyGoldTypeName } from '@/services/helper/barcode/gold-type-name.js'
 
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
@@ -317,7 +318,7 @@ export default {
             switch (material.type) {
               case 'Gold':
               case 'Silver':
-                barcodeData.gold = material.typeBarcode
+                barcodeData.gold = applyGoldTypeName(material.typeBarcode, material.typeCode)
                 break
               case 'Gem':
               case 'Diamond':

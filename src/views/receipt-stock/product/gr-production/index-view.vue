@@ -220,6 +220,7 @@ import { useReceiptProductionApiStore } from '@/stores/modules/api/receipt/recei
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 
 import { warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
+import { resolveGoldTypeWord } from '@/services/helper/barcode/gold-type-name.js'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 
@@ -614,7 +615,7 @@ export default {
 
       if (item.type === 'Gold' || item.type === 'Silver') {
         display = `${item.weight ?? ``}${item.weightUnit ? ` ${item.weightUnit}` : ``}${
-          item.type ? ` ${item.type}` : ``
+          resolveGoldTypeWord(item.type, item.typeCode) ? ` ${resolveGoldTypeWord(item.type, item.typeCode)}` : ``
         }`
       }
 

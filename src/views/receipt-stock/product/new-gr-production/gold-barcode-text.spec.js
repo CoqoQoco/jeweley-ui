@@ -22,6 +22,30 @@ describe('formatGoldBarcodeText', () => {
   })
 })
 
+describe('formatGoldBarcodeText — typeCode', () => {
+  const base = { type: 'Gold', qtyWeight: 1.72, qtyWeightUnit: 'g.' }
+
+  it.each([
+    ['WG', '1.72 g. White Gold'],
+    ['YG', '1.72 g. Yellow Gold'],
+    ['PG', '1.72 g. Pink Gold'],
+    ['NG', '1.72 g. Y/P Gold'],
+    ['MG', '1.72 g. W/P Gold']
+  ])('typeCode %s -> "%s"', (typeCode, expected) => {
+    expect(formatGoldBarcodeText({ ...base, typeCode }, false)).toBe(expected)
+  })
+
+  it('empty or unknown typeCode falls back to type', () => {
+    expect(formatGoldBarcodeText({ ...base, typeCode: '' }, false)).toBe('1.72 g. Gold')
+    expect(formatGoldBarcodeText({ ...base, typeCode: 'XX' }, false)).toBe('1.72 g. Gold')
+  })
+
+  it('silver plan still drops the type word even with typeCode', () => {
+    expect(formatGoldBarcodeText({ ...base, typeCode: 'WG' }, true)).toBe('1.72 g.')
+    expect(formatGoldBarcodeText({ ...base, type: 'Silver', typeCode: 'SV' }, true)).toBe('1.72 g.')
+  })
+})
+
 describe('isGoldOrSilverMaterial', () => {
   it('matches only Gold and Silver', () => {
     expect(isGoldOrSilverMaterial({ type: 'Gold' })).toBe(true)

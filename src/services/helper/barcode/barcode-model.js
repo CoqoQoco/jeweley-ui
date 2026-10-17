@@ -1,3 +1,5 @@
+import { applyGoldTypeName } from './gold-type-name.js'
+
 export function buildBarcodeModel(stock) {
   const goldParts = []
   const gems = []
@@ -7,7 +9,9 @@ export function buildBarcodeModel(stock) {
       switch (material.type) {
         case 'Gold':
         case 'Silver':
-          if (material.typeBarcode) goldParts.push(material.typeBarcode)
+          if (material.typeBarcode) {
+            goldParts.push(applyGoldTypeName(material.typeBarcode, material.typeCode))
+          }
           break
         case 'Gem':
         case 'Diamond':
