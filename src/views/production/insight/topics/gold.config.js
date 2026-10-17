@@ -5,6 +5,8 @@
 // ตารางที่เหลือยิง endpoint ของตัวเองผ่าน PlanTableBlock · metal มาจาก filter.metal (goldSectionFilter ของ index-view: รวม = ทอง)
 // onSourceLoaded: ส่ง Gold.workers ขึ้น index-view (workers-loaded) ให้เติมตัวเลือกช่างในตัวกรอง
 import { isoOrNull, formatBucketDayMonth } from '@/components/insight/page/insight-page-helpers.js'
+import { defineAsyncComponent, markRaw } from 'vue'
+import { resolveGoldLens } from '../insight-filters.js'
 import { formatBucketMonthLabels } from '@/components/insight/insight-helpers.js'
 import { CHART_PALETTE } from '@/services/utils/chart-colors.js'
 import { formatDate } from '@/services/utils/dayjs.js'
@@ -31,6 +33,30 @@ import {
   resolveDefaultStageDeptKey
 } from './gold-stage-helpers.js'
 import { GOLD_TARGET_PRESET_NAME } from './gold-target-preset.js'
+import {
+  LENS_DEPT_KEY,
+  LENS_WORKER_TYPE,
+  lensOfCtx,
+  resolveLensWorkerTypes,
+  isLensWorkerTypeLocked,
+  resolveLensKpiWorkerTypes,
+  resolveLensDeptKeys,
+  resolveEffectiveStageDept,
+  resolveEffectiveTrendWorkerType,
+  filterDepartmentsByLens,
+  isGoldBlockVisible,
+  isGoldBlockCollapsedByDefault,
+  resolveGoldSourceStrip,
+  filterFindingsByLens,
+  buildDeptPickerOptions
+} from './gold-lens-helpers.js'
+import { buildWorkerModalPayload, canOpenStageWorker } from './gold-worker-modal-helpers.js'
+import GoldDeptPicker from '../components/gold-dept-picker.vue'
+
+// import แบบ lazy — modal ยืม block config จากไฟล์นี้ (flattenBlocks(goldConfig.blocks)) จึงห้าม import ตรงๆ ให้เกิด cycle
+// markRaw: config นี้ถูกส่งผ่าน data()/props ของ view ซึ่งทำให้ถูกห่อ reactive — component ใน config ห้ามถูกห่อ (Vue warn + proxy churn)
+const GoldWorkerModal = markRaw(defineAsyncComponent(() => import('../components/gold-worker-modal.vue')))
+const GoldDeptPickerRaw = markRaw(GoldDeptPicker)
 
 const G = 'view.productionInsight.gold'
 const HELP = 'view.productionInsight.help'
@@ -43,6 +69,25 @@ const metalOf = (ctx) => ctx.filter.metal || DEFAULT_METAL
 const metalLabelOf = (ctx, t) => t(`${G}.metalLabel.${metalOf(ctx)}`)
 const goldOf = (ctx) => ctx.data.Gold || {}
 const stageDepartmentsOf = (ctx) => ctx.data.GoldByStage?.departments || []
+
+// ---- lens (มุมมอง) — ค่าที่ lens ล็อกชนะค่าในแผงตัวกรอง/state ของ block (ดู gold-lens-helpers.js) ----
+
+const lensDepartmentsOf = (ctx) => filterDepartmentsByLens(stageDepartmentsOf(ctx), lensOfCtx(ctx))
+const effectiveStageDeptOf = (ctx) => resolveEffectiveStageDept(lensOfCtx(ctx), ctx.state.stageDept)
+const effectiveTrendWorkerTypeOf = (ctx) =>
+  resolveEffectiveTrendWorkerType(lensOfCtx(ctx), ctx.state.trendWorkerType)
+const sourceStripOf = (kind) => (ctx) => resolveGoldSourceStrip(kind, lensOfCtx(ctx))
+
+// block ที่ซ่อนตาม lens (dept ซ่อนเนื้อหาระดับประเภทช่าง)
+const lensVisibility = (id) => ({ visible: (ctx) => isGoldBlockVisible(id, lensOfCtx(ctx)) })
+
+// block ที่พับตั้งต้นใน lens ภาพรวม — เปลี่ยน lens = ล้างการพับ/กางที่ผู้ใช้กดเอง
+const lensCollapsible = (id) => ({
+  ...lensVisibility(id),
+  collapsible: true,
+  collapsedByDefault: (ctx) => isGoldBlockCollapsedByDefault(id, lensOfCtx(ctx)),
+  collapseResetKey: lensOfCtx
+})
 
 const NET_MONEY_COLOR = { green: 'var(--base-green)', warning: 'var(--base-warning)', grey: '' }
 const netMoneyColumn = (header, minWidth) =>
@@ -60,6 +105,16 @@ const workerTypeColumn = (header) =>
   })
 
 const redBold = { color: () => 'var(--base-red)', bold: true }
+
+// ---- เปิด modal เจาะข้อมูลช่าง (state.workerModal) ----
+// ตาราง "อันดับช่าง": แถวมี workerType เอง · ตารางช่างในรายละเอียดแผนก: อนุมานประเภทจากแผนกที่เลือก (ctx.selected) —
+// แผนกที่ไม่มีประเภทช่างที่ออก slip (rawPolish/plating ฯลฯ) กดไม่ได้
+const openWorkerModal = (payload, ctx) => {
+  if (payload) ctx.setState('workerModal', payload)
+}
+const rankingWorkerClick = (row, ctx) => openWorkerModal(buildWorkerModalPayload(row), ctx)
+const stageWorkerClick = (row, ctx) =>
+  openWorkerModal(buildWorkerModalPayload(row, ctx.selected?.deptKey), ctx)
 
 // ---- KPI ----
 
@@ -115,6 +170,8 @@ const kpiRow = (workerType) => {
     ]
   }
 }
+
+const KPI_ROWS = Object.fromEntries(WORKER_TYPE_ORDER.map((workerType) => [workerType, kpiRow(workerType)]))
 
 // ---- Loss ตามใบงานรายแผนก ----
 
@@ -192,7 +249,12 @@ const stageColumns = [
 ]
 
 const stageWorkerColumns = [
-  col.text('workerCode', `${G}.workersColWorkerCode`, { minWidth: '100px' }),
+  col.text('workerCode', `${G}.workersColWorkerCode`, {
+    minWidth: '100px',
+    onClick: stageWorkerClick,
+    actionWhen: (row, ctx) => canOpenStageWorker(row, ctx?.selected?.deptKey),
+    actionTitle: `${G}.workerModal.openTitle`
+  }),
   col.number('rows', `${G}.stageWorkerColRows`, 'count', { minWidth: '90px' }),
   col.number('returnedSendGram', `${G}.stageWorkerColReturned`, 'decimal', { minWidth: '110px' }),
   col.number('diffGram', `${G}.stageColDiffGram`, 'decimal', { minWidth: '90px' }),
@@ -200,7 +262,7 @@ const stageWorkerColumns = [
 ]
 
 const selectedStageRow = (ctx) =>
-  stageDepartmentsOf(ctx).find((d) => d.deptKey === ctx.state.stageDept) || null
+  stageDepartmentsOf(ctx).find((d) => d.deptKey === effectiveStageDeptOf(ctx)) || null
 
 // ---- ตารางใบงาน (PlanTableBlock) ----
 
@@ -284,7 +346,11 @@ const uncoveredColumns = [
 
 const workersColumns = [
   workerTypeColumn(`${G}.workersColWorkerType`),
-  col.text('workerCode', `${G}.workersColWorkerCode`, { minWidth: '90px' }),
+  col.text('workerCode', `${G}.workersColWorkerCode`, {
+    minWidth: '90px',
+    onClick: rankingWorkerClick,
+    actionTitle: `${G}.workerModal.openTitle`
+  }),
   col.text('workerName', `${G}.workersColWorkerName`, { minWidth: '140px' }),
   col.number('slipCount', `${G}.workersColSlipCount`, 'count', { minWidth: '80px' }),
   col.number('receivedGram', `${G}.workersColReceivedGram`, 'decimal', { minWidth: '100px' }),
@@ -305,13 +371,14 @@ const workersColumns = [
 // ---- แนวโน้มทองและ Loss ----
 
 const selectedTrendTarget = (ctx) =>
-  (goldOf(ctx).targets || []).find((target) => target.workerType === ctx.state.trendWorkerType) ||
-  {}
+  (goldOf(ctx).targets || []).find(
+    (target) => target.workerType === effectiveTrendWorkerTypeOf(ctx)
+  ) || {}
 
 const showDraftChip = (ctx) => {
   const target = selectedTrendTarget(ctx)
   return shouldShowGoldDraftChip(
-    ctx.state.trendWorkerType,
+    effectiveTrendWorkerTypeOf(ctx),
     metalOf(ctx),
     target.targetPercent,
     target.source,
@@ -321,13 +388,18 @@ const showDraftChip = (ctx) => {
 
 const rangeBody = (f) => ({ start: isoOrNull(f.start), end: isoOrNull(f.end) })
 const workerFilterBody = (f) => ({
-  workerTypes: (f.workerTypes || []).map(Number),
+  workerTypes: resolveLensWorkerTypes(resolveGoldLens(f.lens), f.workerTypes),
   workerCodes: f.workerCodes
 })
 
-export const goldConfig = {
+export const goldConfig = markRaw({
   titleKey: 'view.productionInsight.nav.gold',
   findings: { source: 'Gold' },
+  // finding/action ตาม lens (ดู gold-lens-helpers.js filterFindingsByLens) — ไม่แก้ที่ backend
+  filterFindings: (items, filter, state) => {
+    const lens = resolveGoldLens(filter.lens)
+    return filterFindingsByLens(items, lens, resolveEffectiveStageDept(lens, state.stageDept))
+  },
   helpParams: (filter) => ({ days: filter.olderThanDays }),
 
   sources: {
@@ -377,7 +449,9 @@ export const goldConfig = {
         }
       }
     },
-    includeQueue: { initial: false }
+    includeQueue: { initial: false },
+    // ช่างที่เปิดใน modal เจาะข้อมูล ({ workerType, workerCode, workerName }) · null = ปิด
+    workerModal: { initial: null }
   },
 
   blocks: [
@@ -392,25 +466,44 @@ export const goldConfig = {
       type: 'kpi',
       id: 'goldKpi',
       source: 'Gold',
+      ...lensVisibility('goldKpi'),
+      sourceStrip: sourceStripOf('slip'),
       title: (ctx, t) => `${t('view.productionInsight.nav.gold')} — ${metalLabelOf(ctx, t)}`,
       icon: 'bi-gem',
       gridColumns: 3,
       asOf: (ctx) => goldOf(ctx).asOf,
-      rows: WORKER_TYPE_ORDER.map(kpiRow)
+      rows: (ctx) => resolveLensKpiWorkerTypes(lensOfCtx(ctx)).map((workerType) => KPI_ROWS[workerType])
+    },
+
+    {
+      // ตัวเลือกแผนกของ lens dept — state.stageDept ตัวเดียวกับการคลิกแถวในตารางรายแผนก
+      type: 'slot',
+      id: 'goldDeptPicker',
+      visible: (ctx) => lensOfCtx(ctx) === 'dept',
+      component: GoldDeptPickerRaw,
+      props: (ctx) => ({
+        options: buildDeptPickerOptions(stageDepartmentsOf(ctx)).map((deptKey) => ({
+          value: deptKey,
+          label: ctx.t(`${DEPT}.${deptKey}`)
+        })),
+        modelValue: effectiveStageDeptOf(ctx) || ''
+      }),
+      events: { 'update:modelValue': (ctx, deptKey) => ctx.setState('stageDept', deptKey) }
     },
 
     {
       type: 'table',
       id: 'goldStage',
       source: 'GoldByStage',
+      sourceStrip: 'plan',
       title: `${G}.stageTitle`,
       titleTip: `${HELP}.goldStageDefinition`,
       icon: 'bi-arrow-left-right',
       dataKey: 'deptKey',
       rows: (ctx) =>
-        stageDepartmentsOf(ctx).map((d) => ({ ...d, label: ctx.t(`${DEPT}.${d.deptKey}`) })),
+        lensDepartmentsOf(ctx).map((d) => ({ ...d, label: ctx.t(`${DEPT}.${d.deptKey}`) })),
       columns: stageColumns,
-      selectable: { stateKey: 'stageDept' },
+      selectable: { stateKey: 'stageDept', current: effectiveStageDeptOf },
       detail: {
         source: 'GoldByStage',
         icon: 'bi-graph-up',
@@ -441,6 +534,7 @@ export const goldConfig = {
             bare: true,
             source: 'GoldByStage',
             subtitle: `${G}.stageWorkerTitle`,
+            onRowClick: stageWorkerClick,
             dataKey: 'workerCode',
             rows: (ctx) => ctx.selected.workers || [],
             columns: stageWorkerColumns
@@ -452,38 +546,59 @@ export const goldConfig = {
     {
       // เส้นละแผนก (CHART_PALETTE) — แผนกที่ includesScrap (แต่ง) ซ่อนตอนเริ่ม กด legend เปิดได้
       type: 'trend',
+      id: 'goldStageTrend',
       source: 'GoldByStage',
-      title: `${G}.stageTrendTitle`,
+      ...lensVisibility('goldStageTrend'),
+      title: (ctx, t) => {
+        const locked = LENS_DEPT_KEY[lensOfCtx(ctx)]
+        return locked
+          ? t(`${G}.stageTrendTitleOne`, { name: t(`${DEPT}.${locked}`) })
+          : t(`${G}.stageTrendTitle`)
+      },
       icon: 'bi-graph-up-arrow',
       height: 300,
       yFormat: 'percent2',
-      points: (ctx) => collectStageBuckets(ctx.data.GoldByStage?.series),
+      // ตัว lens ช่างฝัง/ช่างแต่งเหลือเส้นเดียว — แกน x เอาเฉพาะ bucket ของแผนกนั้น
+      points: (ctx) => {
+        const locked = LENS_DEPT_KEY[lensOfCtx(ctx)]
+        const series = ctx.data.GoldByStage?.series
+        return collectStageBuckets(locked ? filterStageSeriesByDept(series, locked) : series)
+      },
       categories: (points) => formatBucketMonthLabels(points),
-      series: (ctx, points, t) =>
-        stageDepartmentsOf(ctx).map((d, index) => ({
+      series: (ctx, points, t) => {
+        const visibleDepartments = lensDepartmentsOf(ctx)
+        return visibleDepartments.map((d) => ({
           name: t(`${DEPT}.${d.deptKey}`),
           type: 'line',
-          colorValue: CHART_PALETTE[index],
+          // สีอิงลำดับแผนกทั้งหมด (ไม่ใช่ลำดับหลังกรอง) ให้แผนกเดิมได้สีเดิมทุก lens
+          colorValue: CHART_PALETTE[stageDepartmentsOf(ctx).indexOf(d)],
           data: alignStageSeriesToBuckets(
             ctx.data.GoldByStage?.series,
             d.deptKey,
             points,
             'diffPercent'
           ),
-          hidden: !!d.includesScrap
-        })),
-      hint: (ctx, t) => t(`${G}.stageTrendTrimHiddenNote`)
+          // ซ่อนตอนเริ่มเฉพาะเมื่อมีหลายเส้น (เส้นเดียวที่ถูกซ่อน = กราฟว่าง)
+          hidden: visibleDepartments.length > 1 && !!d.includesScrap
+        }))
+      },
+      hint: (ctx, t) => (lensDepartmentsOf(ctx).length > 1 ? t(`${G}.stageTrendTrimHiddenNote`) : '')
     },
 
     {
       type: 'planTable',
       id: 'goldStageOutliers',
+      ...lensCollapsible('goldStageOutliers'),
       title: `${G}.stageOutlierTitle`,
       icon: 'bi-exclamation-triangle',
       accent: 'warning',
       notes: [`${G}.stageOutlierCriteriaNote`],
       endpoint: 'ProductionInsight/GoldStageOutlierJobs',
-      params: (f) => ({ metal: f.metal, ...rangeBody(f), departmentKeys: [] }),
+      params: (f, s) => ({
+        metal: f.metal,
+        ...rangeBody(f),
+        departmentKeys: resolveLensDeptKeys(resolveGoldLens(f.lens), s.stageDept)
+      }),
       mapRows: (items, ctx, t) =>
         items.map((row) => ({ ...row, deptLabel: t(`${DEPT}.${row.deptKey}`) })),
       columns: outlierColumns
@@ -492,6 +607,7 @@ export const goldConfig = {
     {
       type: 'planTable',
       id: 'goldStagePending',
+      ...lensCollapsible('goldStagePending'),
       title: `${G}.stagePendingTitle`,
       icon: 'bi-hourglass-split',
       accent: 'warning',
@@ -503,7 +619,7 @@ export const goldConfig = {
       params: (f, s) => ({
         metal: f.metal,
         ...rangeBody(f),
-        departmentKeys: [],
+        departmentKeys: resolveLensDeptKeys(resolveGoldLens(f.lens), s.stageDept),
         olderThanDays: f.olderThanDays,
         includeQueue: !!s.includeQueue
       }),
@@ -516,6 +632,8 @@ export const goldConfig = {
       type: 'trend',
       id: 'goldTrend',
       source: 'Gold',
+      ...lensVisibility('goldTrend'),
+      sourceStrip: sourceStripOf('slip'),
       title: `${G}.trendTitle`,
       titleTip: (ctx, t) => t(`${HELP}.goldMoneySemantics`, { metal: metalLabelOf(ctx, t) }),
       icon: 'bi-graph-up-arrow',
@@ -525,6 +643,8 @@ export const goldConfig = {
         inline: true,
         toggle: {
           stateKey: 'trendWorkerType',
+          // lens ช่างฝัง/ช่างแต่งล็อกประเภทช่างอยู่แล้ว → ซ่อนปุ่มสลับ
+          visible: (ctx) => !isLensWorkerTypeLocked(lensOfCtx(ctx)),
           aria: `${G}.trendToggleAriaLabel`,
           options: WORKER_TYPE_ORDER.map((workerType) => ({
             value: workerType,
@@ -536,7 +656,7 @@ export const goldConfig = {
         actions: [{ type: 'targetDrawer', preset: GOLD_TARGET_PRESET_NAME }]
       },
       points: (ctx) =>
-        (goldOf(ctx).series || []).filter((p) => p.workerType === ctx.state.trendWorkerType),
+        (goldOf(ctx).series || []).filter((p) => p.workerType === effectiveTrendWorkerTypeOf(ctx)),
       categories: (points) => points.map((p) => formatBucketDayMonth(p.bucketEnd)),
       series: (ctx, points, t) => [
         {
@@ -585,22 +705,27 @@ export const goldConfig = {
       type: 'table',
       id: 'goldWorkers',
       source: 'Gold',
+      ...lensCollapsible('goldWorkers'),
+      sourceStrip: sourceStripOf('slip'),
       title: `${G}.workersTitle`,
       titleTip: (ctx, t) => t(`${HELP}.goldMoneySemantics`, { metal: metalLabelOf(ctx, t) }),
       icon: 'bi-people',
       emptyText: `${G}.workersEmpty`,
+      onRowClick: rankingWorkerClick,
       dataKey: 'rowKey',
-      rows: (ctx) =>
-        (goldOf(ctx).workers || []).map((row) => ({
-          ...row,
-          rowKey: `${row.workerType}-${row.workerCode}`
-        })),
+      rows: (ctx) => {
+        const lockedType = LENS_WORKER_TYPE[lensOfCtx(ctx)]
+        return (goldOf(ctx).workers || [])
+          .filter((row) => lockedType === undefined || row.workerType === lockedType)
+          .map((row) => ({ ...row, rowKey: `${row.workerType}-${row.workerCode}` }))
+      },
       columns: workersColumns
     },
 
     {
       type: 'planTable',
       id: 'goldOverSlips',
+      ...lensCollapsible('goldOverSlips'),
       title: (ctx, t) => t(`${G}.overSlipsTitle`, { metal: metalLabelOf(ctx, t) }),
       titleTip: (ctx, t) => t(`${HELP}.goldMoneySemantics`, { metal: metalLabelOf(ctx, t) }),
       icon: 'bi-exclamation-triangle',
@@ -614,6 +739,7 @@ export const goldConfig = {
     {
       type: 'planTable',
       id: 'goldUncovered',
+      ...lensCollapsible('goldUncovered'),
       title: `${G}.uncoveredTitle`,
       icon: 'bi-receipt',
       accent: 'warning',
@@ -626,8 +752,26 @@ export const goldConfig = {
         ...rangeBody(f)
       }),
       columns: uncoveredColumns
+    },
+
+    {
+      type: 'slot',
+      id: 'goldWorkerModal',
+      component: GoldWorkerModal,
+      props: (ctx) => ({
+        isShow: !!ctx.state.workerModal,
+        worker: ctx.state.workerModal,
+        pageFilter: ctx.filter
+      }),
+      events: {
+        closeModal: (ctx) => ctx.setState('workerModal', null),
+        'apply-filter': (ctx, patch) => {
+          ctx.updateFilter(patch)
+          ctx.setState('workerModal', null)
+        }
+      }
     }
   ]
-}
+})
 
 export default goldConfig

@@ -14,6 +14,10 @@ import {
   findDuplicates,
   nodeKey,
   resolveFrameProps,
+  resolveSourceStrip,
+  isNodeCollapsible,
+  resolveCollapsedByDefault,
+  resolveCollapseResetKey,
   DISABLED_SOURCE_KEY
 } from './insight-page-helpers.js'
 
@@ -112,7 +116,32 @@ describe('node helpers', () => {
 describe('resolveFrameProps', () => {
   it('maps title/tip/notes through t and applies defaults', () => {
     const frame = resolveFrameProps({ id: 'x', title: 'k.title', titleTip: 'k.tip', notes: ['k.n1', () => '', 'k.n2'] }, {}, t)
-    expect(frame).toEqual({ id: 'x', title: 'k.title', titleTip: 'k.tip', icon: '', accent: 'main', headerStyle: 'legend', notes: ['k.n1', 'k.n2'], bare: false, subtitle: '' })
+    expect(frame).toEqual({ id: 'x', title: 'k.title', titleTip: 'k.tip', icon: '', accent: 'main', headerStyle: 'legend', notes: ['k.n1', 'k.n2'], bare: false, subtitle: '', sourceStrip: '' })
+  })
+
+  it('resolves sourceStrip from a string or a function(ctx)', () => {
+    expect(resolveFrameProps({ sourceStrip: 'plan' }, {}, t).sourceStrip).toBe('plan')
+    expect(resolveFrameProps({ sourceStrip: (ctx) => ctx.s }, { s: 'slip' }, t).sourceStrip).toBe('slip')
+    expect(resolveSourceStrip({ sourceStrip: () => undefined }, {})).toBe('')
+  })
+})
+
+describe('collapsible nodes (opt-in)', () => {
+  it('a node is collapsible only when it opts in', () => {
+    expect(isNodeCollapsible({})).toBe(false)
+    expect(isNodeCollapsible({ collapsible: true })).toBe(true)
+  })
+
+  it('collapsedByDefault accepts a boolean or function(ctx) and is ignored without collapsible', () => {
+    expect(resolveCollapsedByDefault({ collapsedByDefault: true }, {})).toBe(false)
+    expect(resolveCollapsedByDefault({ collapsible: true }, {})).toBe(false)
+    expect(resolveCollapsedByDefault({ collapsible: true, collapsedByDefault: true }, {})).toBe(true)
+    expect(resolveCollapsedByDefault({ collapsible: true, collapsedByDefault: (ctx) => ctx.n > 1 }, { n: 2 })).toBe(true)
+  })
+
+  it('collapseResetKey is a string of the optional function result', () => {
+    expect(resolveCollapseResetKey({}, {})).toBe('')
+    expect(resolveCollapseResetKey({ collapseResetKey: (ctx) => ctx.k }, { k: 'dept' })).toBe('dept')
   })
 })
 

@@ -30,6 +30,11 @@ export default {
     actions: 'Recommended Actions'
   },
 
+  blockCollapse: {
+    expand: 'Show details',
+    collapse: 'Hide'
+  },
+
   findingEmpty: 'No problems found',
   actionEmpty: 'No recommended actions yet',
   relatedPrefix: 'Resolves:',
@@ -367,6 +372,27 @@ export default {
     filterOlderThan: 'Missing slip over (days)',
     filterCustomRangeLabel: 'Custom range',
 
+    lens: {
+      label: 'View',
+      ariaLabel: 'Select the Gold & Loss view',
+      all: 'Overview',
+      setting: 'Setting Workers',
+      tang: 'Trim Workers',
+      dept: 'By Department',
+      workerTypeLockedTip: 'The Setting/Trim Workers view already fixes the worker type — switch to Overview or By Department to use this filter'
+    },
+
+    deptPicker: {
+      label: 'Department',
+      ariaLabel: 'Select the department to drill into'
+    },
+
+    workerModal: {
+      openTitle: 'View this worker\'s details',
+      kpiTitle: 'Worker Indicators',
+      applyFilter: 'Apply as page-wide filter'
+    },
+
     workerType: {
       50: 'Trim Workers',
       80: 'Setting Workers'
@@ -473,6 +499,7 @@ export default {
     stageDetailTitle: '{name} Trend',
 
     stageTrendTitle: 'Monthly % Diff (Sent-Received) Trend, All Departments',
+    stageTrendTitleOne: 'Monthly % Diff (Sent-Received) Trend, {name}',
     stageTrendTrimHiddenNote: 'The "Trim" line is hidden by default — scrap/stems trimmed off make its % swing much more than other departments, crowding them out on the same chart. Click the legend to show it.',
     stageSeriesDiffPercent: '% Diff',
     stageSeriesTarget: 'Target',

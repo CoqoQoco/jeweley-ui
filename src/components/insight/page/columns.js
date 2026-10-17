@@ -217,6 +217,8 @@ export function resolveCell(col, row, t, ctx) {
       if (secondary) extras.secondary = secondary
       if (tip) extras.tip = tip
       if (col.strong) extras.strong = true
+      // onClick(row, ctx) = เซลล์ข้อความเป็นปุ่มกดได้ (เข้าถึงด้วยคีย์บอร์ดได้ ต่างจากคลิกแถว) · actionWhen(row, ctx) กำหนดว่าแถวไหนกดได้ (default ทุกแถว)
+      if (col.onClick && (col.actionWhen ? col.actionWhen(row, ctx) : true)) extras.asAction = true
       if (col.render) return { kind: 'text', text: col.render(row, t), ...extras }
       const raw = readValue(col, row)
       return { kind: 'text', text: raw === null || raw === undefined || raw === '' ? col.nullAs ?? '' : String(raw), ...extras }

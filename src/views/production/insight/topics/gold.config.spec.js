@@ -1,7 +1,8 @@
 // gold.config.spec.js — sanity ของ config หมวด "ทองและ Loss": id/reportRef, i18n key, params ของ Gold/GoldByStage (draftTargets ส่งทั้งคู่),
 // KPI 2 แถว, ตารางแผนก (notWeighed/ค้างไม่รับคืน/default selection), รายละเอียดแผนก, กราฟทุกแผนก (ซ่อน includesScrap), กราฟแนวโน้ม, preset ตั้งเป้า
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { createI18n } from 'vue-i18n'
+import { reactive, isReactive } from 'vue'
 
 import productionInsightTh from '@/language/view/production-insight/th.js'
 import executiveTh from '@/language/view/executive/th.js'
@@ -241,20 +242,22 @@ describe('gold config structure', () => {
     expect(goldConfig.blocks.map((b) => b.id ?? b.type)).toEqual([
       'note',
       'goldKpi',
+      'goldDeptPicker',
       'goldStage',
-      'trend',
+      'goldStageTrend',
       'goldStageOutliers',
       'goldStagePending',
       'goldTrend',
       'goldWorkers',
       'goldOverSlips',
-      'goldUncovered'
+      'goldUncovered',
+      'goldWorkerModal'
     ])
   })
 
   it('all nodes use known types and registered column kinds', () => {
     nodes.forEach((node) => {
-      if (node.selected) return
+      if (node.selected || node.type === 'slot') return
       expect(BLOCK_TYPES).toContain(node.type)
       ;(node.columns || []).forEach((c) => expect(COLUMN_KINDS).toContain(c.kind))
     })
@@ -387,7 +390,8 @@ describe('KPI rows (ช่างฝัง 80 first, then ช่างแต่�
   const kpi = blockOf('goldKpi')
 
   it('two rows of three cards with the metal in the title and as-of', () => {
-    expect(kpi.rows.map((r) => r.label)).toEqual([`${G}.workerType.80`, `${G}.workerType.50`])
+    const rows = kpi.rows(ctxOf())
+    expect(rows.map((r) => r.label)).toEqual([`${G}.workerType.80`, `${G}.workerType.50`])
     expect(kpi.title(ctxOf(), t)).toBe(
       `${t('view.productionInsight.nav.gold')} — ${t(`${G}.metalLabel.GOLD`)}`
     )
@@ -395,11 +399,11 @@ describe('KPI rows (ช่างฝัง 80 first, then ช่างแต่�
       t(`${G}.metalLabel.SILVER`)
     )
     expect(kpi.asOf(ctxOf())).toBe('2026-10-01T08:00:00')
-    expect(kpi.rows.every((r) => r.cards.length === 3)).toBe(true)
+    expect(rows.every((r) => r.cards.length === 3)).toBe(true)
   })
 
   it('setting row values, subs, tones and report refs', () => {
-    const cards = buildKpiCards({ cards: kpi.rows[0].cards }, ctxOf(), t)
+    const cards = buildKpiCards({ cards: kpi.rows(ctxOf())[0].cards }, ctxOf(), t)
     expect(cards.map((c) => c.value)).toEqual(['3.46%', `12.35 ${t(`${G}.gramUnit`)}`, '80%'])
     expect(cards[0].sub).toBe(t(`${G}.kpiLossPercentSub`, { allowed: '2.5', target: '3' }))
     expect(cards[0].tone).toBe('warning')
@@ -411,9 +415,9 @@ describe('KPI rows (ช่างฝัง 80 first, then ช่างแต่�
   })
 
   it('trim row is green when within target / full coverage, and empty data falls back to dashes', () => {
-    const cards = buildKpiCards({ cards: kpi.rows[1].cards }, ctxOf(), t)
+    const cards = buildKpiCards({ cards: kpi.rows(ctxOf())[1].cards }, ctxOf(), t)
     expect(cards.map((c) => c.tone)).toEqual(['green', 'green', 'green'])
-    const empty = buildKpiCards({ cards: kpi.rows[0].cards }, ctxOf({ data: { Gold: {} } }), t)
+    const empty = buildKpiCards({ cards: kpi.rows(ctxOf())[0].cards }, ctxOf({ data: { Gold: {} } }), t)
     expect(empty.map((c) => c.value)).toEqual(['—', `0 ${t(`${G}.gramUnit`)}`, '—'])
     expect(empty[0].tone).toBe('grey')
   })
@@ -519,7 +523,7 @@ describe('stage table', () => {
 })
 
 describe('all-department % chart', () => {
-  const chart = goldConfig.blocks[3]
+  const chart = blockOf('goldStageTrend')
 
   it('one line per department, palette colours, includesScrap hidden at start', () => {
     const ctx = ctxOf()
@@ -835,5 +839,300 @@ describe('goldLossTargets preset', () => {
       ['history', 90, 'SILVER', 'STAGE'],
       ['save', { items: [1], remark: 'r' }]
     ])
+  })
+})
+
+describe('lens (มุมมอง) — block matrix', () => {
+  const lensCtx = (lens, state = {}) => ctxOf({ filter: { lens }, state })
+  const visible = (id, lens) => isNodeVisible(blockOf(id), lensCtx(lens))
+  const collapsedByDefault = (id, lens) => blockOf(id).collapsedByDefault(lensCtx(lens))
+  const stageTrend = blockOf('goldStageTrend')
+  const COLLAPSIBLE = [
+    'goldStageOutliers',
+    'goldStagePending',
+    'goldWorkers',
+    'goldOverSlips',
+    'goldUncovered'
+  ]
+
+  it('overview lens: everything visible, only the deep-dive blocks are collapsible and start collapsed', () => {
+    ;[
+      'goldKpi',
+      'goldStage',
+      'goldStageTrend',
+      'goldStageOutliers',
+      'goldStagePending',
+      'goldTrend',
+      'goldWorkers',
+      'goldOverSlips',
+      'goldUncovered'
+    ].forEach((id) => expect(visible(id, 'all'), id).toBe(true))
+    COLLAPSIBLE.forEach((id) => {
+      expect(blockOf(id).collapsible, id).toBe(true)
+      expect(collapsedByDefault(id, 'all'), id).toBe(true)
+    })
+    ;['goldKpi', 'goldStage', 'goldStageTrend', 'goldTrend'].forEach((id) =>
+      expect(blockOf(id).collapsible, id).toBeUndefined()
+    )
+  })
+
+  it('setting/tang show everything expanded; dept hides KPI, stage trend, gold trend, workers, over slips, uncovered', () => {
+    ;['setting', 'tang'].forEach((lens) => {
+      COLLAPSIBLE.forEach((id) => {
+        expect(visible(id, lens), `${lens}/${id}`).toBe(true)
+        expect(collapsedByDefault(id, lens), `${lens}/${id}`).toBe(false)
+      })
+    })
+    ;[
+      'goldKpi',
+      'goldStageTrend',
+      'goldTrend',
+      'goldWorkers',
+      'goldOverSlips',
+      'goldUncovered'
+    ].forEach((id) => expect(visible(id, 'dept'), id).toBe(false))
+    ;['goldStage', 'goldStageOutliers', 'goldStagePending'].forEach((id) =>
+      expect(visible(id, 'dept'), id).toBe(true)
+    )
+    expect(collapsedByDefault('goldStageOutliers', 'dept')).toBe(false)
+  })
+
+  it('changing the lens resets what the user toggled (collapseResetKey follows the lens)', () => {
+    expect(blockOf('goldWorkers').collapseResetKey(lensCtx('setting'))).toBe('setting')
+    expect(blockOf('goldWorkers').collapseResetKey(lensCtx('all'))).toBe('all')
+  })
+
+  it('KPI rows: all = 80 then 50, setting = 80 only, tang = 50 only, with the matching SLIP strip', () => {
+    const kpi = blockOf('goldKpi')
+    expect(kpi.rows(lensCtx('all')).map((r) => r.id)).toEqual(['kpi80', 'kpi50'])
+    expect(kpi.rows(lensCtx('setting')).map((r) => r.id)).toEqual(['kpi80'])
+    expect(kpi.rows(lensCtx('tang')).map((r) => r.id)).toEqual(['kpi50'])
+    expect(kpi.sourceStrip(lensCtx('setting'))).toBe('slip-setter')
+    expect(kpi.sourceStrip(lensCtx('tang'))).toBe('slip-tang')
+    expect(kpi.sourceStrip(lensCtx('all'))).toBe('slip')
+  })
+
+  it('stage table: all/dept = every department, setting = setting only, tang = trim only; always the PLAN strip', () => {
+    const stage = blockOf('goldStage')
+    const deptKeys = (lens) => stage.rows(lensCtx(lens)).map((r) => r.deptKey)
+    expect(stage.sourceStrip).toBe('plan')
+    expect(deptKeys('all')).toEqual(['trim', 'setting', 'gemSort', 'plating'])
+    expect(deptKeys('dept')).toEqual(['trim', 'setting', 'gemSort', 'plating'])
+    expect(deptKeys('setting')).toEqual(['setting'])
+    expect(deptKeys('tang')).toEqual(['trim'])
+  })
+
+  it('stage selection: locked lenses select their own department (detail + highlight), others follow the clicked row', () => {
+    const stage = blockOf('goldStage')
+    const rowOf = (ctx, key) => stage.rows(ctx).find((r) => r.deptKey === key)
+    const settingCtx = lensCtx('setting', { stageDept: 'plating' })
+    expect(stage.detail.selected(settingCtx).deptKey).toBe('setting')
+    expect(isRowSelected(stage, settingCtx, rowOf(settingCtx, 'setting'))).toBe(true)
+    const tangCtx = lensCtx('tang', { stageDept: null })
+    expect(stage.detail.selected(tangCtx).deptKey).toBe('trim')
+    expect(isRowSelected(stage, tangCtx, rowOf(tangCtx, 'trim'))).toBe(true)
+    const deptCtx = lensCtx('dept', { stageDept: 'plating' })
+    expect(stage.detail.selected(deptCtx).deptKey).toBe('plating')
+    expect(isRowSelected(stage, deptCtx, rowOf(deptCtx, 'plating'))).toBe(true)
+    expect(isRowSelected(stage, deptCtx, rowOf(deptCtx, 'setting'))).toBe(false)
+  })
+
+  it('stage trend: one line for setting/tang (trim not hidden), all lines with trim hidden for all; title names the department', () => {
+    const defsOf = (lens) => {
+      const ctx = lensCtx(lens)
+      return resolveSeriesDefs(stageTrend, stageTrend.points(ctx), ctx, t)
+    }
+    expect(defsOf('all').map((d) => !!d.hidden)).toEqual([true, false, false, false])
+    expect(defsOf('setting').map((d) => d.name)).toEqual([t('view.executive.department.setting')])
+    expect(defsOf('setting')[0].data).toEqual([4, 5])
+    expect(defsOf('tang').map((d) => !!d.hidden)).toEqual([false])
+    expect(defsOf('tang')[0].data).toEqual([2])
+    expect(stageTrend.points(lensCtx('tang'))).toEqual(['2026-09-01T00:00:00'])
+    expect(defsOf('setting')[0].colorValue).toBe(defsOf('all')[1].colorValue)
+    expect(stageTrend.title(lensCtx('all'), t)).toBe(t(`${G}.stageTrendTitle`))
+    expect(stageTrend.title(lensCtx('tang'), t)).toBe(
+      t(`${G}.stageTrendTitleOne`, { name: t('view.executive.department.trim') })
+    )
+    expect(stageTrend.hint(lensCtx('tang'), t)).toBe('')
+    expect(stageTrend.hint(lensCtx('all'), t)).toBe(t(`${G}.stageTrendTrimHiddenNote`))
+  })
+
+  it('outliers/pending departmentKeys: all = [], setting = [setting], tang = [trim], dept = [selected department]', () => {
+    const body = (id, lens, state = {}) =>
+      buildPlanTableRequest(blockOf(id), lensCtx(lens, state), { take: 50, skip: 0, sort: [] })
+        .departmentKeys
+    ;['goldStageOutliers', 'goldStagePending'].forEach((id) => {
+      expect(body(id, 'all', { stageDept: 'plating' }), id).toEqual([])
+      expect(body(id, 'setting', { stageDept: 'plating' }), id).toEqual(['setting'])
+      expect(body(id, 'tang'), id).toEqual(['trim'])
+      expect(body(id, 'dept', { stageDept: 'plating' }), id).toEqual(['plating'])
+    })
+    const node = blockOf('goldStageOutliers')
+    const keyOf = (lens, stageDept) => buildResetPagingKey(node, lensCtx(lens, { stageDept }))
+    expect(keyOf('dept', 'plating')).not.toBe(keyOf('dept', 'setting'))
+    expect(keyOf('all', 'plating')).toBe(keyOf('all', 'setting'))
+  })
+
+  it('gold trend: points follow the lens, the 80/50 toggle is hidden when the lens locks the type, target follows too', () => {
+    const trend = blockOf('goldTrend')
+    const types = (lens, trendWorkerType) =>
+      trend.points(lensCtx(lens, { trendWorkerType })).map((p) => p.workerType)
+    expect(types('setting', 50)).toEqual([80])
+    expect(types('tang', 80)).toEqual([50])
+    expect(types('all', 50)).toEqual([50])
+    expect(trend.toolbar.toggle.visible(lensCtx('all'))).toBe(true)
+    expect(trend.toolbar.toggle.visible(lensCtx('dept'))).toBe(true)
+    expect(trend.toolbar.toggle.visible(lensCtx('setting'))).toBe(false)
+    expect(trend.toolbar.toggle.visible(lensCtx('tang'))).toBe(false)
+    expect(trend.targetLine.value(lensCtx('tang', { trendWorkerType: 80 }))).toBe(2)
+    expect(trend.targetLine.value(lensCtx('setting', { trendWorkerType: 50 }))).toBe(3)
+  })
+
+  it('workers ranking: all = both types, setting = 80 only, tang = 50 only', () => {
+    const workers = blockOf('goldWorkers')
+    const mixed = {
+      ...data,
+      Gold: {
+        ...data.Gold,
+        workers: [
+          ...data.Gold.workers,
+          { ...data.Gold.workers[0], workerType: 50, workerCode: 'T1' }
+        ]
+      }
+    }
+    const rowsOf = (lens) =>
+      workers.rows(ctxOf({ filter: { lens }, data: mixed })).map((r) => r.rowKey)
+    expect(rowsOf('all')).toEqual(['80-W1', '50-T1'])
+    expect(rowsOf('setting')).toEqual(['80-W1'])
+    expect(rowsOf('tang')).toEqual(['50-T1'])
+  })
+
+  it('Gold/over-slips/uncovered workerTypes: the lens wins over the drawer value, the drawer value applies otherwise', () => {
+    const state = buildInitialState(goldConfig.state)
+    const filterOf = (lens, workerTypes) => ({
+      ...buildDefaultGoldFilter(),
+      metal: 'GOLD',
+      lens,
+      workerTypes
+    })
+    const goldTypes = (lens, workerTypes) =>
+      goldConfig.sources.Gold.params(filterOf(lens, workerTypes), state).workerTypes
+    expect(goldTypes('setting', ['50'])).toEqual([80])
+    expect(goldTypes('tang', [])).toEqual([50])
+    expect(goldTypes('all', ['50'])).toEqual([50])
+    expect(goldTypes('dept', [])).toEqual([])
+    const tableTypes = (id, lens, workerTypes) =>
+      buildPlanTableRequest(
+        blockOf(id),
+        { filter: filterOf(lens, workerTypes), state, data, loading: {}, t },
+        { take: 50, skip: 0, sort: [] }
+      ).workerTypes
+    ;['goldOverSlips', 'goldUncovered'].forEach((id) => {
+      expect(tableTypes(id, 'setting', ['50']), id).toEqual([80])
+      expect(tableTypes(id, 'tang', []), id).toEqual([50])
+      expect(tableTypes(id, 'all', ['80']), id).toEqual([80])
+    })
+  })
+
+  it('switching the lens refetches only what depends on it: Gold when the worker type changes, never GoldByStage', () => {
+    const state = buildInitialState(goldConfig.state)
+    const keysOf = (lens) =>
+      computeSourceKeys(
+        goldConfig.sources,
+        { ...buildDefaultGoldFilter(), metal: 'GOLD', lens },
+        state
+      )
+    expect(diffSourceKeys(keysOf('all'), keysOf('setting'))).toEqual(['Gold'])
+    expect(diffSourceKeys(keysOf('setting'), keysOf('tang'))).toEqual(['Gold'])
+    expect(diffSourceKeys(keysOf('all'), keysOf('dept'))).toEqual([])
+  })
+})
+
+describe('config stays out of Vue reactivity (data()/props wrap it)', () => {
+  it('the config and its slot components are raw, so reactive() does not proxy them', () => {
+    const wrapped = reactive({ config: goldConfig })
+    expect(isReactive(wrapped.config)).toBe(false)
+    expect(isReactive(wrapped.config.blocks)).toBe(false)
+    const slots = goldConfig.blocks.filter((b) => b.type === 'slot')
+    expect(slots.map((b) => b.id)).toEqual(['goldDeptPicker', 'goldWorkerModal'])
+    slots.forEach((slot) => expect(isReactive(reactive({ node: slot }).node.component), slot.id).toBe(false))
+    slots.forEach((slot) => expect(isReactive(reactive({ c: slot.component }).c), slot.id).toBe(false))
+  })
+})
+
+describe('worker drill-down entry points', () => {
+  const stage = blockOf('goldStage')
+  const [, stageWorkers] = stage.detail.blocks
+  const workers = blockOf('goldWorkers')
+  const setState = (ctx) => {
+    ctx.setState = (key, value) => {
+      ctx.state[key] = value
+    }
+    return ctx
+  }
+
+  it('worker-code cells are keyboard-reachable buttons: ranking rows always, stage rows only for departments with a slip worker type', () => {
+    const rankingCol = workers.columns.find((c) => c.field === 'workerCode')
+    const row = { workerType: 80, workerCode: 'W1', workerName: 'ช่าง' }
+    expect(resolveCell(rankingCol, row, t, ctxOf()).asAction).toBe(true)
+
+    const stageCol = stageWorkers.columns.find((c) => c.field === 'workerCode')
+    const stageRow = { workerCode: 'W9' }
+    const detailCtx = (deptKey) => ({ ...ctxOf(), selected: { deptKey } })
+    expect(resolveCell(stageCol, stageRow, t, detailCtx('setting')).asAction).toBe(true)
+    expect(resolveCell(stageCol, stageRow, t, detailCtx('trim')).asAction).toBe(true)
+    expect(resolveCell(stageCol, stageRow, t, detailCtx('plating')).asAction).toBeUndefined()
+    expect(resolveCell(stageCol, stageRow, t, detailCtx('rawPolish')).asAction).toBeUndefined()
+  })
+
+  it('row click and cell button open the same modal state; unsupported departments do nothing', () => {
+    const rankingCtx = setState(ctxOf())
+    workers.onRowClick({ workerType: 50, workerCode: 'T1', workerName: 'ต' }, rankingCtx)
+    expect(rankingCtx.state.workerModal).toEqual({ workerType: 50, workerCode: 'T1', workerName: 'ต' })
+
+    const settingCtx = setState({ ...ctxOf(), selected: { deptKey: 'setting' } })
+    stageWorkers.onRowClick({ workerCode: 'W9' }, settingCtx)
+    expect(settingCtx.state.workerModal).toEqual({ workerType: 80, workerCode: 'W9', workerName: '' })
+
+    const platingCtx = setState({ ...ctxOf(), selected: { deptKey: 'plating' } })
+    stageWorkers.onRowClick({ workerCode: 'W9' }, platingCtx)
+    expect(platingCtx.state.workerModal).toBeNull()
+  })
+
+  it('the modal slot reads state.workerModal and its events close it / push the page filter', () => {
+    const slot = blockOf('goldWorkerModal')
+    const ctx = setState({ ...ctxOf({ state: { workerModal: { workerType: 80, workerCode: 'W1' } } }), updateFilter: vi.fn() })
+    expect(slot.props(ctx)).toMatchObject({ isShow: true, worker: { workerCode: 'W1' }, pageFilter: ctx.filter })
+    expect(slot.props(ctxOf()).isShow).toBe(false)
+    slot.events['apply-filter'](ctx, { workerTypes: ['80'], workerCodes: ['W1'] })
+    expect(ctx.updateFilter).toHaveBeenCalledWith({ workerTypes: ['80'], workerCodes: ['W1'] })
+    expect(ctx.state.workerModal).toBeNull()
+    ctx.state.workerModal = { workerType: 80, workerCode: 'W1' }
+    slot.events.closeModal(ctx)
+    expect(ctx.state.workerModal).toBeNull()
+  })
+
+  it('findings hook uses the lens and the effective stage department', () => {
+    const items = [
+      { code: 'A', params: { workerType: 80 } },
+      { code: 'B', params: { deptKey: 'plating' } },
+      { code: 'C', params: {} }
+    ]
+    const run = (lens, stageDept) => goldConfig.filterFindings(items, { lens }, { stageDept }).map((i) => i.code)
+    expect(run('all', null)).toEqual(['A', 'B', 'C'])
+    expect(run('setting', 'plating')).toEqual(['A', 'C'])
+    expect(run('dept', 'plating')).toEqual(['B', 'C'])
+  })
+
+  it('department picker only shows in the dept lens, lists weighed departments and writes stageDept', () => {
+    const picker = blockOf('goldDeptPicker')
+    expect(isNodeVisible(picker, ctxOf({ filter: { lens: 'dept' } }))).toBe(true)
+    expect(isNodeVisible(picker, ctxOf({ filter: { lens: 'all' } }))).toBe(false)
+    const props = picker.props(ctxOf({ filter: { lens: 'dept' }, state: { stageDept: 'setting' } }))
+    expect(props.options.map((o) => o.value)).toEqual(['trim', 'setting', 'plating'])
+    expect(props.modelValue).toBe('setting')
+    const ctx = setState(ctxOf({ filter: { lens: 'dept' } }))
+    picker.events['update:modelValue'](ctx, 'plating')
+    expect(ctx.state.stageDept).toBe('plating')
   })
 })

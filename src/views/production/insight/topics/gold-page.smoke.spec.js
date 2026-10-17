@@ -3,6 +3,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import { reactive } from 'vue'
 import PrimeVue from 'primevue/config'
 
 const postMock = vi.fn()
@@ -129,7 +130,7 @@ function respond(path) {
   }
 }
 
-function mountPage(props = {}) {
+function mountPage(props = {}, extraStubs = {}) {
   return mount(InsightPage, {
     props: {
       config: goldConfig,
@@ -147,7 +148,8 @@ function mountPage(props = {}) {
         ChartGeneric: true,
         InfoTipGeneric: true,
         DrawerGeneric: { template: '<div><slot name="content" /><slot name="action" /></div>' },
-        modal: true
+        modal: true,
+        ...extraStubs
       }
     }
   })
@@ -174,7 +176,7 @@ describe('InsightPage + goldConfig (smoke)', { timeout: 20000 }, () => {
     getMock.mockImplementation(async (path) => respond(path))
   })
 
-  it('renders every anchor, fetches each endpoint once, emits workers-loaded', async () => {
+  it('overview lens: renders every anchor, fetches only the always-open endpoints once, emits workers-loaded', async () => {
     const wrapper = mountPage()
     await flushPromises()
     await flushPromises()
@@ -190,15 +192,8 @@ describe('InsightPage + goldConfig (smoke)', { timeout: 20000 }, () => {
       'goldOverSlips',
       'goldUncovered'
     ].forEach((id) => expect(html, `anchor ${id}`).toContain(`id="insight-report-${id}"`))
-    expect(requestedNames()).toEqual([
-      'Gold',
-      'GoldByStage',
-      'GoldLossTargets',
-      'GoldOverSlips',
-      'GoldStageOutlierJobs',
-      'GoldStagePendingReturn',
-      'GoldUncoveredJobs'
-    ])
+    // lens ภาพรวม: 4 ตารางใบงานพับตั้งต้น → ยังไม่ mount = ยังไม่ยิง request
+    expect(requestedNames()).toEqual(['Gold', 'GoldByStage', 'GoldLossTargets'])
     expect(getsTo('GoldLossTargets')).toHaveLength(1)
     expect(wrapper.emitted('workers-loaded')).toHaveLength(1)
     expect(wrapper.emitted('workers-loaded')[0][0][0].workerCode).toBe('W1')
@@ -214,8 +209,9 @@ describe('InsightPage + goldConfig (smoke)', { timeout: 20000 }, () => {
     mountPage({
       filter: {
         ...buildDefaultGoldFilter(),
+        lens: 'setting',
         metal: 'SILVER',
-        workerTypes: ['80'],
+        workerTypes: ['50'],
         workerCodes: ['W1']
       }
     })
@@ -253,9 +249,9 @@ describe('InsightPage + goldConfig (smoke)', { timeout: 20000 }, () => {
   })
 
   it('filter changes: range -> 6 data endpoints once each, worker filter -> Gold/overSlips/uncovered, olderThanDays -> pending + uncovered only', async () => {
-    const wrapper = mountPage()
+    const base = { ...buildDefaultGoldFilter(), lens: 'setting', metal: 'GOLD' }
+    const wrapper = mountPage({ filter: base })
     await flushPromises()
-    const base = { ...buildDefaultGoldFilter(), metal: 'GOLD' }
 
     clearMocks()
     await wrapper.setProps({ filter: { ...base, olderThanDays: 30 } })
@@ -333,7 +329,7 @@ describe('InsightPage + goldConfig (smoke)', { timeout: 20000 }, () => {
   })
 
   it('includeQueue checkbox -> only the pending table refetches', async () => {
-    const wrapper = mountPage()
+    const wrapper = mountPage({ filter: { ...buildDefaultGoldFilter(), lens: 'setting', metal: 'GOLD' } })
     await flushPromises()
     clearMocks()
 
@@ -368,6 +364,256 @@ describe('InsightPage + goldConfig (smoke)', { timeout: 20000 }, () => {
     expect(postsTo('GoldByStage')).toHaveLength(1)
     expect(getsTo('GoldLossTargets')).toHaveLength(1)
     expect(wrapper.vm.state.draftTargets).toEqual([])
+  })
+})
+
+describe('InsightPage + goldConfig lens (smoke)', { timeout: 20000 }, () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    postMock.mockReset()
+    getMock.mockReset()
+    postMock.mockImplementation(async (path) => respond(path))
+    getMock.mockImplementation(async (path) => respond(path))
+  })
+
+  const filterOf = (lens, extra = {}) => ({
+    ...buildDefaultGoldFilter(),
+    metal: 'GOLD',
+    lens,
+    ...extra
+  })
+  const expandButton = (wrapper, id) => wrapper.find(`#insight-report-${id} button`)
+  const hasAnchor = (wrapper, id) => wrapper.find(`#insight-report-${id}`).exists()
+  const kpiRowTitles = (wrapper) => wrapper.findAll('.kpi-block__row-title').map((el) => el.text())
+
+  it('overview: collapsed blocks show only the header + expand button and expanding one fetches only that table', async () => {
+    const wrapper = mountPage({ filter: filterOf('all') })
+    await flushPromises()
+    const collapsed = [
+      'goldStageOutliers',
+      'goldStagePending',
+      'goldWorkers',
+      'goldOverSlips',
+      'goldUncovered'
+    ]
+    collapsed.forEach((id) => {
+      expect(hasAnchor(wrapper, id), id).toBe(true)
+      expect(expandButton(wrapper, id).attributes('aria-expanded'), id).toBe('false')
+      expect(wrapper.find(`#insight-report-${id} table`).exists(), id).toBe(false)
+    })
+    expect(kpiRowTitles(wrapper)).toHaveLength(2)
+
+    clearMocks()
+    await expandButton(wrapper, 'goldOverSlips').trigger('click')
+    await flushPromises()
+    expect(requestedNames()).toEqual(['GoldOverSlips'])
+    expect(expandButton(wrapper, 'goldOverSlips').attributes('aria-expanded')).toBe('true')
+
+    clearMocks()
+    await expandButton(wrapper, 'goldOverSlips').trigger('click')
+    await flushPromises()
+    expect(expandButton(wrapper, 'goldOverSlips').attributes('aria-expanded')).toBe('false')
+    expect(requestedNames()).toEqual([])
+  })
+
+  it('switching the lens resets the collapsed state back to the lens default', async () => {
+    const wrapper = mountPage({ filter: filterOf('all') })
+    await flushPromises()
+    await expandButton(wrapper, 'goldWorkers').trigger('click')
+    expect(expandButton(wrapper, 'goldWorkers').attributes('aria-expanded')).toBe('true')
+
+    await wrapper.setProps({ filter: filterOf('setting') })
+    await flushPromises()
+    expect(wrapper.find('#insight-report-goldWorkers').exists()).toBe(true)
+    expect(expandButton(wrapper, 'goldWorkers').attributes('aria-expanded')).toBe('true')
+
+    await wrapper.setProps({ filter: filterOf('all') })
+    await flushPromises()
+    expect(expandButton(wrapper, 'goldWorkers').attributes('aria-expanded')).toBe('false')
+  })
+
+  it('setting lens: one KPI row, only the setting department, tables open and filtered to workerType 80 / department setting', async () => {
+    const wrapper = mountPage({ filter: filterOf('setting') })
+    await flushPromises()
+    expect(kpiRowTitles(wrapper)).toEqual(['view.productionInsight.gold.workerType.80'])
+    expect(wrapper.findAll('#insight-report-goldStage tbody tr')).toHaveLength(1)
+    expect(wrapper.find('#insight-report-goldStage').text()).toContain('view.executive.department.setting')
+    expect(wrapper.html()).toContain('view.productionInsight.gold.stageDetailTitle')
+    expect(postsTo('Gold')[0][1].workerTypes).toEqual([80])
+    expect(postsTo('GoldByStage')).toHaveLength(1)
+    expect(postsTo('GoldOverSlips')[0][1].workerTypes).toEqual([80])
+    expect(postsTo('GoldUncoveredJobs')[0][1].workerTypes).toEqual([80])
+    expect(postsTo('GoldStageOutlierJobs')[0][1].departmentKeys).toEqual(['setting'])
+    expect(postsTo('GoldStagePendingReturn')[0][1].departmentKeys).toEqual(['setting'])
+  })
+
+  it('tang lens: KPI row 50, only the trim department, tables filtered to workerType 50 / department trim', async () => {
+    const wrapper = mountPage({ filter: filterOf('tang') })
+    await flushPromises()
+    expect(kpiRowTitles(wrapper)).toEqual(['view.productionInsight.gold.workerType.50'])
+    expect(wrapper.findAll('#insight-report-goldStage tbody tr')).toHaveLength(1)
+    expect(wrapper.find('#insight-report-goldStage').text()).toContain('view.executive.department.trim')
+    expect(postsTo('Gold')[0][1].workerTypes).toEqual([50])
+    expect(postsTo('GoldOverSlips')[0][1].workerTypes).toEqual([50])
+    expect(postsTo('GoldStageOutlierJobs')[0][1].departmentKeys).toEqual(['trim'])
+    expect(postsTo('GoldStagePendingReturn')[0][1].departmentKeys).toEqual(['trim'])
+  })
+
+  it('department lens: worker-type blocks are gone, stage table + selectable detail stay, tables follow the selected department', async () => {
+    const wrapper = mountPage({ filter: filterOf('dept') })
+    await flushPromises()
+    ;['goldKpi', 'goldTrend', 'goldWorkers', 'goldOverSlips', 'goldUncovered'].forEach((id) =>
+      expect(hasAnchor(wrapper, id), id).toBe(false)
+    )
+    ;['goldStage', 'goldStageOutliers', 'goldStagePending'].forEach((id) =>
+      expect(hasAnchor(wrapper, id), id).toBe(true)
+    )
+    expect(wrapper.findAll('#insight-report-goldStage tbody tr')).toHaveLength(3)
+    expect(wrapper.html()).toContain('view.productionInsight.gold.stageDetailTitle')
+    expect(postsTo('GoldOverSlips')).toHaveLength(0)
+    expect(postsTo('GoldUncoveredJobs')).toHaveLength(0)
+    expect(postsTo('GoldStageOutlierJobs').at(-1)[1].departmentKeys).toEqual(['setting'])
+
+    clearMocks()
+    await wrapper.findAll('#insight-report-goldStage tbody tr')[0].trigger('click')
+    await flushPromises()
+    expect(wrapper.vm.state.stageDept).toBe('trim')
+    expect(requestedNames()).toEqual(['GoldStageOutlierJobs', 'GoldStagePendingReturn'])
+    expect(postsTo('GoldStageOutlierJobs')[0][1].departmentKeys).toEqual(['trim'])
+    expect(postsTo('GoldStagePendingReturn')[0][1].departmentKeys).toEqual(['trim'])
+  })
+
+  it('lens only refetches what depends on it: all -> setting = Gold + the tables that mount; dept <-> all = nothing for Gold/GoldByStage', async () => {
+    const wrapper = mountPage({ filter: filterOf('all') })
+    await flushPromises()
+
+    clearMocks()
+    await wrapper.setProps({ filter: filterOf('dept') })
+    await flushPromises()
+    expect(postsTo('Gold')).toHaveLength(0)
+    expect(postsTo('GoldByStage')).toHaveLength(0)
+
+    clearMocks()
+    await wrapper.setProps({ filter: filterOf('setting') })
+    await flushPromises()
+    expect(postsTo('Gold')).toHaveLength(1)
+    expect(postsTo('Gold')[0][1].workerTypes).toEqual([80])
+    expect(postsTo('GoldByStage')).toHaveLength(0)
+  })
+
+  it('findings boxes follow the lens: worker-type / department items of the other side disappear, generic ones stay', async () => {
+    const problems = [
+      { code: 'P_SETTING', severity: 'warning', params: { workerType: 80 } },
+      { code: 'P_TANG', severity: 'warning', params: { workerType: 50 } },
+      { code: 'P_PLATING', severity: 'warning', params: { deptKey: 'plating' } },
+      { code: 'P_GENERIC', severity: 'warning', params: { count: 1 } }
+    ]
+    postMock.mockImplementation(async (path) => (path.endsWith('/Gold') ? { ...respond(path), problems } : respond(path)))
+    const wrapper = mountPage({ filter: filterOf('all') })
+    await flushPromises()
+    const shown = () => ['P_SETTING', 'P_TANG', 'P_PLATING', 'P_GENERIC'].filter((code) => wrapper.text().includes(`rules.${code}`))
+    expect(shown()).toEqual(['P_SETTING', 'P_TANG', 'P_PLATING', 'P_GENERIC'])
+
+    await wrapper.setProps({ filter: filterOf('setting') })
+    await flushPromises()
+    expect(shown()).toEqual(['P_SETTING', 'P_GENERIC'])
+
+    await wrapper.setProps({ filter: filterOf('tang') })
+    await flushPromises()
+    expect(shown()).toEqual(['P_TANG', 'P_GENERIC'])
+
+    await wrapper.setProps({ filter: filterOf('dept') })
+    await flushPromises()
+    expect(wrapper.vm.state.stageDept).toBe('setting')
+    expect(shown()).toEqual(['P_GENERIC'])
+  })
+
+  it('department lens: the picker lists the weighed departments, is bound to stageDept, and is absent in other lenses', async () => {
+    const wrapper = mountPage({ filter: filterOf('dept') })
+    await flushPromises()
+    const tabs = () => wrapper.findAll('.gold-dept-picker [role="tab"]')
+    expect(tabs().map((tab) => tab.text())).toEqual(['view.executive.department.trim', 'view.executive.department.setting'])
+    expect(tabs()[1].attributes('aria-selected')).toBe('true')
+
+    clearMocks()
+    await tabs()[0].trigger('click')
+    await flushPromises()
+    expect(wrapper.vm.state.stageDept).toBe('trim')
+    expect(tabs()[0].attributes('aria-selected')).toBe('true')
+    // แถวในตารางรายแผนกซิงก์ตามตัวเลือก และ outliers/pending ตามแผนกที่เลือก
+    expect(postsTo('GoldStageOutlierJobs')[0][1].departmentKeys).toEqual(['trim'])
+
+    await wrapper.findAll('#insight-report-goldStage tbody tr')[1].trigger('click')
+    await flushPromises()
+    expect(wrapper.vm.state.stageDept).toBe('setting')
+    expect(tabs()[1].attributes('aria-selected')).toBe('true')
+
+    await wrapper.setProps({ filter: filterOf('all') })
+    await flushPromises()
+    expect(wrapper.find('.gold-dept-picker').exists()).toBe(false)
+  })
+
+  it('worker code buttons open the drill-down state from the ranking table and the stage detail table; apply-filter pushes the page filter', async () => {
+    const wrapper = mountPage({ filter: filterOf('setting') })
+    await flushPromises()
+    const codeButton = (selector, code) => wrapper.findAll(`${selector} button`).find((b) => b.text() === code)
+
+    await codeButton('#insight-report-goldWorkers', 'W1').trigger('click')
+    expect(wrapper.vm.state.workerModal).toEqual({ workerType: 80, workerCode: 'W1', workerName: 'สมชาย' })
+
+    wrapper.vm.setState('workerModal', null)
+    await codeButton('.insight-node__card-body', 'W9').trigger('click')
+    // รายละเอียดแผนก setting → ช่าง W9 ไม่มีประเภทในแถว อนุมานเป็น 80 (ช่างฝัง)
+    expect(wrapper.vm.state.workerModal).toEqual({ workerType: 80, workerCode: 'W9', workerName: '' })
+
+    await flushPromises()
+
+    wrapper.findComponent({ name: 'GoldWorkerModal' }).vm.$emit('apply-filter', { workerTypes: ['80'], workerCodes: ['W9'] })
+    await flushPromises()
+    expect(wrapper.emitted('update-filter')[0][0]).toEqual({ workerTypes: ['80'], workerCodes: ['W9'] })
+    expect(wrapper.vm.state.workerModal).toBeNull()
+  })
+
+  it('the drill-down modal opened from the page sends worker-scoped bodies to Gold, GoldOverSlips and GoldUncoveredJobs, and a second worker refetches all three', async () => {
+    const modalStub = { template: '<div class="modal-stub"><slot name="title" /><slot name="content" /><slot name="action" /></div>' }
+    const wrapper = mountPage({ filter: filterOf('setting') }, { modal: modalStub })
+    await flushPromises()
+    const settle = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+      await flushPromises()
+    }
+    const scoped = (name) => postsTo(name).map((c) => [c[1].workerTypes, c[1].workerCodes])
+
+    clearMocks()
+    await wrapper.findAll('#insight-report-goldWorkers button').find((b) => b.text() === 'W1').trigger('click')
+    await settle()
+    ;['Gold', 'GoldOverSlips', 'GoldUncoveredJobs'].forEach((name) => expect(scoped(name), name).toEqual([[[80], ['W1']]]))
+
+    wrapper.vm.setState('workerModal', null)
+    await settle()
+    clearMocks()
+    await wrapper.findAll('.insight-node__card-body button').find((b) => b.text() === 'W9').trigger('click')
+    await settle()
+    ;['Gold', 'GoldOverSlips', 'GoldUncoveredJobs'].forEach((name) => expect(scoped(name), name).toEqual([[[80], ['W9']]]))
+  })
+
+  it('a reactive-wrapped config (as index-view data() does) renders without Vue reactive-component warnings', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const wrapper = mountPage({ config: reactive({ config: goldConfig }).config, filter: filterOf('dept') })
+    await flushPromises()
+    await wrapper.setProps({ filter: filterOf('setting') })
+    await flushPromises()
+    expect(warn.mock.calls.filter((c) => String(c[0]).includes('reactive object'))).toHaveLength(0)
+    warn.mockRestore()
+  })
+
+  it('locked lens: the 80/50 trend toggle is hidden; overview keeps it', async () => {
+    const wrapper = mountPage({ filter: filterOf('all') })
+    await flushPromises()
+    expect(wrapper.find('#insight-report-goldTrend [role="tablist"]').exists()).toBe(true)
+    await wrapper.setProps({ filter: filterOf('tang') })
+    await flushPromises()
+    expect(wrapper.find('#insight-report-goldTrend [role="tablist"]').exists()).toBe(false)
   })
 })
 

@@ -21,7 +21,7 @@
         @update:modelValue="ctx.setState(toolbar.multiselect.stateKey, $event)"
       />
       <ToggleGroupGeneric
-        v-if="toolbar.toggle"
+        v-if="showToggle"
         :modelValue="toggleValue"
         :options="toggleOptions"
         :ariaLabel="$t(toolbar.toggle.aria)"
@@ -69,8 +69,14 @@ export default {
   },
 
   computed: {
+    // toggle.visible(ctx) (optional) = false → ซ่อนปุ่ม toggle (เช่น lens ล็อกประเภทช่างไว้แล้ว)
+    showToggle() {
+      const toggle = this.toolbar.toggle
+      return !!toggle && (typeof toggle.visible === 'function' ? !!toggle.visible(this.ctx) : true)
+    },
+
     hasFilters() {
-      return !!(this.toolbar.multiselect || this.toolbar.toggle)
+      return !!(this.toolbar.multiselect || this.showToggle)
     },
 
     hasHint() {
@@ -117,6 +123,11 @@ export default {
 
   .block-toolbar {
     margin-bottom: 0;
+  }
+
+  // ไม่มีตัวกรองฝั่งซ้าย (เช่น ซ่อน toggle) → ฝั่งขวายังชิดขวา
+  .block-toolbar:last-child {
+    margin-left: auto;
   }
 }
 

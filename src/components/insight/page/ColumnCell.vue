@@ -91,6 +91,14 @@
 
   <ChartGeneric v-else-if="cell.kind === 'sparkline'" type="line" :series="[{ data: cell.values }]" :options="sparklineOptions" :height="32" />
 
+  <ButtonGeneric
+    v-else-if="cell.asAction"
+    variant="plain"
+    :label="cell.text"
+    :title="col.actionTitle ? $t(col.actionTitle) : ''"
+    @click.stop="col.onClick(data, ctx)"
+  />
+
   <span v-else-if="cell.secondary || cell.tip" class="column-cell__inline">
     <strong v-if="cell.strong">{{ cell.text }}</strong>
     <template v-else>{{ cell.text }}</template>

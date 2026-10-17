@@ -30,6 +30,11 @@ export default {
     actions: 'วิธีแก้ / สิ่งที่ควรทำ'
   },
 
+  blockCollapse: {
+    expand: 'แสดงรายละเอียด',
+    collapse: 'ซ่อน'
+  },
+
   findingEmpty: 'ไม่พบปัญหา',
   actionEmpty: 'ยังไม่มีวิธีแก้ที่แนะนำ',
   relatedPrefix: 'แก้ปัญหา:',
@@ -367,6 +372,27 @@ export default {
     filterOlderThan: 'ไม่ครบ slip เกิน (วัน)',
     filterCustomRangeLabel: 'ช่วงเวลากำหนดเอง',
 
+    lens: {
+      label: 'มุมมอง',
+      ariaLabel: 'เลือกมุมมองของหมวดทองและ Loss',
+      all: 'ภาพรวม',
+      setting: 'ช่างฝัง',
+      tang: 'ช่างแต่ง',
+      dept: 'แยกตามแผนก',
+      workerTypeLockedTip: 'มุมมองช่างฝัง/ช่างแต่งกำหนดประเภทช่างให้อยู่แล้ว — เลือกมุมมองภาพรวมหรือแยกตามแผนกเพื่อใช้ตัวกรองนี้'
+    },
+
+    deptPicker: {
+      label: 'แผนก',
+      ariaLabel: 'เลือกแผนกที่ต้องการดูรายละเอียด'
+    },
+
+    workerModal: {
+      openTitle: 'ดูรายละเอียดช่างคนนี้',
+      kpiTitle: 'ตัวชี้วัดของช่าง',
+      applyFilter: 'ตั้งเป็นตัวกรองทั้งหน้า'
+    },
+
     workerType: {
       50: 'ช่างแต่ง',
       80: 'ช่างฝัง'
@@ -473,6 +499,7 @@ export default {
     stageDetailTitle: 'แนวโน้มแผนก{name}',
 
     stageTrendTitle: 'แนวโน้ม % ส่วนต่าง (จ่าย-รับ) ทุกแผนก',
+    stageTrendTitleOne: 'แนวโน้ม % ส่วนต่าง (จ่าย-รับ) แผนก{name}',
     stageTrendTrimHiddenNote: 'ซ่อนเส้น "แต่ง" ไว้เป็นค่าเริ่มต้น เพราะเศษ/ก้านที่ตัดส่งหลอมทำให้ % แกว่งแรงกว่าแผนกอื่นมาก บดบังเส้นอื่นในกราฟเดียวกัน — กดที่ legend เพื่อแสดง',
     stageSeriesDiffPercent: '% ส่วนต่าง',
     stageSeriesTarget: 'เป้า',

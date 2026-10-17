@@ -91,9 +91,31 @@ export function nodeKey(node, index) {
   return node.id || `${node.type || (node.row ? 'row' : 'node')}-${index}`
 }
 
+// sourceStrip ของ node = ชื่อ source ของ SourceStripGeneric ('plan' | 'slip' ...) หรือ function(ctx) — ว่าง = ไม่แสดงแถบ
+export function resolveSourceStrip(node, ctx) {
+  const spec = node.sourceStrip
+  return (typeof spec === 'function' ? spec(ctx) : spec) || ''
+}
+
+// collapsible (opt-in): node.collapsible = true + node.collapsedByDefault = boolean | function(ctx)
+// node.collapseResetKey(ctx) (optional) — เปลี่ยนค่าเมื่อไหร่ = ล้างการพับ/กางที่ผู้ใช้กดเอง กลับไปใช้ค่าตั้งต้นใหม่
+export function isNodeCollapsible(node) {
+  return !!node.collapsible
+}
+
+export function resolveCollapsedByDefault(node, ctx) {
+  if (!isNodeCollapsible(node)) return false
+  return typeof node.collapsedByDefault === 'function' ? !!node.collapsedByDefault(ctx) : !!node.collapsedByDefault
+}
+
+export function resolveCollapseResetKey(node, ctx) {
+  return typeof node.collapseResetKey === 'function' ? String(node.collapseResetKey(ctx)) : ''
+}
+
 // props ของ BlockFrame จาก node config (title/tip/note เป็น i18n key หรือ function(ctx, t))
 export function resolveFrameProps(node, ctx, t) {
   return {
+    sourceStrip: resolveSourceStrip(node, ctx),
     id: node.id || '',
     title: resolveText(node.title, ctx, t),
     titleTip: resolveText(node.titleTip, ctx, t),

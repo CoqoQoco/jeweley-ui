@@ -6,6 +6,7 @@
   config:
     titleKey          — i18n key ของหัวข้อ
     findings          — { source } ชื่อ source ที่ response มี status/problems/forecasts/actions
+    filterFindings(items, filter, state) — (optional) กรอง problems/forecasts/actions ก่อนแสดง (client-side)
     helpParams(filter) — params เสริมของข้อความคำอธิบาย (view.productionInsight.help.<CODE>)
     masters           — ['fetchGem', 'fetchGemShape'] ชื่อ action ของ master-store ที่ต้องโหลดก่อนใช้ (cache-aware) → ctx.masters (state ของ master store)
     sources           — { Name: { endpoint, method:'post'|'get', params(filter, state), enabled?(filter, state) } } (enabled=false → ไม่ยิงและเคลียร์ผลเดิม) ยิงทีละ source เมื่อ "params ของตัวเอง" เปลี่ยน
@@ -81,7 +82,9 @@ export default {
 
     findings() {
       const res = this.responses[this.config.findings?.source] || {}
-      return { status: res.status || '', problems: res.problems || [], forecasts: res.forecasts || [], actions: res.actions || [] }
+      // config.filterFindings(items, filter, state) (optional) — กรอง finding/action ฝั่งหน้าจอ (เช่น ตาม lens ของหมวด gold)
+      const pick = (items) => (this.config.filterFindings ? this.config.filterFindings(items || [], this.filter, this.state) : items || [])
+      return { status: res.status || '', problems: pick(res.problems), forecasts: pick(res.forecasts), actions: pick(res.actions) }
     },
 
     findingsLoading() {

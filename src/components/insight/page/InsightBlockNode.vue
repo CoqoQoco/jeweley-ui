@@ -6,6 +6,8 @@
     { type: 'kpi'|'trend'|'table'|'planTable'|'chart'|'detail'|'sparkCards', ... } → block มาตรฐาน (BLOCK_COMPONENTS)
   node.visible(ctx) = false → ไม่เรนเดอร์ · node.detail (ของ table) เรนเดอร์ต่อท้ายเป็น DetailBlock (กราฟเดียว) หรือ detail.blocks[] (หลาย block ในกล่องเดียว)
   ทุก block ที่มี id ได้ DOM id insight-report-<id> (จาก BlockFrame / group)
+  node.collapsible (opt-in, เฉพาะ block มาตรฐาน) + collapsedByDefault: boolean|fn(ctx) + collapseResetKey(ctx)? → พับได้ที่หัวกรอบ
+  (พับ = ไม่ mount block จริง) — ผู้ใช้กดเองแล้วค้างไว้จนกว่าค่าตั้งต้น/resetKey จะเปลี่ยน
 -->
 <template>
   <template v-if="visible">
@@ -27,8 +29,11 @@
 
     <component :is="node.component" v-else-if="node.type === 'slot'" v-bind="slotProps" v-on="slotListeners" />
 
+    <!-- collapsible (opt-in) + พับอยู่ = เรนเดอร์เฉพาะหัวกรอบ + ปุ่มกาง ไม่ mount block จริง (PlanTableBlock จึงยังไม่ยิง request จนกว่าจะกาง) -->
+    <BlockFrame v-else-if="blockComponent && isCollapsed" v-bind="collapsedFrameProps" :collapsible="true" :collapsed="true" @toggle="onToggleCollapse" />
+
     <template v-else-if="blockComponent">
-      <component :is="blockComponent" :node="node" :ctx="ctx" />
+      <component :is="blockComponent" :node="node" :ctx="ctx" :collapse="collapseProp" />
       <template v-if="node.detail">
         <!-- detail.blocks = กล่องรายละเอียดเดียวที่มีหลาย block ซ้อน (กราฟ + ตาราง) — ctx.selected = แถวที่เลือก, title(ctx, t) อ่านจาก ctx.selected -->
         <BlockFrame v-if="node.detail.blocks && detailRow" v-bind="detailFrameProps">
@@ -44,7 +49,7 @@
 
 <script>
 import { BLOCK_COMPONENTS } from './blocks/index.js'
-import { isNodeVisible, buildAnchorId, nodeKey, resolveFrameProps } from './insight-page-helpers.js'
+import { isNodeVisible, buildAnchorId, nodeKey, resolveFrameProps, isNodeCollapsible, resolveCollapsedByDefault, resolveCollapseResetKey } from './insight-page-helpers.js'
 
 import DetailBlock from './blocks/DetailBlock.vue'
 import BlockFrame from './blocks/BlockFrame.vue'
@@ -59,9 +64,37 @@ export default {
     ctx: { type: Object, required: true }
   },
 
+  data() {
+    return {
+      // การพับ/กางที่ผู้ใช้กดเอง (null = ยังไม่แตะ → ใช้ค่าตั้งต้นของ config)
+      userCollapsed: null
+    }
+  },
+
   computed: {
     visible() {
       return isNodeVisible(this.node, this.ctx)
+    },
+
+    defaultCollapsed() {
+      return resolveCollapsedByDefault(this.node, this.ctx)
+    },
+
+    isCollapsed() {
+      return isNodeCollapsible(this.node) && (this.userCollapsed ?? this.defaultCollapsed)
+    },
+
+    // เปลี่ยนเมื่อค่าตั้งต้นหรือ key ของ config เปลี่ยน (เช่น เปลี่ยน lens) → ล้างสิ่งที่ผู้ใช้กดไว้
+    collapseResetKey() {
+      return `${this.defaultCollapsed}|${resolveCollapseResetKey(this.node, this.ctx)}`
+    },
+
+    collapseProp() {
+      return isNodeCollapsible(this.node) ? { toggle: this.onToggleCollapse } : null
+    },
+
+    collapsedFrameProps() {
+      return resolveFrameProps(this.node, this.ctx, (key, params) => this.$t(key, params))
     },
 
     anchorId() {
@@ -99,8 +132,18 @@ export default {
     }
   },
 
+  watch: {
+    collapseResetKey() {
+      this.userCollapsed = null
+    }
+  },
+
   methods: {
-    keyOf: nodeKey
+    keyOf: nodeKey,
+
+    onToggleCollapse() {
+      this.userCollapsed = !this.isCollapsed
+    }
   }
 }
 </script>
