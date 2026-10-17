@@ -13,6 +13,11 @@
           <FlowLensBar v-model:lens="lens" v-model:compare="compare" />
           <FlowScene :stations="stations" :zoneLabels="zoneLabels" :gates="gates" :selected="selected" :lens="lens" :active="active" @select="select" />
           <FlowChipBar :selected="selected" :stockLens="stockLens" :stations="stations" @select="setSelected" @update:stockLens="onStockLens" />
+          <ul class="flow-view__notes">
+            <li class="flow-view__note flow-view__note--warn">{{ $t('view.executive.flow.scene.beaconWarn') }}</li>
+            <li class="flow-view__note flow-view__note--fail">{{ $t('view.executive.flow.scene.beaconFail') }}</li>
+            <li class="flow-view__note">{{ $t('view.executive.flow.scene.decorNote') }}</li>
+          </ul>
         </div>
       </SectionCardGeneric>
 
@@ -249,6 +254,40 @@ export default {
     display: flex;
     flex-direction: column;
     gap: var(--sp-md);
+  }
+
+  &__notes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-xs) var(--sp-lg);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__note {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-xs);
+    font-size: var(--fs-sm);
+    color: var(--base-sub-color);
+
+    &--warn::before,
+    &--fail::before {
+      content: '';
+      flex: none;
+      width: var(--sp-md);
+      height: var(--sp-md);
+      border-radius: 50%;
+    }
+
+    &--warn::before {
+      background: var(--base-warning);
+    }
+
+    &--fail::before {
+      background: var(--base-red);
+    }
   }
 
   &__footer,

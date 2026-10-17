@@ -24,21 +24,38 @@ export const ZONE_CODE = {
   'z-sales': 'Z6 · SALES'
 }
 
-// tone 1..3 = เฉดพื้นโซน, d = ระยะกล้องตอนบินเข้าโซน
+// ระยะเลื่อนของแต่ละโซนจากผังตั้งต้น [x, z] — โซนถูกแยกห่างกันให้เห็นเป็นอาคารคนละหลัง (สายพาน/ประตูคำนวณตามสถานี)
+export const ZONE_OFFSET = {
+  'z-mold': [0, 0],
+  'z-prod': [0, 6],
+  'z-mat': [6, 6],
+  'z-recv': [0, 13],
+  'z-stock': [4, 13],
+  'z-sales': [44.4, 1.8]
+}
+
+// tone 1..3 = เฉดพื้นโซน, d = ระยะกล้องตอนบินเข้าโซน (ขอบเขตก่อนเลื่อนตาม ZONE_OFFSET)
 export const SCENE_ZONES = [
   { id: 'z-mold', x0: -3.6, x1: 23.2, z0: -3.4, z1: 9.9, tone: 1, d: 34 },
   { id: 'z-prod', x0: -3.6, x1: 23.2, z0: 14.0, z1: 27.3, tone: 2, d: 36 },
   { id: 'z-recv', x0: -3.6, x1: 10.2, z0: 30.0, z1: 36.9, tone: 3, d: 26 },
-  { id: 'z-stock', x0: 13.6, x1: 44.9, z0: 30.0, z1: 36.9, tone: 1, d: 36 },
-  { id: 'z-mat', x0: 28.6, x1: 42.9, z0: 14.0, z1: 21.0, tone: 3, d: 28 },
-  { id: 'z-sales', x0: 13.6, x1: 40.3, z0: 41.0, z1: 48.0, tone: 2, d: 32 }
-].map((z) => ({ ...z, cx: (z.x0 + z.x1) / 2, cz: (z.z0 + z.z1) / 2 }))
+  { id: 'z-stock', x0: 13.6, x1: 44.9, z0: 28.6, z1: 36.9, tone: 1, d: 36 },
+  { id: 'z-mat', x0: 28.6, x1: 42.9, z0: 14.0, z1: 22.6, tone: 3, d: 28 },
+  { id: 'z-sales', x0: 13.6, x1: 40.3, z0: 41.0, z1: 50.0, tone: 2, d: 32 }
+].map((z) => {
+  const [ox, oz] = ZONE_OFFSET[z.id]
+  const x0 = z.x0 + ox
+  const x1 = z.x1 + ox
+  const z0 = z.z0 + oz
+  const z1 = z.z1 + oz
+  return { ...z, x0, x1, z0, z1, cx: (x0 + x1) / 2, cz: (z0 + z1) / 2 }
+})
 
 export const ZONE_BOUNDS = Object.fromEntries(SCENE_ZONES.map((z) => [z.id, z]))
 
-export const OVERVIEW_TARGET = [20.5, 0, 22.5]
-export const OVERVIEW_DISTANCE = 92
-export const FLOOR = { w: 90, d: 80, cx: 20.5, cz: 22.5 }
+export const OVERVIEW_TARGET = [40.5, 0, 24.3]
+export const OVERVIEW_DISTANCE = 88
+export const FLOOR = { w: 170, d: 140, cx: 42, cz: 28 }
 
 const PAD_W = 4.6
 const PAD_D = 3.8
@@ -67,84 +84,81 @@ export const PROD_STATIONS = [
 
 export const STOCK_PAD_COUNT = 6
 
+const shifted = (zone, [x, z]) => [x + ZONE_OFFSET[zone][0], 0, z + ZONE_OFFSET[zone][1]]
+
 export const STATIONS = [
-  ...MOLD_STATIONS.map((s) => ({ id: s.id, zone: 'z-mold', kind: 'moldDept', status: s.status, pos: [s.pos[0], 0, s.pos[1]], w: PAD_W, d: PAD_D })),
-  ...PROD_STATIONS.map((s) => ({ id: s.id, zone: 'z-prod', kind: 'prodDept', key: s.key, pos: [s.pos[0], 0, s.pos[1]], w: PAD_W, d: PAD_D })),
-  { id: 'recv', zone: 'z-recv', kind: 'recv', pos: [6.5, 0, 33.2], w: PAD_W, d: PAD_D },
+  ...MOLD_STATIONS.map((s) => ({ id: s.id, zone: 'z-mold', kind: 'moldDept', status: s.status, pos: shifted('z-mold', s.pos), w: PAD_W, d: PAD_D })),
+  ...PROD_STATIONS.map((s) => ({ id: s.id, zone: 'z-prod', kind: 'prodDept', key: s.key, pos: shifted('z-prod', s.pos), w: PAD_W, d: PAD_D })),
+  { id: 'recv', zone: 'z-recv', kind: 'recv', pos: shifted('z-recv', [6.5, 33.2]), w: PAD_W, d: PAD_D },
   ...Array.from({ length: STOCK_PAD_COUNT }, (_, slot) => ({
     id: `sk${slot}`,
     zone: 'z-stock',
     kind: 'stockPad',
     slot,
-    pos: [17.2 + 4.9 * slot, 0, 33.2],
+    pos: shifted('z-stock', [17.2 + 4.9 * slot, 33.2]),
     w: 4.2,
     d: PAD_D
   })),
-  { id: 'mat-gold', zone: 'z-mat', kind: 'mat', pos: [32.5, 0, 17.4], w: PAD_W, d: PAD_D },
-  { id: 'mat-gem', zone: 'z-mat', kind: 'mat', pos: [39.0, 0, 17.4], w: PAD_W, d: PAD_D },
-  { id: 'sale-quote', zone: 'z-sales', kind: 'sales', pos: [17.2, 0, 44.4], w: PAD_W, d: PAD_D },
-  { id: 'sale-so', zone: 'z-sales', kind: 'sales', pos: [23.7, 0, 44.4], w: PAD_W, d: PAD_D },
-  { id: 'sale-inv', zone: 'z-sales', kind: 'sales', pos: [30.2, 0, 44.4], w: PAD_W, d: PAD_D },
-  { id: 'sale-pay', zone: 'z-sales', kind: 'sales', pos: [36.7, 0, 44.4], w: PAD_W, d: PAD_D }
+  { id: 'mat-gold', zone: 'z-mat', kind: 'mat', pos: shifted('z-mat', [32.5, 17.4]), w: PAD_W, d: PAD_D },
+  { id: 'mat-gem', zone: 'z-mat', kind: 'mat', pos: shifted('z-mat', [39.0, 17.4]), w: PAD_W, d: PAD_D },
+  { id: 'sale-quote', zone: 'z-sales', kind: 'sales', pos: shifted('z-sales', [17.2, 44.4]), w: PAD_W, d: PAD_D },
+  { id: 'sale-so', zone: 'z-sales', kind: 'sales', pos: shifted('z-sales', [23.7, 44.4]), w: PAD_W, d: PAD_D },
+  { id: 'sale-inv', zone: 'z-sales', kind: 'sales', pos: shifted('z-sales', [30.2, 44.4]), w: PAD_W, d: PAD_D },
+  { id: 'sale-pay', zone: 'z-sales', kind: 'sales', pos: shifted('z-sales', [36.7, 44.4]), w: PAD_W, d: PAD_D }
 ]
 
 export const STATION_BY_ID = Object.fromEntries(STATIONS.map((s) => [s.id, s]))
 export const STATION_IDS = STATIONS.map((s) => s.id)
 
-// ประตู: [id, ตำแหน่ง x, ตำแหน่ง z]
-export const GATES = [
-  { id: 'A', pos: [0, 11.9] },
-  { id: 'B', pos: [6.5, 28.6] },
-  { id: 'C', pos: [24.5, 38.9] }
+const padRadius = (st) => (Math.min(st.w, st.d) / 2) * 1.08
+
+// สายพานเชื่อมสถานีตามลำดับงาน — [จาก, ไปยัง]; ปลายสายพานเว้นรัศมีแท่นของแต่ละสถานี
+const BELT_LINKS = [
+  ['m-design', 'm-resin'],
+  ['m-resin', 'm-silver'],
+  ['m-silver', 'm-trim'],
+  ['m-trim', 'm-cut'],
+  ['m-cut', 'm-store'],
+  ['m-melt', 'm-trim'],
+  ['m-store', 'p-design'],
+  ['p-design', 'p-trim'],
+  ['p-trim', 'p-raw'],
+  ['p-raw', 'p-gem'],
+  ['p-gem', 'p-set'],
+  ['p-set', 'p-plate'],
+  ['p-plate', 'p-cost'],
+  ['p-cost', 'recv'],
+  ['recv', 'sk0'],
+  ['mat-gold', 'p-gem'],
+  ['sale-quote', 'sale-so'],
+  ['sale-so', 'sale-inv']
 ]
 
-const HW = 2.3
-const HD = 1.9
-
-// สายพาน [x1, z1, x2, z2, จำนวนลูกบาศก์วิ่ง]
-export const BELTS = [
-  // แม่พิมพ์: แถวบน ซ้าย→ขวา ลงที่ x=13 แถวล่าง ขวา→ซ้าย
-  [HW, 0, 6.5 - HW, 0],
-  [6.5 + HW, 0, 13 - HW, 0],
-  [13, HD, 13, 6.4 - HD],
-  [13 - HW, 6.4, 6.5 + HW, 6.4],
-  [6.5 - HW, 6.4, HW, 6.4],
-  [19.5 - HW, 6.4, 13 + HW, 6.4],
-  // gate A: จัดเก็บพิมพ์ → ออกแบบ
-  [0, 6.4 + HD, 0, 17.4 - HD, 2],
-  // ผลิต: เลน 1 ซ้าย→ขวา สลับเลน เลน 2 ขวา→ซ้าย
-  [HW, 17.4, 6.5 - HW, 17.4],
-  [6.5 + HW, 17.4, 13 - HW, 17.4],
-  [13 + HW, 17.4, 19.5 - HW, 17.4],
-  [19.5, 17.4 + HD, 19.5, 23.8 - HD],
-  [19.5 - HW, 23.8, 13 + HW, 23.8],
-  [13 - HW, 23.8, 6.5 + HW, 23.8],
-  // gate B: บัตรต้นทุน → รับสินค้า → คลัง; gate C: คลัง → งานขาย
-  [6.5, 23.8 + HD, 6.5, 33.2 - HD, 2],
-  [6.5 + HW, 33.2, 17.2 - 2.1, 33.2],
-  [24.5, 33.2 + HD, 24.5, 44.4 - HD, 2],
-  // วัตถุดิบป้อนสายผลิต
-  [32.5 - HW, 17.4, 19.5 + HW, 17.4, 2],
-  // งานขาย
-  [17.2 + HW, 44.4, 23.7 - HW, 44.4],
-  [23.7 + HW, 44.4, 30.2 - HW, 44.4]
-]
-
-// role ของสีในฉาก → CSS custom property (อ่านค่าจริงตอน runtime เพื่อไม่ฝังสี)
-export const SCENE_TOKENS = {
-  floor: '--status-closed-bg',
-  pad: '--color-card-bg',
-  zt1: '--color-card-bg',
-  zt2: '--color-green-bg',
-  zt3: '--color-highlight-bg',
-  dark: '--base-sub-color',
-  b1: '--base-green',
-  b2: '--base-sub-color',
-  b3: '--color-border',
-  warn: '--base-warning',
-  sel: '--base-font-color',
-  line: '--color-border'
+function beltBetween(a, b) {
+  const A = STATION_BY_ID[a]
+  const B = STATION_BY_ID[b]
+  const dx = B.pos[0] - A.pos[0]
+  const dz = B.pos[2] - A.pos[2]
+  if (Math.abs(dx) >= Math.abs(dz)) {
+    const dir = dx >= 0 ? 1 : -1
+    return [A.pos[0] + dir * padRadius(A), A.pos[2], B.pos[0] - dir * padRadius(B), A.pos[2]]
+  }
+  const dir = dz >= 0 ? 1 : -1
+  return [A.pos[0], A.pos[2] + dir * padRadius(A), A.pos[0], B.pos[2] - dir * padRadius(B)]
 }
+
+const STOCK_ROW_Z = STATION_BY_ID.sk0.pos[2]
+const SALES_ENTRY_X = STATION_BY_ID['sale-quote'].pos[0] - padRadius(STATION_BY_ID['sale-quote'])
+
+// สายพาน [x1, z1, x2, z2] — คลัง → งานขายต่อจากขอบโซนคลัง
+export const BELTS = [...BELT_LINKS.map(([a, b]) => beltBetween(a, b)), [ZONE_BOUNDS['z-stock'].x1 - 0.2, STOCK_ROW_Z, SALES_ENTRY_X, STOCK_ROW_Z]]
+
+// ประตู: pos = [x, z], rot = หมุนรอบแกน y (ประตู C ตั้งขวางสายพานแนวนอน)
+export const GATES = [
+  { id: 'A', pos: [STATION_BY_ID['m-store'].pos[0], (STATION_BY_ID['m-store'].pos[2] + STATION_BY_ID['p-design'].pos[2]) / 2], rot: 0 },
+  { id: 'B', pos: [STATION_BY_ID.recv.pos[0], (STATION_BY_ID['p-cost'].pos[2] + STATION_BY_ID.recv.pos[2]) / 2], rot: 0 },
+  { id: 'C', pos: [(ZONE_BOUNDS['z-stock'].x1 + SALES_ENTRY_X) / 2, STOCK_ROW_Z], rot: Math.PI / 2 }
+]
 
 export const LENS_KEYS = ['default', 'time', 'worker', 'trust']
 export const COMPARE_KEYS = ['gold', 'size', 'ptype']

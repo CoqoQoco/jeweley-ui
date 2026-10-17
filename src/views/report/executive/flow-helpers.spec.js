@@ -16,6 +16,7 @@ import {
   findLowestCompletedMonth,
   buildStationModels,
   stationLabel,
+  stationAlert,
   zoneLabelText,
   buildGateLabels,
   buildBossTiles,
@@ -25,6 +26,40 @@ import {
 } from './flow-helpers.js'
 import { STATIONS } from './flow-layout.js'
 import { t, board, production, stock, material, zones } from './flow-test-data.js'
+
+describe('station beacon (stationAlert)', () => {
+  const prod = (segs, open) => ({ trust: { level: 'ok' }, decor: { type: 'prod', open, segs, cubes: 0 } })
+  const mold = (open, stale) => ({ trust: { level: 'ok' }, decor: { type: 'mold', open, stale } })
+
+  it('is red only when the station trust is fail, whatever the decor', () => {
+    expect(stationAlert({ trust: { level: 'fail' }, decor: { type: 'matGold' } })).toBe('fail')
+    expect(stationAlert({ trust: { level: 'fail' }, decor: prod([0, 0, 0, 100], 100).decor })).toBe('fail')
+    expect(stationAlert({ trust: { level: 'warn' }, decor: { type: 'matGem' } })).toBeNull()
+  })
+
+  it('is yellow when 180+ day pieces reach half of the open pieces', () => {
+    expect(stationAlert(prod([10, 20, 20, 50], 100))).toBe('warn')
+    expect(stationAlert(prod([10, 20, 21, 49], 100))).toBeNull()
+    expect(stationAlert(prod([0, 0, 0, 0], 0))).toBeNull()
+  })
+
+  it('is yellow when stale mold jobs reach half of the open jobs', () => {
+    expect(stationAlert(mold(100, 50))).toBe('warn')
+    expect(stationAlert(mold(100, 49))).toBeNull()
+    expect(stationAlert(mold(0, 0))).toBeNull()
+  })
+
+  it('derives from the real station models', () => {
+    const models = buildStationModels({ board, zones }, {}, t)
+    const alerts = Object.fromEntries(models.map((m) => [m.id, stationAlert(m)]))
+    expect(alerts['m-design']).toBe('warn')
+    expect(alerts['p-trim']).toBeNull()
+    expect(alerts['mat-gold']).toBe('fail')
+    expect(alerts['sale-inv']).toBe('fail')
+    expect(alerts['sale-quote']).toBeNull()
+    expect(stationAlert(null)).toBeNull()
+  })
+})
 
 describe('flow state (URL)', () => {
   it('parses zone, lens and stock lens', () => {
@@ -233,7 +268,7 @@ describe('station models and labels', () => {
   })
 
   it('maps production departments with age stack and queue cubes', () => {
-    expect(byId['p-trim'].decor).toEqual({ type: 'prod', segs: [10, 20, 30, 40], cubes: 2 })
+    expect(byId['p-trim'].decor).toEqual({ type: 'prod', open: 100, segs: [10, 20, 30, 40], cubes: 2 })
     expect(byId['p-trim'].trust.text).toContain('scrapLoss')
     expect(byId['p-trim'].trust.text).toContain('testWorker')
     expect(byId['p-trim'].workerText).toBe('view.executive.flow.worker.noDeptTarget')

@@ -123,7 +123,11 @@ export default {
   scene: {
     ariaLabel: '3D floor plan of the 6-zone flow. Click a department or zone for details.',
     fallback: '3D view is not available on this device. Use the zone buttons below to read the numbers as usual.',
-    hint: 'Drag to rotate · wheel or pinch to zoom · click a department or zone label and the camera flies there'
+    hint: 'Drag to rotate · wheel or pinch to zoom · click a department or zone label and the camera flies there',
+    storefront: 'Entrance · Sales',
+    beaconWarn: 'Yellow light = at least half of the pieces in the department have been idle for over 180 days',
+    beaconFail: 'Red light = the data of that department failed its checks',
+    decorNote: 'Belt trays, material cabinets, shelves and customers are illustrations only and do not represent real quantities'
   },
 
   legend: { age1: 'Moved within 14 days', age2: '15-60 days', age3: '61-179 days', age4: 'Idle 180 days or more' },

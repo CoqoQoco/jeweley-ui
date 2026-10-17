@@ -357,7 +357,7 @@ export function buildStationModels({ board, zones = {} } = {}, { stockLens = 'sl
         trust: prodTrust(dept, overCount, t),
         workerText: workerTextOf(dept, overCount, t),
         decor: dept
-          ? { type: 'prod', segs: [0, 1, 2, 3].map((i) => num(dept.agePcs?.[i])), cubes: num(dept.waitPcs) > 0 ? Math.min(6, Math.ceil(num(dept.waitPcs) / 900)) : 0 }
+          ? { type: 'prod', open: num(dept.openPcs), segs: [0, 1, 2, 3].map((i) => num(dept.agePcs?.[i])), cubes: num(dept.waitPcs) > 0 ? Math.min(6, Math.ceil(num(dept.waitPcs) / 900)) : 0 }
           : { type: 'none' }
       }
     }
@@ -424,6 +424,18 @@ export function buildStationModels({ board, zones = {} } = {}, { stockLens = 'sl
     const paymentHeld = !!(board?.sales?.paymentHeld ?? sales?.paymentHeld)
     return { ...base, name: t(K('station.payment')), head: paymentHeld ? t(K('head.onHold')) : '-', hold: true, trust: paymentHeld ? { level: 'info', text: t(K('trust.onHold')) } : NA_TRUST, decor: { type: 'hold' } }
   }).map((s) => ({ ...s, warn: s.trust.level === 'warn' || s.trust.level === 'fail' }))
+}
+
+// ไฟเตือนบนสถานีในฉาก: fail = ข้อมูลสถานีนั้นตรวจไม่ผ่าน (trust fail), warn = ชิ้นงานนิ่งเกิน 180 วันตั้งแต่ครึ่งหนึ่งของที่เปิดอยู่ขึ้นไป
+// คำนวณจากตัวเลขที่ model ได้รับจริง (ชิ้นงานผลิต = agePcs[3] / openPcs, แม่พิมพ์ = stale180 / open) ไม่ผูกกับสถานีใดเป็นพิเศษ
+export const STALE_ALERT_SHARE = 0.5
+
+export function stationAlert(station) {
+  if (station?.trust?.level === 'fail') return 'fail'
+  const decor = station?.decor
+  if (decor?.type === 'prod' && num(decor.open) > 0 && num(decor.segs?.[3]) / num(decor.open) >= STALE_ALERT_SHARE) return 'warn'
+  if (decor?.type === 'mold' && num(decor.open) > 0 && num(decor.stale) / num(decor.open) >= STALE_ALERT_SHARE) return 'warn'
+  return null
 }
 
 // ป้ายของสถานีตาม lens ที่เลือก

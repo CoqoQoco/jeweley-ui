@@ -100,6 +100,10 @@ export default {
       if (this.engine) this.engine.setActive(on)
     },
 
+    '$i18n.locale'() {
+      if (this.engine) this.engine.setTexts(this.sceneTexts())
+    },
+
     gates() {
       this.$nextTick(() => this.syncLabels())
     }
@@ -136,6 +140,7 @@ export default {
           canvas: this.$refs.canvas,
           stage: this.$refs.stage,
           reducedMotion: reduce,
+          texts: this.sceneTexts(),
           onSelect: (id) => this.$emit('select', id)
         })
       } catch {
@@ -146,6 +151,11 @@ export default {
       this.pushModel()
       this.syncLabels()
       if (this.selected !== 'all') this.engine.flyTo(this.selected, true)
+    },
+
+    // ข้อความที่ถูกวาดลงในฉาก (ป้ายหน้าร้านเป็น texture) — engine ไม่รู้จัก i18n จึงส่งเข้าไป
+    sceneTexts() {
+      return { storefront: this.$t('view.executive.flow.scene.storefront') }
     },
 
     pushModel() {
@@ -193,7 +203,7 @@ export default {
   position: relative;
   height: clamp(420px, 56vw, 680px);
   overflow: hidden;
-  background: var(--color-card-bg);
+  background: linear-gradient(180deg, var(--color-green-bg) 0%, var(--color-card-bg) 55%, var(--color-border) 100%);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
 
@@ -254,6 +264,7 @@ export default {
   &__value {
     display: block;
     font-variant-numeric: tabular-nums;
+    opacity: 0.7;
   }
 
   &__warn {
@@ -311,8 +322,8 @@ export default {
     cursor: pointer;
     font-weight: 700;
     color: var(--on-inverse);
-    background: var(--base-sub-color);
-    border-color: var(--base-sub-color);
+    background: var(--base-font-color);
+    border-color: var(--base-font-color);
 
     &:focus-visible {
       outline: 2px solid var(--base-font-color);
@@ -325,9 +336,13 @@ export default {
   }
 
   &--gate {
-    color: var(--on-inverse);
-    background: var(--base-font-color);
-    border-color: var(--base-font-color);
+    color: var(--base-font-sub-color);
+    background: var(--base-warning);
+    border-color: var(--base-warning);
+
+    .flow-lbl__value {
+      opacity: 0.85;
+    }
   }
 }
 </style>
