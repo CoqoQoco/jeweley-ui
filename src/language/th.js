@@ -67,7 +67,8 @@ export default {
       stockProduct: { ...mobileLang.stockProduct },
       stockProductPhotos: { ...mobileLang.stockProductPhotos },
       receipt: { ...mobileLang.receipt },
-      posHelp: { ...mobileLang.posHelp }
+      posHelp: { ...mobileLang.posHelp },
+      rfidBind: { ...mobileLang.rfidBind }
     },
     ticket: { ...ticketLang },
     announcement: { ...announcementLang },

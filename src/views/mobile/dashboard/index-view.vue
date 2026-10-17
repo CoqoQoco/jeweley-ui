@@ -75,6 +75,13 @@
           <div class="action-label">{{ $t('view.mobile.dashboard.stockCheckLabel') }}</div>
         </div>
 
+        <div v-if="canBindRfid" class="action-card" @click="navigateTo('/mobile/rfid-bind')">
+          <div class="action-icon">
+            <i class="bi bi-broadcast"></i>
+          </div>
+          <div class="action-label">{{ $t('view.mobile.dashboard.rfidBindLabel') }}</div>
+        </div>
+
       </div>
     </div>
 
@@ -158,6 +165,7 @@ import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { useUserApiStore } from '@/stores/modules/api/user/user-store.js'
 import { useNotificationStore } from '@/stores/modules/api/notification-store.js'
 import { PermissionService } from '@/services/permission/permission.js'
+import { PERMISSIONS } from '@/services/permission/config.js'
 import { JOB_TYPE } from '@/constants/job-type.js'
 import { confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { createVisiblePoller, DEFAULT_BADGE_POLL_INTERVAL } from '@/utils/visible-poller.js'
@@ -244,6 +252,12 @@ export default {
       if (!user) return false
       const permissionService = new PermissionService(user, this.authStore.permissions)
       return permissionService.hasPermission('mobile:notifications')
+    },
+
+    canBindRfid() {
+      const user = this.authStore.user
+      if (!user) return false
+      return new PermissionService(user, this.authStore.permissions).hasPermission(PERMISSIONS.STOCK_PRODUCT)
     },
 
     /**

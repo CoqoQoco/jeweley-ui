@@ -197,6 +197,17 @@ const routes = [
         }
       },
       {
+        path: 'rfid-bind',
+        name: 'mobile-rfid-bind',
+        component: () => import('@/views/mobile/rfid-bind/index-view.vue'),
+        meta: {
+          Displayname: { en: 'Bind RFID Tag', th: 'ผูกแท็ก RFID' },
+          classIcon: 'bi bi-broadcast',
+          requiresAuth: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT]
+        }
+      },
+      {
         path: 'showcase-scan',
         name: 'mobile-showcase-scan',
         component: () => import('@/views/showcase-scan/index-view.vue'),
