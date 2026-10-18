@@ -64,6 +64,7 @@
 <script>
 import { useProductionInsightApiStore } from '@/stores/modules/api/production/production-insight-api.js'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
+import { isNodeVisible } from '../insight-page-helpers.js'
 import { buildResetPagingKey, buildPlanTableRequest, buildToggleOptions, resolveFocusChip, mapPlanTableRows, resolveNumberInput } from './plan-table-block-helpers.js'
 import { buildBlockColumns, buildHeaderSlotColumns, cellSlotName, headerSlotName } from './table-block-helpers.js'
 import blockMixin from './block-mixin.js'
@@ -132,6 +133,8 @@ export default {
 
   watch: {
     resetPagingKey() {
+      // block ที่กำลังถูกซ่อนด้วย node.visible (เช่น ตารางที่สลับแสดงทีละอัน) ไม่ยิงใหม่ — กำลังจะถูก unmount ในรอบ render เดียวกัน
+      if (!isNodeVisible(this.node, this.ctx)) return
       if (this.ctx.active) this.resetPaging()
       else this.needsRefetch = true
     },

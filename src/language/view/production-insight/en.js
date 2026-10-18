@@ -411,20 +411,33 @@ export default {
   },
 
   gold: {
+    tabs: {
+      overview: 'Overview',
+      tang: 'Trim Workers',
+      setting: 'Setting Workers',
+      dept: 'By department',
+      due: 'Plans to chase',
+      dueSwitchAria: 'Choose the plan list to chase',
+      dueScopeAria: 'Choose the worker type for the plan lists',
+      dueOptions: {
+        overSlips: 'Over allowance',
+        uncovered: 'Missing slip',
+        outliers: 'Abnormal (sent-received)',
+        pending: 'Pending return'
+      }
+    },
+
     filterSectionTitle: 'Gold tab only',
     filterWorkerType: 'Worker Type',
     filterWorkerCode: 'Worker',
     filterOlderThan: 'Missing slip over (days)',
     filterCustomRangeLabel: 'Custom range',
 
+    // scope ประเภทช่างของแท็บ "ใบงานที่ต้องตาม" (lens เดิม)
     lens: {
-      label: 'View',
-      ariaLabel: 'Select the Gold & Loss view',
-      all: 'Overview',
+      all: 'All',
       setting: 'Setting Workers',
-      tang: 'Trim Workers',
-      dept: 'By Department',
-      workerTypeLockedTip: 'The Setting/Trim Workers view already fixes the worker type — switch to Overview or By Department to use this filter'
+      tang: 'Trim Workers'
     },
 
     deptPicker: {

@@ -51,6 +51,7 @@ describe('buildWorkerModalFilter / buildWorkerFilterPatch', () => {
 
   it('every request body the modal sends is limited to that worker type and code', () => {
     const filter = buildWorkerModalFilter(page, { workerType: 80, workerCode: 'W1' })
+    // state ของ modal ไม่มี dueScope (lens อยู่ใน filter) — ต่างจากหน้าหลักที่ dueScope เริ่ม 'all'
     const state = { draftTargets: [] }
     expect(goldConfig.sources.Gold.params(filter, state)).toMatchObject({ workerTypes: [80], workerCodes: ['W1'], metal: 'SILVER' })
     const node = (id) => goldConfig.blocks.find((b) => b.id === id)

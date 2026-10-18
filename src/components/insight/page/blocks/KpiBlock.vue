@@ -34,7 +34,7 @@
             :variant="card.tone"
             :loading="loading"
             :clickable="!!card.reportRef"
-            @click="goto(card.reportRef)"
+            @click="goto(card.reportRef, card.reportParams)"
           />
         </div>
       </div>
@@ -99,11 +99,11 @@ export default {
   },
 
   methods: {
-    goto(reportRef) {
+    goto(reportRef, reportParams) {
       if (!reportRef) return
       // โหมดแท็บ: ctx.goToReport สลับไปแท็บที่มี block ปลายทางก่อนเลื่อน (โหมดเดิม/modal ที่ไม่มี = เลื่อนตรงๆ)
       if (this.ctx.goToReport) {
-        this.ctx.goToReport(reportRef)
+        this.ctx.goToReport(reportRef, reportParams)
         return
       }
       const el = document.getElementById(`insight-report-${reportRef}`)

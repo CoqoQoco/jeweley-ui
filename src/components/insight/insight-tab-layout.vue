@@ -274,7 +274,8 @@ export default {
         severity: item.severity,
         text: this.resolveText(item.code, item.params),
         helpText: this.resolveHelpText(item.code, item.params),
-        reportRef: item.reportRef
+        reportRef: item.reportRef,
+        reportParams: item.params
       }))
     },
 
@@ -289,8 +290,8 @@ export default {
     },
 
     // โหมดแท็บ: ส่งให้ InsightPage สลับแท็บแล้วเลื่อน · โหมดเดิม: เลื่อนเองทันที
-    onGotoReport(reportRef) {
-      if (this.isTabbed) this.$emit('goto-report', reportRef)
+    onGotoReport(reportRef, reportParams) {
+      if (this.isTabbed) this.$emit('goto-report', reportRef, reportParams)
       else this.scrollToReport(reportRef)
     },
 

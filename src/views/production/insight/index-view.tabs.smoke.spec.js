@@ -118,3 +118,50 @@ describe('ProductionInsightView tabs + metal toggle (smoke)', { timeout: 20000 }
     expect(standalone.wrapper.find('.production-insight__metal').exists()).toBe(false)
   })
 })
+
+describe('ProductionInsightView gold: legacy lens links and sub= sync', { timeout: 20000 }, () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    postMock.mockReset()
+    getMock.mockReset()
+    postMock.mockResolvedValue({ status: 'ok', problems: [], forecasts: [], actions: [], data: [], total: 0, kpi: [], series: [], workers: [], departments: [] })
+    getMock.mockResolvedValue([])
+  })
+
+  const goldTabs = (wrapper) => wrapper.findAll('.insight-sub-tabs [role="tab"]')
+
+  it('an old ?gldLens=tang link opens the tang tab; the legacy key is dropped from the URL on the next sync', async () => {
+    const { wrapper, lastQuery } = mountView({ query: { view: 'gold', gldLens: 'tang' } })
+    await settle()
+    expect(wrapper.findComponent({ name: 'InsightPage' }).vm.currentSub).toBe('tang')
+    await goldTabs(wrapper)[6].trigger('click')
+    await settle()
+    expect(lastQuery().sub).toBe('dept')
+    expect(lastQuery()).not.toHaveProperty('gldLens')
+  })
+
+  it('legacy dept / setting values map to their tabs, unknown values and an explicit sub= are respected', async () => {
+    for (const [query, expected] of [
+      [{ view: 'gold', gldLens: 'dept' }, 'dept'],
+      [{ view: 'gold', gldLens: 'setting' }, 'setting'],
+      [{ view: 'gold', gldLens: 'all' }, 'problems'],
+      [{ view: 'gold', gldLens: 'tang', sub: 'due' }, 'due']
+    ]) {
+      const { wrapper } = mountView({ query })
+      await settle()
+      expect(wrapper.findComponent({ name: 'InsightPage' }).vm.currentSub, JSON.stringify(query)).toBe(expected)
+    }
+  })
+
+  it('the lens bar is gone and every tabbed section writes sub= (default omitted)', async () => {
+    const { wrapper, lastQuery } = mountView({ query: { view: 'delivery' } })
+    await settle()
+    expect(wrapper.find('.production-insight__lens').exists()).toBe(false)
+    await goldTabs(wrapper)[4].trigger('click')
+    await settle()
+    expect(lastQuery().sub).toBe('trend')
+    await goldTabs(wrapper)[0].trigger('click')
+    await settle()
+    expect(lastQuery()).not.toHaveProperty('sub')
+  })
+})

@@ -67,16 +67,6 @@
       </ButtonGeneric>
     </div>
 
-    <div v-if="activeSection === 'gold'" class="production-insight__lens">
-      <span class="production-insight__lens-label">{{ $t('view.productionInsight.gold.lens.label') }}</span>
-      <ToggleGroupGeneric
-        :modelValue="filters.gold.lens"
-        :options="goldLensOptions"
-        :ariaLabel="$t('view.productionInsight.gold.lens.ariaLabel')"
-        @update:modelValue="onGoldLensChange"
-      />
-    </div>
-
     <div class="production-insight__body">
       <InsightPage
         v-if="visitedSections.has('wip')"
@@ -93,6 +83,8 @@
         :config="deliveryConfig"
         :filter="filters.delivery"
         :active="activeSection === 'delivery'"
+        :sub="subTabs.delivery || ''"
+        @update:sub="onSubTabChange('delivery', $event)"
       />
       <InsightPage
         v-if="visitedSections.has('gold')"
@@ -100,6 +92,8 @@
         :config="goldConfig"
         :filter="goldSectionFilter"
         :active="activeSection === 'gold'"
+        :sub="subTabs.gold || ''"
+        @update:sub="onSubTabChange('gold', $event)"
         @update-filter="onGoldFilterUpdate"
         @workers-loaded="onGoldWorkersLoaded"
       />
@@ -109,6 +103,8 @@
         :config="capacityConfig"
         :filter="filters.capacity"
         :active="activeSection === 'capacity'"
+        :sub="subTabs.capacity || ''"
+        @update:sub="onSubTabChange('capacity', $event)"
         @update-filter="onCapacityFilterUpdate"
         @filter-options-loaded="onCapacityFilterOptionsLoaded"
       />
@@ -118,6 +114,8 @@
         :config="workersConfig"
         :filter="filters.workers"
         :active="activeSection === 'workers'"
+        :sub="subTabs.workers || ''"
+        @update:sub="onSubTabChange('workers', $event)"
       />
       <InsightPage
         v-if="visitedSections.has('materials')"
@@ -213,10 +211,7 @@
         </template>
 
         <template v-else-if="activeSection === 'gold'">
-          <FormFieldGeneric
-            :label="$t('view.productionInsight.gold.filterWorkerType')"
-            :tip="isGoldWorkerTypeLocked ? $t('view.productionInsight.gold.lens.workerTypeLockedTip') : ''"
-          >
+          <FormFieldGeneric :label="$t('view.productionInsight.gold.filterWorkerType')">
             <MultiSelectGeneric
               v-model="draftGoldFilter.workerTypes"
               :options="workerTypeOptions"
@@ -224,7 +219,6 @@
               optionValue="value"
               :placeholder="$t('common.label.all')"
               :showClear="true"
-              :disabled="isGoldWorkerTypeLocked"
             />
           </FormFieldGeneric>
           <FormFieldGeneric :label="$t('view.productionInsight.gold.filterWorkerCode')">
@@ -371,7 +365,6 @@ import {
   goldFilterToQuery,
   clearedGoldFilterQueryKeys,
   GOLD_DEFAULT_OLDER_THAN_DAYS,
-  GOLD_LENS_VALUES,
   buildDefaultCapacityFilter,
   parseCapacityFilterQuery,
   capacityFilterToQuery,
@@ -412,7 +405,6 @@ import { deliveryConfig } from './topics/delivery.config.js'
 import { workersConfig } from './topics/workers.config.js'
 import { capacityConfig } from './topics/capacity.config.js'
 import { goldConfig } from './topics/gold.config.js'
-import { isLensWorkerTypeLocked } from './topics/gold-lens-helpers.js'
 
 const DEPARTMENT_KEYS = ['design', 'trim', 'rawPolish', 'gemSort', 'setting', 'plating', 'costCard']
 
@@ -508,15 +500,6 @@ export default {
       return [80, 50].map((workerType) => ({ value: String(workerType), label: this.$t(`view.productionInsight.gold.workerType.${workerType}`) }))
     },
 
-    goldLensOptions() {
-      return GOLD_LENS_VALUES.map((value) => ({ value, label: this.$t(`view.productionInsight.gold.lens.${value}`) }))
-    },
-
-    // lens ช่างฝัง/ช่างแต่งกำหนดประเภทช่างเอง (ชนะค่าในแผงตัวกรอง) — แผงจึงล็อกช่อง "ประเภทช่าง" ไว้
-    isGoldWorkerTypeLocked() {
-      return isLensWorkerTypeLocked(this.filters.gold.lens)
-    },
-
     // โลหะของหมวดทองมาจากตัวสลับทั้งหน้า (/executive) — รวม = แสดงทอง (gold.config มี note) — object ใหม่เฉพาะเมื่อ
     // filters.gold หรือโลหะเปลี่ยน (computed) กัน watcher ของ InsightPage (gold) ยิงซ้ำ
     goldSectionFilter() {
@@ -576,11 +559,7 @@ export default {
       if (this.activeSection === 'gold') {
         const f = this.filters.gold
         return buildActiveChips([
-          {
-            key: 'workerTypes',
-            label: this.$t('view.productionInsight.gold.filterWorkerType'),
-            value: this.isGoldWorkerTypeLocked ? '' : this.resolveWorkerTypeLabels(f.workerTypes)
-          },
+          { key: 'workerTypes', label: this.$t('view.productionInsight.gold.filterWorkerType'), value: this.resolveWorkerTypeLabels(f.workerTypes) },
           { key: 'workerCodes', label: this.$t('view.productionInsight.gold.filterWorkerCode'), value: this.resolveWorkerCodeLabels(f.workerCodes) },
           {
             key: 'olderThanDays',
@@ -705,7 +684,10 @@ export default {
       this.isApplyingRouteQuery = true
       this.activeSection = resolveActiveSection(query.view)
       // sub= เป็นของหมวดที่เปิดอยู่ (InsightPage ตรวจค่าเอง — ไม่รู้จัก = default)
-      this.subTabs = query.sub ? { [this.activeSection]: resolveSubTab(String(query.sub), this[`${this.activeSection}Config`]) } : {}
+      // ลิงก์เก่า ?view=gold&gldLens=setting|tang|dept (มุมมองเดิม) → แท็บที่ตรงกัน (ไม่มี sub= อื่น) · ค่าอื่นเพิกเฉย
+      const legacyLens = this.activeSection === 'gold' && !query.sub ? { setting: 'setting', tang: 'tang', dept: 'dept' }[query.gldLens] : undefined
+      const rawSub = query.sub || legacyLens
+      this.subTabs = rawSub ? { [this.activeSection]: resolveSubTab(String(rawSub), this[`${this.activeSection}Config`]) } : {}
       this.visitedSections.add(this.activeSection)
       this.filters.wip = parseWipFilterQuery(query)
       this.filters.delivery = parseDeliveryFilterQuery(query)
@@ -754,6 +736,7 @@ export default {
       const query = { ...this.$route.query, view: this.activeSection, ...sectionQuery, ...subTabToQuery(sub) }
       clearedKeys.push(...clearedSubTabQueryKeys(sub))
       clearedKeys.forEach((key) => delete query[key])
+      delete query.gldLens
       this.$router.replace({ query }).catch(() => {})
     },
 
@@ -771,15 +754,10 @@ export default {
       this.isFilterPanelOpen = false
     },
 
-    // lens เป็นมุมมอง ไม่ใช่ตัวกรอง — เปลี่ยนจากแถบมุมมองเท่านั้น (apply/ล้างตัวกรองไม่แตะ)
-    onGoldLensChange(lens) {
-      this.filters.gold = { ...this.filters.gold, lens }
-    },
-
     onFilterApply() {
       if (this.activeSection === 'wip') this.filters.wip = { ...this.draftWipFilter }
       else if (this.activeSection === 'delivery') this.filters.delivery = { ...this.draftDeliveryFilter }
-      else if (this.activeSection === 'gold') this.filters.gold = { ...this.draftGoldFilter, lens: this.filters.gold.lens }
+      else if (this.activeSection === 'gold') this.filters.gold = { ...this.draftGoldFilter }
       else if (this.activeSection === 'capacity') this.filters.capacity = { ...this.draftCapacityFilter }
       else if (this.activeSection === 'workers') this.filters.workers = { ...this.draftWorkersFilter }
       else if (this.activeSection === 'materials') this.filters.materials = { ...this.draftMaterialsFilter }
@@ -789,7 +767,7 @@ export default {
     onFilterClear() {
       if (this.activeSection === 'wip') this.filters.wip = buildDefaultWipFilter()
       else if (this.activeSection === 'delivery') this.filters.delivery = buildDefaultDeliveryFilter()
-      else if (this.activeSection === 'gold') this.filters.gold = { ...buildDefaultGoldFilter(), lens: this.filters.gold.lens }
+      else if (this.activeSection === 'gold') this.filters.gold = buildDefaultGoldFilter()
       else if (this.activeSection === 'capacity') this.filters.capacity = buildDefaultCapacityFilter()
       else if (this.activeSection === 'workers') this.filters.workers = buildDefaultWorkersFilter()
       else if (this.activeSection === 'materials') this.filters.materials = buildDefaultMaterialsFilter()
@@ -836,7 +814,7 @@ export default {
     onClearFilter() {
       if (this.activeSection === 'wip') this.filters.wip = buildDefaultWipFilter()
       else if (this.activeSection === 'delivery') this.filters.delivery = buildDefaultDeliveryFilter()
-      else if (this.activeSection === 'gold') this.filters.gold = { ...buildDefaultGoldFilter(), lens: this.filters.gold.lens }
+      else if (this.activeSection === 'gold') this.filters.gold = buildDefaultGoldFilter()
       else if (this.activeSection === 'capacity') this.filters.capacity = buildDefaultCapacityFilter()
       else if (this.activeSection === 'workers') this.filters.workers = buildDefaultWorkersFilter()
       else if (this.activeSection === 'materials') this.filters.materials = buildDefaultMaterialsFilter()
@@ -933,21 +911,6 @@ export default {
 
 .production-insight__nav {
   flex-shrink: 0;
-}
-
-// แถบมุมมองของหมวด "ทองและ Loss" — ใต้แถบเครื่องมือหลัก
-.production-insight__lens {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--sp-md);
-  margin-bottom: var(--sp-lg);
-}
-
-.production-insight__lens-label {
-  font-size: var(--fs-base);
-  font-weight: 700;
-  color: var(--base-font-color);
 }
 
 .production-insight__metal {

@@ -41,23 +41,24 @@ const reuse = (node, patch = {}) => ({
 
 const noop = () => {}
 
-// block ของ modal สร้างครั้งเดียวต่อ module (ไม่ขึ้นกับ worker) — object เดิมทุก render
-let cachedNodes = null
-const buildNodes = () => {
-  if (cachedNodes) return cachedNodes
+// block ของ modal สร้างครั้งเดียวต่อประเภทช่าง (ต่อ module) — object เดิมทุก render
+const cachedNodes = {}
+const TREND_ID_BY_TYPE = { 80: 'goldTrendSetting', 50: 'goldTrendTang' }
+const buildNodes = (workerType) => {
+  if (cachedNodes[workerType]) return cachedNodes[workerType]
   const byId = Object.fromEntries(flattenBlocks(goldConfig.blocks).map((node) => [node.id, node]))
   const kpi = byId.goldKpi
-  cachedNodes = markRaw([
+  cachedNodes[workerType] = markRaw([
     reuse(kpi, {
       title: `${G}.workerModal.kpiTitle`,
       // การ์ดคลิกเลื่อนไป block ของหน้าหลัก — ใน modal ไม่มีปลายทางนั้น
       rows: (ctx, t) => kpi.rows(ctx, t).map((row) => ({ ...row, cards: row.cards.map((card) => ({ ...card, reportRef: undefined })) }))
     }),
-    reuse(byId.goldTrend, { toolbar: undefined }),
+    reuse(byId[TREND_ID_BY_TYPE[workerType]], { toolbar: undefined }),
     reuse(byId.goldOverSlips),
     reuse(byId.goldUncovered)
   ])
-  return cachedNodes
+  return cachedNodes[workerType]
 }
 
 export default {
@@ -110,7 +111,7 @@ export default {
     },
 
     blockNodes() {
-      return buildNodes()
+      return buildNodes(this.worker.workerType)
     }
   },
 

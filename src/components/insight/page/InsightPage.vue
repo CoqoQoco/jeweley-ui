@@ -7,6 +7,7 @@
     titleKey          — i18n key ของหัวข้อ
     findings          — { source } ชื่อ source ที่ response มี status/problems/forecasts/actions
     filterFindings(items, filter, state) — (optional) กรอง problems/forecasts/actions ก่อนแสดง (client-side)
+    tabs / tabFor(ref, params, ctx) / floating — โหมดแท็บ (opt-in): tabFor คืน { tab, reveal?, anchor? } หรือ null เพื่อเลือกแท็บจาก params ของ finding/การ์ด KPI (เช่น workerType/deptKey) · floating = block ที่ mount เสมอนอกแท็บ
     helpParams(filter) — params เสริมของข้อความคำอธิบาย (view.productionInsight.help.<CODE>)
     masters           — ['fetchGem', 'fetchGemShape'] ชื่อ action ของ master-store ที่ต้องโหลดก่อนใช้ (cache-aware) → ctx.masters (state ของ master store)
     sources           — { Name: { endpoint, method:'post'|'get', params(filter, state), enabled?(filter, state) } } (enabled=false → ไม่ยิงและเคลียร์ผลเดิม) ยิงทีละ source เมื่อ "params ของตัวเอง" เปลี่ยน
@@ -43,6 +44,8 @@
             <InsightBlockNode v-for="(node, index) in panel.nodes" :key="keyOf(node, index)" :node="node" :ctx="ctx" />
           </div>
         </template>
+        <!-- config.floating = block ที่อยู่นอกแท็บ mount เสมอ (เช่น modal ที่เปิดจากหลายแท็บ) -->
+        <InsightBlockNode v-for="(node, index) in config.floating || []" :key="keyOf(node, index)" :node="node" :ctx="ctx" />
       </template>
       <template v-else>
         <InsightBlockNode v-for="(node, index) in config.blocks" :key="keyOf(node, index)" :node="node" :ctx="ctx" />
@@ -198,15 +201,19 @@ export default {
 
     // "ดู ›" / ctx.goToReport(ref): สลับไปแท็บที่มี block นั้น (+ตั้ง state ให้ block ที่สลับแสดงทีละอัน) แล้วเลื่อนไปหา anchor
     // โหมดเดิม (ไม่ opt-in) = เลื่อนอย่างเดียว
-    async goToReport(reportRef) {
-      const target = findTabForReportRef(this.config, reportRef)
+    // reportParams (optional) = params ของ finding / การ์ด KPI — config.tabFor(ref, params, ctx) (optional, opt-in) คืน { tab, reveal?, anchor? }
+    // เพื่อกำหนดแท็บเองจาก params (เช่น workerType/deptKey) · reveal = { stateKey, value } หรือ array ของมัน · anchor = id ของ block ที่จะเลื่อนไป
+    // (ถ้าต่างจาก ref) · คืน null/undefined = ใช้การจับคู่ block id → tab ตามปกติ
+    async goToReport(reportRef, reportParams) {
+      const custom = this.tabsEnabled && this.config.tabFor ? this.config.tabFor(reportRef, reportParams || {}, this.ctx) : null
+      const target = custom || findTabForReportRef(this.config, reportRef)
       if (target) {
-        if (target.reveal) this.setState(target.reveal.stateKey, target.reveal.value)
+        ;[].concat(target.reveal || []).forEach((reveal) => this.setState(reveal.stateKey, reveal.value))
         this.selectSub(target.tab)
         await this.$nextTick()
         await this.$nextTick()
       }
-      const el = document.getElementById(`insight-report-${reportRef}`)
+      const el = document.getElementById(`insight-report-${(custom && custom.anchor) || reportRef}`)
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     },
 

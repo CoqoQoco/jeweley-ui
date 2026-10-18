@@ -10,7 +10,7 @@
                `helpText` ว่าง = ไม่แสดงไอคอน ⓘ (ไม่ใช่ทุก finding จะมีคำอธิบาย)
     loading  — Boolean (false)
 
-  Emits: goto-report(reportRef) — เมื่อกดปุ่ม [ดู ›] ของ finding ที่มี reportRef
+  Emits: goto-report(reportRef, reportParams?) — เมื่อกดปุ่ม [ดู ›] ของ finding ที่มี reportRef (reportParams = params ของ finding ถ้ามี ใช้กับ config.tabFor)
 -->
 <template>
   <div class="insight-finding-list">
@@ -37,7 +37,7 @@
           icon="bi-chevron-right"
           class="insight-finding-list__link"
           :label="$t('common.btn.view')"
-          @click="$emit('goto-report', finding.reportRef)"
+          @click="$emit('goto-report', finding.reportRef, finding.reportParams)"
         />
       </div>
     </div>

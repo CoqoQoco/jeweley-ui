@@ -411,20 +411,33 @@ export default {
   },
 
   gold: {
+    tabs: {
+      overview: 'ภาพรวม',
+      tang: 'ช่างแต่ง',
+      setting: 'ช่างฝัง',
+      dept: 'แยกตามแผนก',
+      due: 'ใบงานที่ต้องตาม',
+      dueSwitchAria: 'เลือกตารางใบงานที่ต้องตาม',
+      dueScopeAria: 'เลือกประเภทช่างของตารางใบงาน',
+      dueOptions: {
+        overSlips: 'ทองเกินเกณฑ์',
+        uncovered: 'ไม่ครบ slip',
+        outliers: 'ผิดปกติ (จ่าย-รับ)',
+        pending: 'ค้างไม่รับคืน'
+      }
+    },
+
     filterSectionTitle: 'เฉพาะหมวด "ทองและ Loss"',
     filterWorkerType: 'ประเภทช่าง',
     filterWorkerCode: 'ช่าง',
     filterOlderThan: 'ไม่ครบ slip เกิน (วัน)',
     filterCustomRangeLabel: 'ช่วงเวลากำหนดเอง',
 
+    // scope ประเภทช่างของแท็บ "ใบงานที่ต้องตาม" (lens เดิม)
     lens: {
-      label: 'มุมมอง',
-      ariaLabel: 'เลือกมุมมองของหมวดทองและ Loss',
-      all: 'ภาพรวม',
+      all: 'ทั้งหมด',
       setting: 'ช่างฝัง',
-      tang: 'ช่างแต่ง',
-      dept: 'แยกตามแผนก',
-      workerTypeLockedTip: 'มุมมองช่างฝัง/ช่างแต่งกำหนดประเภทช่างให้อยู่แล้ว — เลือกมุมมองภาพรวมหรือแยกตามแผนกเพื่อใช้ตัวกรองนี้'
+      tang: 'ช่างแต่ง'
     },
 
     deptPicker: {

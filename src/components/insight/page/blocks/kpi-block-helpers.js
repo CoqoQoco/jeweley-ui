@@ -38,6 +38,8 @@ export function buildKpiCards(node, ctx, t) {
     value: withKpiUnit(formatKpiValue(card.value(ctx), card.format), card, t),
     sub: card.sub ? card.sub(ctx, t) : '',
     tone: card.tone ? card.tone(ctx) : 'main',
-    reportRef: card.reportRef || ''
+    reportRef: card.reportRef || '',
+    // reportParams (optional) = params ที่ส่งต่อให้ ctx.goToReport / config.tabFor (เช่น workerType ของแถวการ์ด)
+    ...(card.reportParams ? { reportParams: card.reportParams } : {})
   }))
 }

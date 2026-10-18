@@ -138,19 +138,9 @@ export function clearedDeliveryFilterQueryKeys(filter = {}) {
 
 export const GOLD_DEFAULT_OLDER_THAN_DAYS = 14
 
-// lens = มุมมองของหมวด gold (ไม่ใช่ตัวกรอง) — all ภาพรวม | setting ช่างฝัง | tang ช่างแต่ง | dept แยกตามแผนก
-// ค่า default 'all' ไม่เขียนลง URL (query gldLens)
-export const GOLD_LENS_VALUES = ['all', 'setting', 'tang', 'dept']
-export const GOLD_LENS_DEFAULT = 'all'
-
-export function resolveGoldLens(value) {
-  return GOLD_LENS_VALUES.includes(value) ? value : GOLD_LENS_DEFAULT
-}
-
 export function buildDefaultGoldFilter() {
   const range = buildDefaultRangeState()
   return {
-    lens: GOLD_LENS_DEFAULT,
     workerTypes: [],
     workerCodes: [],
     olderThanDays: GOLD_DEFAULT_OLDER_THAN_DAYS,
@@ -164,7 +154,6 @@ export function buildDefaultGoldFilter() {
 export function parseGoldFilterQuery(query = {}) {
   const range = parseRangeQuery(query)
   return {
-    lens: resolveGoldLens(query.gldLens),
     workerTypes: parseArrayParam(query.gldWorkerType),
     workerCodes: parseArrayParam(query.gldWorkerCode),
     olderThanDays: parsePositiveIntOr(query.gldOlderThan, GOLD_DEFAULT_OLDER_THAN_DAYS),
@@ -177,7 +166,6 @@ export function parseGoldFilterQuery(query = {}) {
 
 export function goldFilterToQuery(filter = {}) {
   const query = { ...rangeToQuery({ preset: filter.rangePreset, start: filter.start, end: filter.end }) }
-  if (filter.lens && filter.lens !== GOLD_LENS_DEFAULT) query.gldLens = filter.lens
   if (filter.workerTypes && filter.workerTypes.length) query.gldWorkerType = filter.workerTypes.join(',')
   if (filter.workerCodes && filter.workerCodes.length) query.gldWorkerCode = filter.workerCodes.join(',')
   if (filter.olderThanDays && filter.olderThanDays !== GOLD_DEFAULT_OLDER_THAN_DAYS) query.gldOlderThan = String(filter.olderThanDays)
@@ -186,7 +174,6 @@ export function goldFilterToQuery(filter = {}) {
 
 export function clearedGoldFilterQueryKeys(filter = {}) {
   const keys = [...clearedRangeQueryKeys({ preset: filter.rangePreset, start: filter.start, end: filter.end })]
-  if (!filter.lens || filter.lens === GOLD_LENS_DEFAULT) keys.push('gldLens')
   if (!filter.workerTypes || !filter.workerTypes.length) keys.push('gldWorkerType')
   if (!filter.workerCodes || !filter.workerCodes.length) keys.push('gldWorkerCode')
   if (!filter.olderThanDays || filter.olderThanDays === GOLD_DEFAULT_OLDER_THAN_DAYS) keys.push('gldOlderThan')

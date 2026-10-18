@@ -22,8 +22,6 @@ import {
   goldFilterToQuery,
   clearedGoldFilterQueryKeys,
   GOLD_DEFAULT_OLDER_THAN_DAYS,
-  GOLD_LENS_VALUES,
-  resolveGoldLens,
   buildDefaultCapacityFilter,
   parseCapacityFilterQuery,
   capacityFilterToQuery,
@@ -274,36 +272,20 @@ describe('parseGoldFilterQuery / goldFilterToQuery round-trip', () => {
 describe('clearedGoldFilterQueryKeys', () => {
   it('returns query keys that are back to default', () => {
     const keys = clearedGoldFilterQueryKeys(buildDefaultGoldFilter())
-    expect(keys.sort()).toEqual(['range', 'start', 'end', 'gldLens', 'gldWorkerType', 'gldWorkerCode', 'gldOlderThan'].sort())
+    expect(keys.sort()).toEqual(['range', 'start', 'end', 'gldWorkerType', 'gldWorkerCode', 'gldOlderThan'].sort())
   })
 
   it('excludes keys that are still non-default', () => {
     const keys = clearedGoldFilterQueryKeys({ ...buildDefaultGoldFilter(), olderThanDays: 7 })
     expect(keys).not.toContain('gldOlderThan')
-    expect(clearedGoldFilterQueryKeys({ ...buildDefaultGoldFilter(), lens: 'tang' })).not.toContain('gldLens')
   })
 })
 
-describe('gold lens (gldLens)', () => {
-  it('defaults to all and is omitted from the URL while default', () => {
-    expect(buildDefaultGoldFilter().lens).toBe('all')
-    expect(parseGoldFilterQuery({}).lens).toBe('all')
-    expect(goldFilterToQuery(buildDefaultGoldFilter())).not.toHaveProperty('gldLens')
-  })
-
-  it('round-trips every non-default lens through the URL', () => {
-    ;['setting', 'tang', 'dept'].forEach((lens) => {
-      const query = goldFilterToQuery({ ...buildDefaultGoldFilter(), lens })
-      expect(query.gldLens).toBe(lens)
-      expect(parseGoldFilterQuery(query).lens).toBe(lens)
-    })
-  })
-
-  it('falls back to all for unknown values', () => {
-    expect(parseGoldFilterQuery({ gldLens: 'bogus' }).lens).toBe('all')
-    expect(resolveGoldLens('bogus')).toBe('all')
-    expect(resolveGoldLens(undefined)).toBe('all')
-    GOLD_LENS_VALUES.forEach((lens) => expect(resolveGoldLens(lens)).toBe(lens))
+describe('gold filter no longer owns a lens (replaced by tabs; legacy gldLens links are mapped in index-view)', () => {
+  it('has no lens field and never writes gldLens', () => {
+    expect(buildDefaultGoldFilter()).not.toHaveProperty('lens')
+    expect(parseGoldFilterQuery({ gldLens: 'setting' })).not.toHaveProperty('lens')
+    expect(goldFilterToQuery({ ...buildDefaultGoldFilter(), lens: 'tang' })).not.toHaveProperty('gldLens')
   })
 })
 

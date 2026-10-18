@@ -130,7 +130,7 @@ describe('GoldWorkerModal (smoke)', { timeout: 20000 }, () => {
     await flushPromises()
     const body = wrapper.findComponent({ name: 'GoldWorkerModalBody' }).vm
     const nodes = body.blockNodes
-    expect(nodes.map((n) => n.id)).toEqual(['worker-goldKpi', 'worker-goldTrend', 'worker-goldOverSlips', 'worker-goldUncovered'])
+    expect(nodes.map((n) => n.id)).toEqual(['worker-goldKpi', 'worker-goldTrendSetting', 'worker-goldOverSlips', 'worker-goldUncovered'])
     nodes.forEach((n) => {
       expect(isNodeCollapsible(n), n.id).toBe(false)
       expect(resolveCollapsedByDefault(n, body.modalCtx), n.id).toBe(false)
@@ -161,7 +161,7 @@ describe('GoldWorkerModal (smoke)', { timeout: 20000 }, () => {
     expect(wrapper.findAll('.kpi-block__row-title').map((el) => el.text())).toEqual(['view.productionInsight.gold.workerType.80'])
     expect(wrapper.findAll('[id^="insight-report-"]').filter((el) => ['insight-report-goldKpi', 'insight-report-goldTrend', 'insight-report-goldOverSlips', 'insight-report-goldUncovered'].includes(el.attributes('id')))).toHaveLength(0)
     expect(wrapper.find('#insight-report-worker-goldOverSlips').exists()).toBe(true)
-    expect(wrapper.find('#insight-report-worker-goldTrend [role="tablist"]').exists()).toBe(false)
+    expect(wrapper.find('#insight-report-worker-goldTrendSetting [role="tablist"]').exists()).toBe(false)
   })
 
   it('apply-as-page-filter emits the drawer-shaped patch; close emits closeModal', async () => {
