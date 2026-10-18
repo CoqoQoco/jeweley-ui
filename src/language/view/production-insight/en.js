@@ -564,6 +564,13 @@ export default {
   },
 
   workers: {
+    tabs: {
+      overview: 'Overview',
+      trend: 'Trend',
+      workers: 'By worker',
+      unpaid: 'Unpaid wages'
+    },
+
     filterSectionTitle: 'Workers & Wages Filters',
     filterDept: 'Department',
     filterEmploymentType: 'Employment Type',

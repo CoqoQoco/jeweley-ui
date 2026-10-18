@@ -12,6 +12,8 @@ import { buildTrendSeries, buildTrendOptions, resolveSeriesDefs } from '@/compon
 import { applyToolbarFilters, isRowSelected, resolveRowSelection, resolveTableSections } from '@/components/insight/page/blocks/table-block-helpers.js'
 import { buildPlanTableBody } from '@/components/insight/page/blocks/plan-table-block-helpers.js'
 import { collectBlockIds, findDuplicates, flattenBlocks, computeSourceKeys, diffSourceKeys, buildInitialState, DISABLED_SOURCE_KEY } from '@/components/insight/page/insight-page-helpers.js'
+import { validateTabConfig, findTabForReportRef, blocksForTab, hasTabs, isSourceTabGated } from '@/components/insight/page/insight-tabs-helpers.js'
+import { reactive, isReactive } from 'vue'
 import { buildDefaultWorkersFilter } from '../insight-filters.js'
 import { workersConfig } from './workers.config.js'
 
@@ -202,5 +204,51 @@ describe('workers KPI / trend / table / detail', () => {
     const worker = unpaid.columns.find((c) => c.field === 'workerCode')
     expect(resolveCell(worker, { workerCode: 'W1', workerName: 'สมชาย' }, t)).toMatchObject({ primary: 'W1', secondary: 'สมชาย', strong: false })
     expect(resolveCell(worker, {}, t).primary).toBe('—')
+  })
+})
+
+describe('workers tabs (opt-in tab mode)', () => {
+  it('opts in with the 4 data tabs in order and every top-level block names one of them', () => {
+    expect(hasTabs(workersConfig)).toBe(true)
+    expect(workersConfig.tabs.map((tab) => tab.key)).toEqual(['overview', 'trend', 'workers', 'unpaid'])
+    expect(validateTabConfig(workersConfig)).toEqual([])
+  })
+
+  it('tab labels exist in th', () => {
+    workersConfig.tabs.forEach((tab) => expect(i18n.global.te(tab.label, 'th'), tab.label).toBe(true))
+  })
+
+  it('one block per tab; the workers table keeps its detail and toolbar as one unit', () => {
+    const ids = (key) => blocksForTab(workersConfig, key).map((n) => n.id)
+    expect(ids('overview')).toEqual(['wrkKpi'])
+    expect(ids('trend')).toEqual(['wrkTrend'])
+    expect(ids('workers')).toEqual(['wrkTable'])
+    expect(ids('unpaid')).toEqual(['wrkUnpaid'])
+    const table = workersConfig.blocks.find((n) => n.id === 'wrkTable')
+    expect(table.detail).toBeTruthy()
+    expect(Object.keys(table.toolbar).sort()).toEqual(['multiselect', 'toggle'])
+    expect(table.selectable.stateKey).toBe('selectedWorker')
+  })
+
+  it('reportRef → tab for every backend ref and every KPI card link', () => {
+    const tabOf = (ref) => findTabForReportRef(workersConfig, ref)?.tab
+    expect(tabOf('wrkKpi')).toBe('overview')
+    expect(tabOf('wrkTrend')).toBe('trend')
+    expect(tabOf('wrkTable')).toBe('workers')
+    expect(tabOf('wrkUnpaid')).toBe('unpaid')
+    WORKERS_REPORT_REFS.forEach((ref) => expect(tabOf(ref), ref).toBeTruthy())
+    const kpi = workersConfig.blocks.find((n) => n.id === 'wrkKpi')
+    expect(kpi.cards.map((c) => [c.id, tabOf(c.reportRef)])).toEqual([['wages', 'trend'], ['wagePerPlan', 'trend'], ['activeWorkers', 'workers'], ['outsideShare', 'workers']])
+  })
+
+  it('Workers is eager; WorkerMonthly is bound to the workers tab (gated until it is opened)', () => {
+    expect(workersConfig.sources.Workers.tab).toBeUndefined()
+    expect(workersConfig.sources.WorkerMonthly.tab).toBe('workers')
+    expect(isSourceTabGated(workersConfig.sources.WorkerMonthly, [])).toBe(true)
+    expect(isSourceTabGated(workersConfig.sources.WorkerMonthly, ['workers'])).toBe(false)
+  })
+
+  it('the config stays out of Vue reactivity', () => {
+    expect(isReactive(reactive({ config: workersConfig }).config)).toBe(false)
   })
 })

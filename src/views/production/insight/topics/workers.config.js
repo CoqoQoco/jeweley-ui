@@ -2,6 +2,8 @@
 // KPI 4 ใบ → กราฟค่าแรงรายเดือนแยกแผนก (stacked) + เส้นค่าแรงต่อใบงาน → ตารางช่างรายคน (ตัวกรองฝั่ง client, คลิกแถว = กราฟรายเดือนของช่าง)
 // → งานที่ยังไม่บันทึกค่าแรง · Workers ยิงครั้งเดียว (start/end/departmentKeys/employmentTypes) · concentration ไม่แสดงเหมือนเดิม
 // WorkerMonthly ยิงเฉพาะเมื่อมีช่างที่เลือก (source.enabled) ด้วย code+deptKey+start+end ใน key เดียว
+import { markRaw } from 'vue'
+
 import { isoOrNull } from '@/components/insight/page/insight-page-helpers.js'
 import { formatBucketMonthLabels } from '@/components/insight/insight-helpers.js'
 import { CHART_PALETTE } from '@/services/utils/chart-colors.js'
@@ -68,8 +70,17 @@ const unpaidColumns = [
   col.number('checkGram', `${W}.unpaidColCheckGram`, 'decimal', { minWidth: '100px' })
 ]
 
-export const workersConfig = {
+export const workersConfig = markRaw({
   titleKey: 'view.productionInsight.nav.workers',
+
+  // โหมดแท็บ (opt-in) — 4 แท็บข้อมูล · Workers (findings + KPI + กราฟ + ตารางช่าง) ยิงตั้งแต่โหลดหน้าเสมอ · ตารางใบงานค่าแรงค้างจ่ายยิงเมื่อเปิดแท็บ unpaid ·
+  // WorkerMonthly ผูกแท็บ workers (ยิงเมื่อเลือกช่างในตารางเท่านั้น)
+  tabs: [
+    { key: 'overview', label: `${W}.tabs.overview` },
+    { key: 'trend', label: `${W}.tabs.trend` },
+    { key: 'workers', label: `${W}.tabs.workers` },
+    { key: 'unpaid', label: `${W}.tabs.unpaid` }
+  ],
   findings: { source: 'Workers' },
 
   sources: {
@@ -79,6 +90,7 @@ export const workersConfig = {
     },
     // ยิงเมื่อคลิกแถวช่างเท่านั้น (ต้องส่ง deptKey คู่ code — ช่างคนเดียวอาจทำหลายแผนก) · เปลี่ยนช่วงเวลาตอนมีช่างที่เลือก = ยิงใหม่ 1 ครั้ง
     WorkerMonthly: {
+      tab: 'workers',
       endpoint: 'ProductionInsight/WorkerMonthly',
       enabled: (f, s) => !!s.selectedWorker,
       params: (f, s) => ({ code: s.selectedWorker.code, deptKey: s.selectedWorker.deptKey, start: isoOrNull(f.start), end: isoOrNull(f.end) })
@@ -96,6 +108,7 @@ export const workersConfig = {
     {
       type: 'kpi',
       id: 'wrkKpi',
+      tab: 'overview',
       source: 'Workers',
       title: `${W}.kpiGroupTitle`,
       icon: 'bi-speedometer2',
@@ -142,6 +155,7 @@ export const workersConfig = {
     {
       type: 'trend',
       id: 'wrkTrend',
+      tab: 'trend',
       source: 'Workers',
       title: `${W}.trendTitle`,
       icon: 'bi-graph-up-arrow',
@@ -156,6 +170,7 @@ export const workersConfig = {
     {
       type: 'table',
       id: 'wrkTable',
+      tab: 'workers',
       source: 'Workers',
       title: `${W}.tableTitle`,
       icon: 'bi-people',
@@ -206,6 +221,7 @@ export const workersConfig = {
     {
       type: 'planTable',
       id: 'wrkUnpaid',
+      tab: 'unpaid',
       title: `${W}.unpaidTitle`,
       icon: 'bi-exclamation-circle',
       accent: 'warning',
@@ -214,6 +230,6 @@ export const workersConfig = {
       columns: unpaidColumns
     }
   ]
-}
+})
 
 export default workersConfig

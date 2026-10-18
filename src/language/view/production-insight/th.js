@@ -564,6 +564,13 @@ export default {
   },
 
   workers: {
+    tabs: {
+      overview: 'ภาพรวม',
+      trend: 'แนวโน้ม',
+      workers: 'รายช่าง',
+      unpaid: 'ค่าแรงค้างจ่าย'
+    },
+
     filterSectionTitle: 'ตัวกรองช่างและค่าแรง',
     filterDept: 'แผนก',
     filterEmploymentType: 'ประเภทช่าง',
