@@ -2,6 +2,8 @@
 // materials-section.vue เดิม: KPI 4 ใบ → กราฟงานเข้า/เวลาเข้า→เบิก → ใบงานรอเบิกพลอย → ความต้องการเทียบสต็อก → พลอยใกล้หมด
 // Materials ยิงครั้งเดียวได้ทั้ง findings/kpi/series/asOf (params แค่ start/end) · ตาราง 3 ตารางเป็น snapshot ไม่มี start/end
 // ตัวกรองของแต่ละตาราง (gemStatus/status/coverDays) เป็น state ของหน้า ไม่ผ่านแผงตัวกรองหลัก
+import { markRaw } from 'vue'
+
 import { isoOrNull } from '@/components/insight/page/insight-page-helpers.js'
 import { formatBucketMonthLabels } from '@/components/insight/insight-helpers.js'
 import * as col from '@/components/insight/page/columns.js'
@@ -73,8 +75,16 @@ const lowCoverColumns = [
 
 export const DEFAULT_COVER_DAYS = 30
 
-export const materialsConfig = {
+// โหมดแท็บ (opt-in) — 5 แท็บข้อมูล แท็บละ 1 block · Materials (findings + KPI + กราฟ) ยิงตั้งแต่โหลดหน้า · ตาราง 3 ตารางยิง endpoint ของตัวเองตอนเปิดแท็บ (mount ตอนเปิด)
+export const materialsConfig = markRaw({
   titleKey: 'view.productionInsight.nav.materials',
+  tabs: [
+    { key: 'overview', label: `${M}.tabs.overview` },
+    { key: 'trend', label: `${M}.tabs.trend` },
+    { key: 'waiting', label: `${M}.tabs.waiting` },
+    { key: 'demand', label: `${M}.tabs.demand` },
+    { key: 'lowcover', label: `${M}.tabs.lowcover` }
+  ],
   findings: { source: 'Materials' },
   masters: ['fetchGem', 'fetchGemShape'],
 
@@ -95,6 +105,7 @@ export const materialsConfig = {
     {
       type: 'kpi',
       id: 'matKpi',
+      tab: 'overview',
       source: 'Materials',
       title: `${M}.kpiGroupTitle`,
       icon: 'bi-speedometer2',
@@ -143,6 +154,7 @@ export const materialsConfig = {
     {
       type: 'trend',
       id: 'matTrend',
+      tab: 'trend',
       source: 'Materials',
       title: `${M}.trendTitle`,
       icon: 'bi-graph-up-arrow',
@@ -160,6 +172,7 @@ export const materialsConfig = {
     {
       type: 'planTable',
       id: 'matWaiting',
+      tab: 'waiting',
       title: `${M}.waitingTitle`,
       icon: 'bi-hourglass-split',
       accent: 'warning',
@@ -172,6 +185,7 @@ export const materialsConfig = {
     {
       type: 'planTable',
       id: 'matDemand',
+      tab: 'demand',
       title: `${M}.demandTitle`,
       icon: 'bi-boxes',
       endpoint: 'ProductionInsight/MaterialGemDemand',
@@ -185,6 +199,7 @@ export const materialsConfig = {
     {
       type: 'planTable',
       id: 'matLowCover',
+      tab: 'lowcover',
       title: `${M}.lowCoverTitle`,
       icon: 'bi-exclamation-circle',
       accent: 'warning',
@@ -195,6 +210,6 @@ export const materialsConfig = {
       columns: lowCoverColumns
     }
   ]
-}
+})
 
 export default materialsConfig

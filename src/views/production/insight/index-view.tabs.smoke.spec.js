@@ -165,3 +165,28 @@ describe('ProductionInsightView gold: legacy lens links and sub= sync', { timeou
     expect(lastQuery()).not.toHaveProperty('sub')
   })
 })
+
+describe('ProductionInsightView: every section is tabbed and syncs sub=', { timeout: 40000 }, () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    postMock.mockReset()
+    getMock.mockReset()
+    postMock.mockResolvedValue({ status: 'ok', problems: [], forecasts: [], actions: [], data: [], total: 0, kpi: [], series: [], workers: [], departments: [], report: {}, capacity: {} })
+    getMock.mockResolvedValue([])
+  })
+
+  it.each(['wip', 'delivery', 'gold', 'capacity', 'workers', 'materials'])('%s: a data tab is written to sub= and read back from the URL', async (view) => {
+    const { wrapper, lastQuery } = mountView({ query: { view } })
+    await settle()
+    const tabs = wrapper.findAll('.insight-sub-tabs [role="tab"]')
+    expect(tabs.length).toBeGreaterThan(3)
+    await tabs[3].trigger('click')
+    await settle()
+    const sub = lastQuery().sub
+    expect(sub).toBeTruthy()
+
+    const reopened = mountView({ query: { view, sub } })
+    await settle()
+    expect(reopened.wrapper.findComponent({ name: 'InsightPage' }).vm.currentSub).toBe(sub)
+  })
+})

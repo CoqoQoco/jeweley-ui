@@ -635,6 +635,14 @@ export default {
   },
 
   materials: {
+    tabs: {
+      overview: 'Overview',
+      trend: 'Trend',
+      waiting: 'Waiting for gems',
+      demand: 'Demand',
+      lowcover: 'Low cover'
+    },
+
     filterSectionTitle: 'Materials Filters',
     filterCustomRangeLabel: 'Custom Range',
 

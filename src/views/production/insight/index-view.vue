@@ -127,6 +127,8 @@
         :config="materialsConfig"
         :filter="filters.materials"
         :active="activeSection === 'materials'"
+        :sub="subTabs.materials || ''"
+        @update:sub="onSubTabChange('materials', $event)"
       />
     </div>
 

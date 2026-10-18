@@ -635,6 +635,14 @@ export default {
   },
 
   materials: {
+    tabs: {
+      overview: 'ภาพรวม',
+      trend: 'แนวโน้ม',
+      waiting: 'รอเบิกพลอย',
+      demand: 'ความต้องการ',
+      lowcover: 'ใกล้หมด'
+    },
+
     filterSectionTitle: 'ตัวกรองวัตถุดิบที่กระทบการผลิต',
     filterCustomRangeLabel: 'ช่วงเวลากำหนดเอง',
 

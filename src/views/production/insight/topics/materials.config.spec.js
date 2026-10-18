@@ -11,6 +11,8 @@ import { buildKpiCards } from '@/components/insight/page/blocks/kpi-block-helper
 import { buildTrendSeries, buildTrendOptions } from '@/components/insight/page/blocks/trend-block-helpers.js'
 import { buildPlanTableBody, buildResetPagingKey } from '@/components/insight/page/blocks/plan-table-block-helpers.js'
 import { collectBlockIds, findDuplicates, flattenBlocks, computeSourceKeys, diffSourceKeys, buildInitialState } from '@/components/insight/page/insight-page-helpers.js'
+import { reactive, isReactive } from 'vue'
+import { validateTabConfig, findTabForReportRef, blocksForTab, hasTabs, isSourceTabGated } from '@/components/insight/page/insight-tabs-helpers.js'
 import { buildDefaultMaterialsFilter } from '../insight-filters.js'
 import { materialsConfig, DEFAULT_COVER_DAYS } from './materials.config.js'
 
@@ -166,5 +168,45 @@ describe('materials columns', () => {
     expect(lowCover.dataKey).toBe('code')
     expect(lowCover.toolbar.number).toMatchObject({ stateKey: 'coverDays', min: 1 })
     expect(lowCover.columns.map((c) => c.field)).toEqual(['code', 'groupName', 'shape', 'size', 'grade', 'quantity', 'used90d', 'coverDays'])
+  })
+})
+
+describe('materials tabs (opt-in tab mode)', () => {
+  const tabOf = (ref) => findTabForReportRef(materialsConfig, ref)?.tab
+
+  it('opts in with the 5 data tabs in order and the config is valid', () => {
+    expect(hasTabs(materialsConfig)).toBe(true)
+    expect(materialsConfig.tabs.map((tab) => tab.key)).toEqual(['overview', 'trend', 'waiting', 'demand', 'lowcover'])
+    expect(validateTabConfig(materialsConfig)).toEqual([])
+  })
+
+  it('tab labels exist in th', () => {
+    materialsConfig.tabs.forEach((tab) => expect(i18n.global.te(tab.label, 'th'), tab.label).toBe(true))
+  })
+
+  it('exactly one block per tab', () => {
+    const ids = (key) => blocksForTab(materialsConfig, key).map((n) => n.id)
+    expect(ids('overview')).toEqual(['matKpi'])
+    expect(ids('trend')).toEqual(['matTrend'])
+    expect(ids('waiting')).toEqual(['matWaiting'])
+    expect(ids('demand')).toEqual(['matDemand'])
+    expect(ids('lowcover')).toEqual(['matLowCover'])
+  })
+
+  it('reportRef → tab for every backend ref and every KPI card link', () => {
+    expect(tabOf('matKpi')).toBe('overview')
+    expect(tabOf('matTrend')).toBe('trend')
+    expect(tabOf('matWaiting')).toBe('waiting')
+    expect(tabOf('matDemand')).toBe('demand')
+    expect(tabOf('matLowCover')).toBe('lowcover')
+    MATERIALS_REPORT_REFS.forEach((ref) => expect(tabOf(ref), ref).toBeTruthy())
+    const kpi = materialsConfig.blocks.find((n) => n.id === 'matKpi')
+    expect(kpi.cards.map((c) => [c.id, tabOf(c.reportRef)])).toEqual([['waiting', 'waiting'], ['issue', 'trend'], ['short', 'demand'], ['matched', 'waiting']])
+  })
+
+  it('Materials is eager (no tab gate) and the config stays out of Vue reactivity', () => {
+    expect(materialsConfig.sources.Materials.tab).toBeUndefined()
+    expect(isSourceTabGated(materialsConfig.sources.Materials, [])).toBe(false)
+    expect(isReactive(reactive({ config: materialsConfig }).config)).toBe(false)
   })
 })
