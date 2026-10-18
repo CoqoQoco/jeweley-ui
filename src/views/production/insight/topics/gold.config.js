@@ -5,7 +5,7 @@
 // ตารางที่เหลือยิง endpoint ของตัวเองผ่าน PlanTableBlock · metal มาจาก filter.metal (goldSectionFilter ของ index-view: รวม = ทอง)
 // onSourceLoaded: ส่ง Gold.workers ขึ้น index-view (workers-loaded) ให้เติมตัวเลือกช่างในตัวกรอง
 import { isoOrNull, formatBucketDayMonth } from '@/components/insight/page/insight-page-helpers.js'
-import { defineAsyncComponent, markRaw } from 'vue'
+import { markRaw } from 'vue'
 import { formatBucketMonthLabels } from '@/components/insight/insight-helpers.js'
 import { CHART_PALETTE } from '@/services/utils/chart-colors.js'
 import { formatDate } from '@/services/utils/dayjs.js'
@@ -43,12 +43,12 @@ import {
   buildDeptPickerOptions
 } from './gold-lens-helpers.js'
 import { GOLD_DUE_TABLES, GOLD_DUE_TABLE_DEFAULT, GOLD_DUE_SCOPES, resolveGoldReportTarget } from './gold-tab-helpers.js'
-import { buildWorkerModalPayload, canOpenStageWorker } from './gold-worker-modal-helpers.js'
+import { buildWorkerModalPayload, canOpenStageWorker } from './worker-profile-helpers.js'
+import { workerProfileSlot } from './worker-profile-slot.js'
 import GoldDeptPicker from '../components/gold-dept-picker.vue'
 
 // import แบบ lazy — modal ยืม block config จากไฟล์นี้ (flattenBlocks(goldConfig.blocks)) จึงห้าม import ตรงๆ ให้เกิด cycle
 // markRaw: config นี้ถูกส่งผ่าน data()/props ของ view ซึ่งทำให้ถูกห่อ reactive — component ใน config ห้ามถูกห่อ (Vue warn + proxy churn)
-const GoldWorkerModal = markRaw(defineAsyncComponent(() => import('../components/gold-worker-modal.vue')))
 const GoldDeptPickerRaw = markRaw(GoldDeptPicker)
 
 const G = 'view.productionInsight.gold'
@@ -711,23 +711,12 @@ export const goldConfig = markRaw({
 
   // อยู่นอกแท็บ — mount เสมอ เพราะ modal เจาะข้อมูลช่างเปิดได้จากหลายแท็บ (ตารางอันดับช่างแต่ง/ช่างฝัง + ตารางช่างในรายละเอียดแผนก)
   floating: [
-    {
-      type: 'slot',
+    workerProfileSlot({
       id: 'goldWorkerModal',
-      component: GoldWorkerModal,
-      props: (ctx) => ({
-        isShow: !!ctx.state.workerModal,
-        worker: ctx.state.workerModal,
-        pageFilter: ctx.filter
-      }),
-      events: {
-        closeModal: (ctx) => ctx.setState('workerModal', null),
-        'apply-filter': (ctx, patch) => {
-          ctx.updateFilter(patch)
-          ctx.setState('workerModal', null)
-        }
-      }
-    }
+      // ตัวกรองรหัสช่างของหน้าทำให้รายชื่อช่างเหลือบางคน → เทียบอันดับไม่ได้ ให้โปรไฟล์ยิงเพื่อนร่วมประเภทเอง
+      peers: (ctx) => (ctx.filter.workerCodes?.length ? null : (ctx.data.Gold?.workers ?? null)),
+      showApplyFilter: true
+    })
   ]
 })
 

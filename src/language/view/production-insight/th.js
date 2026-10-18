@@ -589,6 +589,8 @@ export default {
     filterEmploymentType: 'ประเภทช่าง',
     filterCustomRangeLabel: 'ช่วงเวลากำหนดเอง',
 
+    openProfileTitle: 'ดูโปรไฟล์ช่างคนนี้',
+
     employmentType: {
       IN_HOUSE: 'ในบ้าน',
       OUTSIDE: 'นอกบ้าน',
@@ -692,6 +694,44 @@ export default {
     lowCoverColQuantity: 'คงเหลือ',
     lowCoverColUsed90d: 'ใช้ 90 วัน',
     lowCoverColCoverDays: 'พอใช้ (วัน)'
+  },
+
+  workerSearch: {
+    placeholder: 'ค้นหาช่าง (ชื่อหรือรหัส)',
+    aria: 'ค้นหาช่างด้วยชื่อหรือรหัสเพื่อเปิดโปรไฟล์ช่าง',
+    empty: 'ไม่พบช่าง',
+    optionLabel: '{name} · {code} · {dept}'
+  },
+
+  workerProfile: {
+    tabsAria: 'ส่วนของโปรไฟล์ช่าง',
+    tabs: {
+      loss: 'Loss ทอง',
+      wages: 'ค่าแรง',
+      jobs: 'ใบงาน'
+    },
+    lossRankLabel: 'อันดับ Loss ในประเภทเดียวกัน',
+    lossRankSub: 'มัธยฐานประเภท {median} · ต่าง {delta}',
+    lossRankNone: 'เทียบไม่ได้ (ช่างประเภทเดียวกันมีข้อมูลน้อยกว่า 2 คน)',
+    wages: {
+      noRow: 'ช่างคนนี้ไม่มีค่าแรงในช่วงเวลาที่เลือก',
+      kpiTitle: 'ค่าแรงของช่าง',
+      kpiWages: 'ค่าแรงรวม',
+      kpiWagesSub: 'เฉลี่ย {avg}/เดือน',
+      kpiJobs: 'จำนวนงาน',
+      kpiJobsSub: '{plans} ใบงาน',
+      kpiWagePerJob: 'ค่าแรงต่องาน',
+      kpiWagePerJobOutlier: 'สูง/ต่ำผิดปกติเทียบเพื่อนร่วมแผนก',
+      kpiDeptShare: 'สัดส่วนค่าแรงในแผนก',
+      kpiDeptShareSub: 'สัดส่วนจำนวนงาน {jobs}%',
+      trendTitle: 'งานและค่าแรงรายเดือน'
+    },
+    jobs: {
+      tableTitle: 'งานที่ยังไม่บันทึกค่าแรง',
+      totalNote: 'ทั้งหมด {total} รายการ',
+      limitNote: 'แสดง {shown} จาก {total} รายการ',
+      lossHint: 'ใบงานทองเกินเกณฑ์และงานไม่ครบ slip ดูที่แท็บ Loss ทอง'
+    }
   },
 
   // code -> ข้อความเต็ม (พร้อม params) — ใช้กับ insight-tab-layout prop i18nPrefix (default namespace นี้)

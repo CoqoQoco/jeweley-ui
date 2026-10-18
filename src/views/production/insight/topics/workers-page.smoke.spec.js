@@ -41,18 +41,21 @@ function respond(path) {
       concentration: [{ deptKey: 'setting' }]
     }
   }
+  if (path.endsWith('/Gold')) return { kpi: [], series: [], targets: [], workers: [{ workerType: 50, workerCode: 'B', workerName: 'บี', lossPercent: 2 }, { workerType: 50, workerCode: 'Z', workerName: 'ซี', lossPercent: 1 }] }
   if (path.endsWith('/WorkerMonthly')) return { series: [{ bucketEnd: '2026-09-01T00:00:00', jobs: 3, wages: 900 }] }
   if (path.endsWith('/UnpaidPieceJobs')) return { data: [{ planId: 1, wo: 'WO', woNumber: '1', deptKey: 'setting', workerCode: 'W1', workerName: 'สมชาย', jobDate: '2026-09-01T00:00:00', checkGram: 12.345 }], total: 1 }
   return []
 }
 
-function mountPage(props = {}) {
+const modalStub = { template: '<div class="modal-stub"><slot name="title" /><slot name="content" /><slot name="action" /></div>' }
+
+function mountPage(props = {}, extraStubs = {}) {
   return mount(InsightPage, {
     props: { config: workersConfig, filter: buildDefaultWorkersFilter(), active: true, ...props },
     global: {
       plugins: [PrimeVue],
       mocks: { $t: (key, params) => (params ? `${key}:${JSON.stringify(params)}` : key), $router: { resolve: () => ({ meta: { permissions: [] }, href: '/x' }) } },
-      stubs: { ChartGeneric: true, InfoTipGeneric: true, MultiSelectGeneric: true }
+      stubs: { ChartGeneric: true, InfoTipGeneric: true, MultiSelectGeneric: true, ...extraStubs }
     }
   })
 }
@@ -221,5 +224,66 @@ describe('InsightPage + workersConfig tabs (smoke)', { timeout: 20000 }, () => {
       await settle()
       expect(wrapper.vm.currentSub, `card ${i}`).toBe(expected[i])
     }
+  })
+
+  describe('worker profile entry point (workers tab)', () => {
+    const nameButton = (wrapper, name) => wrapper.findAll('#insight-report-wrkTable button').find((b) => b.text() === name)
+
+    async function openWorkersTab(rows) {
+      if (rows) {
+        postMock.mockImplementation(async (path) => (path.endsWith('/Workers') ? { ...respond(path), workers: rows } : respond(path)))
+      }
+      const wrapper = mountPage({ sub: 'workers' }, { modal: modalStub })
+      await settle()
+      return wrapper
+    }
+
+    it('the worker name is a plain button; clicking it opens the profile of that worker without selecting the row', async () => {
+      const wrapper = await openWorkersTab()
+      postMock.mockClear()
+      await nameButton(wrapper, 'บี').trigger('click')
+      await settle()
+      expect(wrapper.vm.state.workerModal).toEqual({ workerType: 50, workerCode: 'B', workerName: 'บี', deptKey: 'trim', employmentType: 'OUTSIDE' })
+      expect(wrapper.vm.state.selectedWorker).toBeNull()
+      expect(postsTo('WorkerMonthly')).toHaveLength(0)
+      // แท็บแรกของช่างแต่ง (trim) = Loss ทอง: ยิง Gold ของช่างคนนี้ ไม่ยิงค่าแรง/ใบงาน
+      expect(postsTo('Gold').some((c) => JSON.stringify(c[1].workerCodes) === JSON.stringify(['B']) && c[1].workerTypes[0] === 50)).toBe(true)
+      expect(postsTo('Workers')).toHaveLength(0)
+      expect(postsTo('UnpaidPieceJobs')).toHaveLength(0)
+      expect(wrapper.find('.modal-stub').text()).toContain('view.productionInsight.workerProfile.tabs.wages')
+    })
+
+    it('clicking elsewhere in the row still selects the worker for the monthly chart and does not open the profile', async () => {
+      const wrapper = await openWorkersTab()
+      const row = wrapper.findAll('#insight-report-wrkTable tbody tr').find((tr) => tr.text().includes('บี'))
+      await row.find('td:nth-child(3)').trigger('click')
+      await settle()
+      expect(wrapper.vm.state.selectedWorker).toMatchObject({ code: 'B', deptKey: 'trim' })
+      expect(wrapper.vm.state.workerModal).toBeNull()
+      expect(postsTo('WorkerMonthly')).toHaveLength(1)
+    })
+
+    it('a department without gold loss slips (plating) opens on the wages tab and never calls Gold', async () => {
+      const wrapper = await openWorkersTab([{ code: 'P', name: 'พี', deptKey: 'plating', employmentType: 'SHOP', jobs: 2, plans: 2, wages: 800, wagePerJob: 400, shareOfDeptJobs: 100 }])
+      postMock.mockClear()
+      await nameButton(wrapper, 'พี').trigger('click')
+      await settle()
+      expect(wrapper.vm.state.workerModal).toMatchObject({ workerType: null, workerCode: 'P', deptKey: 'plating' })
+      expect(postsTo('Gold')).toHaveLength(0)
+      expect(postsTo('Workers')).toHaveLength(1)
+      expect(postsTo('Workers')[0][1]).toMatchObject({ departmentKeys: ['plating'] })
+      expect(postsTo('WorkerMonthly')).toHaveLength(1)
+      const tabs = wrapper.find('.modal-stub').findAll('[role="tab"]').map((b) => b.text())
+      expect(tabs).toEqual(['wages', 'jobs'].map((key) => `view.productionInsight.workerProfile.tabs.${key}`))
+    })
+
+    it('closing the profile clears the state', async () => {
+      const wrapper = await openWorkersTab()
+      await nameButton(wrapper, 'บี').trigger('click')
+      await settle()
+      const close = wrapper.find('.modal-stub').findAll('button').find((b) => b.text().includes('common.btn.close'))
+      await close.trigger('click')
+      expect(wrapper.vm.state.workerModal).toBeNull()
+    })
   })
 })

@@ -27,6 +27,11 @@
     <small v-if="cell.secondary" class="text-muted">{{ cell.secondary }}</small>
   </template>
 
+  <span v-else-if="cell.kind === 'stacked' && cell.asAction" class="column-cell__stacked">
+    <ButtonGeneric variant="plain" :label="cell.primary" :title="col.actionTitle ? $t(col.actionTitle) : ''" @click.stop="col.onClick(data, ctx)" />
+    <small v-if="cell.secondary" class="text-muted">{{ cell.secondary }}</small>
+  </span>
+
   <span v-else-if="cell.kind === 'stacked'" class="column-cell__stacked">
     <strong v-if="col.strong">{{ cell.primary }}</strong>
     <span v-else-if="cell.primaryIcon" :class="{ 'column-cell__muted': cell.muted }">

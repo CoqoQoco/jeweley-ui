@@ -23,6 +23,9 @@
           </div>
         </slot>
       </template>
+      <template #empty v-if="hasEmptySlot">
+        <slot name="empty" />
+      </template>
     </AutoComplete>
   </div>
 </template>
@@ -133,6 +136,10 @@ export default {
   computed: {
     hasOptionSlot() {
       return !!this.$slots.option
+    },
+
+    hasEmptySlot() {
+      return !!this.$slots.empty
     },
 
     displaySuggestions() {

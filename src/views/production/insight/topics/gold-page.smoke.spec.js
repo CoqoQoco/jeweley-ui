@@ -514,7 +514,7 @@ describe('InsightPage + goldConfig tabs (smoke)', { timeout: 20000 }, () => {
     }
 
     await codeButton('#insight-report-goldWorkersSetting', 'W1').trigger('click')
-    expect(wrapper.vm.state.workerModal).toEqual({ workerType: 80, workerCode: 'W1', workerName: 'สมชาย' })
+    expect(wrapper.vm.state.workerModal).toEqual({ workerType: 80, workerCode: 'W1', workerName: 'สมชาย', deptKey: 'setting' })
     await modalBodies(80, 'W1')
 
     wrapper.vm.setState('workerModal', null)
@@ -523,7 +523,7 @@ describe('InsightPage + goldConfig tabs (smoke)', { timeout: 20000 }, () => {
     await settle()
     clearMocks()
     await codeButton('#insight-report-goldWorkersTang', 'T1').trigger('click')
-    expect(wrapper.vm.state.workerModal).toEqual({ workerType: 50, workerCode: 'T1', workerName: 'ช่างแต่ง' })
+    expect(wrapper.vm.state.workerModal).toEqual({ workerType: 50, workerCode: 'T1', workerName: 'ช่างแต่ง', deptKey: 'trim' })
     await modalBodies(50, 'T1')
 
     wrapper.vm.setState('workerModal', null)
@@ -532,16 +532,16 @@ describe('InsightPage + goldConfig tabs (smoke)', { timeout: 20000 }, () => {
     await settle()
     clearMocks()
     await codeButton('.insight-node__card-body', 'W9').trigger('click')
-    expect(wrapper.vm.state.workerModal).toEqual({ workerType: 80, workerCode: 'W9', workerName: '' })
+    expect(wrapper.vm.state.workerModal).toEqual({ workerType: 80, workerCode: 'W9', workerName: '', deptKey: 'setting' })
     await modalBodies(80, 'W9')
   })
 
   it('apply-filter from the modal updates the page filter and closes the modal', async () => {
     const wrapper = mountPage({ sub: 'setting' }, { modal: modalStub })
     await settle()
-    wrapper.vm.setState('workerModal', { workerType: 80, workerCode: 'W1', workerName: 'สมชาย' })
+    wrapper.vm.setState('workerModal', { workerType: 80, workerCode: 'W1', workerName: 'สมชาย', deptKey: 'setting' })
     await settleLong()
-    wrapper.findComponent({ name: 'GoldWorkerModal' }).vm.$emit('apply-filter', { workerTypes: ['80'], workerCodes: ['W1'] })
+    wrapper.findComponent({ name: 'WorkerProfileModal' }).vm.$emit('apply-filter', { workerTypes: ['80'], workerCodes: ['W1'] })
     await settle()
     expect(wrapper.emitted('update-filter')[0][0]).toEqual({ workerTypes: ['80'], workerCodes: ['W1'] })
     expect(wrapper.vm.state.workerModal).toBeNull()

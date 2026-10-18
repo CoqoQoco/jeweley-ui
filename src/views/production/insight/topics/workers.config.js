@@ -23,6 +23,8 @@ import {
   buildWagesTrendSeriesDefs,
   resolveSelectedWorker
 } from './workers-helpers.js'
+import { buildWorkersTablePayload } from './worker-profile-helpers.js'
+import { workerProfileSlot } from './worker-profile-slot.js'
 
 const W = 'view.productionInsight.workers'
 
@@ -33,8 +35,14 @@ const emphasisColor = (flag) => (row) => (row[flag] ? 'var(--base-warning)' : ''
 const emphasisBold = (flag) => (row) => !!row[flag]
 const moneyDisplay = (row, t, raw) => formatWorkersMoney(raw)
 
+// ชื่อช่างเป็นปุ่ม → เปิดโปรไฟล์ช่าง (modal) · คลิกที่อื่นในแถวยังเป็นเลือกช่างเพื่อดูกราฟรายเดือนเหมือนเดิม (ปุ่ม stop การคลิกแถว)
+const openWorkerProfile = (row, ctx) => {
+  const payload = buildWorkersTablePayload(row)
+  if (payload) ctx.setState('workerModal', payload)
+}
+
 const tableColumns = [
-  col.stacked('name', `${W}.colWorker`, (row) => ({ primary: row.name, secondary: row.code })),
+  col.stacked('name', `${W}.colWorker`, (row) => ({ primary: row.name, secondary: row.code }), { onClick: openWorkerProfile, actionTitle: `${W}.openProfileTitle` }),
   col.dept({ field: 'deptLabel', header: `${W}.colDept`, keyFields: ['deptKey'], withStatus: false, minWidth: '100px' }),
   col.chip(
     'employmentType',
@@ -101,7 +109,8 @@ export const workersConfig = markRaw({
     // ไม่ auto-select (ช่างมีหลายสิบ-ร้อยคน) · โหลด Workers ใหม่แล้วช่างที่เลือกหายไป = เคลียร์การเลือก
     selectedWorker: { initial: null, resetOn: { source: 'Workers', value: (data, current) => resolveSelectedWorker(current, data?.workers) } },
     tableDept: { initial: () => [] },
-    tableType: { initial: 'ALL' }
+    tableType: { initial: 'ALL' },
+    workerModal: { initial: null }
   },
 
   blocks: [
@@ -229,7 +238,10 @@ export const workersConfig = markRaw({
       params: (f) => ({ start: isoOrNull(f.start), end: isoOrNull(f.end), departmentKeys: f.departmentKeys }),
       columns: unpaidColumns
     }
-  ]
+  ],
+
+  // อยู่นอกแท็บ — mount เสมอ (ปุ่มชื่อช่างอยู่ในแท็บ workers แต่ modal ไม่ขึ้นกับแท็บ)
+  floating: [workerProfileSlot({ id: 'workersWorkerModal' })]
 })
 
 export default workersConfig

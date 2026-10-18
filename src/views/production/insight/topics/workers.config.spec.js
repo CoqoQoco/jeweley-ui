@@ -252,3 +252,27 @@ describe('workers tabs (opt-in tab mode)', () => {
     expect(isReactive(reactive({ config: workersConfig }).config)).toBe(false)
   })
 })
+
+describe('workers profile entry point', () => {
+  const nameCol = () => flattenBlocks(workersConfig.blocks).find((b) => b.id === 'wrkTable').sections[0].columns.find((c) => c.field === 'name')
+
+  it('the name cell is an action that stores the profile payload (with type only for setting/trim) in state.workerModal', () => {
+    const column = nameCol()
+    const row = { code: 'W1', name: 'อา', deptKey: 'setting', employmentType: 'IN_HOUSE' }
+    expect(resolveCell(column, row, t, {}).asAction).toBe(true)
+    const ctx = { state: { workerModal: null }, setState: (key, value) => (ctx.state[key] = value) }
+    column.onClick(row, ctx)
+    expect(ctx.state.workerModal).toEqual({ workerType: 80, workerCode: 'W1', workerName: 'อา', deptKey: 'setting', employmentType: 'IN_HOUSE' })
+    column.onClick({ code: 'P1', name: 'พี', deptKey: 'plating' }, ctx)
+    expect(ctx.state.workerModal).toMatchObject({ workerType: null, deptKey: 'plating' })
+  })
+
+  it('declares the modal state and mounts the profile slot outside the tabs', () => {
+    expect(workersConfig.state.workerModal.initial).toBeNull()
+    const slot = workersConfig.floating.find((b) => b.id === 'workersWorkerModal')
+    const ctx = { state: { workerModal: { workerCode: 'W1' } }, filter: { start: 's' } }
+    expect(slot.props(ctx)).toMatchObject({ isShow: true, worker: { workerCode: 'W1' }, pageFilter: ctx.filter, peers: null, showApplyFilter: false })
+    expect(slot.props({ ...ctx, state: { workerModal: null } }).isShow).toBe(false)
+  })
+})
+

@@ -987,11 +987,11 @@ describe('worker drill-down entry points', () => {
   it('row click and cell button open the same modal state; unsupported departments do nothing', () => {
     const rankingCtx = setState(ctxOf())
     workers.onRowClick({ workerType: 50, workerCode: 'T1', workerName: 'ต' }, rankingCtx)
-    expect(rankingCtx.state.workerModal).toEqual({ workerType: 50, workerCode: 'T1', workerName: 'ต' })
+    expect(rankingCtx.state.workerModal).toEqual({ workerType: 50, workerCode: 'T1', workerName: 'ต', deptKey: 'trim' })
 
     const settingCtx = setState({ ...ctxOf(), selected: { deptKey: 'setting' } })
     stageWorkers.onRowClick({ workerCode: 'W9' }, settingCtx)
-    expect(settingCtx.state.workerModal).toEqual({ workerType: 80, workerCode: 'W9', workerName: '' })
+    expect(settingCtx.state.workerModal).toEqual({ workerType: 80, workerCode: 'W9', workerName: '', deptKey: 'setting' })
 
     const platingCtx = setState({ ...ctxOf(), selected: { deptKey: 'plating' } })
     stageWorkers.onRowClick({ workerCode: 'W9' }, platingCtx)
@@ -1003,6 +1003,11 @@ describe('worker drill-down entry points', () => {
     const ctx = setState({ ...ctxOf({ state: { workerModal: { workerType: 80, workerCode: 'W1' } } }), updateFilter: vi.fn() })
     expect(slot.props(ctx)).toMatchObject({ isShow: true, worker: { workerCode: 'W1' }, pageFilter: ctx.filter })
     expect(slot.props(ctxOf()).isShow).toBe(false)
+    // peers = Gold.workers ของหน้า ยกเว้นเมื่อมีตัวกรองรหัสช่าง (รายชื่อเหลือบางคน → ให้โปรไฟล์ยิงเอง)
+    expect(slot.props(ctx).showApplyFilter).toBe(true)
+    const withWorkers = { ...ctxOf({ state: { workerModal: { workerCode: 'W1' } } }), data: { Gold: { workers: [{ workerCode: 'W1' }] } } }
+    expect(slot.props(withWorkers).peers).toEqual([{ workerCode: 'W1' }])
+    expect(slot.props({ ...withWorkers, filter: { ...withWorkers.filter, workerCodes: ['W1'] } }).peers).toBeNull()
     slot.events['apply-filter'](ctx, { workerTypes: ['80'], workerCodes: ['W1'] })
     expect(ctx.updateFilter).toHaveBeenCalledWith({ workerTypes: ['80'], workerCodes: ['W1'] })
     expect(ctx.state.workerModal).toBeNull()

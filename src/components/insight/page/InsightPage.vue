@@ -230,6 +230,12 @@ export default {
       this.state[key] = value
     },
 
+    // เปิดโปรไฟล์ช่างจากภายนอกหน้า (เช่น กล่องค้นหาช่างบนแถบเครื่องมือของ host) — เทียบเท่ากดชื่อช่างในตาราง: ตั้ง state.workerModal
+    // ที่ config ของหมวดประกาศไว้ (หมวดที่ไม่มี state นี้ไม่ทำอะไร)
+    openWorkerProfile(worker) {
+      if (worker && 'workerModal' in this.state) this.setState('workerModal', worker)
+    },
+
     // ยิง source ซ้ำแม้ params ไม่เปลี่ยน (เช่นหลังบันทึกมาตรฐาน) — รอ nextTick ให้ watcher ของ state ที่เพิ่งเปลี่ยนยิงก่อน
     // แล้วข้าม source ที่ watcher เพิ่งยิงไปแล้ว (key ที่ยิงล่าสุดตรงกับปัจจุบัน และกำลังโหลดอยู่) กันยิงซ้ำ
     reload(names) {

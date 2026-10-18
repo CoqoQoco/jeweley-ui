@@ -162,6 +162,16 @@ describe('stacked / bold fn / sup', () => {
     expect(col.COLUMN_KINDS).toContain('stacked')
   })
 
+  it('stacked becomes an action (primary line is a button) only with onClick, honouring actionWhen', () => {
+    const lines = (row) => ({ primary: row.name, secondary: row.code })
+    const plain = col.stacked('n', 'h', lines)
+    expect(col.resolveCell(plain, { name: 'a', code: 'b' }, t).asAction).toBe(false)
+    const clickable = col.stacked('n', 'h', lines, { onClick: () => {}, actionWhen: (row) => row.ok })
+    expect(col.resolveCell(clickable, { name: 'a', ok: true }, t, {}).asAction).toBe(true)
+    expect(col.resolveCell(clickable, { name: 'a', ok: false }, t, {}).asAction).toBe(false)
+    expect(col.resolveCell(col.stacked('n', 'h', lines, { onClick: () => {} }), { name: 'a' }, t, {}).asAction).toBe(true)
+  })
+
   it('bold can be a per-row function and sup is shown only with a value', () => {
     const c = col.number('n', 'h', 'count', { bold: (row) => row.flag, sup: (row) => (row.s ? 's' : '') })
     expect(col.resolveCell(c, { n: 1, flag: true, s: true }, t)).toMatchObject({ bold: true, sup: 's' })

@@ -589,6 +589,8 @@ export default {
     filterEmploymentType: 'Employment Type',
     filterCustomRangeLabel: 'Custom Range',
 
+    openProfileTitle: "View this worker's profile",
+
     employmentType: {
       IN_HOUSE: 'In-house',
       OUTSIDE: 'Outside',
@@ -692,6 +694,44 @@ export default {
     lowCoverColQuantity: 'Quantity',
     lowCoverColUsed90d: 'Used 90d',
     lowCoverColCoverDays: 'Cover (days)'
+  },
+
+  workerSearch: {
+    placeholder: 'Search worker (name or code)',
+    aria: 'Search a worker by name or code to open the worker profile',
+    empty: 'No worker found',
+    optionLabel: '{name} · {code} · {dept}'
+  },
+
+  workerProfile: {
+    tabsAria: 'Worker profile sections',
+    tabs: {
+      loss: 'Gold loss',
+      wages: 'Wages',
+      jobs: 'Jobs'
+    },
+    lossRankLabel: 'Loss rank within type',
+    lossRankSub: 'Type median {median} · diff {delta}',
+    lossRankNone: 'Not comparable (fewer than 2 workers of this type)',
+    wages: {
+      noRow: 'This worker has no wages in the selected period',
+      kpiTitle: 'Worker wages',
+      kpiWages: 'Total wages',
+      kpiWagesSub: 'Avg {avg}/month',
+      kpiJobs: 'Jobs',
+      kpiJobsSub: '{plans} plans',
+      kpiWagePerJob: 'Wage per job',
+      kpiWagePerJobOutlier: 'Unusually high/low vs department peers',
+      kpiDeptShare: 'Share of department wages',
+      kpiDeptShareSub: 'Share of jobs {jobs}%',
+      trendTitle: 'Jobs and wages by month'
+    },
+    jobs: {
+      tableTitle: 'Jobs without recorded wages',
+      totalNote: '{total} items in total',
+      limitNote: 'Showing {shown} of {total} items',
+      lossHint: 'Over-threshold gold jobs and jobs missing a slip are in the Gold loss tab'
+    }
   },
 
   rules: {

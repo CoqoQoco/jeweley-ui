@@ -45,6 +45,8 @@
         @update:modelValue="$emit('update:metal', $event)"
       />
 
+      <WorkerSearchBox v-if="hasWorkerSearch" :filter="filters[activeSection]" @select="onWorkerSearchSelect" />
+
       <RangePresetGeneric
         v-if="hasFilterableFields"
         :modelValue="rangeModelValue"
@@ -89,6 +91,7 @@
       <InsightPage
         v-if="visitedSections.has('gold')"
         v-show="activeSection === 'gold'"
+        ref="goldPage"
         :config="goldConfig"
         :filter="goldSectionFilter"
         :active="activeSection === 'gold'"
@@ -111,6 +114,7 @@
       <InsightPage
         v-if="visitedSections.has('workers')"
         v-show="activeSection === 'workers'"
+        ref="workersPage"
         :config="workersConfig"
         :filter="filters.workers"
         :active="activeSection === 'workers'"
@@ -399,6 +403,7 @@ import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import DateRangeGeneric from '@/components/prime-vue/DateRangeGeneric.vue'
 import InsightPage from '@/components/insight/page/InsightPage.vue'
+import WorkerSearchBox from './components/worker-search-box.vue'
 import { wipConfig } from './topics/wip.config.js'
 import { materialsConfig } from './topics/materials.config.js'
 import { deliveryConfig } from './topics/delivery.config.js'
@@ -424,6 +429,7 @@ export default {
     MultiSelectGeneric,
     DateRangeGeneric,
     InsightPage,
+    WorkerSearchBox,
   },
 
   props: {
@@ -593,6 +599,11 @@ export default {
       }
       // materials (และหมวดอื่นที่ไม่มี field ให้กรองเลย) ไม่มี chip ให้แสดง — ตกลงมาที่ return [] ด้านล่างเฉยๆ
       return []
+    },
+
+    // ค้นหาช่าง → เปิดโปรไฟล์ — เฉพาะหมวดที่มีโปรไฟล์ช่าง (ช่างและค่าแรง / ทองและ Loss)
+    hasWorkerSearch() {
+      return this.activeSection === 'workers' || this.activeSection === 'gold'
     },
 
     // RangePresetGeneric เป็น controlled component — ส่ง state ปัจจุบันของหมวดที่เปิดอยู่เข้าไปแสดงผล
@@ -822,6 +833,11 @@ export default {
 
     // กดปุ่ม preset ใน RangePresetGeneric (แถบเครื่องมือ) — ใช้ทันที ไม่ผ่าน draft/apply เหมือน field อื่น
     // ในแผงตัวกรอง (สอดคล้องกับการสลับหมวด/nav ที่ใช้ทันทีเช่นกัน)
+    // เลือกช่างจากกล่องค้นหา → ให้ InsightPage ของหมวดที่เปิดอยู่เปิดโปรไฟล์ (state.workerModal ของหมวดนั้น — เหมือนกดชื่อช่างในตาราง)
+    onWorkerSearchSelect(worker) {
+      this.$refs[`${this.activeSection}Page`]?.openWorkerProfile(worker)
+    },
+
     onRangePresetChange({ preset, start, end }) {
       if (this.activeSection === 'wip') {
         this.filters.wip = { ...this.filters.wip, rangePreset: preset, start, end, bucket: resolvePresetRange(preset)?.bucket || this.filters.wip.bucket }

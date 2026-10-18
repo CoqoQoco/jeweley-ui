@@ -185,7 +185,9 @@ export function resolveCell(col, row, t, ctx) {
     case 'stacked': {
       const lines = col.lines(row) || {}
       // lines.primaryIcon (bi-*) + lines.muted = บรรทัดหลักแบบจาง/เอียงนำด้วยไอคอน (เช่น แถวคิวที่ยังไม่มีช่างรับ)
-      return { kind: 'stacked', primary: lines.primary ?? '', secondary: lines.secondary ?? '', strong: !!col.strong, primaryIcon: lines.primaryIcon || '', muted: !!lines.muted }
+      // onClick/actionWhen เหมือนเซลล์ข้อความ: บรรทัดหลักเป็นปุ่มกดได้ (บรรทัดรองยังเป็นข้อความ)
+      const asAction = !!col.onClick && (col.actionWhen ? col.actionWhen(row, ctx) : true)
+      return { kind: 'stacked', primary: lines.primary ?? '', secondary: lines.secondary ?? '', strong: !!col.strong, primaryIcon: lines.primaryIcon || '', muted: !!lines.muted, asAction }
     }
     case 'chipList': {
       const lines = (col.items ? col.items(row, ctx, t) : []) || []
