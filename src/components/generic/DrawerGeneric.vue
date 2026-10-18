@@ -55,6 +55,8 @@
 </template>
 
 <script>
+import { lockBodyScroll, unlockBodyScroll } from '@/services/utils/scroll-lock.js'
+
 export default {
   name: 'DrawerGeneric',
 
@@ -95,21 +97,44 @@ export default {
 
   emits: ['close'],
 
+  data() {
+    return { scrollLocked: false }
+  },
+
   watch: {
-    show(newVal) {
-      if (newVal) {
-        document.addEventListener('keydown', this.onKeyDown)
-      } else {
-        document.removeEventListener('keydown', this.onKeyDown)
-      }
+    show: {
+      handler(newVal) {
+        if (newVal) {
+          document.addEventListener('keydown', this.onKeyDown)
+          this.lockScroll()
+        } else {
+          document.removeEventListener('keydown', this.onKeyDown)
+          this.unlockScroll()
+        }
+      },
+      immediate: true
     }
   },
 
   beforeUnmount() {
     document.removeEventListener('keydown', this.onKeyDown)
+    this.unlockScroll()
   },
 
   methods: {
+    // ล็อกการเลื่อนหน้าหลังฉากขณะเปิด (ตัวนับกลางใน scroll-lock.js — เปิดหลาย drawer พร้อมกันไม่ปลดล็อกกันเอง)
+    lockScroll() {
+      if (this.scrollLocked) return
+      this.scrollLocked = true
+      lockBodyScroll()
+    },
+
+    unlockScroll() {
+      if (!this.scrollLocked) return
+      this.scrollLocked = false
+      unlockBodyScroll()
+    },
+
     onClose() {
       this.$emit('close')
     },
@@ -151,6 +176,7 @@ export default {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  overscroll-behavior: contain;
 }
 
 // Header
@@ -227,6 +253,7 @@ export default {
   background: var(--color-card-bg);
   box-shadow: var(--shadow-md);
   overflow-y: auto;
+  overscroll-behavior: contain;
   z-index: 1001;
   border-right: 1px solid var(--color-border);
 }
@@ -235,6 +262,7 @@ export default {
 .drawer-content {
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 // Footer
