@@ -287,6 +287,16 @@ export default {
   },
 
   capacity: {
+    tabs: {
+      overview: 'ภาพรวม',
+      trend: 'แนวโน้ม',
+      dept: 'รายแผนก',
+      breakdown: 'แยกตามมิติ',
+      costcard: 'ใบต้นทุน',
+      costpending: 'ใบงานที่รอ',
+      whatif: 'จำลอง'
+    },
+
     filterSectionTitle: 'เฉพาะหมวด "กำลังการผลิต"',
     filterUnit: 'หน่วยนับ',
     filterDept: 'แผนก',

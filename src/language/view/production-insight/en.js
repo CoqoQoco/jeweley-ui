@@ -287,6 +287,16 @@ export default {
   },
 
   capacity: {
+    tabs: {
+      overview: 'Overview',
+      trend: 'Trend',
+      dept: 'By department',
+      breakdown: 'By dimension',
+      costcard: 'Cost card',
+      costpending: 'Pending plans',
+      whatif: 'What-if'
+    },
+
     filterSectionTitle: '"Capacity" tab only',
     filterUnit: 'Count unit',
     filterDept: 'Department',

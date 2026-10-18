@@ -11,6 +11,8 @@ import { buildKpiCards } from '@/components/insight/page/blocks/kpi-block-helper
 import { buildTrendSeries, buildTrendOptions, resolveSeriesDefs } from '@/components/insight/page/blocks/trend-block-helpers.js'
 import { isRowSelected, resolveTableSections } from '@/components/insight/page/blocks/table-block-helpers.js'
 import { collectBlockIds, findDuplicates, flattenBlocks, computeSourceKeys, diffSourceKeys, buildInitialState } from '@/components/insight/page/insight-page-helpers.js'
+import { validateTabConfig, findTabForReportRef, blocksForTab, hasTabs } from '@/components/insight/page/insight-tabs-helpers.js'
+import { reactive, isReactive } from 'vue'
 import { buildDefaultCapacityFilter } from '../insight-filters.js'
 import { capacityConfig, filterDepartments, resolveEffectiveDeptKey, buildDepartmentRows, formatSignedNet, activeBreakdownKeys, buildGroupFilterPatch } from './capacity.config.js'
 
@@ -62,11 +64,11 @@ const ctxOf = (overrides = {}) => ({ filter: { ...buildDefaultCapacityFilter(), 
 describe('capacity config structure', () => {
   const nodes = flattenBlocks(capacityConfig.blocks)
 
-  it('block ids are unique and cover every reportRef, plus the what-if slot at the end', () => {
+  it('block ids are unique and cover every reportRef; the pending table and the what-if slot come last', () => {
     const ids = collectBlockIds(capacityConfig.blocks)
     expect(findDuplicates(ids)).toEqual([])
     CAPACITY_REPORT_REFS.forEach((ref) => expect(ids, `reportRef ${ref}`).toContain(ref))
-    expect(capacityConfig.blocks.map((b) => b.id ?? b.type)).toEqual(['capKpi', 'capTrend', 'capDepartments', 'capBreakdown', 'capCostCard', 'slot'])
+    expect(capacityConfig.blocks.map((b) => b.id ?? b.type)).toEqual(['capKpi', 'capTrend', 'capDepartments', 'capBreakdown', 'capCostCard', 'capCostPending', 'capWhatIf'])
   })
 
   it('all nodes use known types and registered column kinds (slot is the escape hatch)', () => {
@@ -279,11 +281,21 @@ describe('breakdown', () => {
 describe('cost card group', () => {
   const group = capacityConfig.blocks[4]
 
-  it('is one card around: summary figures, a monthly chart and the pending-plans table', () => {
+  it('keeps the old id and card frame around the summary figures and the monthly chart only', () => {
+    expect(group.id).toBe('capCostCard')
     expect(group.card).toBeTruthy()
-    expect(group.blocks.map((b) => b.type)).toEqual(['kpi', 'trend', 'planTable'])
+    expect(group.blocks.map((b) => b.type)).toEqual(['kpi', 'trend'])
     expect(group.blocks.every((b) => b.bare)).toBe(true)
-    expect(group.blocks[2].endpoint).toBe('ProductionInsight/CostCardPendingPlans')
+  })
+
+  it('the pending-plans table is split out into its own top-level block with its own title/frame', () => {
+    const pending = capacityConfig.blocks.find((b) => b.id === 'capCostPending')
+    expect(pending.type).toBe('planTable')
+    expect(pending.bare).toBeUndefined()
+    expect(pending.title).toBe('view.productionInsight.capacity.costCardPendingTableTitle')
+    expect(pending.endpoint).toBe('ProductionInsight/CostCardPendingPlans')
+    expect(pending.params()).toEqual({})
+    expect(flattenBlocks(group.blocks).some((b) => b.endpoint)).toBe(false)
   })
 
   it('summary items: median/p90 in days, pending with the active/stale breakdown only when both exist', () => {
@@ -301,5 +313,48 @@ describe('cost card group', () => {
     const options = buildTrendOptions({ node: trend, points, categories: trend.categories(points), ctx: ctxOf(), t })
     expect(options.stroke.dashArray).toEqual([0, 0, 6])
     expect(options.yaxis).toHaveLength(3)
+  })
+})
+
+describe('capacity tabs (opt-in tab mode)', () => {
+  it('opts in with the 7 data tabs in order and every top-level block names one of them', () => {
+    expect(hasTabs(capacityConfig)).toBe(true)
+    expect(capacityConfig.tabs.map((tab) => tab.key)).toEqual(['overview', 'trend', 'dept', 'breakdown', 'costcard', 'costpending', 'whatif'])
+    expect(validateTabConfig(capacityConfig)).toEqual([])
+  })
+
+  it('tab labels exist in th', () => {
+    capacityConfig.tabs.forEach((tab) => expect(i18n.global.te(tab.label, 'th'), tab.label).toBe(true))
+  })
+
+  it('top-level blocks per tab: each tab holds little', () => {
+    const ids = (key) => blocksForTab(capacityConfig, key).map((n) => n.id || n.type)
+    expect(ids('overview')).toEqual(['capKpi'])
+    expect(ids('trend')).toEqual(['capTrend'])
+    expect(ids('dept')).toEqual(['capDepartments'])
+    expect(ids('breakdown')).toEqual(['capBreakdown'])
+    expect(ids('costcard')).toEqual(['capCostCard'])
+    expect(ids('costpending')).toEqual(['capCostPending'])
+    expect(ids('whatif')).toEqual(['capWhatIf'])
+  })
+
+  it('reportRef → tab for every backend ref and every KPI card link', () => {
+    const tabOf = (ref) => findTabForReportRef(capacityConfig, ref)?.tab
+    expect(tabOf('capKpi')).toBe('overview')
+    expect(tabOf('capTrend')).toBe('trend')
+    expect(tabOf('capDepartments')).toBe('dept')
+    expect(tabOf('capBreakdown')).toBe('breakdown')
+    expect(tabOf('capCostCard')).toBe('costcard')
+    CAPACITY_REPORT_REFS.forEach((ref) => expect(tabOf(ref), ref).toBeTruthy())
+    const kpi = capacityConfig.blocks.find((b) => b.id === 'capKpi')
+    kpi.cards.forEach((card) => expect(tabOf(card.reportRef), `${card.id} → ${card.reportRef}`).toBeTruthy())
+  })
+
+  it('only one source (Capacity) and it is eager; the config and the what-if component stay out of Vue reactivity', () => {
+    expect(Object.keys(capacityConfig.sources)).toEqual(['Capacity'])
+    expect(capacityConfig.sources.Capacity.tab).toBeUndefined()
+    expect(isReactive(reactive({ config: capacityConfig }).config)).toBe(false)
+    const slot = capacityConfig.blocks.find((n) => n.id === 'capWhatIf')
+    expect(isReactive(reactive({ c: slot.component }).c)).toBe(false)
   })
 })

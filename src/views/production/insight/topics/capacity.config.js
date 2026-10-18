@@ -5,6 +5,8 @@
 //
 // กติกา field (ยืนยันจาก API agent — ดู capacity-helpers.js): "ผลิตเสร็จ" = output (ไม่ใช่ completed) · "ปิดสำเร็จ" = completed ·
 // exitsSeries แยก array จาก workersSeries (alignSeriesByBucket) · คิวเทียบเท่า/แผงจำลองนับเป็นใบเสมอ
+import { markRaw } from 'vue'
+
 import { isoOrNull } from '@/components/insight/page/insight-page-helpers.js'
 import { formatBucketMonthLabels, formatUnitLabel } from '@/components/insight/insight-helpers.js'
 import { CHART_PALETTE } from '@/services/utils/chart-colors.js'
@@ -24,6 +26,9 @@ import {
   resolveCapacityDeptValues,
   buildBreakdownChartData
 } from './capacity-helpers.js'
+
+// markRaw: config ถูกส่งผ่าน data()/props ของ view (reactive) — component ใน config ห้ามถูกห่อ proxy
+const WhatIfPanel = markRaw(CapacityWhatIfPanel)
 
 const C = 'view.productionInsight.capacity'
 const HELP = 'view.productionInsight.help'
@@ -123,8 +128,20 @@ const pendingColumns = [
   col.days('daysSinceCostCard', `${C}.costCardPendingColDays`, { minWidth: '90px' })
 ]
 
-export const capacityConfig = {
+export const capacityConfig = markRaw({
   titleKey: 'view.productionInsight.nav.capacity',
+
+  // โหมดแท็บ (opt-in) — 7 แท็บข้อมูล แต่ละแท็บมีของน้อยๆ · Capacity (findings + KPI + กราฟ + ตารางทั้งหมด) ยิงตั้งแต่โหลดหน้าเสมอ ·
+  // ตารางใบงานที่รอบัตรต้นทุนเป็น planTable ของตัวเอง ยิงเมื่อเปิดแท็บ costpending
+  tabs: [
+    { key: 'overview', label: `${C}.tabs.overview` },
+    { key: 'trend', label: `${C}.tabs.trend` },
+    { key: 'dept', label: `${C}.tabs.dept` },
+    { key: 'breakdown', label: `${C}.tabs.breakdown` },
+    { key: 'costcard', label: `${C}.tabs.costcard` },
+    { key: 'costpending', label: `${C}.tabs.costpending` },
+    { key: 'whatif', label: `${C}.tabs.whatif` }
+  ],
   findings: { source: 'Capacity' },
 
   sources: {
@@ -157,6 +174,7 @@ export const capacityConfig = {
     {
       type: 'kpi',
       id: 'capKpi',
+      tab: 'overview',
       source: 'Capacity',
       title: `${C}.kpiGroupTitle`,
       titleTip: `${HELP}.capacityKpiDefinitions`,
@@ -236,6 +254,7 @@ export const capacityConfig = {
     {
       type: 'trend',
       id: 'capTrend',
+      tab: 'trend',
       source: 'Capacity',
       title: `${C}.trendTitle`,
       icon: 'bi-graph-up-arrow',
@@ -260,6 +279,7 @@ export const capacityConfig = {
     {
       type: 'table',
       id: 'capDepartments',
+      tab: 'dept',
       source: 'Capacity',
       title: `${C}.deptTitle`,
       titleTip: `${HELP}.capacityQueueDays`,
@@ -293,6 +313,7 @@ export const capacityConfig = {
     {
       group: true,
       id: 'capBreakdown',
+      tab: 'breakdown',
       blocks: [
         {
           type: 'table',
@@ -350,6 +371,7 @@ export const capacityConfig = {
     {
       group: true,
       id: 'capCostCard',
+      tab: 'costcard',
       card: { title: `${C}.costCardTitle`, titleTip: `${HELP}.capacityCostCardDefinition`, icon: 'bi-clipboard-check', accent: 'main' },
       blocks: [
         {
@@ -387,24 +409,31 @@ export const capacityConfig = {
             { field: 'medianDays', type: 'line', label: `${C}.costCardMedian`, color: 'primary', axis: 1, format: 'days' },
             { field: 'p90Days', type: 'line', label: `${C}.costCardP90`, color: 'warning', axis: 1, format: 'days', dashed: true }
           ]
-        },
-        {
-          type: 'planTable',
-          bare: true,
-          subtitle: `${C}.costCardPendingTableTitle`,
-          endpoint: 'ProductionInsight/CostCardPendingPlans',
-          params: () => ({}),
-          columns: pendingColumns
         }
       ]
     },
 
     {
+      // ตารางใบงานที่รอบัตรต้นทุน — แยกออกจากกลุ่ม capCostCard (ซึ่งคง id เดิมที่ API ส่งเป็น reportRef) เป็นแท็บของตัวเอง
+      type: 'planTable',
+      id: 'capCostPending',
+      tab: 'costpending',
+      title: `${C}.costCardPendingTableTitle`,
+      icon: 'bi-hourglass-split',
+      endpoint: 'ProductionInsight/CostCardPendingPlans',
+      params: () => ({}),
+      columns: pendingColumns
+    },
+
+    {
+      // แผงจำลองเพิ่ม/ลดคน = เครื่องมือ (ไม่มี finding ลิงก์มา) — ใช้ข้อมูล Capacity ที่โหลดอยู่แล้ว
       type: 'slot',
-      component: CapacityWhatIfPanel,
+      id: 'capWhatIf',
+      tab: 'whatif',
+      component: WhatIfPanel,
       props: (ctx) => ({ departments: filteredDepartments(ctx), loading: !!ctx.loading.Capacity })
     }
   ]
-}
+})
 
 export default capacityConfig
