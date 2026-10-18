@@ -24,6 +24,15 @@ export default {
     ok: 'Normal'
   },
 
+  // Tab bar for topics that opt in to tab mode (InsightTabLayout) — 3 fixed tabs + the data-tab group label
+  tabs: {
+    ariaLabel: 'Sections of this page',
+    problems: 'Problems',
+    forecasts: 'Forecasts',
+    actions: 'Actions',
+    dataGroup: 'Deep dive'
+  },
+
   section: {
     problems: 'Current Problems',
     forecasts: 'Forecasted Problems',
@@ -48,6 +57,19 @@ export default {
   },
 
   wip: {
+    tabs: {
+      trend: 'Trend',
+      dept: 'By department',
+      leadtime: 'Lead time & bottleneck',
+      due: 'Plans to chase',
+      dueSwitchAria: 'Choose the plan list to chase',
+      dueOptions: {
+        stale: 'Stale',
+        dueRisk: 'Due risk',
+        abnormal: 'Abnormal dwell'
+      }
+    },
+
     filterSectionTitle: 'Specific to "WIP & Bottlenecks"',
     filterDept: 'Department',
     filterStaleDays: 'Stale threshold (days)',

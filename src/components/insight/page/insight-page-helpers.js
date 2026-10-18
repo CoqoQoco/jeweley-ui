@@ -2,6 +2,7 @@
 // ห้าม import Vue/Pinia/i18n ที่นี่ — เทสได้โดยไม่ต้อง mount component
 
 import { formatISOString } from '@/services/utils/dayjs.js'
+import { isSourceTabGated } from './insight-tabs-helpers.js'
 
 // Date | null → ISO string | null (ใช้ใน params() ของ source ให้ body ตรงกับ store method เดิมเป๊ะ)
 export function isoOrNull(value) {
@@ -21,10 +22,12 @@ export const DISABLED_SOURCE_KEY = '__disabled__'
 
 // source.enabled(filter, state) = false → key คงที่ DISABLED_SOURCE_KEY (ไม่ยิง · เคลียร์ผลเดิม) — ใช้กับ source ที่ขึ้นกับการเลือก
 // (เช่น WorkerMonthly ที่ยิงเมื่อคลิกแถวช่างแล้วเท่านั้น)
-export function computeSourceKeys(sources, filter, state) {
+// visited (optional) = แท็บข้อมูลที่เคยเปิด (โหมดแท็บ) — source ที่ผูก tab: '<key>' ยังไม่ถูกเปิด = ปิดเหมือน enabled=false (ไม่ยิง)
+export function computeSourceKeys(sources, filter, state, visited = null) {
   const keys = {}
   Object.entries(sources || {}).forEach(([name, source]) => {
-    keys[name] = source.enabled && !source.enabled(filter, state) ? DISABLED_SOURCE_KEY : JSON.stringify(source.params ? source.params(filter, state) : null)
+    const off = (source.enabled && !source.enabled(filter, state)) || isSourceTabGated(source, visited)
+    keys[name] = off ? DISABLED_SOURCE_KEY : JSON.stringify(source.params ? source.params(filter, state) : null)
   })
   return keys
 }

@@ -3,6 +3,7 @@
     <DashboardHeaderGeneric :title="$t('view.executive.title')" :subtitle="asOfSubtitle" icon="bi-speedometer2" @refresh="onRefresh">
       <template #controls>
         <ToggleGroupGeneric
+          v-if="showHeaderMetalToggle"
           :modelValue="metal"
           :options="metalOptions"
           :ariaLabel="$t('view.executive.metalScope.toggleAriaLabel')"
@@ -14,9 +15,9 @@
 
     <summaryView :summary="summary" @select-tab="onTabChange" />
 
-    <TabViewGeneric :modelValue="activeTab" :tabs="tabsConfig" @update:modelValue="onTabChange">
+    <TabViewGeneric :modelValue="activeTab" :tabs="tabsConfig" variant="segmented" @update:modelValue="onTabChange">
       <template #production>
-        <productionInsightView :key="metal" ref="insight" />
+        <productionInsightView :key="metal" ref="insight" :metal="metal" @update:metal="onMetalChange" />
       </template>
       <template #sales>
         <salesView :key="metal" :receivablesSummary="summary.receivables" :salesOrdersSummary="summary.salesOrders" :refreshToken="refreshToken" />
@@ -45,6 +46,7 @@ import api from '@/axios/axios-helper.js'
 import { normalizeTangRow, normalizeSetterRow, buildMonthRange, monthKeyOf, filterRowsByMonthKeys } from '@/services/utils/gold-loss/slip-monthly-helpers.js'
 import {
   resolveActiveTab,
+  shouldShowHeaderMetalToggle,
   buildSummaryExcelRows,
   buildStalePlansExcelRows,
   buildReceivablesExcelRows,
@@ -161,6 +163,11 @@ export default {
     asOfSubtitle() {
       if (!this.summary.asOf) return ''
       return `${this.$t('view.executive.asOf', { date: formatDateTime(this.summary.asOf) })} · ${this.metalLabel(this.metal)}`
+    },
+
+    // ปุ่มสลับโลหะมีที่เดียวเสมอ: แท็บผลิตแสดงในแถบเครื่องมือของ insight (แถวเดียวกับช่วงเวลา/ตัวกรอง) แท็บอื่นแสดงที่ header
+    showHeaderMetalToggle() {
+      return shouldShowHeaderMetalToggle(this.activeTab)
     },
 
     metalOptions() {

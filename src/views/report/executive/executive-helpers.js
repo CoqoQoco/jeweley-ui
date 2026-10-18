@@ -39,6 +39,12 @@ export function resolveMetalShareHint(row, metal) {
 
 export const EXECUTIVE_TABS = ['production', 'sales', 'stock', 'flow']
 
+// ปุ่มสลับโลหะ (ทอง/เงิน/รวม) ใน header แสดงเฉพาะเมื่อแท็บที่เปิดไม่ใช่ 'production' — แท็บผลิตมีปุ่มเดียวกันในแถบเครื่องมือของ insight
+// (แถวเดียวกับช่วงเวลา/ตัวกรอง) จึงมองเห็นปุ่มเพียงอันเดียวเสมอ
+export function shouldShowHeaderMetalToggle(activeTab) {
+  return activeTab !== 'production'
+}
+
 // ค่า tab จาก query string — ค่าไม่ถูกต้อง/ไม่มี → fallback เป็น 'production' เสมอ
 export function resolveActiveTab(tabValue) {
   return EXECUTIVE_TABS.includes(tabValue) ? tabValue : 'production'

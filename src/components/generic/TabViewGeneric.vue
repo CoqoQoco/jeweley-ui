@@ -26,13 +26,15 @@
     modelValue — v-model ของ tab value ที่กำลังเปิด (String)
     tabs       — array ของ { value, label, group?, groupLabel? } — group/groupLabel ใส่คู่กันเสมอ
     lazy       — true = mount เนื้อหาแท็บเมื่อเปิดครั้งแรกเท่านั้น (default true)
+    variant    — 'underline' (default, หน้าอื่นทั้งระบบไม่เปลี่ยน) | 'segmented' = แถบปุ่มต่อกันพื้นเขียวเมื่อเลือก (look เดียวกับ
+                 ToggleGroupGeneric แต่ใหญ่สุด: fs-lg/ตัวหนา) — segmented ไม่แสดง group divider/groupLabel (ซ่อนไว้)
 
   Slots: 1 slot ต่อ 1 tab โดยใช้ tab.value เป็นชื่อ slot
 
   Emits: update:modelValue
 -->
 <template>
-  <div class="tab-view-generic">
+  <div class="tab-view-generic" :class="{ 'tab-view-generic--segmented': variant === 'segmented' }">
     <div class="tab-view-generic__nav" role="tablist">
       <template v-for="(tab, index) in tabs" :key="tab.value">
         <span v-if="isGroupStart(tab, index)" class="tab-view-generic__group-label">
@@ -85,6 +87,11 @@ export default {
     lazy: {
       type: Boolean,
       default: true
+    },
+    variant: {
+      type: String,
+      default: 'underline',
+      validator: (v) => ['underline', 'segmented'].includes(v)
     }
   },
 
@@ -190,6 +197,64 @@ export default {
       border-radius: 0 0 var(--radius-md) var(--radius-md);
       padding: var(--sp-xl);
     }
+  }
+}
+
+// variant="segmented" — แถบปุ่มต่อกัน พื้นเขียวเมื่อเลือก (ชุดเดียวกับ ToggleGroupGeneric) · ใหญ่กว่าเพื่อให้เป็นลำดับชั้นบนสุด
+.tab-view-generic--segmented {
+  .tab-view-generic__nav {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    gap: 0;
+    padding: 0;
+    margin-bottom: var(--sp-lg);
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .tab-view-generic__group-label {
+    display: none;
+  }
+
+  .tab-view-generic__tab {
+    padding: var(--sp-sm) var(--sp-xl);
+    border-bottom: none;
+    font-size: var(--fs-lg);
+    font-weight: 700;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    // เส้นคั่นระหว่างปุ่มด้วย inset shadow (ไม่ใช้ border-left)
+    & + .tab-view-generic__tab {
+      box-shadow: inset 1px 0 0 var(--color-border);
+    }
+
+    &:hover:not(.tab-view-generic__tab--active) {
+      background: var(--color-highlight-bg);
+      color: var(--base-font-color);
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: none;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--base-font-color);
+      outline-offset: -2px;
+    }
+
+    &--active,
+    &--active:hover {
+      background: var(--base-green);
+      color: var(--on-inverse);
+      cursor: default;
+    }
+  }
+
+  .tab-view-generic__panels :deep(.p-tabview-panels) {
+    border-radius: var(--radius-md);
   }
 }
 </style>

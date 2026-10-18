@@ -47,6 +47,27 @@
       </span>
     </div>
 
+    <div v-if="isTabbed" class="insight-tab-layout__tabbed">
+      <InsightSubTabs
+        :modelValue="activeSub"
+        :tabs="subTabOptions"
+        :ariaLabel="$t('view.productionInsight.tabs.ariaLabel')"
+        :dataLabel="$t('view.productionInsight.tabs.dataGroup')"
+        @update:modelValue="$emit('update:activeSub', $event)"
+      />
+      <div v-show="activeSub === 'problems'" class="insight-tab-layout__panel" role="tabpanel">
+        <InsightFindingList :findings="resolvedProblems" :loading="loading" @goto-report="onGotoReport" />
+      </div>
+      <div v-show="activeSub === 'forecast'" class="insight-tab-layout__panel" role="tabpanel">
+        <InsightFindingList :findings="resolvedForecasts" :loading="loading" @goto-report="onGotoReport" />
+      </div>
+      <div v-show="activeSub === 'actions'" class="insight-tab-layout__panel" role="tabpanel">
+        <InsightActionList :actions="resolvedActions" :loading="loading" />
+      </div>
+      <slot name="report" />
+    </div>
+
+    <template v-else>
     <div class="insight-tab-layout__row insight-tab-layout__row--split">
       <SectionCardGeneric
         :title="$t('view.productionInsight.section.problems')"
@@ -55,7 +76,7 @@
         accent="warning"
         headerStyle="legend"
       >
-        <InsightFindingList :findings="resolvedProblems" :loading="loading" @goto-report="scrollToReport" />
+        <InsightFindingList :findings="resolvedProblems" :loading="loading" @goto-report="onGotoReport" />
       </SectionCardGeneric>
 
       <SectionCardGeneric
@@ -65,7 +86,7 @@
         accent="main"
         headerStyle="legend"
       >
-        <InsightFindingList :findings="resolvedForecasts" :loading="loading" @goto-report="scrollToReport" />
+        <InsightFindingList :findings="resolvedForecasts" :loading="loading" @goto-report="onGotoReport" />
       </SectionCardGeneric>
     </div>
 
@@ -82,16 +103,19 @@
     <div class="insight-tab-layout__report">
       <slot name="report" />
     </div>
+    </template>
   </div>
 </template>
 
 <script>
 import { resolveStatusIcon, resolveFindingParams, resolveHelpKey, buildFindingKey, formatUnitLabel } from './insight-helpers.js'
+import { buildSubTabOptions } from './page/insight-tabs-helpers.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import InfoTipGeneric from '@/components/generic/InfoTipGeneric.vue'
 import InsightFindingList from './insight-finding-list.vue'
 import InsightActionList from './insight-action-list.vue'
+import InsightSubTabs from './insight-sub-tabs.vue'
 
 export default {
   name: 'InsightTabLayout',
@@ -100,8 +124,11 @@ export default {
     SectionCardGeneric,
     InfoTipGeneric,
     InsightFindingList,
-    InsightActionList
+    InsightActionList,
+    InsightSubTabs
   },
+
+  emits: ['update:activeSub', 'goto-report'],
 
   props: {
     title: {
@@ -135,10 +162,32 @@ export default {
     helpParams: {
       type: Object,
       default: () => ({})
+    },
+    // โหมดแท็บ (opt-in): dataTabs = [{ value, label }] ของ topic → แสดงแถบแท็บ (ปัญหา/คาดการณ์/วิธีแก้ + แท็บข้อมูล) แทนโครง 3 กล่อง
+    // null = โครงเดิม · activeSub = value ของแท็บที่เลือก ('problems'|'forecast'|'actions'|<dataTab>) — slot #report = เนื้อหาแท็บข้อมูล
+    dataTabs: {
+      type: Array,
+      default: null
+    },
+    activeSub: {
+      type: String,
+      default: 'problems'
     }
   },
 
   computed: {
+    isTabbed() {
+      return Array.isArray(this.dataTabs)
+    },
+
+    subTabOptions() {
+      return buildSubTabOptions({
+        counts: { problems: this.resolvedProblems.length, forecast: this.resolvedForecasts.length, actions: this.resolvedActions.length },
+        dataTabs: this.dataTabs || [],
+        t: (key) => this.$t(key)
+      })
+    },
+
     statusIcon() {
       return resolveStatusIcon(this.status)
     },
@@ -239,6 +288,12 @@ export default {
       return `${this.$t('view.productionInsight.relatedPrefix')} ${labels.join(', ')}`
     },
 
+    // โหมดแท็บ: ส่งให้ InsightPage สลับแท็บแล้วเลื่อน · โหมดเดิม: เลื่อนเองทันที
+    onGotoReport(reportRef) {
+      if (this.isTabbed) this.$emit('goto-report', reportRef)
+      else this.scrollToReport(reportRef)
+    },
+
     scrollToReport(reportRef) {
       const el = document.getElementById(`insight-report-${reportRef}`)
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -254,6 +309,15 @@ export default {
 // specificity ล้วน — ใช้ค่าเดียวกันตัดปัญหาสูงไม่เท่ากันไปเลย (ดู Decision Log docs/design-system.md)
 .insight-tab-layout > * + * {
   margin-top: var(--sp-2xl);
+}
+
+// โหมดแท็บ: ระยะห่างเบากว่าโครง 3 กล่อง (ไม่มี legend chip คร่อมขอบ)
+.insight-tab-layout > .insight-tab-layout__tabbed {
+  margin-top: var(--sp-lg);
+}
+
+.insight-tab-layout__panel {
+  padding-top: var(--sp-lg);
 }
 
 .insight-tab-layout__header {

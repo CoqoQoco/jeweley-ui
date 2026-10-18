@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest'
 import {
   EXECUTIVE_TABS,
   resolveActiveTab,
+  shouldShowHeaderMetalToggle,
   KPI_TAB_MAP,
   resolveKpiTab,
   buildReceivablesDonutSeries,
@@ -587,5 +588,20 @@ describe('resolveMetalShareHint', () => {
     expect(resolveMetalShareHint({ metalShare: 0.6 }, 'ALL')).toBeNull()
     expect(resolveMetalShareHint({}, 'SILVER')).toBeNull()
     expect(resolveMetalShareHint(null, 'SILVER')).toBeNull()
+  })
+})
+
+describe('shouldShowHeaderMetalToggle (exactly one metal toggle is visible)', () => {
+  it('the header toggle is hidden on the production tab (the insight toolbar owns it there) and shown on every other tab', () => {
+    expect(shouldShowHeaderMetalToggle('production')).toBe(false)
+    ;['sales', 'stock', 'flow'].forEach((tab) => expect(shouldShowHeaderMetalToggle(tab), tab).toBe(true))
+  })
+
+  it('every resolvable executive tab shows exactly one toggle (header xor production toolbar)', () => {
+    ;['production', 'sales', 'stock', 'flow', 'bogus', undefined].forEach((raw) => {
+      const tab = resolveActiveTab(raw)
+      const toolbarToggle = tab === 'production'
+      expect([shouldShowHeaderMetalToggle(tab), toolbarToggle].filter(Boolean)).toHaveLength(1)
+    })
   })
 })

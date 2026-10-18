@@ -24,6 +24,15 @@ export default {
     ok: 'ปกติ'
   },
 
+  // แถบแท็บของ topic ที่ opt-in โหมดแท็บ (InsightTabLayout) — แท็บคงที่ 3 อัน + ป้ายกลุ่มแท็บข้อมูล
+  tabs: {
+    ariaLabel: 'หมวดข้อมูลของหน้านี้',
+    problems: 'ปัญหาที่เกิดแล้ว',
+    forecasts: 'คาดการณ์',
+    actions: 'วิธีแก้',
+    dataGroup: 'ข้อมูลเชิงลึก'
+  },
+
   section: {
     problems: 'ปัญหาที่เกิดแล้ว',
     forecasts: 'คาดการณ์ปัญหาที่จะเกิด',
@@ -48,6 +57,19 @@ export default {
   },
 
   wip: {
+    tabs: {
+      trend: 'แนวโน้ม',
+      dept: 'รายแผนก',
+      leadtime: 'Lead time & คอขวด',
+      due: 'ใบงานที่ต้องตาม',
+      dueSwitchAria: 'เลือกตารางใบงานที่ต้องตาม',
+      dueOptions: {
+        stale: 'ค้างนาน',
+        dueRisk: 'เสี่ยงส่งช้า',
+        abnormal: 'นิ่งผิดปกติ'
+      }
+    },
+
     filterSectionTitle: 'เฉพาะหมวด "งานค้างและคอขวด"',
     filterDept: 'แผนก',
     filterStaleDays: 'ไม่ขยับเกิน (วัน)',

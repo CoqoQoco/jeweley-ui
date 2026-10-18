@@ -14,15 +14,19 @@
 
   Props:
     modelValue — String|Number (required) — ค่าที่เลือกอยู่
-    options    — Array (required) ของ { value, label, title? } — `title` optional: native tooltip
-                 (attribute `title`) ต่อปุ่ม เช่นอธิบายว่าปุ่มนั้นหมายถึงอะไร
+    options    — Array (required) ของ { value, label, title?, icon? } — `title` optional: native tooltip
+                 (attribute `title`) ต่อปุ่ม เช่นอธิบายว่าปุ่มนั้นหมายถึงอะไร · `icon` optional: Bootstrap icon class (เช่น 'bi-list-check') นำหน้า label
     ariaLabel  — String ('') — aria-label ของ role="tablist"
     disabled   — Boolean (false) — ปิดการกดทุกปุ่ม
+    size       — 'md' | 'sm' (default 'md' = ขนาดเดิมทุกหน้า) — 'sm' = ปุ่มเล็กลง (fs-sm, padding แคบ) ใช้กับแถวลำดับชั้นล่าง
+                 (เช่น แถบแท็บย่อยของ insight) เพื่อให้ลำดับชั้นอ่านออกด้วยขนาด
+
+  โฟกัส: ไม่แสดงกรอบ focus ของ browser เมื่อคลิกเมาส์ — คีย์บอร์ดเห็นวงแหวน :focus-visible
 
   Emits: update:modelValue
 -->
 <template>
-  <div class="toggle-group" role="tablist" :aria-label="ariaLabel || null">
+  <div class="toggle-group" :class="{ 'toggle-group--sm': size === 'sm' }" role="tablist" :aria-label="ariaLabel || null">
     <button
       v-for="option in options"
       :key="option.value"
@@ -35,6 +39,7 @@
       :title="option.title || null"
       @click="onSelect(option.value)"
     >
+      <i v-if="option.icon" :class="['bi', option.icon]"></i>
       {{ option.label }}
     </button>
   </div>
@@ -60,6 +65,11 @@ export default {
     disabled: {
       type: Boolean,
       default: false
+    },
+    size: {
+      type: String,
+      default: 'md',
+      validator: (v) => ['md', 'sm'].includes(v)
     }
   },
 
@@ -104,11 +114,26 @@ export default {
     opacity: 0.6;
   }
 
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--base-font-color);
+    outline-offset: -2px;
+  }
+
   &--active,
   &--active:hover {
     background: var(--base-green);
     color: var(--on-inverse);
     cursor: default;
   }
+}
+
+// size="sm" — ปุ่มเล็กลงสำหรับแถวลำดับชั้นล่าง (default md ไม่เปลี่ยน)
+.toggle-group--sm .toggle-group__btn {
+  padding: var(--sp-xs) var(--sp-md);
+  font-size: var(--fs-sm);
 }
 </style>

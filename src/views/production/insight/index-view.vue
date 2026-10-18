@@ -36,6 +36,15 @@
         class="production-insight__nav"
       />
 
+      <ToggleGroupGeneric
+        v-if="metal"
+        class="production-insight__metal"
+        :modelValue="metal"
+        :options="metalOptions"
+        :ariaLabel="$t('view.executive.metalScope.toggleAriaLabel')"
+        @update:modelValue="$emit('update:metal', $event)"
+      />
+
       <RangePresetGeneric
         v-if="hasFilterableFields"
         :modelValue="rangeModelValue"
@@ -75,6 +84,8 @@
         :config="wipConfig"
         :filter="filters.wip"
         :active="activeSection === 'wip'"
+        :sub="subTabs.wip || ''"
+        @update:sub="onSubTabChange('wip', $event)"
       />
       <InsightPage
         v-if="visitedSections.has('delivery')"
@@ -380,6 +391,8 @@ import {
   clearedMaterialsFilterQueryKeys
 } from './insight-filters.js'
 import { resolvePresetRange, resolveCustomBucket } from '@/services/utils/range-presets.js'
+import { METAL_SCOPE_VALUES } from '@/services/utils/metal-scope.js'
+import { hasTabs, resolveSubTab, subTabToQuery, clearedSubTabQueryKeys } from '@/components/insight/page/insight-tabs-helpers.js'
 import { resolveGoldTabMetal } from '@/services/utils/metal-scope.js'
 import { useMetalScopeStore } from '@/stores/modules/ui/metal-scope-store.js'
 
@@ -421,6 +434,14 @@ export default {
     InsightPage,
   },
 
+  props: {
+    // โลหะทั้งหน้า (GOLD|SILVER|ALL) ที่หน้า executive ส่งมา — มี = แสดงปุ่มสลับโลหะในแถบเครื่องมือแถวเดียวกับช่วงเวลา/ตัวกรอง
+    // (หน้า executive เป็นเจ้าของ state/URL/summary ตัวจริง: เปลี่ยนค่าแล้ว emit update:metal) · ไม่ส่ง = ไม่แสดงปุ่ม
+    metal: { type: String, default: '' }
+  },
+
+  emits: ['update:metal'],
+
   setup() {
     const metalScopeStore = useMetalScopeStore()
     return { metalScopeStore }
@@ -459,6 +480,8 @@ export default {
       // ตัวเลือกตัวกรอง สินค้า/ทอง/Gold size ของหมวด capacity — มาจาก Capacity.filterOptions (API คำนวณโดยไม่สนตัวกรอง
       // สินค้า จึงไม่หดเมื่อกรองอยู่) ที่ capacity-section emit ขึ้นมา — key เป็นชื่อฟิลด์ตัวกรอง (productTypes/golds/goldSizes)
       capacityFilterOptions: { productTypes: [], golds: [], goldSizes: [] },
+      // แท็บย่อย (query sub=) ต่อหมวดที่ opt-in โหมดแท็บ — ค่าว่าง = default (ปัญหาที่เกิดแล้ว)
+      subTabs: {},
       isFilterPanelOpen: false,
       isApplyingRouteQuery: false
     }
@@ -467,6 +490,10 @@ export default {
   computed: {
     sectionOptions() {
       return SECTION_VALUES.map((value) => ({ value, label: this.$t(`view.productionInsight.nav.${value}`) }))
+    },
+
+    metalOptions() {
+      return METAL_SCOPE_VALUES.map((value) => ({ value, label: this.$t(`view.executive.metalScope.options.${value}`) }))
     },
 
     departmentOptions() {
@@ -608,6 +635,13 @@ export default {
         this.syncStateToQuery()
       },
       deep: true
+    },
+
+    subTabs: {
+      handler() {
+        this.syncStateToQuery()
+      },
+      deep: true
     }
   },
 
@@ -663,9 +697,15 @@ export default {
       this.goldWorkerOptions = (workers || []).map((w) => ({ value: w.workerCode, label: `${w.workerCode} ${w.workerName}` }))
     },
 
+    onSubTabChange(section, value) {
+      this.subTabs = { ...this.subTabs, [section]: value }
+    },
+
     applyQueryToState(query) {
       this.isApplyingRouteQuery = true
       this.activeSection = resolveActiveSection(query.view)
+      // sub= เป็นของหมวดที่เปิดอยู่ (InsightPage ตรวจค่าเอง — ไม่รู้จัก = default)
+      this.subTabs = query.sub ? { [this.activeSection]: resolveSubTab(String(query.sub), this[`${this.activeSection}Config`]) } : {}
       this.visitedSections.add(this.activeSection)
       this.filters.wip = parseWipFilterQuery(query)
       this.filters.delivery = parseDeliveryFilterQuery(query)
@@ -708,7 +748,11 @@ export default {
                   : this.activeSection === 'materials'
                     ? clearedMaterialsFilterQueryKeys(this.filters.materials)
                     : []
-      const query = { ...this.$route.query, view: this.activeSection, ...sectionQuery }
+      // sub= เขียนเฉพาะหมวดที่ opt-in โหมดแท็บ (default ไม่เขียน) — หมวดอื่นลบทิ้งไม่ให้ค้างจากหมวดก่อน
+      const tabbed = hasTabs(this[`${this.activeSection}Config`])
+      const sub = tabbed ? this.subTabs[this.activeSection] : ''
+      const query = { ...this.$route.query, view: this.activeSection, ...sectionQuery, ...subTabToQuery(sub) }
+      clearedKeys.push(...clearedSubTabQueryKeys(sub))
       clearedKeys.forEach((key) => delete query[key])
       this.$router.replace({ query }).catch(() => {})
     },
@@ -904,6 +948,10 @@ export default {
   font-size: var(--fs-base);
   font-weight: 700;
   color: var(--base-font-color);
+}
+
+.production-insight__metal {
+  flex-shrink: 0;
 }
 
 .production-insight__chips {

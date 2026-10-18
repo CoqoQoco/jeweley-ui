@@ -30,9 +30,23 @@
     :actions="findings.actions"
     :loading="findingsLoading"
     :helpParams="helpParams"
+    :dataTabs="tabsEnabled ? dataTabs : null"
+    :activeSub="currentSub"
+    @update:activeSub="selectSub"
+    @goto-report="goToReport"
   >
     <template #report>
-      <InsightBlockNode v-for="(node, index) in config.blocks" :key="keyOf(node, index)" :node="node" :ctx="ctx" />
+      <template v-if="tabsEnabled">
+        <!-- โหมดแท็บ: mount แท็บข้อมูลเมื่อเปิดครั้งแรกแล้วค้างไว้ (v-show) — แท็บที่ยังไม่เคยเปิดไม่ mount/ไม่ยิง request -->
+        <template v-for="panel in dataPanels" :key="panel.key">
+          <div v-if="visitedTabs.includes(panel.key)" v-show="currentSub === panel.key" class="insight-page__panel" role="tabpanel">
+            <InsightBlockNode v-for="(node, index) in panel.nodes" :key="keyOf(node, index)" :node="node" :ctx="ctx" />
+          </div>
+        </template>
+      </template>
+      <template v-else>
+        <InsightBlockNode v-for="(node, index) in config.blocks" :key="keyOf(node, index)" :node="node" :ctx="ctx" />
+      </template>
     </template>
   </InsightTabLayout>
 </template>
@@ -41,6 +55,7 @@
 import { useProductionInsightApiStore } from '@/stores/modules/api/production/production-insight-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { computeSourceKeys, diffSourceKeys, buildStateResets, buildInitialState, nodeKey, DISABLED_SOURCE_KEY } from './insight-page-helpers.js'
+import { hasTabs, resolveSubTab, isDataSubTab, blocksForTab, findTabForReportRef, isSourceTabGated } from './insight-tabs-helpers.js'
 
 import InsightTabLayout from '../insight-tab-layout.vue'
 import InsightBlockNode from './InsightBlockNode.vue'
@@ -56,12 +71,14 @@ export default {
     return { productionInsightStore, masterStore }
   },
 
-  emits: ['update-filter', 'filter-options-loaded', 'workers-loaded'],
+  emits: ['update-filter', 'filter-options-loaded', 'workers-loaded', 'update:sub'],
 
   props: {
     config: { type: Object, required: true },
     filter: { type: Object, required: true },
-    active: { type: Boolean, default: true }
+    active: { type: Boolean, default: true },
+    // แท็บที่เลือก (โหมดแท็บ — config.tabs): 'problems'(default)|'forecast'|'actions'|<key แท็บข้อมูล> · ไม่รู้จัก = default
+    sub: { type: String, default: '' }
   },
 
   data() {
@@ -69,6 +86,9 @@ export default {
       responses: {},
       loadingMap: {},
       state: buildInitialState(this.config.state),
+      currentSub: resolveSubTab(this.sub, this.config),
+      // แท็บข้อมูลที่เคยเปิดแล้ว (mount ค้าง + ปลดล็อก source ของแท็บนั้น)
+      visitedTabs: isDataSubTab(resolveSubTab(this.sub, this.config), this.config) ? [resolveSubTab(this.sub, this.config)] : [],
       lastKeys: {},
       staleSources: [],
       requestSeq: {}
@@ -76,8 +96,20 @@ export default {
   },
 
   computed: {
+    tabsEnabled() {
+      return hasTabs(this.config)
+    },
+
+    dataTabs() {
+      return (this.config.tabs || []).map((tab) => ({ value: tab.key, label: this.$t(tab.label) }))
+    },
+
+    dataPanels() {
+      return (this.config.tabs || []).map((tab) => ({ key: tab.key, nodes: blocksForTab(this.config, tab.key) }))
+    },
+
     sourceKeys() {
-      return computeSourceKeys(this.config.sources, this.filter, this.state)
+      return computeSourceKeys(this.config.sources, this.filter, this.state, this.tabsEnabled ? this.visitedTabs : null)
     },
 
     findings() {
@@ -107,6 +139,7 @@ export default {
         setState: this.setState,
         reload: this.reload,
         updateFilter: this.updateFilter,
+        goToReport: this.goToReport,
         t: this.translate
       }
     }
@@ -130,6 +163,11 @@ export default {
       immediate: true
     },
 
+    // URL/parent เปลี่ยน sub (back/forward) → ตามไปโดยไม่ emit กลับ
+    sub(value) {
+      this.applySub(resolveSubTab(value, this.config))
+    },
+
     // กลับมาเป็นหมวดที่เปิดอยู่หลังตัวกรองเปลี่ยนตอนถูกซ่อน — ยิงรอบเดียวตอนนี้
     active(value) {
       if (!value || !this.staleSources.length) return
@@ -146,6 +184,31 @@ export default {
 
   methods: {
     keyOf: nodeKey,
+
+    applySub(value) {
+      this.currentSub = value
+      if (isDataSubTab(value, this.config) && !this.visitedTabs.includes(value)) this.visitedTabs = [...this.visitedTabs, value]
+    },
+
+    selectSub(value) {
+      const next = resolveSubTab(value, this.config)
+      this.applySub(next)
+      this.$emit('update:sub', next)
+    },
+
+    // "ดู ›" / ctx.goToReport(ref): สลับไปแท็บที่มี block นั้น (+ตั้ง state ให้ block ที่สลับแสดงทีละอัน) แล้วเลื่อนไปหา anchor
+    // โหมดเดิม (ไม่ opt-in) = เลื่อนอย่างเดียว
+    async goToReport(reportRef) {
+      const target = findTabForReportRef(this.config, reportRef)
+      if (target) {
+        if (target.reveal) this.setState(target.reveal.stateKey, target.reveal.value)
+        this.selectSub(target.tab)
+        await this.$nextTick()
+        await this.$nextTick()
+      }
+      const el = document.getElementById(`insight-report-${reportRef}`)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    },
 
     // block ขอแก้ตัวกรองของหน้า (เช่น คลิกกลุ่มสินค้า = ตั้งตัวกรอง) → emit ให้ ProductionInsightView แก้ filters จริง
     updateFilter(patch) {
@@ -183,6 +246,7 @@ export default {
       const source = this.config.sources[name]
       if (!source) return
       if (source.enabled && !source.enabled(this.filter, this.state)) return
+      if (this.tabsEnabled && isSourceTabGated(source, this.visitedTabs)) return
       const seq = (this.requestSeq[name] || 0) + 1
       this.requestSeq[name] = seq
       this.loadingMap = { ...this.loadingMap, [name]: true }

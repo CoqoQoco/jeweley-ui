@@ -11,6 +11,8 @@ import { BLOCK_TYPES } from '@/components/insight/page/blocks/block-types.js'
 import { TARGET_PRESETS } from '@/components/insight/page/blocks/target-presets.js'
 import { COLUMN_KINDS } from '@/components/insight/page/columns.js'
 import { collectBlockIds, findDuplicates, flattenBlocks, computeSourceKeys, diffSourceKeys, buildInitialState } from '@/components/insight/page/insight-page-helpers.js'
+import { validateTabConfig, findTabForReportRef, blocksForTab, hasTabs, isSourceTabGated } from '@/components/insight/page/insight-tabs-helpers.js'
+import { reactive, isReactive } from 'vue'
 import { buildDefaultWipFilter } from '../insight-filters.js'
 import { wipConfig, buildTrendCardRows, buildTrendTableRows, trendBucketLabel, leadBucketLabel, buildCapacitySummaryRows, signedCount, signedPercent } from './wip.config.js'
 
@@ -47,6 +49,10 @@ describe('wip config structure', () => {
     nodes.forEach((node) => {
       if (node.row || node.group) {
         expect(Array.isArray(node.blocks)).toBe(true)
+        return
+      }
+      if (node.type === 'slot') {
+        expect(node.component).toBeTruthy()
         return
       }
       expect(BLOCK_TYPES, `type ${node.type}`).toContain(node.type)
@@ -162,5 +168,88 @@ describe('wip config builders', () => {
     expect(rows[0].now).toContain('10')
     expect(rows[1].atStandard).toBe('—')
     expect(rows[2].now).toBe(t('view.executive.department.setting'))
+  })
+})
+
+describe('wip tabs (opt-in tab mode)', () => {
+  it('opts in with the 4 data tabs in order, and every top-level block names one of them (no block falls into the first tab silently)', () => {
+    expect(hasTabs(wipConfig)).toBe(true)
+    expect(wipConfig.tabs.map((tab) => tab.key)).toEqual(['trend', 'dept', 'leadtime', 'due'])
+    expect(validateTabConfig(wipConfig)).toEqual([])
+  })
+
+  it('tab labels exist in th and en', () => {
+    wipConfig.tabs.forEach((tab) => expect(i18n.global.te(tab.label, 'th'), tab.label).toBe(true))
+    ;['tabs.problems', 'tabs.forecasts', 'tabs.actions', 'tabs.ariaLabel', 'tabs.dataGroup', 'wip.tabs.dueSwitchAria', 'wip.tabs.dueOptions.stale', 'wip.tabs.dueOptions.dueRisk', 'wip.tabs.dueOptions.abnormal'].forEach((key) =>
+      expect(i18n.global.te(`view.productionInsight.${key}`, 'th'), key).toBe(true)
+    )
+  })
+
+  it('top-level blocks per tab', () => {
+    const ids = (key) => blocksForTab(wipConfig, key).map((n) => n.id || (n.row ? 'row' : n.type))
+    expect(ids('trend')).toEqual(['trend'])
+    expect(ids('dept')).toEqual(['row'])
+    expect(ids('leadtime')).toEqual(['leadTime', 'capacity'])
+    expect(ids('due')).toEqual(['dueSwitch', 'stalePlans', 'dueRisk', 'abnormalDwell'])
+  })
+
+  it('reportRef → tab (+ due toggle value): every reportRef the API sends is reachable', () => {
+    const expectTab = (ref, tab, value) => {
+      const target = findTabForReportRef(wipConfig, ref)
+      expect(target?.tab, ref).toBe(tab)
+      expect(target?.reveal?.value, ref).toBe(value)
+    }
+    expectTab('trend', 'trend', undefined)
+    expectTab('departments', 'dept', undefined)
+    expectTab('flow', 'dept', undefined)
+    expectTab('leadTime', 'leadtime', undefined)
+    expectTab('capacity', 'leadtime', undefined)
+    expectTab('stalePlans', 'due', 'stale')
+    expectTab('dueRisk', 'due', 'dueRisk')
+    expectTab('abnormalDwell', 'due', 'abnormal')
+    WIP_REPORT_REFS.forEach((ref) => expect(findTabForReportRef(wipConfig, ref), ref).not.toBeNull())
+    wipConfig.blocks.filter((n) => n.reveal).forEach((n) => expect(n.reveal.stateKey).toBe('dueTable'))
+  })
+
+  it('the due tables are visible one at a time from state.dueTable (default stale)', () => {
+    const state = buildInitialState(wipConfig.state)
+    expect(state.dueTable).toBe('stale')
+    const blockOf = (id) => wipConfig.blocks.find((n) => n.id === id)
+    const visibleIds = (dueTable) => ['stalePlans', 'dueRisk', 'abnormalDwell'].filter((id) => blockOf(id).visible({ state: { ...state, dueTable } }))
+    expect(visibleIds('stale')).toEqual(['stalePlans'])
+    expect(visibleIds('dueRisk')).toEqual(['dueRisk'])
+    expect(visibleIds('abnormal')).toEqual(['abnormalDwell'])
+    const dueSwitch = blockOf('dueSwitch')
+    const ctx = { state, t: (key) => key }
+    expect(dueSwitch.props(ctx).options.map((o) => o.value)).toEqual(['stale', 'dueRisk', 'abnormal'])
+    const next = { ...state }
+    dueSwitch.events['update:modelValue']({ setState: (key, value) => (next[key] = value) }, 'abnormal')
+    expect(next.dueTable).toBe('abnormal')
+  })
+
+  it('WipTrend and the lead-time sources are bound to their tabs; Wip (findings + dept charts) and the plan tables are not gated by source', () => {
+    expect(wipConfig.sources.Wip.tab).toBeUndefined()
+    expect(wipConfig.sources.WipTrend.tab).toBe('trend')
+    expect(wipConfig.sources.StageLeadTime.tab).toBe('leadtime')
+    expect(wipConfig.sources.StageStandards.tab).toBe('leadtime')
+    expect(isSourceTabGated(wipConfig.sources.WipTrend, [])).toBe(true)
+    expect(isSourceTabGated(wipConfig.sources.WipTrend, ['trend'])).toBe(false)
+  })
+
+  it('the config and its slot component stay out of Vue reactivity', () => {
+    expect(isReactive(reactive({ config: wipConfig }).config)).toBe(false)
+    const slot = wipConfig.blocks.find((n) => n.id === 'dueSwitch')
+    expect(isReactive(reactive({ c: slot.component }).c)).toBe(false)
+  })
+
+  it('the abnormal-count click focuses the department and jumps to the abnormal table when the page offers goToReport', () => {
+    const leadTime = wipConfig.blocks.find((n) => n.id === 'leadTime')
+    const click = leadTime.columns.find((c) => c.field === 'abnormal').onClick
+    const calls = []
+    click({ key: 'setting' }, { setState: (...a) => calls.push(['set', ...a]), goToReport: (ref) => calls.push(['go', ref]) })
+    expect(calls).toEqual([['set', 'abnormalFocus', 'setting'], ['go', 'abnormalDwell']])
+    const onlySet = []
+    click({ key: 'trim' }, { setState: (...a) => onlySet.push(a) })
+    expect(onlySet).toEqual([['abnormalFocus', 'trim']])
   })
 })

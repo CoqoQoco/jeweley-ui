@@ -2,10 +2,13 @@
 // wip-section.vue เดิม: blocks เรียงเหมือนเดิม (พัฒนาการงานค้าง → งานค้างแยกแผนก ‖ งานเข้า-ออก → เวลาผลิตรายแผนก +
 // กราฟรายละเอียด + ผลต่อกำลังการผลิต → ใบงานค้าง → งานเสี่ยงเลยกำหนด → ใบที่อยู่ในแผนกนานผิดปกติ)
 // block id = reportRef ที่ API ส่งมา (trend/departments/flow/leadTime/stalePlans/dueRisk/abnormalDwell) → "ดู ›" เลื่อนมาหาได้
+import { markRaw } from 'vue'
+
 import { formatRangeLabel } from '@/services/utils/range-presets.js'
 import { formatDate } from '@/services/utils/dayjs.js'
 import { isoOrNull } from '@/components/insight/page/insight-page-helpers.js'
 import * as col from '@/components/insight/page/columns.js'
+import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 import {
   resolveDeltaVariant,
   resolveDeltaColorToken,
@@ -26,6 +29,13 @@ import {
 } from '@/components/insight/lead-time-helpers.js'
 
 const W = 'view.productionInsight.wip'
+const TABS = 'view.productionInsight.wip.tabs'
+
+// markRaw: config ถูกส่งผ่าน data()/props ของ view (reactive) — component ใน config ห้ามถูกห่อ proxy
+const ToggleGroup = markRaw(ToggleGroupGeneric)
+
+// ตารางใบงาน 3 อันในแท็บ "ใบงานที่ต้องตาม" แสดงทีละอัน — state.dueTable เลือกอันที่ mount/ยิง request
+const DUE_TABLE_VALUES = ['stale', 'dueRisk', 'abnormal']
 const HELP = 'view.productionInsight.help'
 const EXEC = 'view.executive.production'
 
@@ -148,7 +158,11 @@ const leadTimeColumns = [
     minWidth: '110px',
     actionTitle: `${HELP}.leadTimeColAbnormal`,
     // คลิกตัวเลข = โฟกัสตารางใบที่อยู่ในแผนกนานผิดปกติเฉพาะแผนกนี้ (ตั้ง state ที่ตาราง abnormalDwell อ่านใน params)
-    onClick: (row, ctx) => ctx.setState('abnormalFocus', row.key)
+    onClick: (row, ctx) => {
+      ctx.setState('abnormalFocus', row.key)
+      // ตารางอยู่คนละแท็บ → สลับไปแท็บ "ใบงานที่ต้องตาม" + เลือกตารางนิ่งผิดปกติ แล้วเลื่อนไปหา
+      ctx.goToReport?.('abnormalDwell')
+    }
   }),
   col.number('currentWaiting', `${W}.leadTimeColCurrentWaiting`, 'count', { tip: `${HELP}.leadTimeColCurrentWaiting`, path: 'currentWaitingCount', minWidth: '100px' }),
   col.sparkline('trend', `${W}.leadTimeColTrend`, (row) => mapSeriesField(row.series, 'medianTotal'), { tip: `${HELP}.leadTimeColTrend` })
@@ -235,8 +249,16 @@ const abnormalColumns = [
 
 // ---- config ----
 
-export const wipConfig = {
+export const wipConfig = markRaw({
   titleKey: 'view.productionInsight.nav.wip',
+
+  // โหมดแท็บ (opt-in) — แท็บข้อมูลหลังแท็บคงที่ 3 อัน (ปัญหา/คาดการณ์/วิธีแก้) · block ระดับบนสุดระบุ tab · source ผูก tab ยิงเมื่อเปิดแท็บนั้น
+  tabs: [
+    { key: 'trend', label: `${TABS}.trend` },
+    { key: 'dept', label: `${TABS}.dept` },
+    { key: 'leadtime', label: `${TABS}.leadtime` },
+    { key: 'due', label: `${TABS}.due` }
+  ],
   findings: { source: 'Wip' },
 
   // เสริม params ที่ finding เองไม่มี (ค่าจาก filter ปัจจุบัน) ให้ข้อความ help.<CODE> resolve ได้
@@ -258,11 +280,13 @@ export const wipConfig = {
       })
     },
     WipTrend: {
+      tab: 'trend',
       endpoint: 'ProductionInsight/WipTrend',
       params: (f) => ({ start: isoOrNull(f.start), end: isoOrNull(f.end), bucket: f.bucket })
     },
     // draftStandards ส่งเฉพาะตอนกำลังแก้ค่าใน TargetDrawer (ยังไม่บันทึก) ให้ตาราง/การ์ดคำนวณ preview ใหม่
     StageLeadTime: {
+      tab: 'leadtime',
       endpoint: 'ProductionInsight/StageLeadTime',
       params: (f, s) => ({
         start: isoOrNull(f.start),
@@ -271,7 +295,7 @@ export const wipConfig = {
         draftStandards: s.draftStandards && s.draftStandards.length ? s.draftStandards : undefined
       })
     },
-    StageStandards: { endpoint: 'ProductionInsight/StageStandards', method: 'get', params: () => null }
+    StageStandards: { tab: 'leadtime', endpoint: 'ProductionInsight/StageStandards', method: 'get', params: () => null }
   },
 
   state: {
@@ -293,13 +317,15 @@ export const wipConfig = {
     },
     draftStandards: { initial: () => [] },
     abnormalFocus: { initial: '' },
-    dueRiskMode: { initial: 'overdue' }
+    dueRiskMode: { initial: 'overdue' },
+    dueTable: { initial: 'stale' }
   },
 
   blocks: [
     {
       group: true,
       id: 'trend',
+      tab: 'trend',
       blocks: [
         {
           type: 'sparkCards',
@@ -358,6 +384,7 @@ export const wipConfig = {
 
     {
       row: true,
+      tab: 'dept',
       blocks: [
         {
           type: 'chart',
@@ -413,6 +440,7 @@ export const wipConfig = {
     {
       type: 'table',
       id: 'leadTime',
+      tab: 'leadtime',
       source: 'StageLeadTime',
       title: `${W}.leadTimeTitle`,
       titleTip: `${HELP}.leadTimeTitle`,
@@ -449,6 +477,7 @@ export const wipConfig = {
     {
       type: 'table',
       id: 'capacity',
+      tab: 'leadtime',
       source: 'StageLeadTime',
       title: `${W}.capacityTitle`,
       titleTip: `${HELP}.capacityTitle`,
@@ -472,8 +501,25 @@ export const wipConfig = {
     },
 
     {
+      // สลับตารางใบงาน 3 อัน (แสดงทีละอัน) — ค่า = state.dueTable
+      type: 'slot',
+      id: 'dueSwitch',
+      tab: 'due',
+      component: ToggleGroup,
+      props: (ctx) => ({
+        modelValue: ctx.state.dueTable,
+        ariaLabel: ctx.t(`${TABS}.dueSwitchAria`),
+        options: DUE_TABLE_VALUES.map((value) => ({ value, label: ctx.t(`${TABS}.dueOptions.${value}`) }))
+      }),
+      events: { 'update:modelValue': (ctx, value) => ctx.setState('dueTable', value) }
+    },
+
+    {
       type: 'planTable',
       id: 'stalePlans',
+      tab: 'due',
+      reveal: { stateKey: 'dueTable', value: 'stale' },
+      visible: (ctx) => ctx.state.dueTable === 'stale',
       title: `${W}.stalePlansTitle`,
       icon: 'bi-table',
       notes: [`${W}.asOfTodayNote`],
@@ -485,6 +531,9 @@ export const wipConfig = {
     {
       type: 'planTable',
       id: 'dueRisk',
+      tab: 'due',
+      reveal: { stateKey: 'dueTable', value: 'dueRisk' },
+      visible: (ctx) => ctx.state.dueTable === 'dueRisk',
       title: `${W}.dueRiskTitle`,
       icon: 'bi-hourglass-split',
       accent: 'warning',
@@ -513,6 +562,9 @@ export const wipConfig = {
     {
       type: 'planTable',
       id: 'abnormalDwell',
+      tab: 'due',
+      reveal: { stateKey: 'dueTable', value: 'abnormal' },
+      visible: (ctx) => ctx.state.dueTable === 'abnormal',
       title: `${W}.abnormalDwellTitle`,
       titleTip: `${HELP}.STAGE_ABNORMAL_DWELL`,
       icon: 'bi-hourglass-bottom',
@@ -529,6 +581,6 @@ export const wipConfig = {
       columns: abnormalColumns
     }
   ]
-}
+})
 
 export default wipConfig
