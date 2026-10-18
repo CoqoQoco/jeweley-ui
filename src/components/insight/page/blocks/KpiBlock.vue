@@ -101,6 +101,11 @@ export default {
   methods: {
     goto(reportRef) {
       if (!reportRef) return
+      // โหมดแท็บ: ctx.goToReport สลับไปแท็บที่มี block ปลายทางก่อนเลื่อน (โหมดเดิม/modal ที่ไม่มี = เลื่อนตรงๆ)
+      if (this.ctx.goToReport) {
+        this.ctx.goToReport(reportRef)
+        return
+      }
       const el = document.getElementById(`insight-report-${reportRef}`)
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }

@@ -1,4 +1,5 @@
-// delivery-page.smoke.spec.js — mount InsightPage กับ deliveryConfig จริงทั้งหน้า + ทดสอบ TargetDrawer แบบค่าเดียว (deliveryTarget)
+// delivery-page.smoke.spec.js — mount InsightPage กับ deliveryConfig จริงทั้งหน้า (โหมดแท็บ) + ทดสอบ TargetDrawer แบบค่าเดียว (deliveryTarget)
+// ตรวจ: แท็บตั้งต้น = ปัญหา (ยิงแค่ Delivery) · แท็บข้อมูล mount/ยิง request เมื่อเปิดครั้งแรก · toggle ตารางใบงานทีละอัน · "ดู ›"/การ์ด KPI กระโดดข้ามแท็บ
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
@@ -15,6 +16,7 @@ vi.mock('@/services/alert/sweetAlerts.js', () => ({ success: vi.fn(), warning: v
 
 import InsightPage from '@/components/insight/page/InsightPage.vue'
 import TargetDrawer from '@/components/insight/page/blocks/TargetDrawer.vue'
+import InsightFindingList from '@/components/insight/insight-finding-list.vue'
 import { deliveryConfig } from './delivery.config.js'
 import { buildDefaultDeliveryFilter } from '../insight-filters.js'
 
@@ -47,7 +49,7 @@ const mountOptions = () => ({
 
 const postsTo = (name) => postMock.mock.calls.filter((c) => c[0].endsWith(`/${name}`))
 
-describe('InsightPage + deliveryConfig (smoke)', { timeout: 20000 }, () => {
+describe('InsightPage + deliveryConfig tabs (smoke)', { timeout: 20000 }, () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     postMock.mockReset()
@@ -56,42 +58,171 @@ describe('InsightPage + deliveryConfig (smoke)', { timeout: 20000 }, () => {
     getMock.mockImplementation(async (path) => respond(path))
   })
 
-  it('renders every anchor, fetches each endpoint once and shows the late customers', async () => {
-    const wrapper = mount(InsightPage, { props: { config: deliveryConfig, filter: buildDefaultDeliveryFilter(), active: true }, global: mountOptions() })
+  const mountDelivery = (props = {}) => mount(InsightPage, { props: { config: deliveryConfig, filter: buildDefaultDeliveryFilter(), active: true, ...props }, global: mountOptions() })
+  const names = () =>
+    postMock.mock.calls
+      .map((c) => c[0].split('/').pop())
+      .concat(getMock.mock.calls.map((c) => c[0].split('/').pop()))
+      .sort()
+  const clear = () => {
+    postMock.mockClear()
+    getMock.mockClear()
+  }
+  const anchor = (wrapper, id) => wrapper.find(`#insight-report-${id}`).exists()
+  const settle = async () => {
     await flushPromises()
     await flushPromises()
+  }
 
-    const html = wrapper.html()
-    ;['deliveryTrend', 'lateCustomers', 'atRisk', 'latePlans', 'stuckCostCard'].forEach((id) => expect(html, `anchor ${id}`).toContain(`id="insight-report-${id}"`))
-    ;['Delivery', 'DeliveryAtRiskPlans', 'DeliveryLatePlans', 'StuckAfterCostCardPlans'].forEach((name) => expect(postsTo(name), name).toHaveLength(1))
-    expect(getMock.mock.calls.filter((c) => c[0].endsWith('/DeliveryTarget'))).toHaveLength(1)
-    expect(html).toContain('ลูกค้า')
-    expect(html).toContain('40.3%')
-    expect(html).toContain('view.executive.asOf')
+  it('default tab is problems: only Delivery is fetched and no data-tab block is mounted', async () => {
+    const wrapper = mountDelivery()
+    await settle()
+    expect(names()).toEqual(['Delivery'])
+    ;['deliveryTrend', 'lateCustomers', 'atRisk', 'latePlans', 'stuckCostCard'].forEach((id) => expect(anchor(wrapper, id), id).toBe(false))
+    expect(wrapper.vm.currentSub).toBe('problems')
+    expect(wrapper.findAll('.insight-sub-tabs [role="tab"]').map((b) => b.text())).toEqual([
+      'view.productionInsight.tabs.problems (0)',
+      'view.productionInsight.tabs.forecasts (0)',
+      'view.productionInsight.tabs.actions (0)',
+      'view.productionInsight.delivery.tabs.overview',
+      'view.productionInsight.delivery.tabs.trend',
+      'view.productionInsight.delivery.tabs.customers',
+      'view.productionInsight.delivery.tabs.due'
+    ])
   })
 
-  it('range change → Delivery + latePlans only; department / horizon → atRisk (+ Delivery for horizon); draft → Delivery once', async () => {
-    const wrapper = mount(InsightPage, { props: { config: deliveryConfig, filter: buildDefaultDeliveryFilter(), active: true }, global: mountOptions() })
-    await flushPromises()
-    postMock.mockClear()
+  it('overview shows the KPI cards with no extra request; trend loads DeliveryTarget and mounts the target drawer; customers shows the late customers', async () => {
+    const wrapper = mountDelivery()
+    await settle()
+
+    clear()
+    wrapper.vm.selectSub('overview')
+    await settle()
+    expect(names()).toEqual([])
+    expect(wrapper.findAll('.stat-card').length).toBeGreaterThanOrEqual(6)
+    expect(wrapper.html()).toContain('view.executive.asOf')
+
+    clear()
+    wrapper.vm.selectSub('trend')
+    await settle()
+    expect(names()).toEqual(['DeliveryTarget'])
+    expect(anchor(wrapper, 'deliveryTrend')).toBe(true)
+    expect(wrapper.findComponent(TargetDrawer).exists()).toBe(true)
+
+    clear()
+    wrapper.vm.selectSub('customers')
+    await settle()
+    expect(names()).toEqual([])
+    expect(anchor(wrapper, 'lateCustomers')).toBe(true)
+    expect(wrapper.html()).toContain('40.3%')
+  })
+
+  it('due tab shows one table at a time (default atRisk); the toggle fetches only the selected table', async () => {
+    const wrapper = mountDelivery()
+    await settle()
+    clear()
+    wrapper.vm.selectSub('due')
+    await settle()
+    expect(names()).toEqual(['DeliveryAtRiskPlans'])
+    expect(anchor(wrapper, 'atRisk')).toBe(true)
+    expect(anchor(wrapper, 'latePlans') || anchor(wrapper, 'stuckCostCard')).toBe(false)
+
+    const toggleTabs = wrapper.findAll('[role="tab"]').filter((b) => b.text().includes('dueOptions'))
+    expect(toggleTabs.map((b) => b.text())).toEqual(['view.productionInsight.delivery.tabs.dueOptions.atRisk', 'view.productionInsight.delivery.tabs.dueOptions.latePlans', 'view.productionInsight.delivery.tabs.dueOptions.stuckCostCard'])
+
+    clear()
+    await toggleTabs[1].trigger('click')
+    await settle()
+    expect(names()).toEqual(['DeliveryLatePlans'])
+    expect(anchor(wrapper, 'atRisk')).toBe(false)
+
+    clear()
+    await toggleTabs[2].trigger('click')
+    await settle()
+    expect(names()).toEqual(['StuckAfterCostCardPlans'])
+  })
+
+  it('KPI card clicks land on the right tab (and due toggle), fetching only what that needs', async () => {
+    const wrapper = mountDelivery({ sub: 'overview' })
+    await settle()
+    const cards = wrapper.findAll('.stat-card')
+
+    clear()
+    await cards[3].trigger('click')
+    await settle()
+    expect(wrapper.vm.currentSub).toBe('due')
+    expect(wrapper.vm.state.dueTable).toBe('atRisk')
+    expect(names()).toEqual(['DeliveryAtRiskPlans'])
+
+    wrapper.vm.selectSub('overview')
+    clear()
+    await cards[5].trigger('click')
+    await settle()
+    expect(wrapper.vm.state.dueTable).toBe('stuckCostCard')
+    expect(names()).toEqual(['StuckAfterCostCardPlans'])
+
+    wrapper.vm.selectSub('overview')
+    clear()
+    await cards[1].trigger('click')
+    await settle()
+    expect(wrapper.vm.state.dueTable).toBe('latePlans')
+    expect(names()).toEqual(['DeliveryLatePlans'])
+
+    wrapper.vm.selectSub('overview')
+    clear()
+    await cards[0].trigger('click')
+    await settle()
+    expect(wrapper.vm.currentSub).toBe('trend')
+    expect(names()).toEqual(['DeliveryTarget'])
+
+    wrapper.vm.goToReport('lateCustomers')
+    await settle()
+    expect(wrapper.vm.currentSub).toBe('customers')
+  })
+
+  it('finding "ดู ›" links switch tab and toggle through the findings list', async () => {
+    const wrapper = mountDelivery()
+    await settle()
+    const list = wrapper.findAllComponents(InsightFindingList)[0]
+    clear()
+    list.vm.$emit('goto-report', 'stuckCostCard')
+    await settle()
+    expect(wrapper.vm.currentSub).toBe('due')
+    expect(wrapper.vm.state.dueTable).toBe('stuckCostCard')
+    expect(names()).toEqual(['StuckAfterCostCardPlans'])
+  })
+
+  it('filters: range -> Delivery (+ latePlans only while that table is open); department -> atRisk; horizon -> Delivery + atRisk; draft -> Delivery once', async () => {
+    const wrapper = mountDelivery({ sub: 'due' })
+    await settle()
+    clear()
 
     await wrapper.setProps({ filter: { ...buildDefaultDeliveryFilter(), start: new Date('2026-01-01'), end: new Date('2026-02-01'), bucket: 'month' } })
-    await flushPromises()
-    expect(postMock.mock.calls.map((c) => c[0].split('/').pop()).sort()).toEqual(['Delivery', 'DeliveryLatePlans'])
+    await settle()
+    expect(names()).toEqual(['Delivery'])
 
-    postMock.mockClear()
+    wrapper.vm.setState('dueTable', 'latePlans')
+    await settle()
+    clear()
+    await wrapper.setProps({ filter: { ...wrapper.props('filter'), start: new Date('2026-03-01'), end: new Date('2026-04-01') } })
+    await settle()
+    expect(names()).toEqual(['Delivery', 'DeliveryLatePlans'])
+
+    wrapper.vm.setState('dueTable', 'atRisk')
+    await settle()
+    clear()
     await wrapper.setProps({ filter: { ...wrapper.props('filter'), departmentKeys: ['trim'] } })
-    await flushPromises()
-    expect(postMock.mock.calls.map((c) => c[0].split('/').pop())).toEqual(['DeliveryAtRiskPlans'])
+    await settle()
+    expect(names()).toEqual(['DeliveryAtRiskPlans'])
 
-    postMock.mockClear()
+    clear()
     await wrapper.setProps({ filter: { ...wrapper.props('filter'), riskHorizonDays: 7 } })
-    await flushPromises()
-    expect(postMock.mock.calls.map((c) => c[0].split('/').pop()).sort()).toEqual(['Delivery', 'DeliveryAtRiskPlans'])
+    await settle()
+    expect(names()).toEqual(['Delivery', 'DeliveryAtRiskPlans'])
 
-    postMock.mockClear()
+    clear()
     wrapper.vm.setState('draftTargetPercent', 85)
-    await flushPromises()
+    await settle()
     expect(postsTo('Delivery')).toHaveLength(1)
     expect(postsTo('Delivery')[0][1].draftTargetPercent).toBe(85)
     expect(postMock.mock.calls).toHaveLength(1)

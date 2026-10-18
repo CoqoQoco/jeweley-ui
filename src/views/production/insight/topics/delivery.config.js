@@ -3,12 +3,22 @@
 // เสี่ยงเลยกำหนด → ส่งช้าในช่วงนี้ → ค้างหลังบัตรต้นทุน
 // Delivery ยิงครั้งเดียวได้ findings/kpi/series/targetPercent/targetSource/lateCustomers/asOf · draftTargetPercent ส่งไปเฉพาะตอนกำลัง
 // แก้เป้าใน TargetDrawer (preset deliveryTarget) · DeliveryTarget (GET) = เป้าที่บันทึกไว้จริง
+import { markRaw } from 'vue'
+
 import { isoOrNull, formatBucketDayMonth } from '@/components/insight/page/insight-page-helpers.js'
 import * as col from '@/components/insight/page/columns.js'
+import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 import { resolveOnTimeStatVariant, shouldShowDeliveryDraftChip } from './delivery-helpers.js'
 
 const D = 'view.productionInsight.delivery'
 const HELP = 'view.productionInsight.help'
+const TABS = 'view.productionInsight.delivery.tabs'
+
+// markRaw: config ถูกส่งผ่าน data()/props ของ view (reactive) — component ใน config ห้ามถูกห่อ proxy
+const ToggleGroup = markRaw(ToggleGroupGeneric)
+
+// ตารางใบงาน 3 อันในแท็บ "ใบงานที่ต้องตาม" แสดงทีละอัน เรียงแย่สุดก่อน (ค้าง/เสี่ยง → ส่งช้าแล้ว → ค้างหลังบัตรต้นทุน) — state.dueTable เลือกอันที่ mount/ยิง request
+const DUE_TABLE_VALUES = ['atRisk', 'latePlans', 'stuckCostCard']
 
 const countFormat = (value) => (value != null ? new Intl.NumberFormat('th-TH').format(value) : '—')
 const oneDecimal = (value) => (value != null ? new Intl.NumberFormat('th-TH', { maximumFractionDigits: 1 }).format(value) : '—')
@@ -57,8 +67,16 @@ const lateCustomerColumns = [
   col.number('lateMedianDays', `${D}.lateCustomersColLateMedianDays`, 'days', { minWidth: '110px' })
 ]
 
-export const deliveryConfig = {
+export const deliveryConfig = markRaw({
   titleKey: 'view.productionInsight.nav.delivery',
+
+  // โหมดแท็บ (opt-in) — แต่ละแท็บข้อมูลมีของน้อยๆ · Delivery (findings + KPI + กราฟ + ลูกค้า) ยิงตั้งแต่โหลดหน้าเสมอ
+  tabs: [
+    { key: 'overview', label: `${TABS}.overview` },
+    { key: 'trend', label: `${TABS}.trend` },
+    { key: 'customers', label: `${TABS}.customers` },
+    { key: 'due', label: `${TABS}.due` }
+  ],
   findings: { source: 'Delivery' },
 
   // เสริม params ที่ finding เองไม่มี (riskHorizonDays จาก filter ปัจจุบัน) ให้ข้อความ help.<CODE> resolve ได้
@@ -76,16 +94,19 @@ export const deliveryConfig = {
         draftTargetPercent: s.draftTargetPercent ?? undefined
       })
     },
-    DeliveryTarget: { endpoint: 'ProductionInsight/DeliveryTarget', method: 'get', params: () => null }
+    // เป้าที่บันทึกจริง ใช้เฉพาะในแท็บแนวโน้ม (ชิป "ร่าง" + แผงตั้งเป้า) → ยิงเมื่อเปิดแท็บนั้น
+    DeliveryTarget: { tab: 'trend', endpoint: 'ProductionInsight/DeliveryTarget', method: 'get', params: () => null }
   },
 
   state: {
-    draftTargetPercent: { initial: null }
+    draftTargetPercent: { initial: null },
+    dueTable: { initial: 'atRisk' }
   },
 
   blocks: [
     {
       type: 'kpi',
+      tab: 'overview',
       source: 'Delivery',
       title: `${D}.kpiGroupTitle`,
       icon: 'bi-truck',
@@ -158,6 +179,7 @@ export const deliveryConfig = {
     {
       group: true,
       id: 'deliveryTrend',
+      tab: 'trend',
       blocks: [
         {
           type: 'trend',
@@ -200,6 +222,7 @@ export const deliveryConfig = {
     {
       type: 'table',
       id: 'lateCustomers',
+      tab: 'customers',
       source: 'Delivery',
       title: `${D}.lateCustomersTitle`,
       icon: 'bi-people',
@@ -211,8 +234,25 @@ export const deliveryConfig = {
     },
 
     {
+      // สลับตารางใบงาน 3 อัน (แสดงทีละอัน) — ค่า = state.dueTable
+      type: 'slot',
+      id: 'dueSwitch',
+      tab: 'due',
+      component: ToggleGroup,
+      props: (ctx) => ({
+        modelValue: ctx.state.dueTable,
+        ariaLabel: ctx.t(`${TABS}.dueSwitchAria`),
+        options: DUE_TABLE_VALUES.map((value) => ({ value, label: ctx.t(`${TABS}.dueOptions.${value}`) }))
+      }),
+      events: { 'update:modelValue': (ctx, value) => ctx.setState('dueTable', value) }
+    },
+
+    {
       type: 'planTable',
       id: 'atRisk',
+      tab: 'due',
+      reveal: { stateKey: 'dueTable', value: 'atRisk' },
+      visible: (ctx) => ctx.state.dueTable === 'atRisk',
       title: `${D}.atRiskTitle`,
       icon: 'bi-hourglass-split',
       accent: 'warning',
@@ -225,6 +265,9 @@ export const deliveryConfig = {
     {
       type: 'planTable',
       id: 'latePlans',
+      tab: 'due',
+      reveal: { stateKey: 'dueTable', value: 'latePlans' },
+      visible: (ctx) => ctx.state.dueTable === 'latePlans',
       title: `${D}.latePlansTitle`,
       icon: 'bi-clock-history',
       accent: 'warning',
@@ -236,6 +279,9 @@ export const deliveryConfig = {
     {
       type: 'planTable',
       id: 'stuckCostCard',
+      tab: 'due',
+      reveal: { stateKey: 'dueTable', value: 'stuckCostCard' },
+      visible: (ctx) => ctx.state.dueTable === 'stuckCostCard',
       title: `${D}.stuckCostCardTitle`,
       icon: 'bi-clipboard-x',
       accent: 'warning',
@@ -245,6 +291,6 @@ export const deliveryConfig = {
       columns: stuckColumns
     }
   ]
-}
+})
 
 export default deliveryConfig

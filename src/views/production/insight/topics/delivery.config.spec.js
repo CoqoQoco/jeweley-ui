@@ -14,6 +14,8 @@ import { buildKpiCards } from '@/components/insight/page/blocks/kpi-block-helper
 import { buildTrendSeries, buildTrendOptions } from '@/components/insight/page/blocks/trend-block-helpers.js'
 import { buildPlanTableBody, buildResetPagingKey } from '@/components/insight/page/blocks/plan-table-block-helpers.js'
 import { collectBlockIds, findDuplicates, flattenBlocks, computeSourceKeys, diffSourceKeys, buildInitialState } from '@/components/insight/page/insight-page-helpers.js'
+import { validateTabConfig, findTabForReportRef, blocksForTab, hasTabs } from '@/components/insight/page/insight-tabs-helpers.js'
+import { reactive, isReactive } from 'vue'
 import { buildDefaultDeliveryFilter } from '../insight-filters.js'
 import { deliveryConfig } from './delivery.config.js'
 
@@ -43,14 +45,18 @@ describe('delivery config structure', () => {
     DELIVERY_REPORT_REFS.forEach((ref) => expect(ids, `reportRef ${ref}`).toContain(ref))
   })
 
-  it('keeps the original box order (14 → KPI, trend group, customers, at risk, late plans, stuck)', () => {
-    expect(deliveryConfig.blocks.map((b) => b.id ?? b.type)).toEqual(['kpi', 'deliveryTrend', 'lateCustomers', 'atRisk', 'latePlans', 'stuckCostCard'])
+  it('keeps the box order (KPI, trend group, customers, due switch, at risk, late plans, stuck)', () => {
+    expect(deliveryConfig.blocks.map((b) => b.id ?? b.type)).toEqual(['kpi', 'deliveryTrend', 'lateCustomers', 'dueSwitch', 'atRisk', 'latePlans', 'stuckCostCard'])
     expect(deliveryConfig.blocks[1].blocks).toHaveLength(2)
   })
 
   it('all nodes use known types, registered column kinds and an existing target preset', () => {
     nodes.forEach((node) => {
       if (node.row || node.group) return
+      if (node.type === 'slot') {
+        expect(node.component).toBeTruthy()
+        return
+      }
       expect(BLOCK_TYPES).toContain(node.type)
       ;(node.columns || []).forEach((c) => expect(COLUMN_KINDS).toContain(c.kind))
       ;(node.toolbar?.actions || []).forEach((a) => expect(TARGET_PRESETS[a.preset]).toBeTruthy())
@@ -82,6 +88,8 @@ describe('delivery config sources and table params', () => {
     expect(JSON.parse(JSON.stringify(body))).not.toHaveProperty('draftTargetPercent')
     expect(deliveryConfig.sources.Delivery.params(filter, { draftTargetPercent: 90 }).draftTargetPercent).toBe(90)
     expect(deliveryConfig.sources.DeliveryTarget.method).toBe('get')
+    expect(deliveryConfig.sources.Delivery.tab).toBeUndefined()
+    expect(deliveryConfig.sources.DeliveryTarget.tab).toBe('trend')
   })
 
   it('source refetch rules: range → Delivery, riskHorizon → Delivery, departmentKeys → none, draft → Delivery only', () => {
@@ -181,5 +189,66 @@ describe('delivery KPI / charts / draft chip', () => {
     expect(node.emptyText).toBe('view.productionInsight.delivery.lateCustomersEmpty')
     expect(node.dataKey).toBe('customerCode')
     expect(node.rows({ data: { Delivery: {} } })).toEqual([])
+  })
+})
+
+describe('delivery tabs (opt-in tab mode)', () => {
+  it('opts in with the 4 data tabs in order and every top-level block names one of them', () => {
+    expect(hasTabs(deliveryConfig)).toBe(true)
+    expect(deliveryConfig.tabs.map((tab) => tab.key)).toEqual(['overview', 'trend', 'customers', 'due'])
+    expect(validateTabConfig(deliveryConfig)).toEqual([])
+  })
+
+  it('tab and toggle labels exist in th', () => {
+    deliveryConfig.tabs.forEach((tab) => expect(i18n.global.te(tab.label, 'th'), tab.label).toBe(true))
+    ;['dueSwitchAria', 'dueOptions.atRisk', 'dueOptions.latePlans', 'dueOptions.stuckCostCard'].forEach((key) => expect(i18n.global.te(`view.productionInsight.delivery.tabs.${key}`, 'th'), key).toBe(true))
+  })
+
+  it('top-level blocks per tab: each tab holds little', () => {
+    const ids = (key) => blocksForTab(deliveryConfig, key).map((n) => n.id || n.type)
+    expect(ids('overview')).toEqual(['kpi'])
+    expect(ids('trend')).toEqual(['deliveryTrend'])
+    expect(ids('customers')).toEqual(['lateCustomers'])
+    expect(ids('due')).toEqual(['dueSwitch', 'atRisk', 'latePlans', 'stuckCostCard'])
+  })
+
+  it('reportRef → tab (+ due toggle): finding links and every KPI card link are reachable', () => {
+    const expectTab = (ref, tab, value) => {
+      const target = findTabForReportRef(deliveryConfig, ref)
+      expect(target?.tab, ref).toBe(tab)
+      expect(target?.reveal?.value, ref).toBe(value)
+    }
+    expectTab('deliveryTrend', 'trend', undefined)
+    expectTab('lateCustomers', 'customers', undefined)
+    expectTab('atRisk', 'due', 'atRisk')
+    expectTab('latePlans', 'due', 'latePlans')
+    expectTab('stuckCostCard', 'due', 'stuckCostCard')
+    const kpi = deliveryConfig.blocks.find((b) => b.type === 'kpi')
+    kpi.cards.forEach((card) => expect(findTabForReportRef(deliveryConfig, card.reportRef), `${card.id} → ${card.reportRef}`).not.toBeNull())
+    DELIVERY_REPORT_REFS.forEach((ref) => expect(findTabForReportRef(deliveryConfig, ref), ref).not.toBeNull())
+    deliveryConfig.blocks.filter((n) => n.reveal).forEach((n) => expect(n.reveal.stateKey).toBe('dueTable'))
+  })
+
+  it('the due tables are visible one at a time from state.dueTable, worst first, default atRisk', () => {
+    const state = buildInitialState(deliveryConfig.state)
+    expect(state.dueTable).toBe('atRisk')
+    const blockOf = (id) => deliveryConfig.blocks.find((n) => n.id === id)
+    const visibleIds = (dueTable) => ['atRisk', 'latePlans', 'stuckCostCard'].filter((id) => blockOf(id).visible({ state: { ...state, dueTable } }))
+    expect(visibleIds('atRisk')).toEqual(['atRisk'])
+    expect(visibleIds('latePlans')).toEqual(['latePlans'])
+    expect(visibleIds('stuckCostCard')).toEqual(['stuckCostCard'])
+    const dueSwitch = blockOf('dueSwitch')
+    expect(dueSwitch.props({ state, t: (key) => key }).options.map((o) => o.value)).toEqual(['atRisk', 'latePlans', 'stuckCostCard'])
+    const next = { ...state }
+    dueSwitch.events['update:modelValue']({ setState: (key, value) => (next[key] = value) }, 'stuckCostCard')
+    expect(next.dueTable).toBe('stuckCostCard')
+  })
+
+  it('the target drawer stays in the trend toolbar and the config/slot component stay out of Vue reactivity', () => {
+    const trend = deliveryConfig.blocks.find((b) => b.id === 'deliveryTrend')
+    expect(trend.blocks[0].toolbar.actions).toEqual([{ type: 'targetDrawer', preset: 'deliveryTarget' }])
+    expect(isReactive(reactive({ config: deliveryConfig }).config)).toBe(false)
+    const slot = deliveryConfig.blocks.find((n) => n.id === 'dueSwitch')
+    expect(isReactive(reactive({ c: slot.component }).c)).toBe(false)
   })
 })

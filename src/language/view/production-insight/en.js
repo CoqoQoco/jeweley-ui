@@ -199,6 +199,19 @@ export default {
   },
 
   delivery: {
+    tabs: {
+      overview: 'Overview',
+      trend: 'Trend',
+      customers: 'Late customers',
+      due: 'Plans to chase',
+      dueSwitchAria: 'Choose the plan list to chase',
+      dueOptions: {
+        atRisk: 'At risk / overdue',
+        latePlans: 'Delivered late',
+        stuckCostCard: 'Stuck after cost card'
+      }
+    },
+
     filterSectionTitle: 'Delivery tab only',
     filterDept: 'Department',
     filterRiskHorizon: 'Risk horizon (days)',

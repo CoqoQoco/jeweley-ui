@@ -199,6 +199,19 @@ export default {
   },
 
   delivery: {
+    tabs: {
+      overview: 'ภาพรวม',
+      trend: 'แนวโน้ม',
+      customers: 'ลูกค้าที่ส่งช้า',
+      due: 'ใบงานที่ต้องตาม',
+      dueSwitchAria: 'เลือกตารางใบงานที่ต้องตาม',
+      dueOptions: {
+        atRisk: 'เสี่ยง/เลยกำหนด',
+        latePlans: 'ส่งช้าแล้ว',
+        stuckCostCard: 'ค้างหลังบัตรต้นทุน'
+      }
+    },
+
     filterSectionTitle: 'เฉพาะหมวด "ส่งงานตรงเวลา"',
     filterDept: 'แผนก',
     filterRiskHorizon: 'เตือนล่วงหน้า (วัน)',
