@@ -26,6 +26,7 @@ export default {
     qtyAvailable: 'Available',
     lotLabel: 'Lot',
     qtyReadonlyHint: 'Quantity can only be changed via stock movement/adjustment',
+    skuSharedHint: 'This SKU is shared with {count} other piece(s). Changes to price, name, mold or image apply to this piece only.',
     viewCost: 'View Cost Detail',
     viewHistory: 'View Appraisal History',
     printBarcode: 'Print Product Label',

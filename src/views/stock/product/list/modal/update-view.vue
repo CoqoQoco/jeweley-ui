@@ -109,6 +109,11 @@
 
             <!-- Product Information Section -->
             <SectionCardGeneric :title="$t('view.stock.product.stockInfo')" class="modal-section">
+              <p v-if="sharedOtherCount > 0" class="sku-shared-hint">
+                <i class="bi bi-info-circle"></i>
+                {{ $t('view.stock.product.skuSharedHint', { count: sharedOtherCount }) }}
+              </p>
+
               <div class="form-row two-col">
                 <FormFieldGeneric :label="$t('view.stock.product.productNumber')" :required="true">
                   <InputTextGeneric v-model="stock.productNumber" :placeholder="$t('view.stock.product.productNumber')" :required="true" />
@@ -369,6 +374,9 @@ export default {
   },
 
   computed: {
+    sharedOtherCount() {
+      return this.skuPieceCount > 1 ? this.skuPieceCount - 1 : 0
+    },
     masterGold() {
       return this.masterStore.gold
     },
@@ -430,6 +438,7 @@ export default {
           await this.masterStore.fetchDiamondGrade()
           await this.masterStore.fetchGem()
           await this.stockLocationStore.fetchAllForMap()
+          await this.loadSkuPieceCount()
         }
       },
       immediate: true
@@ -438,6 +447,7 @@ export default {
       handler(val) {
         if (!val) return
         this.stock = { ...val }
+        this.skuPieceCount = Number(val.skuPieceCount) || 0
       },
       immediate: true
     }
@@ -448,6 +458,7 @@ export default {
       isShowModal: false,
       type: 'STOCK-PRODUCT',
       stock: {},
+      skuPieceCount: 0,
       imageStage: 'SHOW',
       search: null,
       take: 10,
@@ -470,7 +481,17 @@ export default {
   },
 
   methods: {
+    async loadSkuPieceCount() {
+      const stockNumber = this.stock.stockNumber
+      if (!stockNumber || this.stock.skuPieceCount !== undefined) return
+      const res = await this.productStore.fetchDataGet({ formValue: { stockNumber }, skipError: true })
+      if (this.isShowModal && this.stock.stockNumber === stockNumber) {
+        this.skuPieceCount = Number(res?.skuPieceCount) || 0
+      }
+    },
+
     onClear() {
+      this.skuPieceCount = 0
       this.stock = {}
       this.imageStage = 'SHOW'
       this.search = null
@@ -765,6 +786,12 @@ export default {
 
 .w-full {
   width: 100%;
+}
+
+.sku-shared-hint {
+  margin: 0 0 var(--sp-lg);
+  color: var(--base-sub-color);
+  font-size: var(--fs-sm);
 }
 
 .qty-readonly-hint {

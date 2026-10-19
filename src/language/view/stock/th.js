@@ -26,6 +26,7 @@ export default {
     qtyAvailable: 'พร้อมขาย',
     lotLabel: 'ล็อต',
     qtyReadonlyHint: 'แก้ไขจำนวนได้จากการย้าย/ปรับปรุงสต็อกเท่านั้น',
+    skuSharedHint: 'SKU นี้ใช้ร่วมกับสินค้าอีก {count} ชิ้น การแก้ราคา/ชื่อ/แบบ/รูป จะมีผลเฉพาะชิ้นนี้',
     viewCost: 'ดูต้นทุนสินค้า',
     viewHistory: 'ดูประวัติตีราคา',
     printBarcode: 'พิมพ์ป้ายสินค้า',
