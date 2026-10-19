@@ -35,7 +35,8 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
     dataSearchExport: {}
   }),
   actions: {
-    async fetchDataSearch({ take, skip, sort, formValue }) {
+    // คืน res ด้วย (ผู้เรียกเดิมไม่สน) — ใช้เมื่อยิงหลายคำขอขนานกัน (state dataSearch ถูกเขียนทับกันได้)
+    async fetchDataSearch({ take, skip, sort, formValue, skipLoading = false }) {
       try {
         //console.log('formValue', formValue)
         this.dataSearch = {}
@@ -46,12 +47,13 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
           search: buildSearchParam(formValue)
         }
 
-        const res = await api.jewelry.post('StockProduct/List', param)
+        const res = await api.jewelry.post('StockProduct/List', param, { skipLoading })
         if (res) {
           this.dataSearch = { ...res }
         } else {
           this.dataSearch = {}
         }
+        return res
       } catch (error) {
         console.error('Error fetching stock product data:', error)
       }

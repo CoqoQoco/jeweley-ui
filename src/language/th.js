@@ -167,6 +167,7 @@ export default {
     stock: {
       product: { ...stock.product },
       productGallery: { ...stock.productGallery },
+      printBarcode: { ...stock.printBarcode },
       location: { ...stock.location },
       moveLocation: { ...stock.moveLocation },
       storageMoveReport: { ...stock.storageMoveReport },

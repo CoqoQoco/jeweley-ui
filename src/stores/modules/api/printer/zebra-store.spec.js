@@ -94,6 +94,21 @@ describe('zebraPrinterApi — เลือก template ตาม profile + ส�
       expect(res.summary).toEqual({ total: 2, success: 2, failed: 0 })
     })
 
+    it('fetchZebraPrints legacy: form.print ขยายเป็นหลายใบก่อนส่งก้อนเดียว', async () => {
+      api.zebraPrinter.printsZPL.mockResolvedValue({ status: 'success' })
+
+      const store = zebraPrinterApi()
+      await store.fetchZebraPrints({
+        formValue: [
+          { stockNumber: 'A-001', barcodeType: 'original', print: 2 },
+          { stockNumber: 'B-002', barcodeType: 'original' }
+        ]
+      })
+
+      expect(api.zebraPrinter.printsZPL).toHaveBeenCalledTimes(1)
+      expect(api.zebraPrinter.printsZPL.mock.calls[0][0]).toHaveLength(3)
+    })
+
     it('original-qr บนโปรไฟล์ legacy → error พิมพ์ได้แค่ GT800 ไม่เรียก printZPL', async () => {
       const store = zebraPrinterApi()
       const res = await store.fetchZebraPrint({
@@ -159,7 +174,47 @@ describe('zebraPrinterApi — เลือก template ตาม profile + ส�
       expect(printZpl).toHaveBeenCalledTimes(2)
       expect(api.zebraPrinter.printsZPL).not.toHaveBeenCalled()
       expect(res.status).toBe('success')
-      expect(res.summary).toEqual({ total: 2, success: 2, failed: 0 })
+      expect(res.summary).toEqual({ total: 2, success: 2, failed: 0, failedIndexes: [] })
+    })
+
+    it('fetchZebraPrints: form.print > 1 → ขยายเป็นหลายใบ + onProgress นับเป็นใบ', async () => {
+      setBarcodePrinterName('GT800 RAW')
+      printZpl.mockResolvedValue({ success: true })
+      const onProgress = vi.fn()
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchZebraPrints({
+        formValue: [
+          { stockNumber: 'A-001', barcodeType: 'original', print: 3 },
+          { stockNumber: 'B-002', barcodeType: 'original' }
+        ],
+        onProgress
+      })
+
+      expect(printZpl).toHaveBeenCalledTimes(4)
+      expect(res.summary).toEqual({ total: 4, success: 4, failed: 0, failedIndexes: [] })
+      expect(onProgress).toHaveBeenCalledTimes(4)
+      expect(onProgress).toHaveBeenLastCalledWith(4, 4)
+    })
+
+    it('fetchZebraPrints: ใบที่พลาดถูกรายงานเป็น failedIndexes ของ form ต้นทาง', async () => {
+      setBarcodePrinterName('GT800 RAW')
+      printZpl
+        .mockResolvedValueOnce({ success: true })
+        .mockRejectedValueOnce(new Error('offline'))
+        .mockResolvedValueOnce({ success: true })
+        .mockResolvedValueOnce({ success: true })
+
+      const store = zebraPrinterApi()
+      const res = await store.fetchZebraPrints({
+        formValue: [
+          { stockNumber: 'A-001', barcodeType: 'original', print: 2 },
+          { stockNumber: 'B-002', barcodeType: 'original', print: 2 }
+        ]
+      })
+
+      expect(res.status).toBe('partial')
+      expect(res.summary).toEqual({ total: 4, success: 3, failed: 1, failedIndexes: [0] })
     })
 
     it('fetchZebraPrints: บางรายการพิมพ์ไม่สำเร็จ → status partial', async () => {
@@ -175,7 +230,7 @@ describe('zebraPrinterApi — เลือก template ตาม profile + ส�
       })
 
       expect(res.status).toBe('partial')
-      expect(res.summary).toEqual({ total: 2, success: 1, failed: 1 })
+      expect(res.summary).toEqual({ total: 2, success: 1, failed: 1, failedIndexes: [1] })
     })
 
     it('original-qr ไม่มี publicUrl → error ไม่เรียก printZpl', async () => {

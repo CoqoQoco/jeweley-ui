@@ -14,6 +14,7 @@ import {
   generateGt800ZPLVertical,
   generateGt800ZPLQr
 } from '@/services/helper/barcode/barcode-zpl.js'
+import { expandIndexesByCopies, collectFailedFormIndexes } from '@/services/helper/barcode/print-batch.js'
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -168,16 +169,21 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
       }
     },
 
-    async fetchZebraPrints({ formValue, skipLoading = true }) {
+    // formValue[i].print = จำนวนใบของรายการนั้น (ว่าง = 1 ใบ) · onProgress(done,total) นับเป็นใบ (GT800 เรียกทุกใบ, legacy เรียกตอนจบ)
+    async fetchZebraPrints({ formValue, skipLoading = true, onProgress = null }) {
       const config = getBarcodePrinterConfig()
 
       const qrGuardResult = checkQrLabelGuard(formValue, config.profile)
       if (qrGuardResult) return qrGuardResult
 
-      const zpls = formValue.map((form) => this.buildZpl(form, config.profile, config.dpiScale, config.rotate180))
+      const formZpls = formValue.map((form) => this.buildZpl(form, config.profile, config.dpiScale, config.rotate180))
+      const sourceIndexes = expandIndexesByCopies(formValue)
+      const zpls = sourceIndexes.map((formIndex) => formZpls[formIndex])
 
       if (config.profile === PRINTER_PROFILES.LEGACY) {
-        return await api.zebraPrinter.printsZPL(zpls, { skipLoading })
+        const legacyResult = await api.zebraPrinter.printsZPL(zpls, { skipLoading })
+        if (typeof onProgress === 'function') onProgress(zpls.length, zpls.length)
+        return legacyResult
       }
 
       if (!config.printerName) {
@@ -186,6 +192,7 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
 
       let successCount = 0
       let failedCount = 0
+      const failedLabelIndexes = []
 
       // bridge มีแค่ /print/raw จึงต้องวนยิงทีละใบ
       for (let i = 0; i < zpls.length; i++) {
@@ -194,7 +201,10 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
           successCount++
         } catch (err) {
           failedCount++
+          failedLabelIndexes.push(i)
         }
+
+        if (typeof onProgress === 'function') onProgress(i + 1, zpls.length)
 
         if (i < zpls.length - 1) {
           await delay(config.copyDelayMs)
@@ -202,7 +212,12 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
       }
 
       const total = zpls.length
-      const summary = { total, success: successCount, failed: failedCount }
+      const summary = {
+        total,
+        success: successCount,
+        failed: failedCount,
+        failedIndexes: collectFailedFormIndexes(sourceIndexes, failedLabelIndexes)
+      }
 
       if (failedCount === 0) {
         return { status: 'success', message: `พิมพ์ทั้งหมด ${total} รายการสำเร็จ`, summary }

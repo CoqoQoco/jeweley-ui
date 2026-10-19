@@ -2,6 +2,7 @@ const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 
 const List = () => import('@/views/stock/product/list/index-view.vue')
 const Detail = () => import('@/views/stock/product/detail/index-view.vue')
+const PrintBarcode = () => import('@/views/stock/product/print-barcode/index-view.vue')
 
 const StockLocationList = () => import('@/views/stock/location/index-view.vue')
 const StockMoveLocation = () => import('@/views/stock/move-location/index-view.vue')
@@ -58,6 +59,19 @@ const routes = [
           },
           minorShow: true,
           menuId: `stock-product`,
+          permissions: [PERMISSIONS.STOCK_PRODUCT]
+        }
+      },
+      {
+        path: '/stock-product-print-barcode',
+        name: 'stock-product-print-barcode',
+        component: PrintBarcode,
+        meta: {
+          Displayname: {
+            en: 'Bulk Barcode Print',
+            th: 'พิมพ์บาร์โค้ดหลายรายการ'
+          },
+          minorShow: true,
           permissions: [PERMISSIONS.STOCK_PRODUCT]
         }
       },
