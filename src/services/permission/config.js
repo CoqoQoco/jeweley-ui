@@ -46,6 +46,10 @@ export const PERMISSIONS = {
   // stock convert (ใบแปลงสินค้า)
   STOCK_CONVERT: 'stock:convert',
 
+  // stock rfid (ผูกแท็ก RFID / ติดตามผูกแท็ก)
+  STOCK_RFID_VIEW: 'stock-rfid:view',
+  STOCK_RFID_BIND: 'stock-rfid:bind',
+
   //customer
   CUSTOMER_VIEW: 'customer:view',
   CUSTOMER_CREATE: 'customer:create',

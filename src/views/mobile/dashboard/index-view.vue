@@ -257,7 +257,7 @@ export default {
     canBindRfid() {
       const user = this.authStore.user
       if (!user) return false
-      return new PermissionService(user, this.authStore.permissions).hasPermission(PERMISSIONS.STOCK_PRODUCT)
+      return new PermissionService(user, this.authStore.permissions).hasPermission(PERMISSIONS.STOCK_RFID_BIND)
     },
 
     /**

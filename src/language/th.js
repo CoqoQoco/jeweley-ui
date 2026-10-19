@@ -176,6 +176,7 @@ export default {
       gemMovementAnalysis: { ...stock.gemMovementAnalysis },
       materialValuationReport: { ...stock.materialValuationReport },
       stockBalanceSummary: { ...stock.stockBalanceSummary },
+      stockRfidTracking: { ...stock.stockRfidTracking },
       convert: { ...stock.convert },
       gold: { ...stock.gold },
       gem: {

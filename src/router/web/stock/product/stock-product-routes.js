@@ -23,6 +23,8 @@ const Barcode = () => import('@/views/receipt-stock/product/test-barcode/index-v
 
 const ShowcaseScan = () => import('@/views/showcase-scan/index-view.vue')
 
+const RfidTracking = () => import('@/views/receipt-stock/product/rfid-tracking/index-view.vue')
+
 import { PERMISSIONS } from '@/services/permission/config.js'
 
 const routes = [
@@ -238,6 +240,20 @@ const routes = [
           },
           minorShow: true,
           permissions: [PERMISSIONS.STOCK_PRODUCT]
+        }
+      },
+
+      {
+        path: '/receipt-stock/rfid-tracking',
+        name: 'rfid-tracking',
+        component: RfidTracking,
+        meta: {
+          Displayname: {
+            en: 'RFID Tag Tracking',
+            th: 'ติดตามผูกแท็ก RFID'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_RFID_VIEW]
         }
       }
     ]

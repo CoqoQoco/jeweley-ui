@@ -204,7 +204,7 @@ const routes = [
           Displayname: { en: 'Bind RFID Tag', th: 'ผูกแท็ก RFID' },
           classIcon: 'bi bi-broadcast',
           requiresAuth: true,
-          permissions: [PERMISSIONS.STOCK_PRODUCT]
+          permissions: [PERMISSIONS.STOCK_RFID_BIND]
         }
       },
       {
