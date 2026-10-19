@@ -10,7 +10,10 @@ import {
   generateGt800ZPLQr,
   pickQrMagnification,
   layoutGt800,
-  layoutGt800Qr
+  layoutGt800Qr,
+  REMARK_SYMBOLS,
+  buildRemarkSymbolZpl,
+  getRemarkPreviewChar
 } from './barcode-zpl.js'
 
 // สำเนาฟังก์ชันเดิมจาก commit 7048e5a^ (ก่อนย้ายไป DK Print Bridge) ไว้เทียบผลลัพธ์ตรงตัวอักษร
@@ -708,5 +711,88 @@ describe('pickQrMagnification', () => {
   it('URL ยาวมาก (เกินความจุ v6) → 2 (ไม่ต่ำกว่า 2)', () => {
     const url = 'https://app.duangkeaw.com/p/' + 'X'.repeat(150)
     expect(pickQrMagnification(url)).toBe(2)
+  })
+})
+
+describe('GT800 original — สัญลักษณ์หมายเหตุ (remarkSymbol)', () => {
+  const form = {
+    stockNumber: 'AH21142',
+    salePrice: 12345,
+    gold: 'PG',
+    size: '55',
+    madeIn: 'MADE IN THAILAND',
+    productNameEn: 'Ring Test',
+    gems: ['0.24ct.']
+  }
+
+  it('ไม่ระบุ/none/ไม่รู้จัก → ZPL เหมือนเดิมทุกตัวอักษร และไม่มี flag no-room', () => {
+    const base = generateGt800ZPL(form, 1)
+    expect(generateGt800ZPL({ ...form, remarkSymbol: '' }, 1)).toBe(base)
+    expect(generateGt800ZPL({ ...form, remarkSymbol: 'none' }, 1)).toBe(base)
+    expect(generateGt800ZPL({ ...form, remarkSymbol: 'bogus' }, 1)).toBe(base)
+    expect(base).not.toContain('^GC')
+    expect(base).not.toContain('^GB')
+    const layout = layoutGt800({ ...form, remarkSymbol: 'bogus' }, 'original')
+    expect(layout.remark).toBeNull()
+    expect(layout.remarkNoRoom).toBe(false)
+  })
+
+  it('ทั้ง 8 สัญลักษณ์ที่ dpiScale=1', () => {
+    expect(REMARK_SYMBOLS).toEqual([
+      'star', 'hash', 'plus', 'at', 'circle-filled', 'circle-outline', 'square-filled', 'square-outline'
+    ])
+    expect(buildRemarkSymbolZpl('star', 100, 31)).toBe('^FO100,31^A0N,16,16^FD*^FS')
+    expect(buildRemarkSymbolZpl('hash', 100, 31)).toBe('^FO100,31^A0N,16,16^FD#^FS')
+    expect(buildRemarkSymbolZpl('plus', 100, 31)).toBe('^FO100,31^A0N,16,16^FD+^FS')
+    expect(buildRemarkSymbolZpl('at', 100, 31)).toBe('^FO100,31^A0N,16,16^FD@^FS')
+    expect(buildRemarkSymbolZpl('circle-filled', 100, 31)).toBe('^FO100,31^GC14,14,B^FS')
+    expect(buildRemarkSymbolZpl('circle-outline', 100, 31)).toBe('^FO100,31^GC14,2,B^FS')
+    expect(buildRemarkSymbolZpl('square-filled', 100, 31)).toBe('^FO100,31^GB14,14,14^FS')
+    expect(buildRemarkSymbolZpl('square-outline', 100, 31)).toBe('^FO100,31^GB14,14,2^FS')
+    expect(buildRemarkSymbolZpl('none', 100, 31)).toBe('')
+    REMARK_SYMBOLS.forEach((k) => expect(getRemarkPreviewChar(k)).not.toBe(''))
+  })
+
+  it('คูณ dpiScale (300dpi ~1.478)', () => {
+    expect(buildRemarkSymbolZpl('circle-filled', 100, 31, 2)).toBe('^FO200,62^GC28,28,B^FS')
+    expect(buildRemarkSymbolZpl('square-outline', 100, 31, 2)).toBe('^FO200,62^GB28,28,4^FS')
+  })
+
+  it('ชื่อสั้น → วางท้ายชื่อบนแถวชื่อ และ ZPL ของสัญลักษณ์อยู่ใน output ครั้งเดียว ไม่ปนในบาร์โค้ด', () => {
+    const layout = layoutGt800({ ...form, remarkSymbol: 'circle-filled' }, 'original')
+    // 'Ring Test' 9 ตัว × 7.2 × 16/14 = 74.06 + gap 10 → 256 + 84.06 = 340
+    expect(layout.remark).toEqual({ key: 'circle-filled', x: 340, y: 31, row: 'name' })
+    const zpl = generateGt800ZPL({ ...form, remarkSymbol: 'circle-filled' }, 1)
+    expect(zpl.split('^GC14,14,B').length - 1).toBe(1)
+    expect(zpl).toContain('^FO340,31^GC14,14,B^FS')
+    expect(zpl).toContain('^FD' + 'AH21142' + '^FS')
+    expect(zpl).not.toMatch(/\^BCN[^^]*\^FD[^^]*[*#+@]/)
+  })
+
+  it('ชื่อยาวเต็มพื้นที่ → fallback ท้ายบรรทัดทอง (y=86)', () => {
+    const layout = layoutGt800({ ...form, productNameEn: 'A'.repeat(32), remarkSymbol: 'star' }, 'original')
+    // 'PG #55' 6 ตัว × 7.1 = 42.6 + 10 → 256 + 52.6 = 309
+    expect(layout.remark).toEqual({ key: 'star', x: 309, y: 86, row: 'gold' })
+    expect(layout.remarkNoRoom).toBe(false)
+  })
+
+  it('ไม่มีที่ทั้งสองแถว → ไม่พิมพ์ + remarkNoRoom=true', () => {
+    const f = { ...form, productNameEn: 'A'.repeat(32), gold: 'G'.repeat(22), size: '', remarkSymbol: 'star' }
+    const layout = layoutGt800(f, 'original')
+    expect(layout.remark).toBeNull()
+    expect(layout.remarkNoRoom).toBe(true)
+    const withoutRemark = generateGt800ZPL({ ...f, remarkSymbol: '' }, 1)
+    expect(generateGt800ZPL(f, 1)).toBe(withoutRemark)
+  })
+
+  it('ไม่กระทบแท็บอื่น (vertical / QR) และตำแหน่งสัญลักษณ์จบก่อนแนวพับ 420', () => {
+    const v = generateGt800ZPLVertical(form, 1)
+    expect(generateGt800ZPLVertical({ ...form, remarkSymbol: 'star' }, 1)).toBe(v)
+    const q = generateGt800ZPLQr({ ...form, publicUrl: 'https://a.co/x' }, 1)
+    expect(generateGt800ZPLQr({ ...form, publicUrl: 'https://a.co/x', remarkSymbol: 'star' }, 1)).toBe(q)
+    for (let n = 0; n <= 40; n++) {
+      const l = layoutGt800({ ...form, productNameEn: 'A'.repeat(n), remarkSymbol: 'at' }, 'original')
+      if (l.remark) expect(l.remark.x + 14).toBeLessThanOrEqual(420)
+    }
   })
 })

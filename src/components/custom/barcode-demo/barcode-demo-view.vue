@@ -12,7 +12,7 @@
       <div class="main-box">
         <div class="box-col-container">
           <div class="left-box">
-            <div class="mold-box">{{ productNameEn }}</div>
+            <div class="mold-box">{{ productNameEn }}<span v-if="remarkRow === 'name'" class="remark-mark">{{ remarkChar }}</span></div>
             <div class="d-flex justify-content-between">
               <div class="barcode-wrapper">
                 <svg ref="barcodeElement"></svg>
@@ -23,6 +23,7 @@
             <div class="d-flex justify-content-start">
               <div class="gold-box">{{ gold }}</div>
               <div class="gold-box ml-1">{{ sizeDisplay }}</div>
+              <div v-if="remarkRow === 'gold'" class="gold-box remark-mark">{{ remarkChar }}</div>
             </div>
           </div>
           <div class="right-box" :class="{ 'right-box-center': isQrMode }">
@@ -107,6 +108,14 @@ export default {
       default: ''
     },
     productNameEn: {
+      type: String,
+      default: ''
+    },
+    remarkChar: {
+      type: String,
+      default: ''
+    },
+    remarkRow: {
       type: String,
       default: ''
     }
@@ -268,6 +277,10 @@ export default {
   font-size: 10px;
   font-weight: bold;
   margin-left: 15px;
+}
+
+.remark-mark {
+  margin-left: var(--sp-sm);
 }
 
 .qr-preview {

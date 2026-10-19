@@ -74,7 +74,27 @@
               :barcode="barcode"
               :price="previewPrice"
               :qrUrl="selectedType === 'original-qr' ? publicUrl : ''"
+              :remarkSymbol="showRemarkSelect ? remarkSymbol : ''"
             />
+          </div>
+        </div>
+
+        <div v-if="showRemarkSelect" class="pl-4 pr-4 pt-2 remark-select">
+          <FormFieldGeneric :label="$t('view.stock.product.remarkLabel')">
+            <DropdownGeneric
+              v-model="remarkSymbol"
+              inputId="barcode-remark-symbol"
+              :ariaLabel="$t('view.stock.product.remarkLabel')"
+              :options="remarkOptions"
+              optionLabel="label"
+              optionValue="value"
+            />
+          </FormFieldGeneric>
+          <div v-if="showRemarkNoRoomWarning" class="pt-2">
+            <div class="cost-missing-warning">
+              <span class="bi bi-exclamation-triangle mr-1"></span>
+              <span>{{ $t('view.stock.product.remarkNoRoom') }}</span>
+            </div>
           </div>
         </div>
 
@@ -180,11 +200,17 @@ import { getPieceQty } from '@/services/utils/stock-piece-qty.js'
 import { error } from '@/services/alert/sweetAlerts.js'
 import { getBarcodeProfile, PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
 import { buildPublicUrl } from '@/config/public-site-config.js'
+import { layoutGt800, REMARK_SYMBOLS, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
+
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 
 export default {
   components: {
     modal,
-    barcodePreview
+    barcodePreview,
+    DropdownGeneric,
+    FormFieldGeneric
   },
 
   setup() {
@@ -226,6 +252,7 @@ export default {
         this.hasCostData = false
         this.publicUrl = ''
         this.publicLinkStatus = 'idle'
+        this.remarkSymbol = REMARK_SYMBOL_NONE
 
         this.barcode = {
           ...buildBarcodeModel(val),
@@ -334,6 +361,33 @@ export default {
       return this.selectedType === 'original-qr' && this.publicLinkStatus === 'error'
     },
 
+    // สัญลักษณ์หมายเหตุ: แท็บ original + GT800 เท่านั้น
+    showRemarkSelect() {
+      return this.selectedType === 'original' && !this.isLegacyProfile
+    },
+
+    remarkOptions() {
+      const keyToI18n = {
+        star: 'remarkStar',
+        hash: 'remarkHash',
+        plus: 'remarkPlus',
+        at: 'remarkAt',
+        'circle-filled': 'remarkCircleFilled',
+        'circle-outline': 'remarkCircleOutline',
+        'square-filled': 'remarkSquareFilled',
+        'square-outline': 'remarkSquareOutline'
+      }
+      return [
+        { value: REMARK_SYMBOL_NONE, label: this.$t('view.stock.product.remarkNone') },
+        ...REMARK_SYMBOLS.map((key) => ({ value: key, label: this.$t(`view.stock.product.${keyToI18n[key]}`) }))
+      ]
+    },
+
+    showRemarkNoRoomWarning() {
+      if (!this.showRemarkSelect) return false
+      return layoutGt800({ ...this.barcode, remarkSymbol: this.remarkSymbol }, 'original').remarkNoRoom
+    },
+
     isPrintDisabled() {
       if (!this.isPrinterReady) return true
       if (this.selectedType === 'original-qr' && this.publicLinkStatus !== 'ready') return true
@@ -352,7 +406,8 @@ export default {
       costLoaded: false,
       hasCostData: false,
       publicUrl: '',
-      publicLinkStatus: 'idle'
+      publicLinkStatus: 'idle',
+      remarkSymbol: REMARK_SYMBOL_NONE
     }
   },
 
@@ -366,6 +421,7 @@ export default {
       this.hasCostData = false
       this.publicUrl = ''
       this.publicLinkStatus = 'idle'
+      this.remarkSymbol = REMARK_SYMBOL_NONE
     },
 
     closeModal() {
@@ -423,7 +479,8 @@ export default {
         ...this.barcode,
         price: this.previewPrice,
         barcodeType: this.selectedType,
-        publicUrl: this.publicUrl
+        publicUrl: this.publicUrl,
+        remarkSymbol: this.showRemarkSelect ? this.remarkSymbol : ''
       }
       const res = await this.zebraPrinter.fetchZebraPrint({ formValue: zplData, skipLoading: true })
       if (res?.status !== 'success') {

@@ -38,7 +38,52 @@ const GT800_O_GOLD_LINE_X = 256
 const GT800_O_GOLD_LINE_Y = 86
 const GT800_O_GOLD_LINE_FONT = [16, 16] // ไม่มี goldType นำหน้าอีกแล้ว (ชื่อสินค้ามีกะรัตอยู่ในตัวแล้ว)
 
-const GT800_O_GEM_X = 428 // คอลัมน์พลอยฝั่งขวาของแนวพับ (ฝั่งซ้ายจบ x≈420, พับ x≈425) คงที่ทุก level — ที่ว่างถึงขอบขวา 594 = 166 dots
+// สัญลักษณ์หมายเหตุ (remark) แท็บ original — เลือกจากรายการตายตัวเท่านั้น (แทนการวาดปากกา) ไม่ใส่ในบาร์โค้ด
+// kind: text = ตัวอักษร ASCII ด้วย ^A0 · circle/square = วาดด้วยกราฟิก ZPL (filled = thickness เท่าขนาด)
+const GT800_O_REMARK_SIZE = 14 // ขนาด (dot) ของสัญลักษณ์ทุกแบบ ใช้เช็คที่ว่างด้วย — 14 เพื่อไม่ชนบาร์โค้ดที่ y=47 เมื่อวางบนแถวชื่อ (y31+14=45)
+const GT800_O_REMARK_TEXT_FONT = 16
+const GT800_O_REMARK_OUTLINE_THICKNESS = 2
+const GT800_O_REMARK_GAP = 10 // ระยะห่างจากท้ายชื่อสินค้า/บรรทัดทองถึงสัญลักษณ์
+const GT800_O_GOLD_LINE_CHAR_W = 7.1 // dot ต่อตัวอักษรของบรรทัดทอง (ฟอนต์ 16)
+
+export const REMARK_SYMBOL_NONE = 'none'
+const REMARK_SYMBOLS_TABLE = {
+  star: { kind: 'text', text: '*', preview: '*' },
+  hash: { kind: 'text', text: '#', preview: '#' },
+  plus: { kind: 'text', text: '+', preview: '+' },
+  at: { kind: 'text', text: '@', preview: '@' },
+  'circle-filled': { kind: 'circle', filled: true, preview: '●' },
+  'circle-outline': { kind: 'circle', filled: false, preview: '○' },
+  'square-filled': { kind: 'square', filled: true, preview: '■' },
+  'square-outline': { kind: 'square', filled: false, preview: '□' }
+}
+export const REMARK_SYMBOLS = Object.keys(REMARK_SYMBOLS_TABLE)
+
+export function isKnownRemarkSymbol(key) {
+  return typeof key === 'string' && Object.prototype.hasOwnProperty.call(REMARK_SYMBOLS_TABLE, key)
+}
+
+export function getRemarkPreviewChar(key) {
+  return isKnownRemarkSymbol(key) ? REMARK_SYMBOLS_TABLE[key].preview : ''
+}
+
+// ZPL ของสัญลักษณ์ที่พิกัด (x, y) ฐาน 203 dpi — คูณ dpiScale ด้วย s() · key ไม่รู้จัก/ว่าง → ''
+export function buildRemarkSymbolZpl(key, x, y, dpiScale = 1) {
+  if (!isKnownRemarkSymbol(key)) return ''
+  const s = (n) => Math.round(n * dpiScale)
+  const def = REMARK_SYMBOLS_TABLE[key]
+  const size = s(GT800_O_REMARK_SIZE)
+  const thickness = def.filled ? size : s(GT800_O_REMARK_OUTLINE_THICKNESS)
+  const origin = `^FO${s(x)},${s(y)}`
+  if (def.kind === 'text') {
+    const font = s(GT800_O_REMARK_TEXT_FONT)
+    return `${origin}^A0N,${font},${font}^FD${def.text}^FS`
+  }
+  if (def.kind === 'circle') return `${origin}^GC${size},${thickness},B^FS`
+  return `${origin}^GB${size},${size},${thickness}^FS`
+}
+
+const GT800_O_GEM_X = 428// คอลัมน์พลอยฝั่งขวาของแนวพับ (ฝั่งซ้ายจบ x≈420, พับ x≈425) คงที่ทุก level — ที่ว่างถึงขอบขวา 594 = 166 dots
 // ขนาดตัวอักษรพลอยแท็บ original ตามจำนวนบรรทัด (1 พลอย = 1 บรรทัด ห้ามตัด/wrap) — ความกว้างเริ่มต้นแล้ว fitGemFont บีบเมื่อบรรทัดยาว
 const GT800_O_GEM_WIDTH = 14
 const GT800_O_GEM_SIZE_BY_LINES = [
@@ -323,6 +368,25 @@ export function normalizeGt800Size(size) {
   return trimmed.startsWith('#') ? trimmed : `#${trimmed}`
 }
 
+// ตำแหน่งสัญลักษณ์หมายเหตุ: ท้ายชื่อสินค้าก่อน → ไม่พอที่ใช้ท้ายบรรทัดทอง → ไม่พอทั้งคู่คืน null (UI เตือน)
+function placeGt800Remark(productNameEn, nameFont, goldLine) {
+  const nameWidth = productNameEn
+    ? productNameEn.length * GT800_O_NAME_CHAR_W * (nameFont[0] / GT800_O_NAME_REF_FONT) + GT800_O_REMARK_GAP
+    : 0
+  const nameX = Math.round(GT800_O_NAME_X + nameWidth)
+  if (nameX + GT800_O_REMARK_SIZE <= GT800_O_NAME_RIGHT_LIMIT) {
+    return { x: nameX, y: GT800_O_NAME_Y, row: 'name' }
+  }
+
+  const goldWidth = goldLine ? goldLine.length * GT800_O_GOLD_LINE_CHAR_W + GT800_O_REMARK_GAP : 0
+  const goldX = Math.round(GT800_O_GOLD_LINE_X + goldWidth)
+  if (goldX + GT800_O_REMARK_SIZE <= GT800_O_NAME_RIGHT_LIMIT) {
+    return { x: goldX, y: GT800_O_GOLD_LINE_Y, row: 'gold' }
+  }
+
+  return null
+}
+
 // คืนตำแหน่ง/ขนาด (level ROOMY/TIGHT ที่เลือก + ข้อความแต่ละบรรทัด) ให้ test ได้โดยไม่ต้องยุ่งกับ dpiScale
 export function layoutGt800(formValue, template) {
   const code = resolveLabelCode(formValue)
@@ -345,8 +409,13 @@ export function layoutGt800(formValue, template) {
 
     const gemSize = computeGt800OriginalGemSize(formattedGems.length)
 
+    const remarkKey = isKnownRemarkSymbol(formValue?.remarkSymbol) ? formValue.remarkSymbol : ''
+    const remarkPlacement = remarkKey ? placeGt800Remark(productNameEn, nameFont, goldLine) : null
+
     return {
       template: 'original',
+      remark: remarkPlacement ? { key: remarkKey, ...remarkPlacement } : null,
+      remarkNoRoom: !!remarkKey && !remarkPlacement,
       levelName: level.name,
       code,
       codeLine,
@@ -424,6 +493,10 @@ export function generateGt800ZPL(formValue, dpiScale = 1, options = {}) {
   zpl += `^FO${s(GT800_O_CODE_LINE_X)},${s(GT800_O_CODE_LINE_Y)}^A0N,${s(layout.codeLineFont[0])},${s(layout.codeLineFont[1])}^FD${layout.codeLine}^FS`
 
   zpl += `^FO${s(GT800_O_GOLD_LINE_X)},${s(GT800_O_GOLD_LINE_Y)}^A0N,${s(GT800_O_GOLD_LINE_FONT[0])},${s(GT800_O_GOLD_LINE_FONT[1])}^FD${layout.goldLine}^FS`
+
+  if (layout.remark) {
+    zpl += buildRemarkSymbolZpl(layout.remark.key, layout.remark.x, layout.remark.y, dpiScale)
+  }
 
   zpl += buildGemFieldsZpl(layout, s)
 

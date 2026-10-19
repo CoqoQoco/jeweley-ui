@@ -12,6 +12,8 @@
     :profile="profile"
     :qrUrl="qrUrl"
     :productNameEn="showProductName ? barcode.productNameEn : ''"
+    :remarkChar="remarkChar"
+    :remarkRow="remarkRow"
   />
   <barcodeVerticalDemo
     v-else
@@ -31,7 +33,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-import { resolveLabelCode } from '@/services/helper/barcode/barcode-zpl.js'
+import { resolveLabelCode, layoutGt800, getRemarkPreviewChar } from '@/services/helper/barcode/barcode-zpl.js'
 import { getBarcodeProfile, PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
 
 const barcodeDemo = defineAsyncComponent(() =>
@@ -69,6 +71,10 @@ export default {
     qrUrl: {
       type: String,
       default: ''
+    },
+    remarkSymbol: {
+      type: String,
+      default: ''
     }
   },
 
@@ -81,6 +87,20 @@ export default {
     // ตัวอย่างต้องตรงกับ profile เครื่องพิมพ์ที่ตั้งไว้ (legacy/gt800) ให้ตรงกับที่จะพิมพ์จริง
     profile() {
       return getBarcodeProfile()
+    },
+
+    // สัญลักษณ์หมายเหตุ: แท็บ original + GT800 เท่านั้น ตำแหน่งใช้ layout เดียวกับ ZPL จริง
+    remarkLayout() {
+      if (this.selectedType !== 'original' || this.profile !== PRINTER_PROFILES.GT800) return null
+      return layoutGt800({ ...this.barcode, remarkSymbol: this.remarkSymbol }, 'original').remark
+    },
+
+    remarkChar() {
+      return this.remarkLayout ? getRemarkPreviewChar(this.remarkLayout.key) : ''
+    },
+
+    remarkRow() {
+      return this.remarkLayout ? this.remarkLayout.row : ''
     },
 
     // ป้าย QR ตัดคอลัมน์พลอยออก (QR แทนที่ตำแหน่งนั้น)
