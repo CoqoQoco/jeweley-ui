@@ -275,6 +275,16 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
     // สร้างลิงก์หน้าสาธารณะ (/p/:token) สำหรับโชว์สินค้าให้ลูกค้าดู — endpoint นี้ต้อง login (ใช้ instance ปกติ)
     async fetchPublicLink(stockNumber, options = {}) {
       return await api.jewelry.post('StockProduct/PublicLink', { stockNumber }, options)
+    },
+
+    // ตีราคาด่วน — backend คำนวณซ้ำจาก input เดียวกันแล้วเก็บเป็นประวัติใหม่ (ต้องมีสิทธิ์ update_stock)
+    async fetchQuickPriceCreate({ formValue }) {
+      return await api.jewelry.post('StockProduct/QuickPriceCreate', formValue)
+    },
+
+    // ประวัติตีราคาด่วนของเลขที่ผลิตนี้ ใหม่สุดก่อน
+    async fetchQuickPriceList(stockNumber, options = {}) {
+      return await api.jewelry.post('StockProduct/QuickPriceList', { stockNumber }, options)
     }
   }
 })

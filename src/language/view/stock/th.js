@@ -285,6 +285,71 @@ export default {
       colSoldQty: 'ขาย (ชิ้น)',
       colStockQty: 'คงเหลือ (ชิ้น)',
       colAgeYears: 'อายุสต็อก (ปี)'
+    },
+    quickPrice: {
+      priceBoxTitle: 'ราคา',
+      normalPrice: 'ราคาขาย (ปกติ)',
+      normalPricePerPiece: 'ราคาขาย (ปกติ) ต่อชิ้น',
+      normalAppraisal: 'ตีราคาปกติ',
+      appraisedYes: 'แล้ว',
+      appraisedNo: 'ยังไม่',
+      newPrice: 'ราคาขายใหม่ (ตีด่วน)',
+      colQuickPrice: 'ราคาขายใหม่ (ตีด่วน)',
+      noQuickPrice: 'ยังไม่มีราคาตีด่วน',
+      goldPerGram: 'ทอง {price}/g',
+      staleDays: 'เก่า {days} วัน',
+      markup: 'Markup',
+      roundingSummary: {
+        r0: 'ไม่ปัด',
+        r10: 'ปัดหลักสิบ',
+        r100: 'ปัดหลักร้อย',
+        r1000: 'ปัดหลักพัน'
+      },
+      roundingOption: {
+        r0: 'ไม่ปัด',
+        r10: 'สิบ',
+        r100: 'ร้อย',
+        r1000: 'พัน'
+      },
+      boxTitle: 'ตีราคาด่วน',
+      step1: 'ขั้น 1 · ทุน',
+      step2: 'ขั้น 2 · ทุนไม่รวมทอง',
+      step3: 'ขั้น 3 · บวกกำไรและปัด',
+      oldSalePrice: 'ราคาขายเดิม',
+      oldSalePricePerPiece: 'ราคาขายเดิม (ต่อชิ้น)',
+      cost: 'ทุน',
+      goldWeight: 'น้ำหนักทอง (g)',
+      weightFrom: {
+        gold: 'จากวัตถุดิบ (ทอง)',
+        silver: 'จากวัตถุดิบ (เงิน)'
+      },
+      goldPricePerGram: 'ราคาทอง/กรัม',
+      spot: 'คำนวณจากราคาทอง',
+      spotNoRate: 'ไม่ได้ราคาบาทต่อกรัม กรอกเรตบาท/US$ ในหน้าคำนวณก่อนเลือกกะรัต',
+      goldCost: 'ค่าทอง',
+      costExGold: 'ทุนไม่รวมทอง',
+      addPercent: 'บวก (%)',
+      rounding: 'ปัดขึ้น',
+      resultLabel: 'ราคาขายใหม่',
+      beforeRounding: '(ก่อนปัด {raw})',
+      remark: 'หมายเหตุ / ลูกค้า',
+      save: 'บันทึกราคา',
+      saveSuccess: 'บันทึกราคาตีด่วน {price} สำเร็จ',
+      noMetalWeight: 'ไม่มีน้ำหนักโลหะในระบบ กรอกก่อน',
+      invalid: {
+        salePrice: 'ไม่มีราคาขายเดิมของชิ้นนี้ ตีราคาด่วนไม่ได้',
+        costExGold: 'ทุนไม่รวมทองติดลบ ตรวจ Markup หรือ นน.ทอง',
+        percent: 'เปอร์เซ็นต์ต้องไม่ติดลบ'
+      },
+      historyTitle: 'ประวัติตีราคาด่วน ({count})',
+      historyEmpty: 'ยังไม่มีประวัติตีราคาด่วน',
+      colDate: 'วันที่',
+      colBy: 'ผู้ตี',
+      colGoldPrice: 'ทอง/กรัม',
+      colPercent: 'X%',
+      filterPriceStatus: 'สถานะราคา',
+      statusNoNormal: 'ยังไม่ตีราคาปกติ',
+      statusHasQuick: 'มีราคาตีด่วนแล้ว'
     }
   },
   location: {

@@ -13,7 +13,15 @@
     >
       <template #actionTemplate="{ data }">
         <div class="btn-action-container">
-          <ButtonGeneric variant="main" icon="bi-eye" :title="$t('common.btn.view')" @click="onView(data)" />
+          <a
+            :href="getDetailHref(data)"
+            target="_blank"
+            rel="noopener"
+            class="btn btn-sm view-link"
+            :title="$t('common.btn.view')"
+          >
+            <i class="bi bi-eye"></i>
+          </a>
           <ButtonGeneric variant="outline" icon="bi-pencil" :title="$t('common.btn.edit')" @click="onUpdate(data)" />
         </div>
       </template>
@@ -65,6 +73,26 @@
         <span>{{ formatDecimal(getPieceQtyAvailable(data), 2) }}</span>
       </template>
 
+      <template #quickPriceTemplate="{ data }">
+        <div v-if="data.quickPrice !== null && data.quickPrice !== undefined" class="quick-price-cell">
+          <span class="quick-price-value">{{ formatMoney2(data.quickPrice) }}</span>
+          <span class="quick-price-meta">{{ quickPriceMeta(data) }}</span>
+          <span v-if="isQuickPriceStale(data.quickPriceDate)" class="tag-chip tag-chip--stale">
+            {{ $t('view.stock.product.quickPrice.staleDays', { days: getQuickPriceAgeDays(data.quickPriceDate) }) }}
+          </span>
+        </div>
+        <span v-else>—</span>
+      </template>
+
+      <template #hasNormalAppraisalTemplate="{ data }">
+        <span
+          class="tag-chip"
+          :class="data.hasNormalAppraisal ? 'tag-chip--ok' : 'tag-chip--none'"
+        >
+          {{ data.hasNormalAppraisal ? $t('view.stock.product.quickPrice.appraisedYes') : $t('view.stock.product.quickPrice.appraisedNo') }}
+        </span>
+      </template>
+
       <template #expansion="slotProps">
         <div>
           <dataExpand :modelForm="slotProps"></dataExpand>
@@ -85,6 +113,13 @@ import dataTablePaging from '@/composables/useDataTablePaging.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import { getPieceQty, getPieceQtyReserved, getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 import { mergeBalanceIntoItems } from '@/composables/useStockBalanceMerge.js'
+import { formatDate } from '@/services/utils/dayjs.js'
+import {
+  formatMoney2,
+  formatPlainNumber,
+  getQuickPriceAgeDays,
+  isQuickPriceStale
+} from '@/services/helper/quick-price.js'
 
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { useStockBalanceApiStore } from '@/stores/modules/api/stock/stock-balance-api.js'
@@ -254,6 +289,20 @@ export default {
           format: 'decimal2'
         },
         {
+          field: 'quickPrice',
+          header: this.$t('view.stock.product.quickPrice.colQuickPrice'),
+          sortable: false,
+          minWidth: '200px',
+          align: 'right'
+        },
+        {
+          field: 'hasNormalAppraisal',
+          header: this.$t('view.stock.product.quickPrice.normalAppraisal'),
+          sortable: false,
+          minWidth: '110px',
+          align: 'center'
+        },
+        {
           field: 'createBy',
           header: this.$t('view.stock.product.receiver'),
           sortable: true,
@@ -292,6 +341,17 @@ export default {
     getPieceQty,
     getPieceQtyReserved,
     getPieceQtyAvailable,
+    formatMoney2,
+    getQuickPriceAgeDays,
+    isQuickPriceStale,
+
+    quickPriceMeta(data) {
+      const date = data.quickPriceDate ? formatDate(data.quickPriceDate) : ''
+      const gold = this.$t('view.stock.product.quickPrice.goldPerGram', {
+        price: formatPlainNumber(data.quickPriceGoldPrice)
+      })
+      return date ? `${date} · ${gold}` : gold
+    },
 
     onCloseModal(action) {
       this.isShow = { ...interfaceShow }
@@ -301,8 +361,8 @@ export default {
         this.fetchData()
       }
     },
-    onView(val) {
-      this.$router.push({ name: 'stock-product-detail', params: { stockNumber: val.stockNumber } })
+    getDetailHref(val) {
+      return this.$router.resolve({ name: 'stock-product-detail', params: { stockNumber: val.stockNumber } }).href
     },
     onUpdate(val) {
       this.modelStock = val
@@ -356,5 +416,56 @@ export default {
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-sm);
+}
+
+.view-link {
+  background-color: var(--base-font-color);
+  color: var(--on-inverse);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--on-inverse);
+    filter: brightness(0.92);
+  }
+}
+
+.quick-price-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--sp-xs);
+}
+
+.quick-price-value {
+  font-weight: 700;
+}
+
+.quick-price-meta {
+  font-size: var(--fs-sm);
+  color: var(--base-sub-color);
+}
+
+.tag-chip {
+  display: inline-flex;
+  padding: 0 var(--sp-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-md);
+  white-space: nowrap;
+
+  &--ok {
+    border-color: var(--base-green);
+    color: var(--base-green);
+  }
+
+  &--none {
+    color: var(--base-sub-color);
+  }
+
+  &--stale {
+    border-color: var(--base-warning);
+    color: var(--base-sub-color);
+  }
 }
 </style>

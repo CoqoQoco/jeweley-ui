@@ -285,6 +285,71 @@ export default {
       colSoldQty: 'Sold (pcs)',
       colStockQty: 'In Stock (pcs)',
       colAgeYears: 'Age in Stock (yrs)'
+    },
+    quickPrice: {
+      priceBoxTitle: 'Price',
+      normalPrice: 'Sale price (normal)',
+      normalPricePerPiece: 'Sale price (normal) per piece',
+      normalAppraisal: 'Normal appraisal',
+      appraisedYes: 'Done',
+      appraisedNo: 'Not yet',
+      newPrice: 'New price (quick)',
+      colQuickPrice: 'New price (quick)',
+      noQuickPrice: 'No quick price yet',
+      goldPerGram: 'Gold {price}/g',
+      staleDays: '{days} days old',
+      markup: 'Markup',
+      roundingSummary: {
+        r0: 'No rounding',
+        r10: 'Rounded up to 10',
+        r100: 'Rounded up to 100',
+        r1000: 'Rounded up to 1,000'
+      },
+      roundingOption: {
+        r0: 'None',
+        r10: '10',
+        r100: '100',
+        r1000: '1,000'
+      },
+      boxTitle: 'Quick Price',
+      step1: 'Step 1 · Cost',
+      step2: 'Step 2 · Cost excluding gold',
+      step3: 'Step 3 · Add margin and round',
+      oldSalePrice: 'Original sale price',
+      oldSalePricePerPiece: 'Original sale price (per piece)',
+      cost: 'Cost',
+      goldWeight: 'Gold weight (g)',
+      weightFrom: {
+        gold: 'From materials (gold)',
+        silver: 'From materials (silver)'
+      },
+      goldPricePerGram: 'Gold price per gram',
+      spot: 'Calculate from gold price',
+      spotNoRate: 'No THB per gram result. Enter the THB/US$ rate in the calculator before choosing a karat',
+      goldCost: 'Gold cost',
+      costExGold: 'Cost excl. gold',
+      addPercent: 'Add (%)',
+      rounding: 'Round up to',
+      resultLabel: 'New price',
+      beforeRounding: '(before rounding {raw})',
+      remark: 'Remark / customer',
+      save: 'Save price',
+      saveSuccess: 'Quick price {price} saved',
+      noMetalWeight: 'No metal weight in the system. Enter it first',
+      invalid: {
+        salePrice: 'This piece has no original sale price, so quick pricing is not possible',
+        costExGold: 'Cost excluding gold is negative. Check the markup or gold weight',
+        percent: 'Percent must not be negative'
+      },
+      historyTitle: 'Quick price history ({count})',
+      historyEmpty: 'No quick price history yet',
+      colDate: 'Date',
+      colBy: 'By',
+      colGoldPrice: 'Gold/g',
+      colPercent: 'X%',
+      filterPriceStatus: 'Price status',
+      statusNoNormal: 'No normal appraisal yet',
+      statusHasQuick: 'Has quick price'
     }
   },
   location: {

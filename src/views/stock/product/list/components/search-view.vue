@@ -59,6 +59,20 @@
                 :showClear="true"
               />
             </div>
+
+            <!-- price status -->
+            <div>
+              <span class="title-text">{{ $t('view.stock.product.quickPrice.filterPriceStatus') }}</span>
+              <DropdownGeneric
+                :modelValue="form.priceStatus"
+                :options="priceStatusOptions"
+                optionLabel="description"
+                optionValue="value"
+                :placeholder="$t('common.label.all')"
+                :showClear="true"
+                @update:modelValue="form.priceStatus = $event"
+              />
+            </div>
         </div>
 
         <dialogView
@@ -424,6 +438,12 @@ export default {
       return [
         { value: true, description: this.$t('view.stock.product.hasCost') },
         { value: false, description: this.$t('view.stock.product.noCost') }
+      ]
+    },
+    priceStatusOptions() {
+      return [
+        { value: 'NO_NORMAL', description: this.$t('view.stock.product.quickPrice.statusNoNormal') },
+        { value: 'HAS_QUICK', description: this.$t('view.stock.product.quickPrice.statusHasQuick') }
       ]
     },
     pieceStatusOptions() {

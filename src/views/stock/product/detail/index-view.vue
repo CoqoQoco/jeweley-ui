@@ -114,14 +114,6 @@
               <span class="detail-label">{{ $t('view.stock.product.locationHeader') }}</span>
               <span class="detail-value">{{ item.location || '—' }}</span>
             </div>
-            <div class="detail-field">
-              <span class="detail-label">{{ $t('view.stock.product.salePrice') }}</span>
-              <span class="detail-value">{{ formatDecimal(item.productPrice, 2) }}</span>
-            </div>
-            <div class="detail-field">
-              <span class="detail-label">{{ $t('view.stock.product.tagPriceMultiplierLabel') }}</span>
-              <span class="detail-value">× {{ formatDecimal(item.tagPriceMultiplier ?? 1, 2) }}</span>
-            </div>
             <div v-if="item.convertedFrom" class="detail-field detail-field--full">
               <span class="detail-label">{{ $t('view.stock.convert.convertedFromLabel') }}</span>
               <span class="detail-value">
@@ -145,6 +137,21 @@
           </div>
         </SectionCardGeneric>
       </div>
+
+      <div class="detail-price" :class="{ 'detail-price--single': !canQuickPrice }">
+        <quickPriceSummary :summary="priceSummary" :isLot="isLot" />
+        <quickPriceForm
+          v-if="canQuickPrice"
+          :key="stockNumber"
+          :stockNumber="stockNumber"
+          :salePrice="salePrice"
+          :materials="item.materials || []"
+          :isLot="isLot"
+          @saved="onQuickPriceSaved"
+        />
+      </div>
+
+      <quickPriceHistory :items="quickPriceHistory" :showCost="showCost" />
 
       <SectionCardGeneric :title="$t('view.stock.product.materialsTitle')" headerStyle="legend" icon="bi-gem" accent="main">
         <materialTable :items="item.materials || []" variant="full" />
@@ -226,6 +233,9 @@ import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { mergeBalanceIntoItems } from '@/composables/useStockBalanceMerge.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import { formatDate } from '@/services/utils/dayjs.js'
+import { getPieceQty } from '@/services/utils/stock-piece-qty.js'
+import { hasQuickPriceAccess } from '@/services/permission/quick-price-access.js'
+import { hasMarginAccess } from '@/services/permission/margin-access.js'
 
 import PageHeaderGeneric from '@/components/generic/PageHeaderGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
@@ -235,6 +245,9 @@ import productShareDialog from '@/components/public/product-share-dialog.vue'
 
 import materialTable from '../components/material-table.vue'
 import balancePanel from '../components/balance-panel.vue'
+import quickPriceSummary from '../components/quick-price-summary.vue'
+import quickPriceForm from '../components/quick-price-form.vue'
+import quickPriceHistory from '../components/quick-price-history.vue'
 import update from '../list/modal/update-view.vue'
 import barcode from '../list/modal/barcode-view.vue'
 import costDetailModal from '../list/components/cost-detail-modal.vue'
@@ -255,6 +268,9 @@ export default {
     imagePreview,
     materialTable,
     balancePanel,
+    quickPriceSummary,
+    quickPriceForm,
+    quickPriceHistory,
     update,
     barcode,
     costDetailModal,
@@ -274,6 +290,7 @@ export default {
     return {
       item: null,
       notFound: false,
+      quickPriceHistory: [],
       isShow: { ...interfaceShow },
       costDetailVisible: false,
       costHistoryVisible: false,
@@ -288,6 +305,40 @@ export default {
 
     pageTitle() {
       return `${this.$t('view.stock.product.detailPageTitle')} · ${this.stockNumber}`
+    },
+
+    canQuickPrice() {
+      return hasQuickPriceAccess()
+    },
+
+    showCost() {
+      return hasQuickPriceAccess() || hasMarginAccess()
+    },
+
+    isLot() {
+      return getPieceQty(this.item) > 1
+    },
+
+    salePrice() {
+      const price = Number(this.item?.productPrice)
+      return Number.isFinite(price) && price > 0 ? price : null
+    },
+
+    priceSummary() {
+      const i = this.item || {}
+      return {
+        salePrice: i.productPrice,
+        tagPriceMultiplier: i.tagPriceMultiplier,
+        hasNormalAppraisal: i.hasNormalAppraisal,
+        quickPrice: i.quickPrice,
+        quickPriceDate: i.quickPriceDate,
+        quickPriceGoldPrice: i.quickPriceGoldPrice,
+        quickPriceMarkup: i.quickPriceMarkup,
+        quickPricePercent: i.quickPricePercent,
+        quickPriceRounding: i.quickPriceRounding,
+        quickPriceRemark: i.quickPriceRemark,
+        quickPriceBy: i.quickPriceBy
+      }
     },
 
     woText() {
@@ -339,6 +390,16 @@ export default {
       this.notFound = false
       this.item = res
       await mergeBalanceIntoItems([this.item], { balanceStore: this.balanceStore, locationStore: this.locationStore })
+      await this.loadQuickPriceHistory()
+    },
+
+    async loadQuickPriceHistory() {
+      const res = await this.productStore.fetchQuickPriceList(this.stockNumber, { skipError: true })
+      this.quickPriceHistory = Array.isArray(res) ? res : []
+    },
+
+    onQuickPriceSaved() {
+      this.loadItem()
     },
 
     goBack() {
@@ -381,6 +442,20 @@ export default {
   display: grid;
   grid-template-columns: 320px minmax(0, 1fr);
   gap: var(--sp-lg);
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detail-price {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: var(--sp-lg);
+
+  &--single {
+    grid-template-columns: 1fr;
+  }
 
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;

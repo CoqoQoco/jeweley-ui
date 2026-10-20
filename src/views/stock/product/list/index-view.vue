@@ -40,6 +40,7 @@ const interfaceForm = {
   goldSize: null,
   hasCostDetail: null,
   pieceStatus: null,
+  priceStatus: null,
   locationCodes: [],
   materials: [],
   materialMatch: 'all',
