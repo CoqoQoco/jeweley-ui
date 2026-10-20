@@ -88,6 +88,10 @@ export default {
       type: Number,
       default: null
     },
+    hidePrice: {
+      type: Boolean,
+      default: false
+    },
     profile: {
       type: String,
       default: PRINTER_PROFILES.LEGACY
@@ -148,7 +152,7 @@ export default {
 
   computed: {
     stockNumberLine() {
-      const priceText = formatLabelPrice(this.salePrice)
+      const priceText = this.hidePrice ? '' : formatLabelPrice(this.salePrice)
       return [this.stockNumber, priceText].filter(Boolean).join(' - ')
     },
 

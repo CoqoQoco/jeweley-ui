@@ -35,6 +35,15 @@
         />
       </div>
 
+      <div class="field field-checkbox">
+        <CheckboxGeneric
+          :modelValue="hidePrice"
+          :label="$t('common.label.hidePrice')"
+          :disabled="isPrinting"
+          @update:modelValue="$emit('update:hidePrice', $event)"
+        />
+      </div>
+
       <div class="printer-status">
         <div
           class="status-light"
@@ -92,6 +101,7 @@ import { REMARK_SYMBOLS, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/ba
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 
 const REMARK_I18N_KEYS = {
   star: 'remarkStar',
@@ -105,9 +115,13 @@ const REMARK_I18N_KEYS = {
 }
 
 export default {
-  components: { SectionCardGeneric, ButtonGeneric, DropdownGeneric },
+  components: { SectionCardGeneric, ButtonGeneric, DropdownGeneric, CheckboxGeneric },
 
   props: {
+    hidePrice: {
+      type: Boolean,
+      default: false
+    },
     barcodeType: {
       type: String,
       default: 'original'
@@ -146,7 +160,7 @@ export default {
     }
   },
 
-  emits: ['update:barcodeType', 'update:remarkSymbol', 'print', 'retry'],
+  emits: ['update:barcodeType', 'update:remarkSymbol', 'update:hidePrice', 'print', 'retry'],
 
   setup() {
     const zebraPrinter = zebraPrinterApi()
@@ -297,6 +311,11 @@ export default {
 
 .field {
   min-width: calc(var(--sp-2xl) * 8);
+}
+
+.field-checkbox {
+  min-width: auto;
+  align-self: center;
 }
 
 .printer-status {

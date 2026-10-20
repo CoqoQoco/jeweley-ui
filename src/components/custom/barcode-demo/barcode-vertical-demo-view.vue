@@ -23,8 +23,8 @@
               <svg ref="barcodeElement"></svg>
             </div>
             <!-- productNumber - price ไม่รวม Gold -->
-            <div v-if="productNumber || price" class="price-box">
-              {{ productNumber }}{{ price ? ` - ${formatPrice(price)}` : '' }}
+            <div v-if="productNumber || showPrice" class="price-box">
+              {{ productNumber }}{{ showPrice ? ` - ${formatPrice(price)}` : '' }}
             </div>
           </div>
           <div class="right-box">
@@ -80,6 +80,10 @@ export default {
       type: Number,
       default: null
     },
+    hidePrice: {
+      type: Boolean,
+      default: false
+    },
     gems: {
       type: Array,
       default: () => []
@@ -106,6 +110,10 @@ export default {
   },
 
   computed: {
+    showPrice() {
+      return !this.hidePrice && !!this.price
+    },
+
     isGt800() {
       return this.profile === PRINTER_PROFILES.GT800
     },

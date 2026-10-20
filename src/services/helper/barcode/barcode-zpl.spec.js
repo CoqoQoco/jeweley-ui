@@ -796,3 +796,66 @@ describe('GT800 original — สัญลักษณ์หมายเหตุ
     }
   })
 })
+
+describe('hidePrice — ไม่แสดงราคาบนป้าย', () => {
+  const form = {
+    stockNumber: 'AH21142',
+    productNumber: 'PN-001',
+    salePrice: 12345,
+    price: 12345,
+    gold: 'PG',
+    size: '55',
+    madeIn: 'MADE IN THAILAND',
+    productNameEn: 'Ring Test',
+    gems: ['0.24ct.'],
+    publicUrl: 'https://a.co/x'
+  }
+  const PRICE_TEXT = '1234R'
+
+  it('legacy original: hidePrice=true ไม่มีราคา เหลือแค่รหัส / false และไม่ระบุ = ของเดิม', () => {
+    const base = generateLegacyZPL(form)
+    expect(base).toContain(`^FDAH21142 - ${PRICE_TEXT}^FS`)
+    expect(generateLegacyZPL({ ...form, hidePrice: false })).toBe(base)
+    const hidden = generateLegacyZPL({ ...form, hidePrice: true })
+    expect(hidden).not.toContain(PRICE_TEXT)
+    expect(hidden).toContain('^FO248,65^A0N,20,18^FDAH21142^FS')
+  })
+
+  it('legacy vertical: hidePrice=true ไม่มีราคา + ความสูงป้ายแบบไม่มีราคา (200) / false = ของเดิม (220)', () => {
+    const base = generateLegacyZPLVertical(form)
+    expect(base).toContain('^LL220')
+    expect(base).toContain(`PN-001 - ${PRICE_TEXT}`)
+    expect(generateLegacyZPLVertical({ ...form, hidePrice: false })).toBe(base)
+    const hidden = generateLegacyZPLVertical({ ...form, hidePrice: true })
+    expect(hidden).not.toContain(PRICE_TEXT)
+    expect(hidden).toContain('^LL200')
+    expect(hidden).toContain('^FO250,100^A0N,14,16,B^FDPN-001^FS')
+  })
+
+  it('gt800 original: hidePrice=true ไม่มีราคาใน layout/ZPL / false = ของเดิม', () => {
+    const base = generateGt800ZPL(form, 1)
+    expect(layoutGt800(form, 'original').codeLine).toBe(`AH21142 - ${PRICE_TEXT}`)
+    expect(generateGt800ZPL({ ...form, hidePrice: false }, 1)).toBe(base)
+    const layout = layoutGt800({ ...form, hidePrice: true }, 'original')
+    expect(layout.codeLine).toBe('AH21142')
+    expect(generateGt800ZPL({ ...form, hidePrice: true }, 1)).not.toContain(PRICE_TEXT)
+  })
+
+  it('gt800 vertical: hidePrice=true เหลือแค่ productNumber / false = ของเดิม', () => {
+    const base = generateGt800ZPLVertical(form, 1)
+    expect(layoutGt800(form, 'vertical').codeLine).toBe(`PN-001 - ${PRICE_TEXT}`)
+    expect(generateGt800ZPLVertical({ ...form, hidePrice: false }, 1)).toBe(base)
+    expect(layoutGt800({ ...form, hidePrice: true }, 'vertical').codeLine).toBe('PN-001')
+    const hidden = generateGt800ZPLVertical({ ...form, hidePrice: true }, 1)
+    expect(hidden).not.toContain(PRICE_TEXT)
+    expect(hidden).toContain('^FDPN-001^FS')
+  })
+
+  it('gt800 QR: hidePrice=true ไม่มีราคา / false = ของเดิม', () => {
+    const base = generateGt800ZPLQr(form, 1)
+    expect(layoutGt800Qr(form).codeLine).toBe(`AH21142 - ${PRICE_TEXT}`)
+    expect(generateGt800ZPLQr({ ...form, hidePrice: false }, 1)).toBe(base)
+    expect(layoutGt800Qr({ ...form, hidePrice: true }).codeLine).toBe('AH21142')
+    expect(generateGt800ZPLQr({ ...form, hidePrice: true }, 1)).not.toContain(PRICE_TEXT)
+  })
+})

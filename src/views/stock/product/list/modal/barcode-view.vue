@@ -73,10 +73,15 @@
               :selectedType="selectedType"
               :barcode="barcode"
               :price="previewPrice"
+              :hidePrice="hidePrice"
               :qrUrl="selectedType === 'original-qr' ? publicUrl : ''"
               :remarkSymbol="showRemarkSelect ? remarkSymbol : ''"
             />
           </div>
+        </div>
+
+        <div class="pl-4 pr-4 pt-2">
+          <CheckboxGeneric v-model="hidePrice" :label="$t('common.label.hidePrice')" />
         </div>
 
         <div v-if="showRemarkSelect" class="pl-4 pr-4 pt-2 remark-select">
@@ -204,13 +209,15 @@ import { layoutGt800, REMARK_SYMBOLS, REMARK_SYMBOL_NONE } from '@/services/help
 
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 
 export default {
   components: {
     modal,
     barcodePreview,
     DropdownGeneric,
-    FormFieldGeneric
+    FormFieldGeneric,
+    CheckboxGeneric
   },
 
   setup() {
@@ -349,7 +356,7 @@ export default {
 
     // โหลดต้นทุนเสร็จแล้วแต่ไม่มีข้อมูล + แท็บราคา (ไม่ใช่ original/original-qr) → เตือนว่าจะพิมพ์โดยไม่มีราคา
     showCostMissingWarning() {
-      return this.costLoaded && !this.hasCostData && this.selectedType !== 'original' && this.selectedType !== 'original-qr'
+      return !this.hidePrice && this.costLoaded && !this.hasCostData && this.selectedType !== 'original' && this.selectedType !== 'original-qr'
     },
 
     // เครื่องพิมพ์เดิม (legacy) พิมพ์ป้าย QR ไม่ได้
@@ -407,7 +414,8 @@ export default {
       hasCostData: false,
       publicUrl: '',
       publicLinkStatus: 'idle',
-      remarkSymbol: REMARK_SYMBOL_NONE
+      remarkSymbol: REMARK_SYMBOL_NONE,
+      hidePrice: false
     }
   },
 
@@ -422,6 +430,7 @@ export default {
       this.publicUrl = ''
       this.publicLinkStatus = 'idle'
       this.remarkSymbol = REMARK_SYMBOL_NONE
+      this.hidePrice = false
     },
 
     closeModal() {
@@ -480,6 +489,7 @@ export default {
         price: this.previewPrice,
         barcodeType: this.selectedType,
         publicUrl: this.publicUrl,
+        hidePrice: this.hidePrice,
         remarkSymbol: this.showRemarkSelect ? this.remarkSymbol : ''
       }
       const res = await this.zebraPrinter.fetchZebraPrint({ formValue: zplData, skipLoading: true })

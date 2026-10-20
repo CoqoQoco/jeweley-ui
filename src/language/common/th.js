@@ -57,6 +57,7 @@ export default {
     notSpecified: 'ไม่ระบุ',
     loading: 'กำลังโหลด...',
     all: 'ทั้งหมด',
+    hidePrice: 'ไม่แสดงราคา',
     start: 'เริ่มต้น',
     end: 'สิ้นสุด',
     startDate: 'เริ่มต้น',

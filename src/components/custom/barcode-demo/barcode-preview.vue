@@ -9,6 +9,7 @@
     :size="barcode.size"
     :goldType="barcode.goldType"
     :salePrice="barcode.salePrice"
+    :hidePrice="hidePrice"
     :profile="profile"
     :qrUrl="qrUrl"
     :productNameEn="showProductName ? barcode.productNameEn : ''"
@@ -24,6 +25,7 @@
     :stockNumber="labelCode"
     :goldType="barcode.goldType"
     :price="price"
+    :hidePrice="hidePrice"
     :gems="barcode.gems"
     :madeIn="barcode.madeIn"
     :profile="profile"
@@ -67,6 +69,10 @@ export default {
     type: {
       type: String,
       default: 'gem'
+    },
+    hidePrice: {
+      type: Boolean,
+      default: false
     },
     qrUrl: {
       type: String,

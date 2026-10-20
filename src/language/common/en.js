@@ -57,6 +57,7 @@ export default {
     notSpecified: 'Not specified',
     loading: 'Loading...',
     all: 'All',
+    hidePrice: 'Hide price',
     start: 'Start',
     end: 'End',
     startDate: 'Start',

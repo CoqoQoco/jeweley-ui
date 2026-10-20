@@ -225,7 +225,7 @@ export function generateLegacyZPL(formValue) {
   zpl += `^FO248,35^BY1,3.0:1,25^BCN,Y,N,N^FD${code}^FS`
 
   // เลขที่ผลิต - ราคาขาย (เมื่อมีค่า)
-  const salePriceText = formatLabelPrice(formValue.salePrice)
+  const salePriceText = formValue.hidePrice ? '' : formatLabelPrice(formValue.salePrice)
   const stockNumberLine = [code, salePriceText].filter(Boolean).join(' - ')
   zpl += `^FO248,65^A0N,20,18^FD${stockNumberLine}^FS`
 
@@ -259,7 +259,7 @@ export function generateLegacyZPLVertical(formValue) {
   const code = resolveLabelCode(formValue)
 
   // ใช้ label ขนาดเดิม เพิ่ม price row จึงสูงขึ้นเล็กน้อย
-  const hasPrice = formValue.price != null && formValue.price > 0
+  const hasPrice = !formValue.hidePrice && formValue.price != null && formValue.price > 0
   const labelHeight = hasPrice ? 220 : 200
 
   let zpl = `^XA^LL${labelHeight}^MD25^LT40^XZ`
@@ -393,7 +393,7 @@ export function layoutGt800(formValue, template) {
   const gems = Array.isArray(formValue?.gems) ? formValue.gems : []
 
   if (template === 'original') {
-    const salePriceText = formatLabelPrice(formValue?.salePrice)
+    const salePriceText = formValue?.hidePrice ? '' : formatLabelPrice(formValue?.salePrice)
     const codeLine = [code, salePriceText].filter(Boolean).join(' - ')
     const { level, barcodeEnd, formattedGems } = chooseGemLevel({
       code,
@@ -433,7 +433,7 @@ export function layoutGt800(formValue, template) {
 
   const sizeText = formValue?.size ? ` #${formValue.size}` : ''
   const goldSizeLine = `${formValue?.gold || ''}${sizeText}`
-  const hasPrice = formValue?.price != null && formValue.price > 0
+  const hasPrice = !formValue?.hidePrice && formValue?.price != null && formValue.price > 0
   const priceText = hasPrice ? formatLabelPrice(formValue.price) : ''
   const codeLine = [formValue?.productNumber, priceText].filter(Boolean).join(' - ')
 
@@ -524,7 +524,8 @@ export function pickQrMagnification(url) {
 export function layoutGt800Qr(formValue) {
   const code = resolveLabelCode(formValue)
   const productNameEn = formValue?.productNameEn || ''
-  const codeLine = [code, formatLabelPrice(formValue?.salePrice)].filter(Boolean).join(' - ')
+  const salePriceText = formValue?.hidePrice ? '' : formatLabelPrice(formValue?.salePrice)
+  const codeLine = [code, salePriceText].filter(Boolean).join(' - ')
   const goldLine = `${formValue?.gold || ''} ${formValue?.size || ''}`.trim()
   const url = formValue?.publicUrl || ''
 

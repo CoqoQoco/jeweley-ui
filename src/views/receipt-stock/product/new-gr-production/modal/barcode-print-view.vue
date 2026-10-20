@@ -52,6 +52,9 @@
                   </span>
                   <span class="title-text ml-2 mr-2">|</span>
 
+                  <CheckboxGeneric v-model="hidePrice" :label="$t('common.label.hidePrice')" />
+                  <span class="title-text ml-2 mr-2">|</span>
+
                   <div class="printer-status-indicator">
                     <div class="status-container">
                       <div
@@ -119,11 +122,13 @@ import { error } from '@/services/alert/sweetAlerts.js'
 import { applyGoldTypeName } from '@/services/helper/barcode/gold-type-name.js'
 
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 
 export default {
   components: {
     modal,
-    BaseDataTable
+    BaseDataTable,
+    CheckboxGeneric
   },
 
   setup() {
@@ -175,6 +180,7 @@ export default {
       isShowModal: false,
       printerCheck: { status: 'unknown', printerName: '', printers: [], detail: null },
       selectedType: 'original',
+      hidePrice: false,
 
       stock: this.modelStock,
       selectedItems: [],
@@ -266,6 +272,7 @@ export default {
       this.selectedItems = []
       this.itemsToPreSelect = []
       this.selectedType = 'original'
+      this.hidePrice = false
       this.printerCheck = { status: 'unknown', printerName: '', printers: [], detail: null }
     },
 
@@ -309,7 +316,8 @@ export default {
           price: item.productPrice ?? null,
           salePrice: item.productPrice ?? null,
           isSilver: String(item.productionTypeSize || '').toUpperCase() === 'SILVER',
-          barcodeType: this.selectedType
+          barcodeType: this.selectedType,
+          hidePrice: this.hidePrice
         }
 
         // Process materials if available

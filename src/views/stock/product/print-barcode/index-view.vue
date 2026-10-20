@@ -19,6 +19,7 @@
     <printPanel
       v-model:barcodeType="barcodeType"
       v-model:remarkSymbol="remarkSymbol"
+      v-model:hidePrice="hidePrice"
       :selectedCount="selectedRows.length"
       :totalCount="rows.length"
       :labelCount="selectedSummary.labels"
@@ -86,6 +87,7 @@ export default {
       notFound: [],
       barcodeType: 'original',
       remarkSymbol: REMARK_SYMBOL_NONE,
+      hidePrice: false,
       isPrinting: false,
       progress: { done: 0, total: 0 },
       failedEntries: [],
@@ -253,6 +255,7 @@ export default {
         originPrice: null,
         tagPriceMultiplier: Number(row.tagPriceMultiplier) || 1,
         barcodeType: this.barcodeType,
+        hidePrice: this.hidePrice,
         remarkSymbol: showRemark ? this.remarkSymbol : '',
         print: normalizeCopies(row.printCount, MAX_COPIES_PER_ROW)
       }
@@ -313,7 +316,7 @@ export default {
       const entries = rows.map((row) => ({ row, form: this.buildBaseForm(row) }))
 
       let prepared = { included: entries, skipped: [], skippedKey: '' }
-      if (isCostLabelType(this.barcodeType)) {
+      if (isCostLabelType(this.barcodeType) && !this.hidePrice) {
         prepared = await this.attachCost(entries)
       } else if (this.barcodeType === 'original-qr') {
         prepared = await this.attachPublicLink(entries)
