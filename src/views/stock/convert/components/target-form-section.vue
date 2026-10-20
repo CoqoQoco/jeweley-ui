@@ -75,7 +75,7 @@
 
     <div class="form-row two-col">
       <FormFieldGeneric :label="$t('view.stock.convert.defaultPriceLabel')">
-        <InputTextGeneric type="number" :min="0" :step="0.01" v-model.number="form.defaultPrice" />
+        <PriceInputGeneric ref="priceInput" v-model="form.defaultPrice" />
       </FormFieldGeneric>
       <div class="new-cost-box">
         <span class="new-cost-label">{{ $t('view.stock.convert.newCostLabel') }}</span>
@@ -92,6 +92,7 @@ import { formatDecimal } from '@/services/utils/decimal.js'
 
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import PriceInputGeneric from '@/components/generic/PriceInputGeneric.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import materialsEditor from './materials-editor.vue'
@@ -102,6 +103,7 @@ export default {
   components: {
     FormFieldGeneric,
     InputTextGeneric,
+    PriceInputGeneric,
     SectionCardGeneric,
     DropdownGeneric,
     materialsEditor
@@ -190,7 +192,11 @@ export default {
   },
 
   methods: {
-    formatDecimal
+    formatDecimal,
+
+    focusPrice() {
+      this.$refs.priceInput?.focus()
+    }
   }
 }
 </script>

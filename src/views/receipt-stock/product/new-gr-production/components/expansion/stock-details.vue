@@ -24,12 +24,8 @@
           <span class="title-text">{{ $t('view.receiptStock.product.grProduction.salePrice') }}</span>
           <span class="title-text"> *</span>
         </div>
-        <input
-          class="form-control form-control-sm"
+        <PriceInputGeneric
           :style="getBgColor(slotProps.data.isReceipt, slotProps.data.price)"
-          type="number"
-          step="any"
-          min="0"
           v-model="slotProps.data.price"
           :required="isRequiredField(slotProps.data)"
         />
@@ -126,12 +122,14 @@
 
 <script>
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import PriceInputGeneric from '@/components/generic/PriceInputGeneric.vue'
 
 export default {
   name: 'StockDetails',
 
   components: {
-    DropdownGeneric
+    DropdownGeneric,
+    PriceInputGeneric
   },
 
   props: {

@@ -125,6 +125,25 @@ export default {
       '1y': '1 ปีล่าสุด · แสดงรายเดือน'
     }
   },
+  priceInput: {
+    hintEn: '{amount} THB'
+  },
+  priceCheck: {
+    title: 'ราคาดูผิดปกติ ตรวจสอบก่อนบันทึก',
+    intro: 'พบราคาที่ผิดปกติ {count} รายการ กรุณาตรวจสอบอีกครั้ง',
+    enteredPrice: 'ราคาที่กรอก',
+    editPrice: 'แก้ไขราคา',
+    useSuggested: 'ใช้ราคาที่แนะนำ',
+    confirmPrice: 'ยืนยันราคานี้',
+    suggestion: 'ถ้าแก้เป็น {price} จะอยู่ในช่วงปกติ (อาจใส่ 0 เกินหรือขาด 1 ตัว)',
+    reason: {
+      COST_RATIO: 'ราคาเป็น {value} เท่าของต้นทุนวัตถุดิบ (ปกติ ~{reference} เท่า)',
+      TYPE_CEILING: 'สูงกว่าสินค้าประเภทเดียวกันที่แพงที่สุดในคลัง ({reference})',
+      PREVIOUS_PRICE: 'ราคาเดิม {reference}',
+      SAME_WO: 'สินค้าในใบสั่งผลิตเดียวกันราคาประมาณ {reference}',
+      SAME_DESIGN: 'สินค้าแบบเดียวกันราคาประมาณ {reference}'
+    }
+  },
   printer: {
     reload: 'โหลดรายชื่อใหม่',
     selectPlaceholder: 'เลือกหรือพิมพ์ชื่อเครื่องพิมพ์',

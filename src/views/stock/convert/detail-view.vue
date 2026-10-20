@@ -61,6 +61,7 @@
       <!-- กำลังแปลง — target form + ปุ่มแปลงเสร็จ/ยกเลิก -->
       <SectionCardGeneric v-if="isConverting" :title="$t('view.stock.convert.targetSectionTitle')" headerStyle="legend" icon="bi-gem" accent="main" class="mt-3">
         <targetFormSection
+          ref="targetForm"
           v-model="targetForm"
           v-model:convertCost="convertCost"
           v-model:locationCode="locationCode"
@@ -112,6 +113,14 @@
       @confirm="onSourcesPicked"
     />
 
+    <PriceOutlierConfirmModal
+      :isShow="priceCheckModal.show"
+      :outliers="priceCheckModal.outliers"
+      @edit="onPriceCheckEdit"
+      @useSuggested="onPriceCheckUseSuggested"
+      @confirm="onPriceCheckConfirm"
+    />
+
     <cancelReasonModal
       :isShow="isShowCancelModal"
       @closeModal="isShowCancelModal = false"
@@ -127,11 +136,13 @@ import { formatDate } from '@/services/utils/dayjs.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import priceCheckConfirm from '@/composables/usePriceCheckConfirm.js'
 
 import PageHeaderGeneric from '@/components/generic/PageHeaderGeneric.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import TextareaGeneric from '@/components/generic/TextareaGeneric.vue'
+import PriceOutlierConfirmModal from '@/components/modal/price-outlier-confirm-modal.vue'
 import materialTable from '@/views/stock/product/components/material-table.vue'
 
 import sourceListSection from './components/source-list-section.vue'
@@ -162,12 +173,15 @@ export default {
     SectionCardGeneric,
     ButtonGeneric,
     TextareaGeneric,
+    PriceOutlierConfirmModal,
     materialTable,
     sourceListSection,
     targetFormSection,
     sourcePickerModal,
     cancelReasonModal
   },
+
+  mixins: [priceCheckConfirm],
 
   setup() {
     const stockConvertStore = useStockConvertApiStore()
@@ -348,11 +362,48 @@ export default {
       }
     },
 
-    onComplete() {
+    // ตรวจราคาขายตั้งต้นของชิ้นใหม่เฉพาะเมื่อผู้ใช้แก้จากราคาตั้งต้นของชิ้นต้นทาง — true = ไปต่อได้
+    async checkTargetPrice() {
+      const price = Number(this.targetForm.defaultPrice) || 0
+      const sourcePrice = Number(this.sources[0]?.productPrice) || 0
+      if (price <= 0 || price === sourcePrice) return true
+
+      let goldWeight = 0
+      let gemPrice = 0
+      for (const m of this.targetForm.materials || []) {
+        if (m.type === 'Gold' || m.type === 'Silver') goldWeight += Number(m.weight) || 0
+        if (m.type === 'Gem' || m.type === 'Diamond') gemPrice += Number(m.price) || 0
+      }
+
+      return await this.confirmPriceOrAbort(
+        [
+          {
+            key: this.running,
+            label: this.targetForm.productNumber,
+            price,
+            moldDesign: this.targetForm.moldDesign || this.targetForm.mold,
+            productTypeName: this.sources[0]?.productTypeName,
+            productionType: this.targetForm.productionType,
+            goldWeight,
+            gemPrice
+          }
+        ],
+        {
+          onApplySuggestions: ([suggested]) => {
+            if (suggested) this.targetForm.defaultPrice = suggested.price
+          },
+          onFocus: () => this.$refs.targetForm?.focusPrice()
+        }
+      )
+    },
+
+    async onComplete() {
       if (!this.targetForm.productNumber?.trim()) {
         warning(this.$t('view.stock.convert.validation.productNumberRequired'))
         return
       }
+
+      if (!(await this.checkTargetPrice())) return
 
       confirmThenSubmit(
         this.$t('view.stock.convert.confirm.completeMessage'),

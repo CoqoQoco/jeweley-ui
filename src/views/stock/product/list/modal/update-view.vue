@@ -138,7 +138,7 @@
                   <small class="qty-readonly-hint">{{ $t('view.stock.product.qtyReadonlyHint') }}</small>
                 </FormFieldGeneric>
                 <FormFieldGeneric :label="$t('view.stock.product.salePrice')" :required="true">
-                  <InputTextGeneric v-model="stock.productPrice" type="number" :step="'any'" :min="0" placeholder="0.00" :required="true" />
+                  <PriceInputGeneric ref="priceInput" v-model="stock.productPrice" :required="true" />
                 </FormFieldGeneric>
               </div>
 
@@ -312,18 +312,29 @@
         <ButtonGeneric variant="outline" :label="$t('common.btn.cancel')" class="ml-2" @click="closeModal" />
       </template>
     </modal>
+
+    <PriceOutlierConfirmModal
+      :isShow="priceCheckModal.show"
+      :outliers="priceCheckModal.outliers"
+      @edit="onPriceCheckEdit"
+      @useSuggested="onPriceCheckUseSuggested"
+      @confirm="onPriceCheckConfirm"
+    />
   </div>
 </template>
 
 <script>
 import { defineAsyncComponent } from 'vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import PriceInputGeneric from '@/components/generic/PriceInputGeneric.vue'
+import PriceOutlierConfirmModal from '@/components/modal/price-outlier-confirm-modal.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import priceCheckConfirm from '@/composables/usePriceCheckConfirm.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { compressOptimalImage } from '@/services/helper/file/compress-image.js'
 import { resolveGoldTypeWord } from '@/services/helper/barcode/gold-type-name.js'
@@ -347,10 +358,14 @@ export default {
     DropdownGeneric,
     AutoCompleteGeneric,
     InputTextGeneric,
+    PriceInputGeneric,
+    PriceOutlierConfirmModal,
     FormFieldGeneric,
     ButtonGeneric,
     SectionCardGeneric
   },
+
+  mixins: [priceCheckConfirm],
 
   setup() {
     const stockProductImageStore = stockProductImageApiStor()
@@ -447,6 +462,7 @@ export default {
       handler(val) {
         if (!val) return
         this.stock = { ...val }
+        this.originalPrice = Number(val.productPrice) || 0
         this.skuPieceCount = Number(val.skuPieceCount) || 0
       },
       immediate: true
@@ -458,6 +474,7 @@ export default {
       isShowModal: false,
       type: 'STOCK-PRODUCT',
       stock: {},
+      originalPrice: 0,
       skuPieceCount: 0,
       imageStage: 'SHOW',
       search: null,
@@ -646,10 +663,40 @@ export default {
       this.$refs.deviceFileInput.value = ''
     },
 
-    onSubmit() {
+    async onSubmit() {
+      if (!(await this.checkPriceIfChanged())) return
+
       confirmThenSubmit('', this.$t('view.stock.product.confirmSave'), async () => {
         this.fetchConfirm()
       })
+    },
+
+    // ตรวจราคาเฉพาะเมื่อผู้ใช้แก้ราคา — true = บันทึกต่อได้
+    async checkPriceIfChanged() {
+      const price = Number(this.stock.productPrice) || 0
+      if (price === this.originalPrice) return true
+
+      return await this.confirmPriceOrAbort(
+        [
+          {
+            key: this.stock.stockNumber,
+            label: this.stock.stockNumber,
+            price,
+            stockNumber: this.stock.stockNumber,
+            moldDesign: this.stock.moldDesign || this.stock.mold,
+            productTypeName: this.stock.productTypeName,
+            productionType: this.stock.productionType,
+            wo: this.stock.wo,
+            woNumber: this.stock.woNumber
+          }
+        ],
+        {
+          onApplySuggestions: ([suggested]) => {
+            if (suggested) this.stock.productPrice = suggested.price
+          },
+          onFocus: () => this.$refs.priceInput?.focus()
+        }
+      )
     },
 
     async fetchConfirm() {

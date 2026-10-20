@@ -50,6 +50,14 @@
       @closeModal="closeModal"
     />
 
+    <PriceOutlierConfirmModal
+      :isShow="priceCheckModal.show"
+      :outliers="priceCheckModal.outliers"
+      @edit="onPriceCheckEdit"
+      @useSuggested="onPriceCheckUseSuggested"
+      @confirm="onPriceCheckConfirm"
+    />
+
     <modalBarcodePrint :isShow="isShow.barcodePrint" :modelStock="res" @closeModal="closeModal" />
 
     <modalSearchProductName
@@ -95,6 +103,9 @@ import swAlert from '@/services/alert/sweetAlerts.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { useStockLocationApiStore } from '@/stores/modules/api/stock/stock-location-api.js'
 import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
+import priceCheckConfirm from '@/composables/usePriceCheckConfirm.js'
+import { summarizeMaterials } from '@/services/helper/price-check/price-check.js'
+import PriceOutlierConfirmModal from '@/components/modal/price-outlier-confirm-modal.vue'
 
 import headerView from './components/production-header-view.vue'
 import ProductFormTable from './components/product-form-table.vue'
@@ -124,6 +135,7 @@ export default {
   name: 'ProductionPlanList',
 
   components: {
+    PriceOutlierConfirmModal,
     headerView,
     ProductFormTable,
     modalSelectImage,
@@ -132,6 +144,8 @@ export default {
     modalEditAllMaterials,
     modalAdjustBreakdown
   },
+
+  mixins: [priceCheckConfirm],
 
   setup() {
     const receiptProductionStore = useReceiptProductionApiStore()
@@ -732,7 +746,7 @@ export default {
       return display
     },
 
-    onSubmit(event) {
+    async onSubmit(event) {
       var confirm = this.selectedItems.filter((item) => !item.isReceipt)
       if (!this.validateForm(confirm)) {
         event.preventDefault()
@@ -762,8 +776,39 @@ export default {
         Stocks: stocksWithMaterials
       }
 
+      if (!(await this.checkPrices(confirm))) return
+
       swAlert.confirmSubmit('', this.$t('view.receiptStock.product.grProduction.confirmSave'), async () => {
         this.fetchConfirm(formValue)
+      })
+    },
+
+    // ตรวจราคาทุกชิ้นที่กำลังจะรับเข้าคลัง — true = บันทึกต่อได้
+    async checkPrices(items) {
+      const entries = items.map((item) => {
+        const { goldWeight, gemPrice } = summarizeMaterials(item.materials)
+        return {
+          key: item.stockReceiptNumber,
+          label: [item.productNumber, item.productNameTH].filter(Boolean).join(' · ') || item.stockReceiptNumber,
+          price: item.price,
+          wo: this.data.wo,
+          woNumber: this.data.woNumber,
+          skuCode: item.skuCode,
+          moldDesign: item.moldDesign,
+          productTypeName: item.productTypeName,
+          productionType: item.productionType,
+          goldWeight,
+          gemPrice
+        }
+      })
+
+      return await this.confirmPriceOrAbort(entries, {
+        onApplySuggestions: (suggestions) => {
+          suggestions.forEach(({ key, price }) => {
+            const target = this.form.find((f) => f.stockReceiptNumber === key)
+            if (target) target.price = price
+          })
+        }
       })
     },
 

@@ -125,6 +125,25 @@ export default {
       '1y': 'Last 1 year · monthly view'
     }
   },
+  priceInput: {
+    hintEn: '{amount} THB'
+  },
+  priceCheck: {
+    title: 'Unusual price - please review before saving',
+    intro: '{count} price(s) look unusual. Please check again.',
+    enteredPrice: 'Entered price',
+    editPrice: 'Edit price',
+    useSuggested: 'Use suggested price',
+    confirmPrice: 'Confirm this price',
+    suggestion: 'Changing it to {price} would be within the normal range (you may have typed one zero too many or too few)',
+    reason: {
+      COST_RATIO: 'Price is {value}x the material cost (usually ~{reference}x)',
+      TYPE_CEILING: 'Higher than the most expensive item of the same product type in stock ({reference})',
+      PREVIOUS_PRICE: 'Previous price {reference}',
+      SAME_WO: 'Items in the same production order are priced around {reference}',
+      SAME_DESIGN: 'Items of the same design are priced around {reference}'
+    }
+  },
   printer: {
     reload: 'Reload printer list',
     selectPlaceholder: 'Select or type printer name',

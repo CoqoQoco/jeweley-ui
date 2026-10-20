@@ -277,6 +277,22 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
       return await api.jewelry.post('StockProduct/PublicLink', { stockNumber }, options)
     },
 
+    // ตรวจราคาผิดปกติก่อนบันทึก — ล้มเหลว (เครือข่าย/500/404 ตอน API ยังไม่ deploy) ต้องไม่ขวางการบันทึก
+    // คืน null เมื่อล้มเหลว; skipError กัน dialog ของ axios-helper ขึ้นมาบัง
+    async priceCheck(items) {
+      try {
+        const res = await api.jewelry.post(
+          'StockProduct/PriceCheck',
+          { items },
+          { skipLoading: true, skipError: true }
+        )
+        return res || null
+      } catch (error) {
+        console.warn('StockProduct/PriceCheck failed — skip price check', error)
+        return null
+      }
+    },
+
     // ตีราคาด่วน — backend คำนวณซ้ำจาก input เดียวกันแล้วเก็บเป็นประวัติใหม่ (ต้องมีสิทธิ์ update_stock)
     async fetchQuickPriceCreate({ formValue }) {
       return await api.jewelry.post('StockProduct/QuickPriceCreate', formValue)
