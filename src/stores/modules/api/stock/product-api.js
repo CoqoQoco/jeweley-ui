@@ -216,9 +216,9 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
       }
     },
 
-    async fetchGetProductCostDetailVersion(stockNumber) {
+    async fetchGetProductCostDetailVersion(stockNumber, options = {}) {
       try {
-        return await api.jewelry.get('StockProduct/GetProductCostDetailVersion', { stockNumber })
+        return await api.jewelry.get('StockProduct/GetProductCostDetailVersion', { stockNumber }, options)
       } catch (error) {
         console.error('Error fetching product cost detail version:', error)
         throw error

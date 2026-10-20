@@ -349,7 +349,15 @@ export default {
       colPercent: 'X%',
       filterPriceStatus: 'Price status',
       statusNoNormal: 'No normal appraisal yet',
-      statusHasQuick: 'Has quick price'
+      statusHasQuick: 'Has quick price',
+      normalHistoryTitle: 'Normal appraisal history ({count})',
+      normalHistoryEmpty: 'No normal appraisal history yet',
+      colRunning: 'No.',
+      colCustomer: 'Customer',
+      colMultiplier: 'Tag multiplier',
+      colCurrency: 'Currency',
+      colTotalPrice: 'Total price',
+      viewNormalDetail: 'View appraisal detail'
     }
   },
   location: {

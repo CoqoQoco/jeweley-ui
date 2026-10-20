@@ -16,10 +16,17 @@
             @click="costDetailVisible = true"
           />
           <ButtonGeneric
+            v-if="canQuickPrice"
+            variant="outline"
+            icon="bi-lightning-charge"
+            :label="$t('view.stock.product.quickPrice.boxTitle')"
+            @click="quickPriceVisible = true"
+          />
+          <ButtonGeneric
             variant="outline"
             icon="bi-clock-history"
             :label="$t('view.stock.product.viewHistory')"
-            @click="costHistoryVisible = true"
+            @click="openCostHistory('')"
           />
           <ButtonGeneric
             variant="outline"
@@ -138,18 +145,11 @@
         </SectionCardGeneric>
       </div>
 
-      <div class="detail-price" :class="{ 'detail-price--single': !canQuickPrice }">
+      <div class="detail-price">
         <quickPriceSummary :summary="priceSummary" :isLot="isLot" />
-        <quickPriceForm
-          v-if="canQuickPrice"
-          :key="stockNumber"
-          :stockNumber="stockNumber"
-          :salePrice="salePrice"
-          :materials="item.materials || []"
-          :isLot="isLot"
-          @saved="onQuickPriceSaved"
-        />
       </div>
+
+      <normalPriceHistory :items="normalPriceHistory" :showCost="showCost" @view="openCostHistory" />
 
       <quickPriceHistory :items="quickPriceHistory" :showCost="showCost" />
 
@@ -220,8 +220,23 @@
     <update :isShow="isShow.isUpdate" :modelStock="item || {}" @closeModal="onCloseModal" />
     <barcode :isShow="isShow.isBarcode" :modelStock="item || {}" @closeModal="onCloseModal" />
     <costDetailModal v-model:visible="costDetailVisible" :stockNumber="stockNumber" :stockData="item" />
-    <costHistoryModal v-model:visible="costHistoryVisible" :stockNumber="stockNumber" :stockData="item" />
+    <costHistoryModal
+      v-model:visible="costHistoryVisible"
+      :stockNumber="stockNumber"
+      :stockData="item"
+      :initialRunning="costHistoryRunning"
+    />
     <productShareDialog v-model:visible="shareVisible" :stockNumber="stockNumber" />
+    <quickPriceModal
+      v-if="canQuickPrice && item"
+      :isShow="quickPriceVisible"
+      :stockNumber="stockNumber"
+      :salePrice="salePrice"
+      :materials="item.materials || []"
+      :isLot="isLot"
+      @closeModal="quickPriceVisible = false"
+      @saved="onQuickPriceSaved"
+    />
   </div>
 </template>
 
@@ -236,6 +251,7 @@ import { formatDate } from '@/services/utils/dayjs.js'
 import { getPieceQty } from '@/services/utils/stock-piece-qty.js'
 import { hasQuickPriceAccess } from '@/services/permission/quick-price-access.js'
 import { hasMarginAccess } from '@/services/permission/margin-access.js'
+import { normalizeCostVersions } from '@/services/helper/cost-version.js'
 
 import PageHeaderGeneric from '@/components/generic/PageHeaderGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
@@ -246,8 +262,9 @@ import productShareDialog from '@/components/public/product-share-dialog.vue'
 import materialTable from '../components/material-table.vue'
 import balancePanel from '../components/balance-panel.vue'
 import quickPriceSummary from '../components/quick-price-summary.vue'
-import quickPriceForm from '../components/quick-price-form.vue'
+import quickPriceModal from '../components/quick-price-modal.vue'
 import quickPriceHistory from '../components/quick-price-history.vue'
+import normalPriceHistory from '../components/normal-price-history.vue'
 import update from '../list/modal/update-view.vue'
 import barcode from '../list/modal/barcode-view.vue'
 import costDetailModal from '../list/components/cost-detail-modal.vue'
@@ -269,8 +286,9 @@ export default {
     materialTable,
     balancePanel,
     quickPriceSummary,
-    quickPriceForm,
+    quickPriceModal,
     quickPriceHistory,
+    normalPriceHistory,
     update,
     barcode,
     costDetailModal,
@@ -291,10 +309,13 @@ export default {
       item: null,
       notFound: false,
       quickPriceHistory: [],
+      normalPriceHistory: [],
+      costHistoryRunning: '',
       isShow: { ...interfaceShow },
       costDetailVisible: false,
       costHistoryVisible: false,
-      shareVisible: false
+      shareVisible: false,
+      quickPriceVisible: false
     }
   },
 
@@ -390,7 +411,21 @@ export default {
       this.notFound = false
       this.item = res
       await mergeBalanceIntoItems([this.item], { balanceStore: this.balanceStore, locationStore: this.locationStore })
-      await this.loadQuickPriceHistory()
+      await Promise.all([this.loadQuickPriceHistory(), this.loadNormalPriceHistory()])
+    },
+
+    async loadNormalPriceHistory() {
+      try {
+        const res = await this.productStore.fetchGetProductCostDetailVersion(this.stockNumber, { skipError: true })
+        this.normalPriceHistory = normalizeCostVersions(res)
+      } catch {
+        this.normalPriceHistory = []
+      }
+    },
+
+    openCostHistory(running) {
+      this.costHistoryRunning = typeof running === 'string' ? running : ''
+      this.costHistoryVisible = true
     },
 
     async loadQuickPriceHistory() {
@@ -450,16 +485,8 @@ export default {
 
 .detail-price {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  grid-template-columns: 1fr;
   gap: var(--sp-lg);
-
-  &--single {
-    grid-template-columns: 1fr;
-  }
-
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-  }
 }
 
 .detail-bottom {

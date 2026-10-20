@@ -244,6 +244,7 @@ import { defineAsyncComponent } from 'vue'
 import CostDetailTableView from '@/components/cost/cost-detail-table-view.vue'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
+import { normalizeCostVersions } from '@/services/helper/cost-version.js'
 import dayjs from 'dayjs'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { AppraisalHistoryPdfBuilder } from '@/services/helper/pdf/appraisal/appraisal-history-pdf-builder.js'
@@ -268,6 +269,10 @@ export default {
     stockData: {
       type: Object,
       default: () => ({})
+    },
+    initialRunning: {
+      type: String,
+      default: ''
     }
   },
   emits: ['update:visible'],
@@ -295,32 +300,12 @@ export default {
       const store = usrStockProductApiStore()
       const response = await store.fetchGetProductCostDetailVersion(this.stockNumber)
 
-      let rawVersions = []
-      if (Array.isArray(response)) {
-        rawVersions = response
-      } else if (response && Array.isArray(response.data)) {
-        rawVersions = response.data
-      } else if (response && response.data) {
-        rawVersions = [response.data]
-      }
-
-      this.versions = rawVersions.map((version, index) => {
-        const totalPrice = version.prictransection
-          ? version.prictransection.reduce((sum, item) => sum + (item.totalPrice || 0), 0)
-          : 0
-
-        return {
-          ...version,
-          versionId: version.running || `v-${index}`,
-          versionNumber: rawVersions.length - index,
-          priceTransactions: version.prictransection || [],
-          totalPrice: totalPrice,
-          customerNumber: version.customerCode || null
-        }
-      })
+      this.versions = normalizeCostVersions(response)
 
       if (this.versions.length > 0) {
-        this.selectedVersion = this.versions[0]
+        this.selectedVersion =
+          (this.initialRunning && this.versions.find((v) => v.running === this.initialRunning)) ||
+          this.versions[0]
       }
     },
 

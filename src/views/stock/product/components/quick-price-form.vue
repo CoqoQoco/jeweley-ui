@@ -1,26 +1,19 @@
 <template>
-  <SectionCardGeneric
-    :title="$t('view.stock.product.quickPrice.boxTitle')"
-    headerStyle="legend"
-    icon="bi-lightning-charge"
-    accent="main"
-  >
+  <div class="qp-form">
     <div class="qp-step">
       <div class="qp-step-title">{{ $t('view.stock.product.quickPrice.step1') }}</div>
-      <div class="qp-row">
-        <div class="qp-readonly">
-          <span class="qp-label">
-            {{ isLot ? $t('view.stock.product.quickPrice.oldSalePricePerPiece') : $t('view.stock.product.quickPrice.oldSalePrice') }}
-          </span>
-          <span class="qp-value">{{ formatMoney2(salePrice) }}</span>
-        </div>
+      <div class="qp-row qp-row--3">
+        <FormFieldGeneric
+          :label="isLot ? $t('view.stock.product.quickPrice.oldSalePricePerPiece') : $t('view.stock.product.quickPrice.oldSalePrice')"
+        >
+          <div class="qp-readonly">{{ formatMoney2(salePrice) }}</div>
+        </FormFieldGeneric>
         <FormFieldGeneric :label="$t('view.stock.product.quickPrice.markup')">
           <InputTextGeneric v-model="form.markup" type="number" :min="0" step="any" />
         </FormFieldGeneric>
-        <div class="qp-readonly">
-          <span class="qp-label">{{ $t('view.stock.product.quickPrice.cost') }}</span>
-          <span class="qp-value">{{ formatMoney2(result.cost) }}</span>
-        </div>
+        <FormFieldGeneric :label="$t('view.stock.product.quickPrice.cost')">
+          <div class="qp-readonly">{{ formatMoney2(result.cost) }}</div>
+        </FormFieldGeneric>
       </div>
       <p v-if="result.error === 'salePrice'" class="qp-warning">
         <i class="bi bi-exclamation-triangle"></i> {{ $t('view.stock.product.quickPrice.invalid.salePrice') }}
@@ -29,7 +22,7 @@
 
     <div class="qp-step">
       <div class="qp-step-title">{{ $t('view.stock.product.quickPrice.step2') }}</div>
-      <div class="qp-row">
+      <div class="qp-row qp-row--4">
         <FormFieldGeneric :label="$t('view.stock.product.quickPrice.goldWeight')">
           <InputTextGeneric v-model="form.goldWeight" type="number" :min="0" step="any" @input="weightTouched = true" />
           <span v-if="metal.source" class="qp-hint">
@@ -42,27 +35,25 @@
             <ButtonGeneric
               variant="outline"
               icon="bi-calculator"
-              :label="$t('view.stock.product.quickPrice.spot')"
+              class="qp-calc-btn"
+              :title="$t('view.stock.product.quickPrice.spot')"
+              :aria-label="$t('view.stock.product.quickPrice.spot')"
               @click="showGoldCalculator = true"
             />
+          </div>
+        </FormFieldGeneric>
+        <FormFieldGeneric :label="$t('view.stock.product.quickPrice.goldCost')">
+          <div class="qp-readonly">{{ formatMoney2(result.goldCost) }}</div>
+        </FormFieldGeneric>
+        <FormFieldGeneric :label="$t('view.stock.product.quickPrice.costExGold')">
+          <div class="qp-readonly" :class="{ 'qp-readonly--negative': result.costExGold !== null && result.costExGold <= 0 }">
+            {{ formatMoney2(result.costExGold) }}
           </div>
         </FormFieldGeneric>
       </div>
       <p v-if="!metal.source && !hasWeightInput" class="qp-warning">
         <i class="bi bi-exclamation-triangle"></i> {{ $t('view.stock.product.quickPrice.noMetalWeight') }}
       </p>
-      <div class="qp-row">
-        <div class="qp-readonly">
-          <span class="qp-label">{{ $t('view.stock.product.quickPrice.goldCost') }}</span>
-          <span class="qp-value">{{ formatMoney2(result.goldCost) }}</span>
-        </div>
-        <div class="qp-readonly">
-          <span class="qp-label">{{ $t('view.stock.product.quickPrice.costExGold') }}</span>
-          <span class="qp-value" :class="{ 'qp-value--negative': result.costExGold !== null && result.costExGold <= 0 }">
-            {{ formatMoney2(result.costExGold) }}
-          </span>
-        </div>
-      </div>
       <p v-if="result.error === 'costExGold'" class="qp-warning">
         <i class="bi bi-exclamation-triangle"></i> {{ $t('view.stock.product.quickPrice.invalid.costExGold') }}
       </p>
@@ -70,7 +61,7 @@
 
     <div class="qp-step">
       <div class="qp-step-title">{{ $t('view.stock.product.quickPrice.step3') }}</div>
-      <div class="qp-row">
+      <div class="qp-row qp-row--2">
         <FormFieldGeneric :label="$t('view.stock.product.quickPrice.addPercent')">
           <InputTextGeneric v-model="form.percent" type="number" :min="0" step="any" />
         </FormFieldGeneric>
@@ -86,9 +77,12 @@
       <p v-if="result.error === 'percent'" class="qp-warning">
         <i class="bi bi-exclamation-triangle"></i> {{ $t('view.stock.product.quickPrice.invalid.percent') }}
       </p>
-      <div class="qp-result">
-        <span class="qp-label">{{ $t('view.stock.product.quickPrice.resultLabel') }}</span>
-        <span class="qp-result-value">{{ formatMoney2(result.quickPrice) }}</span>
+    </div>
+
+    <div class="qp-result">
+      <span class="qp-result-label">{{ $t('view.stock.product.quickPrice.newPrice') }}</span>
+      <div class="qp-result-amount">
+        <span class="qp-result-value">{{ result.valid ? formatMoney2(result.quickPrice) : '—' }}</span>
         <span v-if="result.valid && Number(form.rounding) !== 0" class="qp-hint">
           {{ $t('view.stock.product.quickPrice.beforeRounding', { raw: formatMoney2(result.raw) }) }}
         </span>
@@ -99,23 +93,12 @@
       <InputTextGeneric v-model="form.remark" type="text" :maxlength="200" />
     </FormFieldGeneric>
 
-    <div class="qp-actions">
-      <ButtonGeneric variant="outline" icon="bi-arrow-counterclockwise" :label="$t('common.btn.clear')" @click="onReset" />
-      <ButtonGeneric
-        variant="main"
-        icon="bi-save"
-        :label="$t('view.stock.product.quickPrice.save')"
-        :disabled="!result.valid"
-        @click="onSave"
-      />
-    </div>
-
     <GoldCalculatorModal
       :isShow="showGoldCalculator"
       @closeModal="showGoldCalculator = false"
       @select="onGoldCalculatorSelect"
     />
-  </SectionCardGeneric>
+  </div>
 </template>
 
 <script>
@@ -131,7 +114,6 @@ import {
   getMetalWeight
 } from '@/services/helper/quick-price.js'
 
-import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
@@ -156,7 +138,6 @@ export default {
   name: 'QuickPriceForm',
 
   components: {
-    SectionCardGeneric,
     FormFieldGeneric,
     InputTextGeneric,
     ButtonGeneric,
@@ -183,7 +164,7 @@ export default {
     }
   },
 
-  emits: ['saved'],
+  emits: ['saved', 'validChange'],
 
   setup() {
     const productStore = usrStockProductApiStore()
@@ -235,6 +216,13 @@ export default {
   },
 
   watch: {
+    'result.valid': {
+      immediate: true,
+      handler(val) {
+        this.$emit('validChange', val)
+      }
+    },
+
     metal(val) {
       if (!this.weightTouched) this.form.goldWeight = weightToInput(val.weight)
     }
@@ -318,26 +306,40 @@ export default {
 
 .qp-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: var(--sp-md) var(--sp-lg);
-  align-items: end;
-  margin-bottom: var(--sp-sm);
+  align-items: start;
+
+  &--2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  &--4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  @media (max-width: 768px) {
+    &--2,
+    &--3,
+    &--4 {
+      grid-template-columns: 1fr;
+    }
+  }
 }
 
 .qp-readonly {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-xs);
-}
-
-.qp-label {
-  font-size: var(--fs-sm);
-  color: var(--base-sub-color);
-}
-
-.qp-value {
-  font-size: var(--fs-base);
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--status-closed-bg);
+  font-size: 0.9rem;
+  line-height: var(--lh-sm);
   font-weight: 700;
+  text-align: right;
 
   &--negative {
     color: var(--base-red);
@@ -346,8 +348,41 @@ export default {
 
 .qp-inline {
   display: flex;
+  align-items: stretch;
+
+  :deep(input.form-control) {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    margin-top: 0 !important;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+
+.qp-calc-btn.btn {
+  flex: 0 0 auto;
+  display: inline-flex;
   align-items: center;
-  gap: var(--sp-sm);
+  justify-content: center;
+  margin-left: -1px;
+  padding: 0 var(--sp-md);
+  border: 1px solid var(--color-border);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+  background: var(--status-closed-bg);
+  color: var(--base-sub-color);
+  box-shadow: none;
+
+  &:hover,
+  &:focus {
+    border-color: var(--color-border);
+    background: var(--color-highlight-bg);
+    color: var(--base-font-color);
+    box-shadow: none;
+  }
 }
 
 .qp-hint {
@@ -358,29 +393,38 @@ export default {
 }
 
 .qp-warning {
-  margin: var(--sp-xs) 0 var(--sp-sm);
+  margin: var(--sp-sm) 0 0;
   font-size: var(--fs-sm);
   color: var(--base-red);
 }
 
 .qp-result {
   display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: var(--sp-sm);
-  margin-top: var(--sp-sm);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-lg);
+  margin-bottom: var(--sp-lg);
+  padding: var(--sp-lg);
+  border-radius: var(--radius-lg);
+  background: var(--color-highlight-bg);
+}
+
+.qp-result-label {
+  font-weight: 700;
+  color: var(--base-font-color);
+}
+
+.qp-result-amount {
+  text-align: right;
+
+  .qp-hint {
+    margin-top: 0;
+  }
 }
 
 .qp-result-value {
   font-size: var(--fs-xl);
   font-weight: 700;
   color: var(--base-font-color);
-}
-
-.qp-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--sp-sm);
-  margin-top: var(--sp-lg);
 }
 </style>

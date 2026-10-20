@@ -349,7 +349,15 @@ export default {
       colPercent: 'X%',
       filterPriceStatus: 'สถานะราคา',
       statusNoNormal: 'ยังไม่ตีราคาปกติ',
-      statusHasQuick: 'มีราคาตีด่วนแล้ว'
+      statusHasQuick: 'มีราคาตีด่วนแล้ว',
+      normalHistoryTitle: 'ประวัติตีราคาปกติ ({count})',
+      normalHistoryEmpty: 'ยังไม่มีประวัติตีราคาปกติ',
+      colRunning: 'เลขที่',
+      colCustomer: 'ลูกค้า',
+      colMultiplier: 'ตัวคูณป้าย',
+      colCurrency: 'สกุลเงิน',
+      colTotalPrice: 'ราคารวม',
+      viewNormalDetail: 'ดูรายละเอียดการตีราคา'
     }
   },
   location: {
