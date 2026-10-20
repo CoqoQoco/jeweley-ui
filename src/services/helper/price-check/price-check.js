@@ -78,6 +78,12 @@ export const formatRatio = (value) => {
   return n.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 }
 
+export const formatRatioLow = (value) => {
+  const n = Number(value)
+  if (!Number.isFinite(n)) return ''
+  return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
 const REASON_KEYS = {
   COST_RATIO: 'common.priceCheck.reason.COST_RATIO',
   TYPE_CEILING: 'common.priceCheck.reason.TYPE_CEILING',
@@ -91,6 +97,12 @@ export const formatReason = (t, reason) => {
   const key = REASON_KEYS[reason?.code]
   if (!key) return ''
   if (reason.code === 'COST_RATIO') {
+    if (Number(reason.value) < 1) {
+      return t('common.priceCheck.reason.COST_RATIO_LOW', {
+        value: formatRatioLow(reason.value),
+        reference: formatRatio(reason.reference)
+      })
+    }
     return t(key, { value: formatRatio(reason.value), reference: formatRatio(reason.reference) })
   }
   return t(key, { reference: formatPriceNumber(reason.reference) })

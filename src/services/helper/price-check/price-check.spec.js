@@ -90,6 +90,18 @@ describe('formatReason', () => {
     )
   })
 
+  it('COST_RATIO ต่ำกว่า 1 เท่า ใช้ข้อความ LOW และทศนิยม 2 ตำแหน่ง', () => {
+    expect(formatReason(t, { code: 'COST_RATIO', value: 0.04, reference: 3 })).toBe(
+      'common.priceCheck.reason.COST_RATIO_LOW|{"value":"0.04","reference":"3.0"}'
+    )
+  })
+
+  it('COST_RATIO เท่ากับ 1 ยังใช้ข้อความเดิม', () => {
+    expect(formatReason(t, { code: 'COST_RATIO', value: 1, reference: 3 })).toBe(
+      'common.priceCheck.reason.COST_RATIO|{"value":"1.0","reference":"3.0"}'
+    )
+  })
+
   it('reason อื่นใช้ reference พร้อมตัวคั่นหลักพัน', () => {
     expect(formatReason(t, { code: 'PREVIOUS_PRICE', reference: 61100 })).toBe(
       'common.priceCheck.reason.PREVIOUS_PRICE|{"reference":"61,100"}'

@@ -935,5 +935,51 @@ export default {
     colInternalImage: 'Internal Photo',
     manageBtn: 'Manage Photos',
     noData: 'No designs missing customer photos'
+  },
+  priceReview: {
+    title: 'Prices to review',
+    intro: 'This page compares the price of each stock item with its material cost, items in the same production order, items of the same design, and the highest price of the same product type. Only items with a suspicious price are listed so you can review and fix them.',
+    searchTitle: 'Search prices to review',
+    searchDesc: 'Stock items whose price looks abnormal, most suspicious first',
+    searchLabel: 'Search',
+    searchPlaceholder: 'Stock no. / product code / product name',
+    reviewStatusFilter: 'Review status',
+    reviewStatus: {
+      PENDING: 'Not reviewed',
+      ACKED: 'Reviewed',
+      ALL: 'All'
+    },
+    ackBtn: 'Confirm price is correct',
+    ackBulkBtn: 'Confirm price is correct ({count})',
+    ackModalTitle: 'Confirm price is correct',
+    ackModalIntro: 'Confirm that the price of these {count} item(s) is correct. They will be hidden from the not-reviewed list until the price changes.',
+    ackNoteLabel: 'Note (optional)',
+    ackNotePlaceholder: 'e.g. Checked against the production order, price is correct',
+    ackSuccess: 'Confirmed {count} item(s)',
+    unackBtn: 'Undo confirmation',
+    unackConfirmTitle: 'Undo price confirmation',
+    unackConfirmMsg: 'Undo the price confirmation of {stockNumber}?',
+    unackSuccess: 'Undid confirmation of {count} item(s)',
+    priceChanged: 'Price changed from {old} → {new} · review again',
+    ackedBy: 'Reviewed by {by} · {date}',
+    ackedNote: 'Note: {note}',
+    colAckStatus: 'Review status',
+    colAckBy: 'Reviewed by',
+    colAckDate: 'Reviewed on',
+    colAckNote: 'Review note',
+    statusChanged: 'Price changed, review again',
+    reasonFilter: 'Reason',
+    reasonCode: {
+      COST_RATIO: 'High compared with material cost',
+      TYPE_CEILING: 'Above the most expensive item of the same type',
+      PREVIOUS_PRICE: 'Differs from previous price',
+      SAME_WO: 'Differs from the same production order',
+      SAME_DESIGN: 'Differs from the same design'
+    },
+    colStockCode: 'Production No.',
+    colProduct: 'Product',
+    colReasons: 'Reasons',
+    colSuggested: 'Suggested price',
+    empty: 'No abnormal prices found'
   }
 }

@@ -138,6 +138,7 @@ export default {
     suggestion: 'ถ้าแก้เป็น {price} จะอยู่ในช่วงปกติ (อาจใส่ 0 เกินหรือขาด 1 ตัว)',
     reason: {
       COST_RATIO: 'ราคาเป็น {value} เท่าของต้นทุนวัตถุดิบ (ปกติ ~{reference} เท่า)',
+      COST_RATIO_LOW: 'ราคาต่ำกว่าต้นทุนวัตถุดิบ (เพียง {value} เท่า ปกติ ~{reference} เท่า)',
       TYPE_CEILING: 'สูงกว่าสินค้าประเภทเดียวกันที่แพงที่สุดในคลัง ({reference})',
       PREVIOUS_PRICE: 'ราคาเดิม {reference}',
       SAME_WO: 'สินค้าในใบสั่งผลิตเดียวกันราคาประมาณ {reference}',

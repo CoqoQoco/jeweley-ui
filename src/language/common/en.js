@@ -138,6 +138,7 @@ export default {
     suggestion: 'Changing it to {price} would be within the normal range (you may have typed one zero too many or too few)',
     reason: {
       COST_RATIO: 'Price is {value}x the material cost (usually ~{reference}x)',
+      COST_RATIO_LOW: 'Price is below material cost (only {value}x, usually ~{reference}x)',
       TYPE_CEILING: 'Higher than the most expensive item of the same product type in stock ({reference})',
       PREVIOUS_PRICE: 'Previous price {reference}',
       SAME_WO: 'Items in the same production order are priced around {reference}',

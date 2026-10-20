@@ -4,8 +4,8 @@
       <div>
         <div>
           <pageTitle
-            :title="$t('view.stock.product.searchTitle')"
-            :description="$t('view.stock.product.searchDesc')"
+            :title="title || $t('view.stock.product.searchTitle')"
+            :description="description || $t('view.stock.product.searchDesc')"
             :isShowBtnClose="false"
           >
           </pageTitle>
@@ -73,6 +73,8 @@
                 @update:modelValue="form.priceStatus = $event"
               />
             </div>
+
+            <slot name="extra-fields" />
         </div>
 
         <dialogView
@@ -311,6 +313,7 @@
               @click="onClear"
             />
             <ButtonGeneric
+              v-if="showExport"
               variant="main"
               icon="bi-filetype-csv"
               class="ml-2"
@@ -368,6 +371,18 @@ export default {
     modelForm: {
       type: Object,
       default: () => ({})
+    },
+    title: {
+      type: String,
+      default: ''
+    },
+    description: {
+      type: String,
+      default: ''
+    },
+    showExport: {
+      type: Boolean,
+      default: true
     }
   },
 

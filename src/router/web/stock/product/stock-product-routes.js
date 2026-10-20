@@ -1,6 +1,7 @@
 const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 
 const List = () => import('@/views/stock/product/list/index-view.vue')
+const PriceReview = () => import('@/views/stock/price-review/index-view.vue')
 const Detail = () => import('@/views/stock/product/detail/index-view.vue')
 const PrintBarcode = () => import('@/views/stock/product/print-barcode/index-view.vue')
 
@@ -70,6 +71,19 @@ const routes = [
           Displayname: {
             en: 'Bulk Barcode Print',
             th: 'พิมพ์บาร์โค้ดหลายรายการ'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_PRODUCT]
+        }
+      },
+      {
+        path: '/stock-product-price-review',
+        name: 'stock-product-price-review',
+        component: PriceReview,
+        meta: {
+          Displayname: {
+            en: 'Prices to review',
+            th: 'ราคาที่ควรตรวจ'
           },
           minorShow: true,
           permissions: [PERMISSIONS.STOCK_PRODUCT]

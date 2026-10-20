@@ -14,7 +14,7 @@ import { getPieceQty, getPieceQtyReserved, getPieceQtyAvailable } from '@/servic
 
 // ใช้ร่วมกันระหว่าง fetchDataSearch และ fetchDataSearchReceiptExport
 // materials/materialMatchAll/priceMin/priceMax เป็น filter ใหม่ของ StockProduct/List (ดู jeweley-ui plan)
-const buildSearchParam = (formValue) => {
+export const buildSearchParam = (formValue) => {
   const { materialMatch, ...rest } = formValue
   const materials = formValue.materials?.length ? formValue.materials : undefined
   const isBlank = (val) => val === null || val === undefined || val === ''
@@ -291,6 +291,28 @@ export const usrStockProductApiStore = defineStore('stockProduct', {
         console.warn('StockProduct/PriceCheck failed — skip price check', error)
         return null
       }
+    },
+
+    // รายการสินค้าในคลังที่ราคาดูผิดปกติ (หน้า "ราคาที่ควรตรวจ") — take ใหญ่ได้สำหรับ export
+    async fetchPriceOutlierList({ take, skip, sort, search, skipLoading = false }) {
+      return await api.jewelry.post(
+        'StockProduct/PriceOutlierList',
+        { take, skip, sort, search },
+        { skipLoading }
+      )
+    },
+
+    // ยืนยันว่าราคาถูกต้องแล้ว (ซ่อนจากหน้า "ราคาที่ควรตรวจ" จนกว่าราคาจะถูกแก้) → { count }
+    async fetchPriceReviewAck({ stockNumbers, note }) {
+      return await api.jewelry.post('StockProduct/PriceReviewAck', {
+        stockNumbers,
+        note: note || undefined
+      })
+    },
+
+    // ยกเลิกการยืนยันราคา → { count }
+    async fetchPriceReviewUnack({ stockNumbers }) {
+      return await api.jewelry.post('StockProduct/PriceReviewUnack', { stockNumbers })
     },
 
     // ตีราคาด่วน — backend คำนวณซ้ำจาก input เดียวกันแล้วเก็บเป็นประวัติใหม่ (ต้องมีสิทธิ์ update_stock)
