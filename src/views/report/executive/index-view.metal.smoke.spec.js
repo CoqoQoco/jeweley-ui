@@ -18,7 +18,7 @@ function mountView(query = {}) {
     global: {
       plugins: [PrimeVue],
       mocks: { $t: (key) => key, $route: { query: { ...query } }, $router: { replace, resolve: () => ({ meta: { permissions: [] }, href: '/x' }) } },
-      stubs: { summaryView: true, salesView: true, stockHealthView: true, flowView: true, productionInsightView: true }
+      stubs: { summaryView: true, salesView: true, stockInsightView: true, flowView: true, productionInsightView: true }
     }
   })
   return { wrapper, replace }

@@ -23,7 +23,7 @@
         <salesView :key="metal" :receivablesSummary="summary.receivables" :salesOrdersSummary="summary.salesOrders" :refreshToken="refreshToken" />
       </template>
       <template #stock>
-        <stockHealthView :key="metal" :refreshToken="refreshToken" />
+        <stockInsightView :key="metal" :metal="metal" :refreshToken="refreshToken" :initialSub="stockInitialSub" @update:sub="stockInitialSub = $event" />
       </template>
       <template #flow>
         <flowView :active="activeTab === 'flow'" :refreshToken="refreshToken" />
@@ -87,7 +87,7 @@ import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 
 import summaryView from './components/summary-view.vue'
 import salesView from './components/sales-view.vue'
-import stockHealthView from './components/stock-health-view.vue'
+import stockInsightView from './components/stock-insight-view.vue'
 import flowView from './components/flow-view.vue'
 import productionInsightView from '@/views/production/insight/index-view.vue'
 
@@ -133,7 +133,7 @@ export default {
     ToggleGroupGeneric,
     summaryView,
     salesView,
-    stockHealthView,
+    stockInsightView,
     flowView,
     productionInsightView
   },
@@ -155,7 +155,9 @@ export default {
       metal: parseMetalQuery(this.$route.query.metal),
       refreshToken: 0,
       activeTab: 'production',
-      isApplyingRouteQuery: false
+      isApplyingRouteQuery: false,
+      // ?sub= ที่เป็นของแท็บคลังสินค้า (อ่านตอนเข้าหน้าด้วย tab=stock เท่านั้น)
+      stockInitialSub: ''
     }
   },
 
@@ -200,7 +202,7 @@ export default {
     // single source of truth — ทั้ง TabViewGeneric (คลิกแท็บตรงๆ) และ summaryView (คลิก KPI) เปลี่ยน
     // activeTab แล้วมาจบที่นี่เหมือนกัน คอย sync query string ?tab= เสมอ (refresh ไม่ผ่าน watcher นี้ — tab เดิม)
     activeTab() {
-      this.syncStateToQuery()
+      this.syncStateToQuery(true)
     },
 
     // store ต้องถูกตั้งก่อน child ถูก remount (key=metal) — watcher แบบ pre-flush จึงรันก่อน render เสมอ child ที่ mount
@@ -223,14 +225,17 @@ export default {
     applyQueryToState(query) {
       this.isApplyingRouteQuery = true
       this.activeTab = resolveActiveTab(query.tab)
+      this.stockInitialSub = this.activeTab === 'stock' ? String(query.sub || '') : ''
       this.$nextTick(() => {
         this.isApplyingRouteQuery = false
       })
     },
 
-    syncStateToQuery() {
+    // resetSub: เปลี่ยนแท็บ → ลบ ?sub= (เป็นของแท็บผลิต/คลังสินค้าที่เพิ่งออกมา กันค้างข้ามแท็บ)
+    syncStateToQuery(resetSub = false) {
       if (this.isApplyingRouteQuery) return
       const query = { ...this.$route.query, tab: this.activeTab }
+      if (resetSub) delete query.sub
       const metalQuery = metalToQuery(this.metal)
       if (metalQuery) query.metal = metalQuery
       else delete query.metal

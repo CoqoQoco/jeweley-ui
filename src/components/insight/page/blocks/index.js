@@ -7,6 +7,8 @@ import ChartBlock from './ChartBlock.vue'
 import DetailBlock from './DetailBlock.vue'
 import SparkCardsBlock from './SparkCardsBlock.vue'
 import NoteBlock from './NoteBlock.vue'
+import DonutBlock from './DonutBlock.vue'
+import BarBlock from './BarBlock.vue'
 
 export const BLOCK_COMPONENTS = {
   kpi: KpiBlock,
@@ -16,7 +18,9 @@ export const BLOCK_COMPONENTS = {
   chart: ChartBlock,
   detail: DetailBlock,
   sparkCards: SparkCardsBlock,
-  note: NoteBlock
+  note: NoteBlock,
+  donut: DonutBlock,
+  bar: BarBlock
 }
 
 export { BLOCK_TYPES } from './block-types.js'

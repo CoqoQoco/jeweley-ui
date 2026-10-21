@@ -711,6 +711,94 @@ export default {
     optionLabel: '{name} · {code} · {dept}'
   },
 
+  stockInsight: {
+    title: 'คลังสินค้า',
+    kpiGroupTitle: 'ภาพรวมสต็อก',
+    tabs: {
+      overview: 'ภาพรวม',
+      trend: 'แนวโน้ม',
+      age: 'อายุสต็อก',
+      cost: 'ต้นทุน',
+      receipt: 'ประเภทการรับ',
+      category: 'หมวดสินค้า'
+    },
+    kpi: {
+      inStock: 'ชิ้นพร้อมขาย',
+      inStockSub: 'จำนวนตามหน่วย {qty}',
+      noCost: 'ไม่มีต้นทุน',
+      noCostSub: '{count} ชิ้น',
+      cost: 'มูลค่าต้นทุน',
+      costSub: 'เฉพาะชิ้นที่มีต้นทุน',
+      aged: 'อายุเกิน 1 ปี',
+      agedSub: '{count} ชิ้น · เกิน 5 ปี {percent5}%'
+    },
+    costDonutTitle: 'สัดส่วนมี/ไม่มีต้นทุน (ชิ้น)',
+    sliceWithCost: 'มีต้นทุน',
+    sliceNoCost: 'ไม่มีต้นทุน',
+    centerTotal: 'ทั้งหมด (ชิ้น)',
+    trendTitle: 'การเคลื่อนไหวสต็อกรายเดือน',
+    seriesInflow: 'รับเข้า',
+    seriesLegacy: 'ย้ายจากระบบเก่า',
+    seriesOutflow: 'ขายออกสุทธิ',
+    seriesEndStock: 'คงเหลือสิ้นเดือน',
+    axisFlow: 'ชิ้น/เดือน',
+    axisStock: 'คงเหลือ',
+    trendHintNet: 'ขายออกสุทธิ = ขาย − คืนจากการลบบิล (ลบบิลแล้วออกใหม่ถูกหักกลบ) · เดือนสุดท้ายคือเดือนปัจจุบัน (ยังไม่ครบเดือน)',
+    trendHintHistory: 'ข้อมูลขายผ่านใบแจ้งหนี้เริ่มตั้งแต่ {start} ({months} เดือนเต็ม) — การคาดการณ์จากข้อมูลนี้ยังมีหลักฐานน้อย',
+    trendHintNoHistory: 'ยังไม่มีข้อมูลขายผ่านใบแจ้งหนี้ — ยังคาดการณ์ไม่ได้',
+    ageChartTitle: 'จำนวนชิ้นตามอายุ',
+    ageTableTitle: 'สต็อกแยกตามอายุ',
+    ageBucket: {
+      lt1y: 'น้อยกว่า 1 ปี',
+      y1to2: '1-2 ปี',
+      y2to5: '2-5 ปี',
+      gt5y: 'มากกว่า 5 ปี'
+    },
+    colAge: 'อายุสต็อก',
+    colCount: 'จำนวนชิ้น',
+    colNoCost: 'ไม่มีต้นทุน',
+    colNoCostPercent: '% ไม่มีต้นทุน',
+    colCostThb: 'มูลค่าต้นทุน (บาท)',
+    colQty: 'จำนวนตามหน่วย',
+    colQtyTip: 'แสดงเมื่อเลือกโลหะเดียว (ทองหรือเงิน) — เลือกรวมทุกโลหะจะแสดง "—" เพราะหน่วยต่างกัน',
+    costChartTitle: '% ไม่มีต้นทุนตามอายุสต็อก',
+    costReceiptTitle: 'ต้นทุนแยกตามประเภทการรับ',
+    costLinksTitle: 'ไปแก้ราคาและต้นทุน',
+    costLinksHint: 'ตีราคาด่วนใช้ได้ในหน้ารายละเอียดสินค้า (กล่อง "ตีราคาด่วน") ของชิ้นที่ต้องการ',
+    linkPriceReview: 'ราคาที่ควรตรวจ',
+    receiptTitle: 'สต็อกตามประเภทการรับ',
+    receiptChartTitle: 'สัดส่วนจำนวนชิ้นตามประเภทการรับ',
+    receiptUnknown: '-',
+    colReceiptType: 'ประเภทการรับ',
+    categoryChartTitle: 'จำนวนชิ้นตามหมวดสินค้า',
+    categoryTableTitle: 'สต็อกแยกตามหมวดสินค้า',
+    categoryUnknown: 'ไม่ระบุ',
+    colCategory: 'หมวดสินค้า',
+    colAged1y: 'อายุเกิน 1 ปี',
+    seriesWithCost: 'มีต้นทุน',
+    seriesNoCost: 'ไม่มีต้นทุน',
+    seriesCount: 'จำนวนชิ้น',
+    rules: {
+      STK_NO_COST_HIGH: 'สินค้าในคลังไม่มีต้นทุน {noCostCount} จาก {inStockCount} ชิ้น ({percent}%) — มูลค่าสต็อกที่เห็นจึงต่ำกว่าความเป็นจริง',
+      STK_AGED_OVER_5Y: 'สินค้าอายุเกิน 5 ปี (รวมที่ไม่มีวันผลิต) {count} ชิ้น ({percent}% ของสต็อก)',
+      STK_NO_PRODUCTION_DATE: 'สินค้า {count} ชิ้นไม่มีวันที่ผลิต — ระบบนับเป็นอายุเกิน 5 ปี ทำให้ตัวเลขอายุสต็อกสูงเกินจริง',
+      STK_NO_OUTFLOW: 'ไม่มีการขายออกเลยตลอด {months} เดือนล่าสุด (คำนวณจากข้อมูลขาย {historyMonths} เดือน)',
+      FC_STK_COVER_LOW:
+        'สต็อกคงเหลือ {endStockQty} ชิ้น ขายสุทธิเฉลี่ย {avgMonthlyOutflow} ชิ้น/เดือน (ช่วง {windowMonths} เดือนล่าสุด) พอขายได้อีกราว {coverMonths} เดือน — ต่ำกว่าเกณฑ์ (คำนวณจากข้อมูลขาย {historyMonths} เดือน)',
+      FC_STK_COVER_HIGH:
+        'สต็อกคงเหลือ {endStockQty} ชิ้น ขายสุทธิเฉลี่ย {avgMonthlyOutflow} ชิ้น/เดือน (ช่วง {windowMonths} เดือนล่าสุด) ต้องใช้ราว {coverMonths} เดือนกว่าจะขายหมด — สูงกว่าเกณฑ์ (คำนวณจากข้อมูลขาย {historyMonths} เดือน)',
+      FC_STK_COVER_NONE:
+        'สต็อกคงเหลือ {endStockQty} ชิ้น แต่ไม่มียอดขายออกในช่วง {windowMonths} เดือนล่าสุด จึงประเมินไม่ได้ว่าพอขายอีกกี่เดือน (คำนวณจากข้อมูลขาย {historyMonths} เดือน)',
+      FC_STK_AGING_PROJECTED:
+        'สัดส่วนสินค้าอายุเกิน 1 ปีอาจเพิ่มจาก {fromPercent}% เป็น {toPercent}% ภายใน {months} เดือน (คำนวณจากข้อมูลขาย {historyMonths} เดือน ใช้ยอดขายเฉลี่ย {windowMonths} เดือน)',
+      ACT_PRICE_NO_COST: 'ตีราคา/บันทึกต้นทุนสินค้าที่ยังไม่มีต้นทุน {noCostCount} ชิ้น ({percent}%)',
+      ACT_CLEAR_AGED: 'เร่งระบายสินค้าอายุเกิน 5 ปี {count} ชิ้น ({percent}%) — ถ้าไม่ทำ สัดส่วนอายุเกิน 1 ปีอาจถึง {projectedPercent}%',
+      ACT_REPLENISH: 'เพิ่มการผลิต/รับสินค้าเข้าสต็อก — ยอดขายสุทธิเฉลี่ย {avgMonthlyOutflow} ชิ้น/เดือน',
+      ACT_SLOW_INTAKE: 'ชะลอการรับ/ผลิตสินค้าเข้าสต็อกชั่วคราว — ยอดขายสุทธิเฉลี่ยเพียง {avgMonthlyOutflow} ชิ้น/เดือน',
+      ACT_FIX_PRODUCTION_DATE: 'ใส่วันที่ผลิตให้สินค้า {count} ชิ้นที่ยังไม่มี'
+    }
+  },
+
   workerProfile: {
     tabsAria: 'ส่วนของโปรไฟล์ช่าง',
     tabs: {
@@ -831,6 +919,12 @@ export default {
 
   // code -> ป้ายสั้น ไม่มี param — ใช้แสดง "แก้ปัญหา: ..." ใต้แต่ละ action
   codeLabel: {
+    STK_NO_COST_HIGH: 'สัดส่วนสินค้าไม่มีต้นทุนสูง',
+    STK_AGED_OVER_5Y: 'สินค้าอายุเกิน 5 ปี',
+    STK_NO_PRODUCTION_DATE: 'สินค้าไม่มีวันที่ผลิต',
+    STK_NO_OUTFLOW: 'ไม่มีการขายออก',
+    FC_STK_COVER_MONTHS: 'สต็อกพอขายกี่เดือน',
+    FC_STK_AGING_PROJECTED: 'แนวโน้มอายุสต็อก',
     WIP_STALE: 'งานค้างไม่ขยับ',
     WIP_OVERDUE: 'งานเลยกำหนดส่ง',
     WIP_DEPT_STALE_TOP: 'แผนกที่ค้างมากที่สุด',

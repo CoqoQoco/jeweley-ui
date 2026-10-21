@@ -711,6 +711,94 @@ export default {
     optionLabel: '{name} · {code} · {dept}'
   },
 
+  stockInsight: {
+    title: 'Stock',
+    kpiGroupTitle: 'Stock overview',
+    tabs: {
+      overview: 'Overview',
+      trend: 'Trend',
+      age: 'Stock age',
+      cost: 'Cost',
+      receipt: 'Receipt type',
+      category: 'Category'
+    },
+    kpi: {
+      inStock: 'Pieces in stock',
+      inStockSub: 'Quantity {qty}',
+      noCost: 'Without cost',
+      noCostSub: '{count} pieces',
+      cost: 'Cost value',
+      costSub: 'Pieces with a cost only',
+      aged: 'Older than 1 year',
+      agedSub: '{count} pieces · over 5 years {percent5}%'
+    },
+    costDonutTitle: 'With vs without cost (pieces)',
+    sliceWithCost: 'With cost',
+    sliceNoCost: 'Without cost',
+    centerTotal: 'Total (pieces)',
+    trendTitle: 'Monthly stock movement',
+    seriesInflow: 'Received',
+    seriesLegacy: 'Legacy import',
+    seriesOutflow: 'Net sold',
+    seriesEndStock: 'End-of-month stock',
+    axisFlow: 'pieces/month',
+    axisStock: 'On hand',
+    trendHintNet: 'Net sold = sales − returns from voided invoices (a voided and re-issued invoice nets out) · the last month is the current, incomplete month',
+    trendHintHistory: 'Invoice-based sales data starts {start} ({months} full months) — forecasts from it rest on limited evidence',
+    trendHintNoHistory: 'No invoice-based sales data yet — forecasts are not available',
+    ageChartTitle: 'Pieces by age',
+    ageTableTitle: 'Stock by age',
+    ageBucket: {
+      lt1y: 'Under 1 year',
+      y1to2: '1-2 years',
+      y2to5: '2-5 years',
+      gt5y: 'Over 5 years'
+    },
+    colAge: 'Stock age',
+    colCount: 'Pieces',
+    colNoCost: 'Without cost',
+    colNoCostPercent: '% without cost',
+    colCostThb: 'Cost value (THB)',
+    colQty: 'Quantity',
+    colQtyTip: 'Shown when a single metal (gold or silver) is selected — shows "—" for all metals because units differ',
+    costChartTitle: '% without cost by stock age',
+    costReceiptTitle: 'Cost by receipt type',
+    costLinksTitle: 'Fix prices and costs',
+    costLinksHint: 'Quick pricing is available on the product detail page (the "Quick price" box) for the piece you need',
+    linkPriceReview: 'Prices to review',
+    receiptTitle: 'Stock by receipt type',
+    receiptChartTitle: 'Share of pieces by receipt type',
+    receiptUnknown: '-',
+    colReceiptType: 'Receipt type',
+    categoryChartTitle: 'Pieces by category',
+    categoryTableTitle: 'Stock by category',
+    categoryUnknown: 'Unspecified',
+    colCategory: 'Category',
+    colAged1y: 'Older than 1 year',
+    seriesWithCost: 'With cost',
+    seriesNoCost: 'Without cost',
+    seriesCount: 'Pieces',
+    rules: {
+      STK_NO_COST_HIGH: '{noCostCount} of {inStockCount} pieces in stock have no cost ({percent}%) — the stock value shown is understated',
+      STK_AGED_OVER_5Y: '{count} pieces are older than 5 years (including those without a production date) — {percent}% of stock',
+      STK_NO_PRODUCTION_DATE: '{count} pieces have no production date — counted as older than 5 years, which overstates stock age',
+      STK_NO_OUTFLOW: 'Nothing was sold in the last {months} months (based on {historyMonths} months of sales data)',
+      FC_STK_COVER_LOW:
+        'Stock on hand is {endStockQty} pieces, net sales average {avgMonthlyOutflow} pieces/month (last {windowMonths} months) — about {coverMonths} months of cover, below the threshold (based on {historyMonths} months of sales data)',
+      FC_STK_COVER_HIGH:
+        'Stock on hand is {endStockQty} pieces, net sales average {avgMonthlyOutflow} pieces/month (last {windowMonths} months) — about {coverMonths} months to sell through, above the threshold (based on {historyMonths} months of sales data)',
+      FC_STK_COVER_NONE:
+        'Stock on hand is {endStockQty} pieces but nothing sold in the last {windowMonths} months, so cover cannot be estimated (based on {historyMonths} months of sales data)',
+      FC_STK_AGING_PROJECTED:
+        'The share of stock older than 1 year may rise from {fromPercent}% to {toPercent}% within {months} months (based on {historyMonths} months of sales data, average sales over {windowMonths} months)',
+      ACT_PRICE_NO_COST: 'Price / record the cost of the {noCostCount} pieces without cost ({percent}%)',
+      ACT_CLEAR_AGED: 'Clear the {count} pieces older than 5 years ({percent}%) — otherwise stock older than 1 year may reach {projectedPercent}%',
+      ACT_REPLENISH: 'Increase production / receipts into stock — net sales average {avgMonthlyOutflow} pieces/month',
+      ACT_SLOW_INTAKE: 'Temporarily slow receipts / production into stock — net sales average only {avgMonthlyOutflow} pieces/month',
+      ACT_FIX_PRODUCTION_DATE: 'Enter the production date for the {count} pieces that have none'
+    }
+  },
+
   workerProfile: {
     tabsAria: 'Worker profile sections',
     tabs: {
@@ -829,6 +917,12 @@ export default {
   },
 
   codeLabel: {
+    STK_NO_COST_HIGH: 'High share of stock without cost',
+    STK_AGED_OVER_5Y: 'Stock older than 5 years',
+    STK_NO_PRODUCTION_DATE: 'Stock without a production date',
+    STK_NO_OUTFLOW: 'Nothing sold',
+    FC_STK_COVER_MONTHS: 'Months of stock cover',
+    FC_STK_AGING_PROJECTED: 'Stock aging outlook',
     WIP_STALE: 'Stale plans',
     WIP_OVERDUE: 'Overdue plans',
     WIP_DEPT_STALE_TOP: 'Department with most stale plans',

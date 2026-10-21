@@ -31,6 +31,7 @@
     :actions="findings.actions"
     :loading="findingsLoading"
     :helpParams="helpParams"
+    :i18nPrefix="config.i18nPrefix"
     :dataTabs="tabsEnabled ? dataTabs : null"
     :activeSub="currentSub"
     @update:activeSub="selectSub"
