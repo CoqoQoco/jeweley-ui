@@ -13,10 +13,11 @@
       </template>
     </DashboardHeaderGeneric>
 
-    <summaryView :summary="summary" @select-tab="onTabChange" />
+    <summaryView :summary="summary" @select-tab="onSummarySelect" />
 
     <digestView :digest="digest" :loading="digestLoading" @select-tab="onDigestSelect" />
 
+    <div ref="tabsWrap" class="executive-tabs" tabindex="-1">
     <TabViewGeneric :modelValue="activeTab" :tabs="tabsConfig" variant="segmented" @update:modelValue="onTabChange">
       <template #production>
         <productionInsightView :key="metal" ref="insight" :metal="metal" :target="productionTarget" @update:metal="onMetalChange" />
@@ -34,6 +35,7 @@
         <flowView :active="activeTab === 'flow'" :refreshToken="refreshToken" />
       </template>
     </TabViewGeneric>
+    </div>
   </div>
 </template>
 
@@ -107,6 +109,8 @@ import materialInsightView from './components/material-insight-view.vue'
 import flowView from './components/flow-view.vue'
 import productionInsightView from '@/views/production/insight/index-view.vue'
 
+// จำนวนเฟรมที่รอให้เนื้อหาแท็บ mount ก่อนยอมเลื่อนมาที่กรอบแท็บ
+const SCROLL_RETRY_FRAMES = 12
 const EXPORT_TAKE = 5000
 // Kendo take=0 = ทุกแถว (ใช้กับตาราง insight ที่ export ครบทุกหน้า)
 const EXPORT_ALL_ROWS = 0
@@ -186,7 +190,8 @@ export default {
       // แท็บ "คลังวัตถุดิบ": sub/kind ตั้งต้นจาก ?sub= ?kind= (เข้าหน้าด้วย tab=material เท่านั้น)
       materialInitialSub: '',
       materialInitialKind: '',
-      salesTarget: null
+      salesTarget: null,
+      scrollToken: 0
     }
   },
 
@@ -310,6 +315,42 @@ export default {
       this.activeTab = resolveActiveTab(nav.tab)
       this.productionTarget = nav.productionTarget
       this.salesTarget = nav.salesTarget
+      this.scrollToTabs(target?.reportRef)
+    },
+
+    // การ์ดสรุป → เปลี่ยนแท็บแล้วเลื่อนลงมาที่เนื้อหา (คลิกแถบแท็บตรงๆ ไม่เลื่อน — ผู้ใช้อยู่ตรงนั้นแล้ว)
+    onSummarySelect(tab, kpiKey) {
+      this.onTabChange(tab, kpiKey)
+      this.scrollToTabs()
+    },
+
+    // รอแท็บ mount (lazy) แล้วเลื่อนมาที่เนื้อหา · มี reportRef → ลองหา insight-report-<ref> ไม่เกิน N เฟรม ไม่เจอ = เลื่อนมาที่กรอบแท็บ (ไม่ throw)
+    // scroll-margin-top ของ insight-report-* ถูกตั้งไว้ใน BlockFrame/InsightBlockNode แล้ว ส่วนกรอบแท็บตั้งใน SCSS ของไฟล์นี้
+    scrollToTabs(reportRef) {
+      const scrollTo = (el) => {
+        if (!el || typeof el.scrollIntoView !== 'function') return
+        const reduce = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+      }
+      const finish = (el) => {
+        const wrap = this.$refs.tabsWrap
+        scrollTo(el || wrap)
+        if (wrap && typeof wrap.focus === 'function') wrap.focus({ preventScroll: true })
+      }
+      this.scrollToken += 1
+      const token = this.scrollToken
+      this.$nextTick(() => {
+        if (!reportRef) return finish(null)
+        let frames = 0
+        const tryFind = () => {
+          if (token !== this.scrollToken) return
+          const el = document.getElementById(`insight-report-${reportRef}`)
+          if (el || frames >= SCROLL_RETRY_FRAMES) return finish(el)
+          frames += 1
+          requestAnimationFrame(tryFind)
+        }
+        requestAnimationFrame(tryFind)
+      })
     },
 
     onRefresh() {
@@ -726,6 +767,10 @@ export default {
     }
   },
 
+  beforeUnmount() {
+    this.scrollToken += 1
+  },
+
   created() {
     this.metalScopeStore.setMetal(this.metal)
     this.applyQueryToState(this.$route.query)
@@ -737,3 +782,13 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.executive-tabs {
+  scroll-margin-top: calc(var(--mainbar-height) + var(--sp-md));
+
+  &:focus {
+    outline: none;
+  }
+}
+</style>

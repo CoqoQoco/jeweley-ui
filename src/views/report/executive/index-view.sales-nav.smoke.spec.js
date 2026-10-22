@@ -1,6 +1,6 @@
 // index-view.sales-nav.smoke.spec.js — การ์ดสรุป 6 ใบของหน้า executive พาไปแท็บ "ขายและเงิน" พร้อมแท็บย่อย/ตัวสลับของบิลนั้น (target) และ ?sub= ไม่ค้างข้ามแท็บ
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount, flushPromises } from '@vue/test-utils'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { mount, flushPromises, enableAutoUnmount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 
@@ -23,6 +23,8 @@ function mountView(query = {}) {
 }
 
 const sales = (wrapper) => wrapper.findComponent({ name: 'salesInsightView' })
+
+enableAutoUnmount(afterEach)
 
 describe('Executive summary cards -> sales tab target (smoke)', { timeout: 20000 }, () => {
   beforeEach(() => {
@@ -98,5 +100,61 @@ describe('Executive summary cards -> sales tab target (smoke)', { timeout: 20000
     expect(wrapper.vm.activeTab).toBe('sales')
     expect(wrapper.vm.productionTarget).toBeNull()
     expect(sales(wrapper).props('target')).toEqual({ sub: 'due', dueFilter: 'noDue' })
+  })
+
+  describe('scroll to tab content', () => {
+    let scrollSpy
+    beforeEach(() => {
+      scrollSpy = vi.fn()
+      Element.prototype.scrollIntoView = scrollSpy
+    })
+    afterEach(() => {
+      delete Element.prototype.scrollIntoView
+      document.body.innerHTML = ''
+    })
+
+    const digestOf = (wrapper) => wrapper.findComponent({ name: 'ExecutiveDigestView' })
+
+    it('digest click scrolls the tabs wrapper once', async () => {
+      const { wrapper } = mountView({ tab: 'stock' })
+      await flushPromises()
+      digestOf(wrapper).vm.$emit('select-tab', 'stock', null)
+      await flushPromises()
+      expect(scrollSpy).toHaveBeenCalledTimes(1)
+      expect(scrollSpy.mock.contexts[0]).toBe(wrapper.vm.$refs.tabsWrap)
+    })
+
+    it('digest click with an existing reportRef element scrolls to that element', async () => {
+      const { wrapper } = mountView({ tab: 'stock' })
+      await flushPromises()
+      const target = document.createElement('div')
+      target.id = 'insight-report-stkAge'
+      document.body.appendChild(target)
+      digestOf(wrapper).vm.$emit('select-tab', 'stock', { tab: 'stock', reportRef: 'stkAge', code: 'X', params: {} })
+      await vi.waitFor(() => expect(scrollSpy).toHaveBeenCalledTimes(1))
+      expect(scrollSpy.mock.contexts[0]).toBe(target)
+    })
+
+    it('digest click with a missing reportRef element falls back to the tabs wrapper without throwing', async () => {
+      const { wrapper } = mountView({ tab: 'stock' })
+      await flushPromises()
+      digestOf(wrapper).vm.$emit('select-tab', 'stock', { tab: 'stock', reportRef: 'nope', code: 'X', params: {} })
+      await vi.waitFor(() => expect(scrollSpy).toHaveBeenCalledTimes(1), { timeout: 2000 })
+      expect(scrollSpy.mock.contexts[0]).toBe(wrapper.vm.$refs.tabsWrap)
+    })
+
+    // PrimeVue TabView เลื่อนหัวแท็บของตัวเองเข้าจอเอง (scrollIntoView บน header) — นับเฉพาะที่เรียกบนกรอบเนื้อหาแท็บ
+    it('summary card click scrolls the tabs wrapper; direct tab-bar change does not', async () => {
+      const { wrapper } = mountView({ tab: 'production' })
+      await flushPromises()
+      const wrapScrolls = () => scrollSpy.mock.contexts.filter((c) => c === wrapper.vm.$refs.tabsWrap).length
+      wrapper.findComponent({ name: 'summaryView' }).vm.$emit('select-tab', 'sales', 'soNoInvoice')
+      await flushPromises()
+      expect(wrapScrolls()).toBe(1)
+      wrapper.findComponent({ name: 'TabViewGeneric' }).vm.$emit('update:modelValue', 'stock')
+      await flushPromises()
+      expect(wrapper.vm.activeTab).toBe('stock')
+      expect(wrapScrolls()).toBe(1)
+    })
   })
 })
