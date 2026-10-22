@@ -20,7 +20,7 @@
         <productionInsightView :key="metal" ref="insight" :metal="metal" @update:metal="onMetalChange" />
       </template>
       <template #sales>
-        <salesView :key="metal" :receivablesSummary="summary.receivables" :salesOrdersSummary="summary.salesOrders" :refreshToken="refreshToken" />
+        <salesInsightView :key="metal" :metal="metal" :refreshToken="refreshToken" :initialSub="salesInitialSub" :target="salesTarget" @update:sub="salesInitialSub = $event" />
       </template>
       <template #stock>
         <stockInsightView :key="metal" :metal="metal" :refreshToken="refreshToken" :initialSub="stockInitialSub" @update:sub="stockInitialSub = $event" />
@@ -46,6 +46,7 @@ import api from '@/axios/axios-helper.js'
 import { normalizeTangRow, normalizeSetterRow, buildMonthRange, monthKeyOf, filterRowsByMonthKeys } from '@/services/utils/gold-loss/slip-monthly-helpers.js'
 import {
   resolveActiveTab,
+  resolveKpiSalesTarget,
   shouldShowHeaderMetalToggle,
   buildSummaryExcelRows,
   buildStalePlansExcelRows,
@@ -86,7 +87,7 @@ import TabViewGeneric from '@/components/generic/TabViewGeneric.vue'
 import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 
 import summaryView from './components/summary-view.vue'
-import salesView from './components/sales-view.vue'
+import salesInsightView from './components/sales-insight-view.vue'
 import stockInsightView from './components/stock-insight-view.vue'
 import flowView from './components/flow-view.vue'
 import productionInsightView from '@/views/production/insight/index-view.vue'
@@ -132,7 +133,7 @@ export default {
     TabViewGeneric,
     ToggleGroupGeneric,
     summaryView,
-    salesView,
+    salesInsightView,
     stockInsightView,
     flowView,
     productionInsightView
@@ -157,7 +158,10 @@ export default {
       activeTab: 'production',
       isApplyingRouteQuery: false,
       // ?sub= ที่เป็นของแท็บคลังสินค้า (อ่านตอนเข้าหน้าด้วย tab=stock เท่านั้น)
-      stockInitialSub: ''
+      stockInitialSub: '',
+      // แท็บ "ขายและเงิน": sub ตั้งต้นจาก ?sub= (เข้าหน้าด้วย tab=sales) · salesTarget = ปลายทางจากการ์ดสรุป (object ใหม่ทุกครั้งที่กด)
+      salesInitialSub: '',
+      salesTarget: null
     }
   },
 
@@ -226,6 +230,7 @@ export default {
       this.isApplyingRouteQuery = true
       this.activeTab = resolveActiveTab(query.tab)
       this.stockInitialSub = this.activeTab === 'stock' ? String(query.sub || '') : ''
+      this.salesInitialSub = this.activeTab === 'sales' ? String(query.sub || '') : ''
       this.$nextTick(() => {
         this.isApplyingRouteQuery = false
       })
@@ -252,8 +257,10 @@ export default {
       this.metal = parseMetalQuery(value)
     },
 
-    onTabChange(tab) {
+    // kpiKey (เฉพาะกดการ์ดสรุป) → แท็บ "ขายและเงิน" เปิดตรงแท็บย่อย/ตัวสลับของบิลนั้น
+    onTabChange(tab, kpiKey) {
       this.activeTab = resolveActiveTab(tab)
+      this.salesTarget = this.activeTab === 'sales' && kpiKey ? resolveKpiSalesTarget(kpiKey) : null
     },
 
     onRefresh() {

@@ -275,7 +275,8 @@ export default {
         text: this.resolveText(item.code, item.params),
         helpText: this.resolveHelpText(item.code, item.params),
         reportRef: item.reportRef,
-        reportParams: item.params
+        // findingCode = code ของ finding (ให้ config.tabFor เลือกแท็บ/ตัวสลับตามชนิด finding ได้ เมื่อ reportRef เดียวกันใช้ร่วมกันหลาย code)
+        reportParams: { ...(item.params || {}), findingCode: item.code }
       }))
     },
 

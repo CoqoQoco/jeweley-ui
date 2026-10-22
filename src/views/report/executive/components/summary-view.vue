@@ -202,7 +202,7 @@ export default {
     },
 
     onKpiClick(kpiKey) {
-      this.$emit('select-tab', resolveKpiTab(kpiKey))
+      this.$emit('select-tab', resolveKpiTab(kpiKey), kpiKey)
     }
   }
 }

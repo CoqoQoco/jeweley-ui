@@ -7,7 +7,7 @@ import { resolve } from 'node:path'
 import th from './th.js'
 import en from './en.js'
 
-const KNOWN_ROLES = ['deptHead', 'planner', 'productionManager', 'goldControl', 'purchasing']
+const KNOWN_ROLES = ['deptHead', 'planner', 'productionManager', 'goldControl', 'purchasing', 'saleManager']
 
 const ENGINE_PATH = resolve(import.meta.dirname, '../../../../../jewelry-api/Jewelry.Api/Jewelry.Service/Production/Insight/ProductionInsightRuleEngine.cs')
 

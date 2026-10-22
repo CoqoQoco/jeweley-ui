@@ -134,6 +134,8 @@ export function formatBucketMonthLabels(bucketEnds) {
 // finding/action text เสมอ — ตาราง/การ์ด KPI จัด format ค่าเองอยู่แล้วคนละจุด ไม่เกี่ยวกับฟังก์ชันนี้
 const NUMERIC_SUFFIX_MAX_FRACTION_DIGITS = {
   Money: 0,
+  // Thb (ยอดเงินบาทของหมวดขายและเงิน/คลัง เช่น overdueThb, amountThb) ใส่ตัวคั่นหลักพัน ไม่มีทศนิยม
+  Thb: 0,
   Gram: 2,
   Percent: 2,
   // Wages (FC_WAGES_NEXT_MONTH.projectedWages/avgWages ของหมวด "ช่างและค่าแรง") จัดรูปแบบเหมือน Money เป๊ะ

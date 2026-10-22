@@ -13,6 +13,9 @@ describe('chart-shared', () => {
     expect(formatChartValue(1500, 'money0')).toBe('฿1,500')
     expect(formatChartValue(12.34, 'percent')).toBe('12.3%')
     expect(formatChartValue(null)).toBe('0')
+    expect(formatChartValue(2500000, 'moneyAbbr')).toBe('฿2.50M')
+    expect(formatChartValue(1500, 'moneyAbbr')).toBe('฿1.5K')
+    expect(formatChartValue(12, 'moneyAbbr')).toBe('฿12')
   })
 
   it('resolves colour specs from design tokens, palette index or the default palette order', () => {
@@ -69,5 +72,23 @@ describe('donut-block helpers', () => {
     expect(buildDonutChart({}, [{ label: 'a', value: 0 }], t).series).toEqual([])
     expect(buildDonutChart({}, [], t).series).toEqual([])
     expect(buildDonutChart({}, [{ label: 'a', value: 0 }], t).options.legend.formatter('a', { seriesIndex: 0 })).toBe('a: 0 (0.0%)')
+  })
+
+  it('centre label / value can be functions and slice clicks are forwarded with the context', () => {
+    const clicks = []
+    const node = {
+      valueFormat: 'moneyAbbr',
+      center: { label: (ctx, tt, total) => `${ctx.name}:${total}`, value: (total) => `T${total}` },
+      onSliceClick: (index, ctx) => clicks.push([index, ctx.name])
+    }
+    const chart = buildDonutChart(node, [{ label: 'a', value: 5 }, { label: 'b', value: 7 }], t, { name: 'ctx' })
+    const total = chart.options.plotOptions.pie.donut.labels.total
+    expect(total.label).toBe('ctx:12')
+    expect(total.formatter()).toBe('T12')
+    chart.options.chart.events.dataPointSelection(null, null, { dataPointIndex: 1 })
+    expect(clicks).toEqual([[1, 'ctx']])
+    // ไม่มี onSliceClick หรือไม่มี ctx = ไม่ผูก event
+    expect(buildDonutChart({}, [{ label: 'a', value: 1 }], t, {}).options.chart).toBeUndefined()
+    expect(buildDonutChart({ ...node, center: undefined }, [{ label: 'a', value: 1 }], t).options.chart).toBeUndefined()
   })
 })

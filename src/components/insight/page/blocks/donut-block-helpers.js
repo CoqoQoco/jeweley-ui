@@ -17,7 +17,16 @@ export function sumSlices(slices) {
   return slices.reduce((sum, slice) => sum + slice.value, 0)
 }
 
-export function buildDonutChart(node, slices, t) {
+// center.label = i18n key หรือ function(ctx, t, total) · center.value = function(total) → ข้อความกลางวง (ไม่ระบุ = ยอดรวมตาม valueFormat)
+function centerLabel(center, t, ctx, total) {
+  return typeof center.label === 'function' ? center.label(ctx, t, total) : t(center.label)
+}
+
+function centerValue(center, total, format) {
+  return typeof center.value === 'function' ? center.value(total) : formatChartValue(total, format)
+}
+
+export function buildDonutChart(node, slices, t, ctx) {
   const normalized = normalizeSlices(slices)
   const total = sumSlices(normalized)
   const format = node.valueFormat || 'count'
@@ -28,11 +37,14 @@ export function buildDonutChart(node, slices, t) {
         show: true,
         name: { show: true, fontSize: '13px' },
         value: { show: true, fontSize: '20px', fontWeight: 700, formatter: (val) => formatChartValue(val, format) },
-        total: { show: true, showAlways: true, label: t(node.center.label), formatter: () => formatChartValue(total, format) }
+        total: { show: true, showAlways: true, label: centerLabel(node.center, t, ctx, total), formatter: () => centerValue(node.center, total, format) }
       }
     : { show: false }
 
+  // node.onSliceClick(index, ctx) — คลิกชิ้นโดนัท (optional)
+  const events = node.onSliceClick && ctx ? { dataPointSelection: (event, chartContext, config) => node.onSliceClick(config.dataPointIndex, ctx) } : undefined
   const options = {
+    ...(events ? { chart: { events } } : {}),
     labels: normalized.map((slice) => t(slice.label)),
     colors: normalized.map((slice) => slice.color),
     dataLabels: { enabled: true, formatter: (val) => `${Number(val).toFixed(1)}%` },

@@ -60,6 +60,18 @@ export const KPI_TAB_MAP = {
   goldLossOverAllowed: 'production'
 }
 
+// การ์ดสรุปที่พาไปแท็บ "ขายและเงิน" → แท็บย่อย + ตัวสลับของตาราง "บิลที่ต้องตาม" (คืน null = ไม่มีปลายทางย่อย)
+export const KPI_SALES_TARGET_MAP = {
+  receivablesOutstanding: { sub: 'due', dueFilter: 'unpaid' },
+  noDueDate: { sub: 'due', dueFilter: 'noDue' },
+  soNoInvoice: { sub: 'so' }
+}
+
+export function resolveKpiSalesTarget(kpiKey) {
+  const target = KPI_SALES_TARGET_MAP[kpiKey]
+  return target ? { ...target } : null
+}
+
 export function resolveKpiTab(kpiKey) {
   return KPI_TAB_MAP[kpiKey] || 'production'
 }

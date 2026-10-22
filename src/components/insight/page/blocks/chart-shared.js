@@ -3,7 +3,7 @@ import { CHART_PALETTE, CHART_TOKENS } from '@/services/utils/chart-colors.js'
 
 const TH = 'th-TH'
 
-// 'count' (จำนวนเต็ม คั่นหลักพัน) · 'decimal' (ทศนิยมไม่เกิน 2) · 'money0' (฿ ไม่มีทศนิยม) · 'percent' (1 ตำแหน่ง)
+// 'count' (จำนวนเต็ม คั่นหลักพัน) · 'decimal' (ทศนิยมไม่เกิน 2) · 'money0' (฿ ไม่มีทศนิยม) · 'moneyAbbr' (฿ ย่อ M/K) · 'percent' (1 ตำแหน่ง)
 export function formatChartValue(value, format = 'count') {
   const n = Number(value) || 0
   switch (format) {
@@ -11,6 +11,12 @@ export function formatChartValue(value, format = 'count') {
       return new Intl.NumberFormat(TH, { maximumFractionDigits: 2 }).format(n)
     case 'money0':
       return `฿${new Intl.NumberFormat(TH, { maximumFractionDigits: 0 }).format(n)}`
+    case 'moneyAbbr': {
+      const abs = Math.abs(n)
+      if (abs >= 1_000_000) return `฿${(n / 1_000_000).toFixed(2)}M`
+      if (abs >= 1_000) return `฿${(n / 1_000).toFixed(1)}K`
+      return `฿${new Intl.NumberFormat(TH, { maximumFractionDigits: 0 }).format(n)}`
+    }
     case 'percent':
       return `${new Intl.NumberFormat(TH, { maximumFractionDigits: 1 }).format(n)}%`
     default:

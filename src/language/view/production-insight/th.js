@@ -49,6 +49,7 @@ export default {
   relatedPrefix: 'แก้ปัญหา:',
 
   ownerRole: {
+    saleManager: 'ผู้จัดการฝ่ายขาย',
     deptHead: 'หัวหน้าแผนก',
     planner: 'ผู้วางแผนผลิต',
     productionManager: 'ผู้จัดการฝ่ายผลิต',
@@ -711,6 +712,75 @@ export default {
     optionLabel: '{name} · {code} · {dept}'
   },
 
+  salesInsight: {
+    title: 'ขายและเงิน',
+    kpiGroupTitle: 'ภาพรวมลูกหนี้และใบสั่งขาย',
+    tabs: {
+      overview: 'ภาพรวม',
+      aging: 'อายุหนี้',
+      due: 'บิลที่ต้องตาม',
+      trend: 'ยอดขาย',
+      so: 'SO ยังไม่ออกบิล',
+      dueSwitchAria: 'เลือกกลุ่มบิลที่ต้องตาม'
+    },
+    kpi: {
+      outstanding: 'ยอดค้างรับ',
+      outstandingSub: '{count} ใบ',
+      overdue: 'เลยกำหนด',
+      overdueSub: '{count} ใบ · {percent}% ของยอดค้าง',
+      paid: 'รับแล้ว',
+      paidSub: 'ของยอดบิลทั้งหมด {total}',
+      so: 'SO ยังไม่ออกบิล',
+      soSub: '{count} ใบ'
+    },
+    paymentChartTitle: 'สัดส่วนสถานะการรับเงิน',
+    paymentCenterLabel: '{count} ใบ',
+    agingChartTitle: 'ยอดค้างรับตามอายุเลยกำหนด',
+    agingBucket: {
+      notDue: 'ยังไม่ถึงกำหนด/ไม่มีกำหนด',
+      d1_30: 'เลย 1-30 วัน',
+      d31_60: 'เลย 31-60 วัน',
+      d61_90: 'เลย 61-90 วัน',
+      gt90: 'เลยเกิน 90 วัน'
+    },
+    agingCategory: '{label} ({count} ใบ)',
+    seriesOutstanding: 'ยอดค้างรับ (บาท)',
+    topCustomersTitle: 'ลูกค้าที่ค้างรับสูงสุด',
+    colCustomer: 'ลูกค้า',
+    colBills: 'จำนวนบิล',
+    colOutstanding: 'ยอดค้างรับ (บาท)',
+    colOverdue: 'เลยกำหนด (บาท)',
+    dueUnpaidTitle: 'บิลที่ยังไม่รับเงิน',
+    dueOverdueTitle: 'บิลที่เลยกำหนด',
+    dueNoDueTitle: 'บิลที่ไม่มีวันครบกำหนด',
+    soTitle: 'SO ที่ยังไม่ออกบิล',
+    colInvoiceNumber: 'เลขที่ใบแจ้งหนี้',
+    openInvoiceTitle: 'เปิดใบแจ้งหนี้นี้',
+    openSoTitle: 'เปิดใบสั่งขายนี้',
+    trendTitle: 'ยอดขายและจำนวนบิลรายเดือน',
+    seriesSales: 'ยอดบิล (บาท)',
+    seriesBills: 'จำนวนบิล',
+    axisSales: 'บาท',
+    axisBills: 'ใบ',
+    trendHint: 'ข้อมูลใบแจ้งหนี้เริ่ม {start} ({months} เดือนเต็ม) — บางเดือนอาจมีบิลออก/ลบซ้ำจำนวนมาก (เช่น ก.ย. 2026) ยอดจึงไม่สะท้อนยอดขายจริงเสมอไป',
+    trendHintNone: 'ยังไม่มีข้อมูลใบแจ้งหนี้',
+    rules: {
+      SAL_OVERDUE_RECEIVABLE: 'ยอดค้างรับที่เลยกำหนด ฿{overdueThb} ({overdueCount} ใบ) คิดเป็น {percent}% ของยอดค้างรับ ฿{outstandingThb}',
+      SAL_OLDEST_OVERDUE: 'บิลเลยกำหนดนานที่สุด {days} วัน (ลูกค้า {customerName})',
+      SAL_NO_DUE_DATE: 'บิลที่ค้างรับ {count} ใบ ({percent}%) ไม่มีวันครบกำหนด — ติดตามเงินไม่ได้',
+      SAL_SO_NOT_INVOICED: 'SO {count} ใบ (฿{amountThb}) ยังไม่ออกบิล — เลยกำหนดส่ง {overdueDeliveryCount} ใบ ไม่มีวันส่งมอบ {noDeliveryDateCount} ใบ',
+      SAL_CUSTOMER_CONCENTRATION: 'ลูกค้า {customerName} มียอดค้างรับ {percent}% ของทั้งหมด — พึ่งลูกค้ารายเดียวมากเกินไป',
+      FC_SAL_COLLECTION: 'คาดว่าจะถึงกำหนดรับเงิน ฿{amountThb} ({count} ใบ) ภายใน {windowDays} วันข้างหน้า',
+      FC_SAL_COLLECTION_NONE: 'มียอดค้างรับ แต่ไม่มีบิลที่ถึงกำหนดภายใน {windowDays} วันข้างหน้า — ยอดที่ค้างอยู่ยังไม่มีกำหนดรับเงินใกล้ๆ',
+      FC_SAL_BECOMING_OVERDUE: 'บิล ฿{amountThb} ({count} ใบ) จะเลยกำหนดภายใน {days} วัน',
+      FC_SAL_SO_DELIVERY: 'SO ที่ยังไม่ออกบิล {count} ใบ (฿{amountThb}) ถึงกำหนดส่งภายใน {days} วัน',
+      ACT_FOLLOW_OVERDUE: 'ติดตามเก็บเงินบิลที่เลยกำหนด ฿{overdueThb} ({overdueCount} ใบ) เริ่มจากลูกค้า {topCustomerName}',
+      ACT_SET_DUE_DATE: 'ใส่วันครบกำหนดให้บิล {count} ใบที่ยังไม่มี',
+      ACT_INVOICE_FROM_SO: 'ออกบิลให้ SO {count} ใบที่ยังไม่ออก',
+      ACT_SPREAD_RISK: 'กระจายความเสี่ยงลูกค้า: {customerName} มียอดค้าง {percent}% — ตั้งวงเงินหรือเร่งเก็บ'
+    }
+  },
+
   stockInsight: {
     title: 'คลังสินค้า',
     kpiGroupTitle: 'ภาพรวมสต็อก',
@@ -919,6 +989,13 @@ export default {
 
   // code -> ป้ายสั้น ไม่มี param — ใช้แสดง "แก้ปัญหา: ..." ใต้แต่ละ action
   codeLabel: {
+    SAL_OVERDUE_RECEIVABLE: 'ยอดค้างรับเลยกำหนด',
+    SAL_OLDEST_OVERDUE: 'บิลเลยกำหนดนานที่สุด',
+    SAL_NO_DUE_DATE: 'บิลไม่มีวันครบกำหนด',
+    SAL_SO_NOT_INVOICED: 'SO ยังไม่ออกบิล',
+    SAL_CUSTOMER_CONCENTRATION: 'ลูกค้ารายใหญ่ค้างรับสูง',
+    FC_SAL_BECOMING_OVERDUE: 'บิลที่กำลังจะเลยกำหนด',
+    FC_SAL_SO_DELIVERY: 'SO ใกล้ถึงกำหนดส่ง',
     STK_NO_COST_HIGH: 'สัดส่วนสินค้าไม่มีต้นทุนสูง',
     STK_AGED_OVER_5Y: 'สินค้าอายุเกิน 5 ปี',
     STK_NO_PRODUCTION_DATE: 'สินค้าไม่มีวันที่ผลิต',

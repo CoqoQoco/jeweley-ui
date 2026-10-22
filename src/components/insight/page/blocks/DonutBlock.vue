@@ -1,7 +1,7 @@
 <!--
   DonutBlock — โดนัทกลางของ InsightPage (BlockFrame + ChartGeneric) ตาม config:
     slices(ctx, t) → [{ label (i18n key), value, color ('token:green'|'palette:n'|ว่าง = palette ตามลำดับ) }]
-    center { label (i18n key) } → แสดงยอดรวมกลางวง · valueFormat 'count'|'decimal'|'money0'|'percent' · height (px, default 280 — ห้าม %) · source (ชื่อ source ที่ใช้โชว์ loading)
+    center { label (i18n key | function(ctx,t,total)), value? (function(total)) } → แสดงข้อความกลางวง (default = ยอดรวมตาม valueFormat) · valueFormat 'count'|'decimal'|'money0'|'percent' · height (px, default 280 — ห้าม %) · source (ชื่อ source ที่ใช้โชว์ loading)
   ค่าทุกชิ้นเป็น 0 / ไม่มีข้อมูล = empty state ของ ChartGeneric
 -->
 <template>
@@ -31,7 +31,7 @@ export default {
 
     chart() {
       const t = (key, params) => this.$t(key, params)
-      return buildDonutChart(this.node, this.node.slices(this.ctx, t) || [], t)
+      return buildDonutChart(this.node, this.node.slices(this.ctx, t) || [], t, this.ctx)
     }
   }
 }

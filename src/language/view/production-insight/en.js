@@ -49,6 +49,7 @@ export default {
   relatedPrefix: 'Resolves:',
 
   ownerRole: {
+    saleManager: 'Sales manager',
     deptHead: 'Department Head',
     planner: 'Production Planner',
     productionManager: 'Production Manager',
@@ -711,6 +712,75 @@ export default {
     optionLabel: '{name} · {code} · {dept}'
   },
 
+  salesInsight: {
+    title: 'Sales & receivables',
+    kpiGroupTitle: 'Receivables and sales orders',
+    tabs: {
+      overview: 'Overview',
+      aging: 'Aging',
+      due: 'Bills to chase',
+      trend: 'Sales',
+      so: 'SO not invoiced',
+      dueSwitchAria: 'Choose the group of bills to chase'
+    },
+    kpi: {
+      outstanding: 'Outstanding',
+      outstandingSub: '{count} bills',
+      overdue: 'Overdue',
+      overdueSub: '{count} bills · {percent}% of outstanding',
+      paid: 'Received',
+      paidSub: 'of total billed {total}',
+      so: 'SO not invoiced',
+      soSub: '{count} orders'
+    },
+    paymentChartTitle: 'Payment status mix',
+    paymentCenterLabel: '{count} bills',
+    agingChartTitle: 'Outstanding by days overdue',
+    agingBucket: {
+      notDue: 'Not due / no due date',
+      d1_30: '1-30 days overdue',
+      d31_60: '31-60 days overdue',
+      d61_90: '61-90 days overdue',
+      gt90: 'Over 90 days overdue'
+    },
+    agingCategory: '{label} ({count} bills)',
+    seriesOutstanding: 'Outstanding (THB)',
+    topCustomersTitle: 'Top customers by outstanding',
+    colCustomer: 'Customer',
+    colBills: 'Bills',
+    colOutstanding: 'Outstanding (THB)',
+    colOverdue: 'Overdue (THB)',
+    dueUnpaidTitle: 'Unpaid bills',
+    dueOverdueTitle: 'Overdue bills',
+    dueNoDueTitle: 'Bills without a due date',
+    soTitle: 'Sales orders not invoiced',
+    colInvoiceNumber: 'Invoice no.',
+    openInvoiceTitle: 'Open this invoice',
+    openSoTitle: 'Open this sales order',
+    trendTitle: 'Monthly sales and bill count',
+    seriesSales: 'Billed (THB)',
+    seriesBills: 'Bills',
+    axisSales: 'THB',
+    axisBills: 'bills',
+    trendHint: 'Invoice data starts {start} ({months} full months) — some months may have many bills issued/voided repeatedly (e.g. Sep 2026), so totals do not always reflect real sales',
+    trendHintNone: 'No invoice data yet',
+    rules: {
+      SAL_OVERDUE_RECEIVABLE: 'Overdue receivables are ฿{overdueThb} ({overdueCount} bills) — {percent}% of the ฿{outstandingThb} outstanding',
+      SAL_OLDEST_OVERDUE: 'The oldest overdue bill is {days} days late (customer {customerName})',
+      SAL_NO_DUE_DATE: '{count} outstanding bills ({percent}%) have no due date — collection cannot be tracked',
+      SAL_SO_NOT_INVOICED: '{count} sales orders (฿{amountThb}) are not invoiced — {overdueDeliveryCount} past delivery date, {noDeliveryDateCount} without a delivery date',
+      SAL_CUSTOMER_CONCENTRATION: 'Customer {customerName} holds {percent}% of all outstanding — too dependent on one customer',
+      FC_SAL_COLLECTION: '฿{amountThb} ({count} bills) is expected to fall due within the next {windowDays} days',
+      FC_SAL_COLLECTION_NONE: 'There are outstanding bills but none fall due within the next {windowDays} days — the open balance has no near-term collection date',
+      FC_SAL_BECOMING_OVERDUE: '฿{amountThb} ({count} bills) will become overdue within {days} days',
+      FC_SAL_SO_DELIVERY: '{count} uninvoiced sales orders (฿{amountThb}) are due for delivery within {days} days',
+      ACT_FOLLOW_OVERDUE: 'Chase the overdue bills of ฿{overdueThb} ({overdueCount} bills), starting with {topCustomerName}',
+      ACT_SET_DUE_DATE: 'Set a due date on the {count} bills that have none',
+      ACT_INVOICE_FROM_SO: 'Issue invoices for the {count} sales orders not yet invoiced',
+      ACT_SPREAD_RISK: 'Spread customer risk: {customerName} holds {percent}% of outstanding — set a limit or collect faster'
+    }
+  },
+
   stockInsight: {
     title: 'Stock',
     kpiGroupTitle: 'Stock overview',
@@ -917,6 +987,13 @@ export default {
   },
 
   codeLabel: {
+    SAL_OVERDUE_RECEIVABLE: 'Overdue receivables',
+    SAL_OLDEST_OVERDUE: 'Oldest overdue bill',
+    SAL_NO_DUE_DATE: 'Bills without a due date',
+    SAL_SO_NOT_INVOICED: 'Sales orders not invoiced',
+    SAL_CUSTOMER_CONCENTRATION: 'Customer concentration',
+    FC_SAL_BECOMING_OVERDUE: 'Bills about to become overdue',
+    FC_SAL_SO_DELIVERY: 'Sales orders nearing delivery',
     STK_NO_COST_HIGH: 'High share of stock without cost',
     STK_AGED_OVER_5Y: 'Stock older than 5 years',
     STK_NO_PRODUCTION_DATE: 'Stock without a production date',

@@ -144,6 +144,8 @@ export default {
         reload: this.reload,
         updateFilter: this.updateFilter,
         goToReport: this.goToReport,
+        // เปิดหน้าอื่นจาก block (เช่น เลขที่ใบแจ้งหนี้ในตาราง) — vue-router push
+        navigate: (location) => this.$router.push(location),
         t: this.translate
       }
     }
