@@ -207,6 +207,26 @@ export default {
       goldLossOverSlipCount: 'Slips over allowance (latest month)',
       goldLossOverAllowedGram: 'Total over allowance (g, latest month)'
     },
+    snapshot: {
+      stockFindings: 'Stock - findings',
+      stockAge: 'Stock - age',
+      stockReceipt: 'Stock - receipt type',
+      stockCategory: 'Stock - category',
+      stockSeries: 'Stock - monthly',
+      salesFindings: 'Sales - findings',
+      salesAging: 'Sales - receivables aging',
+      salesTopCustomers: 'Sales - top customers',
+      salesSeries: 'Sales - monthly',
+      materialFindings: 'Materials - findings',
+      materialItems: 'Materials - items',
+      materialSeries: 'Materials - monthly',
+      colMonth: 'Month',
+      colSaleQty: 'Sold',
+      colReturnQty: 'Returned (voided)',
+      colAgingBucket: 'Aging bucket',
+      colMaterialCode: 'Item code',
+      colMinSource: 'Minimum source'
+    },
     insight: {
       sheetFindings: 'Issue summary',
       sheetLeadTime: 'Lead time by department',

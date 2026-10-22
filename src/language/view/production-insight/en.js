@@ -727,7 +727,14 @@ export default {
       attentionSub: 'Out {zero} · below minimum {below}',
       near: 'Near minimum',
       dead: 'Dead stock',
-      deadSub: '{weight} · no movement over {days} days'
+      deadSub: '{weight} · no movement over {days} days',
+      negative: 'Invalid balance',
+      negativeSub: 'Negative total {weight} · no opening balance / receipts',
+      onHandAllNegative: 'Every item is negative — no opening balance / receipts recorded',
+      withWorker: 'Gold held by workers (from jobs)',
+      withWorkerSub: '{count} jobs · gold issued to workers and not yet returned',
+      withWorkerNone: 'Job data could not be loaded',
+      withWorkerNote: 'Gold held by workers: figure from production jobs (last 3 months); the gold warehouse does not track this.'
     },
     shareTitle: 'On-hand share by gold group',
     centerTotal: 'Total',
@@ -749,10 +756,16 @@ export default {
     trendHintNet: 'Issued excludes reversed entries · "Other" (opening/adjustments/reversals) is hidden — click it in the legend to show.',
     usageHint: 'Usage data starts {start} ({months} full months) — the automatic minimum is calculated from usage in this period',
     usageHintNone: 'No usage data yet — the automatic minimum and forecasts cannot be calculated',
+    withWorkerLine: 'Gold held by workers (from jobs): {weight} g in {count} jobs — the gold warehouse does not track this.',
+    negativeHint: 'Negative — no starting balance',
+    negativeNotice: 'No opening balance or receipts have been recorded in the gold warehouse, so balances are negative. The suggested minimums are still valid because they come from the actual issue rate.',
+    negativeNotPlotted: 'Groups with a negative balance are not plotted (see the table for the real figures)',
+    colStatusTip: 'Invalid balance = negative on-hand: no opening balance / receipts recorded, so we cannot tell whether the item is really out',
+    colNegativeCount: 'Negative (items)',
     itemsTitle: 'Materials and minimums',
     filterAria: 'Filter items by status',
-    filter: { all: 'All {count}', zero: 'Out {count}', below: 'Below minimum {count}', near: 'Near minimum {count}', dead: 'Dead stock {count}' },
-    status: { zero: 'Out', below: 'Below minimum', near: 'Near minimum', dead: 'Dead stock', ok: 'OK' },
+    filter: { all: 'All {count}', zero: 'Out {count}', negative: 'Invalid balance {count}', below: 'Below minimum {count}', near: 'Near minimum {count}', dead: 'Dead stock {count}' },
+    status: { negative: 'Invalid balance', zero: 'Out', below: 'Below minimum', near: 'Near minimum', dead: 'Dead stock', ok: 'OK' },
     minSource: { auto: 'Auto', override: 'Manual', floor: 'Floor' },
     colItem: 'Item',
     colOnHand: 'On hand (g)',
@@ -814,6 +827,9 @@ export default {
       }
     },
     rules: {
+      MAT_NEGATIVE_BALANCE: '{count} items have a negative balance ({totalWeight} g in total) — no opening balance or receipts were recorded in the material ledger, so we cannot tell whether they are out of stock: {topItems}',
+      MAT_NEGATIVE_BALANCE_INBOUND: '{count} items have a negative balance ({totalWeight} g in total) — receipts exist but the balance is still negative; check over-issues or a missing opening balance: {topItems}',
+      ACT_RECORD_OPENING_BALANCE: 'Record the opening balance / receipts of gold and silver in the material ledger (gold warehouse menu: opening balance / receipts) for every item — currently {count} items are negative ({totalWeight} g)',
       MAT_ZERO_STOCK: '{count} materials are out of stock: {topItems}',
       MAT_BELOW_MIN: '{count} materials are below their minimum: {topItems}',
       MAT_NEAR_MIN: '{count} materials are close to their minimum: {topItems}',
@@ -1102,6 +1118,7 @@ export default {
   },
 
   codeLabel: {
+    MAT_NEGATIVE_BALANCE: 'Negative balance',
     MAT_ZERO_STOCK: 'Materials out of stock',
     MAT_BELOW_MIN: 'Materials below minimum',
     MAT_NEAR_MIN: 'Materials near minimum',

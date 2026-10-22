@@ -138,6 +138,8 @@ const NUMERIC_SUFFIX_MAX_FRACTION_DIGITS = {
   Thb: 0,
   // OnHand / OnProcess (totalOnHand, totalOnProcess ของหมวดคลังวัตถุดิบ — กรัม) ใส่ตัวคั่นหลักพัน ทศนิยมไม่เกิน 2 ตำแหน่ง
   OnHand: 2,
+  // Weight (totalWeight ของ MAT_NEGATIVE_BALANCE / ACT_RECORD_OPENING_BALANCE — กรัม) ใส่ตัวคั่นหลักพัน ทศนิยมไม่เกิน 2 ตำแหน่ง
+  Weight: 2,
   OnProcess: 2,
   Gram: 2,
   Percent: 2,
@@ -152,12 +154,30 @@ function formatThaiNumber(value, maximumFractionDigits) {
   return new Intl.NumberFormat('th-TH', { maximumFractionDigits }).format(value)
 }
 
+// จำนวนนับ (ชิ้น/ใบ/รายการ) ในข้อความ finding: key = count / plans / lines หรือลงท้าย Count (openCount, noCostCount, overdueCount ฯลฯ) →
+// ใส่ตัวคั่นหลักพัน "เฉพาะเมื่อ ≥ 1,000" (ค่าน้อยกว่าคงเป็นตัวเลขเดิม ข้อความเหมือนเดิมทุกตัวอักษร) · ไม่แตะ days/months/historyMonths/windowMonths/leadDays/workerType/รหัส/id
+const COUNT_EXACT_KEYS = ['count', 'plans', 'lines']
+const COUNT_SUFFIX = 'Count'
+// ปริมาณ/ชิ้นตามหน่วย (endStockQty) ทศนิยมไม่เกิน 2 · ยอดขายออกเฉลี่ยต่อเดือน (avgMonthlyOutflow) ไม่เกิน 1 ตำแหน่ง
+const QUANTITY_SUFFIX_DIGITS = { Qty: 2, Outflow: 1 }
+
 function applyNumericSuffixFormatting(resolved) {
   Object.keys(resolved).forEach((key) => {
     const value = resolved[key]
     if (typeof value !== 'number') return
     const suffix = Object.keys(NUMERIC_SUFFIX_MAX_FRACTION_DIGITS).find((s) => key.endsWith(s))
-    if (suffix) resolved[key] = formatThaiNumber(value, NUMERIC_SUFFIX_MAX_FRACTION_DIGITS[suffix])
+    if (suffix) {
+      resolved[key] = formatThaiNumber(value, NUMERIC_SUFFIX_MAX_FRACTION_DIGITS[suffix])
+      return
+    }
+    const quantitySuffix = Object.keys(QUANTITY_SUFFIX_DIGITS).find((s) => key.endsWith(s))
+    if (quantitySuffix) {
+      resolved[key] = formatThaiNumber(value, QUANTITY_SUFFIX_DIGITS[quantitySuffix])
+      return
+    }
+    if ((COUNT_EXACT_KEYS.includes(key) || key.endsWith(COUNT_SUFFIX)) && Number.isInteger(value) && Math.abs(value) >= 1000) {
+      resolved[key] = formatThaiNumber(value, 0)
+    }
   })
   return resolved
 }

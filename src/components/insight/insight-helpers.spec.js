@@ -462,4 +462,29 @@ describe('unit code labels (plan.product_qty_unit)', () => {
     const translate = (value, kind) => (kind === 'unit' ? formatUnitLabel(value, t) : value)
     expect(resolveFindingParams({ by: 'gold', unit: 'PR.' }, undefined, undefined, undefined, undefined, translate).unit).toBe('คู่')
   })
+
+  it('integer counts get thousands separators from 1,000 up (count / plans / lines / *Count); smaller numbers stay numbers', () => {
+    const out = resolveFindingParams({ count: 23915, inStockCount: 29286, noCostCount: 999, overdueCount: 1000, plans: 12345, lines: 1500, openCount: 7 })
+    expect(out).toMatchObject({ count: '23,915', inStockCount: '29,286', noCostCount: 999, overdueCount: '1,000', plans: '12,345', lines: '1,500', openCount: 7 })
+  })
+
+  it('days / months / history / window / lead / ids / worker type are never formatted', () => {
+    const input = { days: 1200, months: 1500, historyMonths: 4000, windowMonths: 2000, leadDays: 3000, windowDays: 1111, workerType: 80, minCoverDays: 1234.5, total: 5000, deptKey: 'trim' }
+    const out = resolveFindingParams(input, (key) => key)
+    expect(out).toMatchObject({ days: 1200, months: 1500, historyMonths: 4000, windowMonths: 2000, leadDays: 3000, windowDays: 1111, minCoverDays: 1234.5, total: 5000 })
+  })
+
+  it('quantities (…Qty) and average outflow keep at most 2 / 1 decimals with separators; fractional counts are left alone', () => {
+    const out = resolveFindingParams({ endStockQty: 12345.678, avgMonthlyOutflow: 1234.56, count: 1500.5 })
+    expect(out.endStockQty).toBe('12,345.68')
+    expect(out.avgMonthlyOutflow).toBe('1,234.6')
+    expect(out.count).toBe(1500.5)
+  })
+
+  it('formatted counts survive the worker-name list (count is read before it is formatted)', () => {
+    const out = resolveFindingParams({ workers: ['a', 'b', 'c', 'd'], count: 4000 })
+    expect(out.count).toBe('4,000')
+    expect(out.workers).toContain('a')
+  })
 })
+

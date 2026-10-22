@@ -1,6 +1,8 @@
 // material-helpers.js — pure logic ของแท็บ "คลังวัตถุดิบ" (MaterialInsight) — ห้าม import Vue/i18n
 // ปัจจุบันรองรับ kind GOLD (หน่วย g) · GEM (พลอย) จะเพิ่มภายหลังเป็น config แยก
 import { formatThaiMonthYear } from '@/components/insight/insight-helpers.js'
+import { resolvePresetRange } from '@/services/utils/range-presets.js'
+import { isoOrNull } from '@/components/insight/page/insight-page-helpers.js'
 
 export const MATERIAL_ENDPOINT = 'MaterialInsight/Overview'
 export const MATERIAL_MONTHS = 12
@@ -25,6 +27,30 @@ export function buildOverviewParams(kind = DEFAULT_MATERIAL_KIND) {
   return { kind, months: MATERIAL_MONTHS }
 }
 
+// ---- ทองค้างที่ช่าง (จากใบงานผลิต) ----
+// คลังทองไม่ดูแลยอดที่อยู่ในกระบวนการ (onProcess = 0 เสมอ) → ดึงจาก ProductionInsight/GoldByStage: ทองที่ค้างกับช่างรายแผนก (pendingWithWorker*) ย้อนหลัง 3 เดือน (ช่วงเดียวกับค่าตั้งต้นของหมวดทอง)
+export const GOLD_STAGE_ENDPOINT = 'ProductionInsight/GoldByStage'
+
+export function buildGoldStageParams(now = new Date()) {
+  const range = resolvePresetRange('3m', now)
+  return { start: isoOrNull(range.start), end: isoOrNull(range.end), metal: 'GOLD' }
+}
+
+// Σ ทอง (g) และ Σ จำนวนใบงานที่ค้างกับช่างทุกแผนก · ไม่มีข้อมูล (ยิงพลาด/ยังไม่โหลด) = null
+export function sumPendingWithWorker(goldStage) {
+  const departments = goldStage?.departments
+  if (!Array.isArray(departments)) return null
+  return departments.reduce(
+    (sum, dept) => ({ gram: sum.gram + (Number(dept.pendingWithWorkerGram) || 0), count: sum.count + (Number(dept.pendingWithWorkerCount) || 0) }),
+    { gram: 0, count: 0 }
+  )
+}
+
+export function buildWithWorkerLine(goldStage, t) {
+  const total = sumPendingWithWorker(goldStage)
+  return total && total.count > 0 ? t(`${S}.withWorkerLine`, { weight: formatGram(total.gram), count: new Intl.NumberFormat('th-TH').format(total.count) }) : ''
+}
+
 // ---- รูปแบบตัวเลข ----
 
 export function formatGram(value, digits = 2) {
@@ -39,8 +65,9 @@ export function formatDays(value) {
 
 // ---- รายการ: เรียง/กรอง ----
 
-export const STATUS_ORDER = ['zero', 'below', 'near', 'dead', 'ok']
-export const ITEM_FILTERS = ['all', 'zero', 'below', 'near', 'dead']
+// negative = ยอดคงเหลือติดลบ (ledger ยังไม่มียอดยกมา/รับเข้า — ไม่ใช่ของหมด) อยู่ถัดจาก zero เพราะต้องแก้ข้อมูลก่อน
+export const STATUS_ORDER = ['zero', 'negative', 'below', 'near', 'dead', 'ok']
+export const ITEM_FILTERS = ['all', 'zero', 'negative', 'below', 'near', 'dead']
 export const DEFAULT_ITEM_FILTER = 'all'
 
 const rankOf = (status) => {
@@ -69,10 +96,10 @@ export function filterItems(items, filter) {
 
 // จำนวนต่อตัวเลือกของตัวสลับ จาก KPI (ตรงกับที่ finding ใช้)
 export function itemFilterCounts(kpi) {
-  return { all: kpi?.itemCount ?? 0, zero: kpi?.zeroCount ?? 0, below: kpi?.belowMinCount ?? 0, near: kpi?.nearMinCount ?? 0, dead: kpi?.deadCount ?? 0 }
+  return { all: kpi?.itemCount ?? 0, zero: kpi?.zeroCount ?? 0, negative: kpi?.negativeCount ?? 0, below: kpi?.belowMinCount ?? 0, near: kpi?.nearMinCount ?? 0, dead: kpi?.deadCount ?? 0 }
 }
 
-const STATUS_VARIANT = { zero: 'fail', below: 'warning', near: 'warning', dead: 'grey', ok: 'pass' }
+const STATUS_VARIANT = { zero: 'fail', negative: 'warning', below: 'warning', near: 'warning', dead: 'grey', ok: 'pass' }
 export const STATUS_COLOR = { fail: 'var(--base-red)', warning: 'var(--base-warning)', grey: 'var(--base-sub-color)', pass: 'var(--base-green)' }
 
 export function resolveStatusVariant(status) {
@@ -93,16 +120,34 @@ export function buildItemRows(items, filter, t) {
     rowKey: item.itemKey,
     minSourceText: t(`${S}.minSource.${item.minSource || 'auto'}`),
     statusText: t(`${S}.status.${item.status || 'ok'}`),
+    onHandHint: item.onHand < 0 ? t(`${S}.negativeHint`) : '',
     lastMoveText: lastMoveText(item, t),
     editText: ''
   }))
+}
+
+// ---- ยอดติดลบ (ledger ไม่มียอดยกมา/รับเข้า) ----
+
+// แจ้งเตือน: มีรายการติดลบและยังไม่เคยบันทึกการรับเข้าเลย
+export function shouldShowNegativeNotice(kpi) {
+  return (kpi?.negativeCount || 0) > 0 && !kpi?.inboundRecorded
+}
+
+// ทุกรายการติดลบ (มีรายการอยู่และติดลบหมด) → ยอดรวม/โดนัทไม่มีความหมาย
+export function areAllItemsNegative(kpi) {
+  return (kpi?.itemCount || 0) > 0 && (kpi?.negativeCount || 0) >= kpi.itemCount
+}
+
+// MAT_NEGATIVE_BALANCE มี 2 ข้อความ: ยังไม่เคยมีรับเข้าเลย / มีรับเข้าแล้วแต่ยอดยังติดลบ → แยก code (i18n ไม่มีเงื่อนไขในตัว) · ที่เหลือปล่อยผ่าน
+export function remapMaterialFindings(items) {
+  return (items || []).map((item) => (item?.code === 'MAT_NEGATIVE_BALANCE' && item.params?.ledgerHasInbound ? { ...item, code: 'MAT_NEGATIVE_BALANCE_INBOUND' } : item))
 }
 
 // ---- กลุ่ม / ขนาด ----
 
 export function buildGroupRows(groups) {
   return [...(groups || [])]
-    .map((g) => ({ key: g.code, code: g.code, label: g.name || g.code, itemCount: g.itemCount || 0, onHand: g.onHand || 0 }))
+    .map((g) => ({ key: g.code, code: g.code, label: g.name || g.code, itemCount: g.itemCount || 0, onHand: g.onHand || 0, negativeCount: g.negativeCount || 0 }))
     .sort((a, b) => b.onHand - a.onHand || a.label.localeCompare(b.label, 'th'))
 }
 
@@ -119,6 +164,11 @@ export function aggregateBySize(items) {
   return [...map.values()].sort((a, b) => b.onHand - a.onHand || a.label.localeCompare(b.label, 'th'))
 }
 
+// กราฟแท่งตามกลุ่ม: ไม่พล็อตกลุ่มที่ยอดติดลบ (แท่งติดลบทำให้อ่านผิด) — ยังอยู่ในตารางพร้อมสีแดง
+export function buildGroupBarRows(groups) {
+  return buildGroupRows(groups).filter((g) => g.onHand > 0)
+}
+
 // ชิ้นของโดนัท: ยอดคงเหลือตามกลุ่ม (ติดลบ/ศูนย์ไม่ใส่ — โดนัทแสดงเฉพาะที่มีของ)
 export function buildGroupSlices(groups) {
   return buildGroupRows(groups)
@@ -128,7 +178,7 @@ export function buildGroupSlices(groups) {
 
 // ---- finding / KPI → แท็บ + ตัวสลับ ----
 
-const FILTER_BY_CODE = { MAT_ZERO_STOCK: 'zero', MAT_BELOW_MIN: 'below', MAT_NEAR_MIN: 'near', MAT_DEAD_STOCK: 'dead' }
+const FILTER_BY_CODE = { MAT_ZERO_STOCK: 'zero', MAT_NEGATIVE_BALANCE: 'negative', MAT_BELOW_MIN: 'below', MAT_NEAR_MIN: 'near', MAT_DEAD_STOCK: 'dead' }
 
 // itemFilter จากการ์ด KPI ชนะ → รองลงมา findingCode → 'all' · 'attention' (การ์ด หมด+ต่ำกว่าขั้นต่ำ) = หมดถ้ามี ไม่งั้นต่ำกว่าขั้นต่ำ
 export function resolveItemFilter(params, kpi) {

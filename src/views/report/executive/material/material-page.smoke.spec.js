@@ -84,6 +84,8 @@ const overview = {
   actions: [{ code: 'ACT_REORDER_MATERIAL', priority: 1, ownerRole: 'planner', relatedCodes: ['MAT_ZERO_STOCK'], params: { zeroCount: 1, belowCount: 1, stockoutCount: 1 } }]
 }
 
+const goldStage = { departments: [{ key: 'setting', pendingWithWorkerCount: 3, pendingWithWorkerGram: 10.5, pendingQueueCount: 1, pendingQueueGram: 99 }, { key: 'trim', pendingWithWorkerCount: 2, pendingWithWorkerGram: 4.25 }] }
+
 const warnings = []
 let lastQuery
 
@@ -133,7 +135,7 @@ describe('Material tab (InsightPage + materialGoldConfig) smoke', { timeout: 300
     warnings.length = 0
     lastQuery = undefined
     access.manage = false
-    postMock.mockImplementation(async (path) => (path === 'MaterialInsight/Overview' ? overview : {}))
+    postMock.mockImplementation(async (path) => (path === 'MaterialInsight/Overview' ? overview : path === 'ProductionInsight/GoldByStage' ? goldStage : {}))
     getMock.mockImplementation(async () => ({}))
   })
 
@@ -191,7 +193,8 @@ describe('Material tab (InsightPage + materialGoldConfig) smoke', { timeout: 300
       await settle()
       ids.forEach((id) => expect(anchor(wrapper, id), `${tab}:${id}`).toBe(true))
     }
-    expect(postMock.mock.calls).toHaveLength(0)
+    // ข้อมูลเสริม GoldByStage ยิงครั้งเดียวตอนเปิดแท็บภาพรวม — นอกนั้นไม่มี request เพิ่ม
+    expect(postMock.mock.calls.map((c) => c[0])).toEqual(['ProductionInsight/GoldByStage'])
     const types = wrapper.findAll('.apex-stub').map((el) => el.attributes('data-type'))
     expect(types).toEqual(expect.arrayContaining(['donut', 'bar']))
     expect(warnings.filter((w) => /Maximum recursive updates|reactive object/.test(w))).toEqual([])
@@ -241,8 +244,8 @@ describe('Material tab (InsightPage + materialGoldConfig) smoke', { timeout: 300
     page(wrapper).vm.selectSub('overview')
     await settle()
     const cards = wrapper.findAll('.stat-card')
-    expect(cards).toHaveLength(5)
-    const expected = [['items', 'all'], ['groups', 'dead'], ['items', 'zero'], ['items', 'near'], ['items', 'dead']]
+    expect(cards).toHaveLength(7)
+    const expected = [['items', 'all'], ['groups', 'dead'], ['items', 'zero'], ['items', 'negative'], ['items', 'near'], ['items', 'dead']]
     for (let i = 0; i < expected.length; i += 1) {
       page(wrapper).vm.selectSub('overview')
       page(wrapper).vm.setState('itemsFilter', 'dead')
@@ -252,6 +255,113 @@ describe('Material tab (InsightPage + materialGoldConfig) smoke', { timeout: 300
       const sub = page(wrapper).vm.currentSub
       expect([sub, sub === 'items' ? page(wrapper).vm.state.itemsFilter : 'dead'], `card ${i}`).toEqual(expected[i])
     }
+  })
+
+  it('GoldByStage is fetched only when the overview / items tab is opened (once), with {start, end, metal: GOLD}; the card shows the summed grams and jobs', async () => {
+    const { wrapper } = mountView()
+    await settle()
+    expect(callsTo('ProductionInsight/GoldByStage')).toHaveLength(0)
+    page(wrapper).vm.selectSub('groups')
+    await settle()
+    expect(callsTo('ProductionInsight/GoldByStage')).toHaveLength(0)
+    page(wrapper).vm.selectSub('overview')
+    await settle()
+    expect(callsTo('ProductionInsight/GoldByStage')).toHaveLength(1)
+    const body = callsTo('ProductionInsight/GoldByStage')[0][1]
+    expect(Object.keys(body).sort()).toEqual(['end', 'metal', 'start'])
+    expect(body.metal).toBe('GOLD')
+    expect(wrapper.text()).toContain('14.75 g')
+    expect(wrapper.text()).toContain('"count":"5"')
+    expect(wrapper.text()).toContain('view.productionInsight.materialInsight.kpi.withWorkerNote')
+    page(wrapper).vm.selectSub('items')
+    await settle()
+    expect(callsTo('ProductionInsight/GoldByStage')).toHaveLength(1)
+    expect(wrapper.find('#insight-report-matItems').text()).toContain('withWorkerLine')
+  })
+
+  it('if GoldByStage fails the Overview tab still renders (card says the data is unavailable) and the items hint has no worker line', async () => {
+    postMock.mockImplementation(async (path) => {
+      if (path === 'ProductionInsight/GoldByStage') throw new Error('500')
+      return path === 'MaterialInsight/Overview' ? overview : {}
+    })
+    const { wrapper } = mountView({ initialSub: 'overview' })
+    await settle()
+    expect(anchor(wrapper, 'matKpi')).toBe(true)
+    expect(anchor(wrapper, 'matShare')).toBe(true)
+    expect(wrapper.text()).toContain('view.productionInsight.materialInsight.kpi.withWorkerNone')
+    page(wrapper).vm.selectSub('items')
+    await settle()
+    expect(wrapper.find('#insight-report-matItems').text()).not.toContain('withWorkerLine')
+    expect(page(wrapper).vm.responses.Overview).toBeTruthy()
+  })
+
+  it('prod mirror: five negative items, no receipts ever recorded, status warning — notice, invalid-balance rows, red numbers, empty donut and the right finding / action', async () => {
+    const negItem = (itemKey, code, name, onHand) => item({ itemKey, code, goldCode: code, goldName: name, label: `${code} ${name}`, sizeCode: itemKey.split('|')[1], sizeName: `ขนาด ${itemKey.split('|')[1]}`, onHand, available: onHand, status: 'negative', coverDays: null, avgMonthlyUsage: 12.5, autoMin: 3, effectiveMin: 3, lastMovementDate: '2026-10-10T00:00:00', daysSinceMove: 12 })
+    const negative = {
+      ...overview,
+      status: 'warning',
+      kpi: { ...overview.kpi, itemCount: 5, totalOnHand: 0, totalAvailable: 0, zeroCount: 0, belowMinCount: 0, nearMinCount: 0, deadCount: 0, deadOnHand: 0, negativeCount: 5, negativeWeight: -123.4, inboundRecorded: false, withUsageCount: 5 },
+      items: [negItem('SV|9', 'SV', 'เงิน', -10), negItem('WG|7', 'WG', 'ทองขาว', -20), negItem('YG|3', 'YG', 'ทองเหลือง', -30), negItem('YG|5', 'YG', 'ทองเหลือง', -40), negItem('YG|7', 'YG', 'ทองเหลือง', -23.4)],
+      groups: [
+        { code: 'SV', name: 'เงิน', itemCount: 1, onHand: -10, onProcess: 0, negativeCount: 1 },
+        { code: 'WG', name: 'ทองขาว', itemCount: 1, onHand: -20, onProcess: 0, negativeCount: 1 },
+        { code: 'YG', name: 'ทองเหลือง', itemCount: 3, onHand: -93.4, onProcess: 0, negativeCount: 3 }
+      ],
+      problems: [{ code: 'MAT_NEGATIVE_BALANCE', severity: 'warning', params: { count: 5, totalWeight: 123.4, topItems: ['YG ทองเหลือง', 'WG ทองขาว'], ledgerHasInbound: false }, reportRef: 'matItems' }],
+      forecasts: [],
+      actions: [{ code: 'ACT_RECORD_OPENING_BALANCE', priority: 1, ownerRole: 'deptHead', relatedCodes: ['MAT_NEGATIVE_BALANCE'], params: { count: 5, totalWeight: 123.4 } }]
+    }
+    postMock.mockImplementation(async (path) => (path === 'MaterialInsight/Overview' ? negative : path === 'ProductionInsight/GoldByStage' ? goldStage : {}))
+    const { wrapper } = mountView()
+    await settle()
+    // ปัญหา/วิธีแก้: มีเฉพาะยอดติดลบ (ไม่มี "หมดสต็อก") + ผู้รับผิดชอบหัวหน้าแผนก
+    let html = wrapper.html()
+    expect(html).toContain('rules.MAT_NEGATIVE_BALANCE:')
+    expect(html).toContain('"totalWeight":"123.4"')
+    expect(html).not.toContain('MAT_ZERO_STOCK')
+    page(wrapper).vm.selectSub('actions')
+    await settle()
+    expect(wrapper.html()).toContain('rules.ACT_RECORD_OPENING_BALANCE')
+    expect(wrapper.html()).toContain('view.productionInsight.ownerRole.deptHead')
+
+    // ภาพรวม: ข้อความแจ้งเตือน + การ์ดยอดรวมเป็น "—" + การ์ดยอดไม่ถูกต้อง + โดนัทว่าง
+    page(wrapper).vm.selectSub('overview')
+    await settle()
+    expect(wrapper.find('.note-block').text()).toContain('materialInsight.negativeNotice')
+    const cardTexts = wrapper.findAll('.stat-card').map((c) => c.text())
+    expect(cardTexts.some((text) => text.includes('—'))).toBe(true)
+    expect(cardTexts.some((text) => text.includes('5') && text.includes('123.4 g'))).toBe(true)
+    expect(wrapper.findAll('.apex-stub').filter((el) => el.attributes('data-type') === 'donut')).toHaveLength(0)
+
+    // กลุ่ม: ไม่พล็อตแท่งติดลบ แต่ตารางแสดงตัวเลขจริง
+    page(wrapper).vm.selectSub('groups')
+    await settle()
+    expect(wrapper.findAll('.apex-stub').filter((el) => el.attributes('data-type') === 'bar')).toHaveLength(0)
+    expect(wrapper.text()).toContain('-93.4')
+
+    // รายการ: ข้อความแจ้งเตือน + ตัวสลับ "ยอดไม่ถูกต้อง 5" + ทุกแถวเป็นยอดไม่ถูกต้อง ตัวเลขสีแดง
+    page(wrapper).vm.selectSub('items')
+    await settle()
+    // แท็บที่เปิดแล้วค้างอยู่ (v-show): ภาพรวม 1 + รายการ 1
+    expect(wrapper.findAll('.note-block')).toHaveLength(2)
+    expect(wrapper.text()).toContain('view.productionInsight.materialInsight.filter.negative')
+    expect(wrapper.text()).toContain('"count":"5"')
+    const rows = wrapper.findAll('#insight-report-matItems tbody tr')
+    expect(rows).toHaveLength(5)
+    rows.forEach((row) => expect(row.text()).toContain('view.productionInsight.materialInsight.status.negative'))
+    expect(wrapper.html()).toContain('var(--base-red)')
+    page(wrapper).vm.setState('itemsFilter', 'zero')
+    await settle()
+    expect(wrapper.findAll('#insight-report-matItems tbody tr').filter((r) => r.text().includes('SV'))).toHaveLength(0)
+    expect(warnings.filter((w) => /Maximum recursive updates|reactive object/.test(w))).toEqual([])
+  })
+
+  it('a finding of the negative-balance kind opens the items tab on the "invalid balance" toggle', async () => {
+    const { wrapper } = mountView()
+    await settle()
+    wrapper.findAllComponents(InsightFindingList)[0].vm.$emit('goto-report', 'matItems', { findingCode: 'MAT_NEGATIVE_BALANCE' })
+    await settle()
+    expect([page(wrapper).vm.currentSub, page(wrapper).vm.state.itemsFilter]).toEqual(['items', 'negative'])
   })
 
   it('without the permission the table is read-only: no edit column, no policy button, only the read-only table exists', async () => {

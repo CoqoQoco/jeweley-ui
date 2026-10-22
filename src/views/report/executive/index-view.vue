@@ -75,6 +75,13 @@ import {
   buildWorkersExcelRows,
   buildMaterialsWaitingExcelRows
 } from './executive-insight-excel-helpers.js'
+import { buildSnapshotInsightSheets } from './executive-insight-excel-stock-sales-material.js'
+import { stockConfig } from './stock/stock.config.js'
+import { salesConfig } from './sales/sales.config.js'
+import { materialGoldConfig } from './material/material.config.js'
+import { STOCK_INSIGHT_ENDPOINT, buildOverviewParams as buildStockOverviewParams } from './stock/stock-helpers.js'
+import { SALES_INSIGHT_ENDPOINT, buildOverviewParams as buildSalesOverviewParams } from './sales/sales-helpers.js'
+import { MATERIAL_ENDPOINT, buildOverviewParams as buildMaterialOverviewParams } from './material/material-helpers.js'
 import {
   buildDefaultWipFilter,
   buildDefaultDeliveryFilter,
@@ -355,6 +362,30 @@ export default {
       return { wip, leadTime, delivery, atRisk, late, capacity, gold, goldStage, workers, materials, waiting }
     },
 
+    // ข้อมูล insight ของแท็บคลังสินค้า / ขายและเงิน / คลังวัตถุดิบ (snapshot ไม่มีช่วงเวลา) — ยิงพร้อมกันตอนกดปุ่ม เหมือนที่แท็บเรียก (body ตรงกับ view ของแต่ละแท็บ)
+    async fetchSnapshotInsightData() {
+      const store = this.productionInsightStore
+      const [stock, sales, material] = await Promise.all([
+        store.post(STOCK_INSIGHT_ENDPOINT, buildStockOverviewParams()),
+        store.post(SALES_INSIGHT_ENDPOINT, buildSalesOverviewParams()),
+        // คลังวัตถุดิบไม่ผูก metal scope → postRaw (ไม่เติม metal)
+        store.postRaw(MATERIAL_ENDPOINT, buildMaterialOverviewParams('GOLD'))
+      ])
+      return { stock, sales, material }
+    },
+
+    buildSnapshotExportSheets(data) {
+      return buildSnapshotInsightSheets(data, {
+        t: (key, params) => this.$t(key, params),
+        metal: this.metal,
+        metalLabel: this.metalLabel(this.metal),
+        stockConfig,
+        salesConfig,
+        materialConfig: materialGoldConfig,
+        materialKindLabel: this.$t('view.productionInsight.materialInsight.kind.GOLD')
+      })
+    },
+
     buildInsightExportSheets(data, filters) {
       const t = (key, params) => this.$t(key, params)
       const L = (key) => this.$t(`view.executive.excel.insight.${key}`)
@@ -477,7 +508,7 @@ export default {
 
     async onExportExcel() {
       const insightFilters = this.resolveInsightExportFilters()
-      const [stalePlansRes, receivablesRes, salesOrdersRes, stockHealthRes, goldLossWorkerRows, insightData] = await Promise.all([
+      const [stalePlansRes, receivablesRes, salesOrdersRes, stockHealthRes, goldLossWorkerRows, insightData, snapshotData] = await Promise.all([
         this.executiveReportStore.fetchStalePlans({
           take: EXPORT_TAKE,
           skip: 0,
@@ -489,7 +520,8 @@ export default {
         this.executiveReportStore.fetchSalesOrdersWithoutInvoice({ take: EXPORT_TAKE, skip: 0, sort: [] }),
         this.executiveReportStore.fetchStockHealth(),
         this.fetchGoldLossWorkerReportsForExport(),
-        this.fetchInsightExportData(insightFilters)
+        this.fetchInsightExportData(insightFilters),
+        this.fetchSnapshotInsightData()
       ])
 
       const goldLossCompareMonthKeys = buildMonthRange(dayjs().subtract(5, 'month'), dayjs()).map((m) => monthKeyOf(m.year, m.month))
@@ -655,7 +687,8 @@ export default {
               { header: this.$t('view.executive.goldLossTrend.excel.colLossPercent'), key: 'lossPercent' }
             ]
           },
-          ...this.buildInsightExportSheets(insightData, insightFilters)
+          ...this.buildInsightExportSheets(insightData, insightFilters),
+          ...this.buildSnapshotExportSheets(snapshotData)
         ],
         { filename: `${this.$t('view.executive.excel.filenamePrefix')}-${dayjs().format('YYYY-MM-DD')}.xlsx` }
       )

@@ -207,6 +207,26 @@ export default {
       goldLossOverSlipCount: 'จำนวนใบเกินเกณฑ์ (เดือนล่าสุด)',
       goldLossOverAllowedGram: 'เกินเกณฑ์รวม (กรัม, เดือนล่าสุด)'
     },
+    snapshot: {
+      stockFindings: 'คลังสินค้า-สรุปปัญหา',
+      stockAge: 'คลังสินค้า-อายุสต็อก',
+      stockReceipt: 'คลังสินค้า-ประเภทรับ',
+      stockCategory: 'คลังสินค้า-หมวดสินค้า',
+      stockSeries: 'คลังสินค้า-รายเดือน',
+      salesFindings: 'ขายและเงิน-สรุปปัญหา',
+      salesAging: 'ขายและเงิน-อายุหนี้',
+      salesTopCustomers: 'ขายและเงิน-ลูกค้าค้างสูง',
+      salesSeries: 'ขายและเงิน-รายเดือน',
+      materialFindings: 'วัตถุดิบ-สรุปปัญหา',
+      materialItems: 'วัตถุดิบ-รายการ',
+      materialSeries: 'วัตถุดิบ-รายเดือน',
+      colMonth: 'เดือน',
+      colSaleQty: 'ขาย',
+      colReturnQty: 'คืนจากลบบิล',
+      colAgingBucket: 'อายุหนี้',
+      colMaterialCode: 'รหัสรายการ',
+      colMinSource: 'ที่มาของขั้นต่ำ'
+    },
     insight: {
       sheetFindings: 'สรุปปัญหา',
       sheetLeadTime: 'เวลาผลิตรายแผนก',

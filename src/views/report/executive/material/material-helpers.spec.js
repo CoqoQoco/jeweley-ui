@@ -28,7 +28,17 @@ import {
   createPolicyForm,
   validatePolicyForm,
   buildPolicySaveBody,
-  hasPolicyChanges
+  hasPolicyChanges,
+  GOLD_STAGE_ENDPOINT,
+  buildGoldStageParams,
+  sumPendingWithWorker,
+  buildWithWorkerLine,
+  shouldShowNegativeNotice,
+  areAllItemsNegative,
+  remapMaterialFindings,
+  buildGroupBarRows,
+  STATUS_ORDER,
+  ITEM_FILTERS
 } from './material-helpers.js'
 
 const t = (key, params) => (params ? `${key}:${JSON.stringify(params)}` : key)
@@ -82,12 +92,12 @@ describe('items sorting and filtering', () => {
   })
 
   it('toggle counts come from the KPI', () => {
-    expect(itemFilterCounts({ itemCount: 9, zeroCount: 1, belowMinCount: 2, nearMinCount: 3, deadCount: 4 })).toEqual({ all: 9, zero: 1, below: 2, near: 3, dead: 4 })
-    expect(itemFilterCounts(undefined)).toEqual({ all: 0, zero: 0, below: 0, near: 0, dead: 0 })
+    expect(itemFilterCounts({ itemCount: 9, zeroCount: 1, belowMinCount: 2, nearMinCount: 3, deadCount: 4, negativeCount: 5 })).toEqual({ all: 9, zero: 1, negative: 5, below: 2, near: 3, dead: 4 })
+    expect(itemFilterCounts(undefined)).toEqual({ all: 0, zero: 0, negative: 0, below: 0, near: 0, dead: 0 })
   })
 
   it('status chips map to red / warning / grey / green', () => {
-    expect(['zero', 'below', 'near', 'dead', 'ok', 'x'].map(resolveStatusVariant)).toEqual(['fail', 'warning', 'warning', 'grey', 'pass', 'pass'])
+    expect(['zero', 'negative', 'below', 'near', 'dead', 'ok', 'x'].map(resolveStatusVariant)).toEqual(['fail', 'warning', 'warning', 'warning', 'grey', 'pass', 'pass'])
   })
 
   it('rows keep the item fields and add display text (never-issued vs days ago)', () => {
@@ -213,5 +223,83 @@ describe('policy form', () => {
     const none = buildPolicySaveBody('GOLD', createPolicyForm(policy), policy)
     expect(none).toEqual({ kind: 'GOLD' })
     expect(hasPolicyChanges(none)).toBe(false)
+  })
+})
+
+describe('gold held by workers (GoldByStage)', () => {
+  it('request: last 3 months in ISO (Thai day boundaries) for gold, with exactly start / end / metal', () => {
+    expect(GOLD_STAGE_ENDPOINT).toBe('ProductionInsight/GoldByStage')
+    const body = buildGoldStageParams(new Date('2026-10-22T05:00:00Z'))
+    expect(Object.keys(body).sort()).toEqual(['end', 'metal', 'start'])
+    expect(body.metal).toBe('GOLD')
+    expect(body.start).toBe('2026-07-22T00:00:00+07:00')
+    expect(body.end).toMatch(/^2026-10-22T23:59:59/)
+  })
+
+  it('sums pending-with-worker grams and job counts over departments; queue slots are not counted; no data = null', () => {
+    const stage = { departments: [{ key: 'setting', pendingWithWorkerCount: 3, pendingWithWorkerGram: 10.5, pendingQueueCount: 9, pendingQueueGram: 99 }, { key: 'trim', pendingWithWorkerCount: 2, pendingWithWorkerGram: 4.25 }, { key: 'plating' }] }
+    expect(sumPendingWithWorker(stage)).toEqual({ gram: 14.75, count: 5 })
+    expect(sumPendingWithWorker({ departments: [] })).toEqual({ gram: 0, count: 0 })
+    expect(sumPendingWithWorker(undefined)).toBeNull()
+    expect(sumPendingWithWorker({})).toBeNull()
+  })
+
+  it('the items-tab line appears only when something is held by workers', () => {
+    expect(buildWithWorkerLine({ departments: [{ pendingWithWorkerCount: 2, pendingWithWorkerGram: 1234.5 }] }, t)).toContain('"weight":"1,234.5"')
+    expect(buildWithWorkerLine({ departments: [{ pendingWithWorkerCount: 0, pendingWithWorkerGram: 0 }] }, t)).toBe('')
+    expect(buildWithWorkerLine(undefined, t)).toBe('')
+  })
+})
+
+describe('negative balances (ledger without opening balance / receipts)', () => {
+  const negItems = [
+    { itemKey: 'n1', label: 'N1', status: 'negative', onHand: -10, coverDays: null, isDead: false },
+    { itemKey: 'z', label: 'Z', status: 'zero', onHand: 0, coverDays: 0, isDead: false },
+    { itemKey: 'o', label: 'O', status: 'ok', onHand: 5, coverDays: 30, isDead: false },
+    { itemKey: 'b', label: 'B', status: 'below', onHand: 1, coverDays: 2, isDead: false }
+  ]
+
+  it('negative sorts right after zero (before below / near / dead / ok) and has its own toggle after zero', () => {
+    expect(STATUS_ORDER).toEqual(['zero', 'negative', 'below', 'near', 'dead', 'ok'])
+    expect(ITEM_FILTERS).toEqual(['all', 'zero', 'negative', 'below', 'near', 'dead'])
+    expect(sortItemsBySeverity(negItems).map((i) => i.itemKey)).toEqual(['z', 'n1', 'b', 'o'])
+    expect(filterItems(negItems, 'negative').map((i) => i.itemKey)).toEqual(['n1'])
+  })
+
+  it('rows of negative items carry a hint for the on-hand cell; healthy rows do not', () => {
+    const rows = buildItemRows(negItems, 'all', t)
+    expect(rows.find((r) => r.itemKey === 'n1').onHandHint).toBe('view.productionInsight.materialInsight.negativeHint')
+    expect(rows.find((r) => r.itemKey === 'o').onHandHint).toBe('')
+    expect(rows.find((r) => r.itemKey === 'n1').statusText).toBe('view.productionInsight.materialInsight.status.negative')
+  })
+
+  it('the notice shows only when items are negative and no receipt was ever recorded; "all negative" means every item', () => {
+    expect(shouldShowNegativeNotice({ negativeCount: 5, inboundRecorded: false })).toBe(true)
+    expect(shouldShowNegativeNotice({ negativeCount: 5, inboundRecorded: true })).toBe(false)
+    expect(shouldShowNegativeNotice({ negativeCount: 0, inboundRecorded: false })).toBe(false)
+    expect(shouldShowNegativeNotice(undefined)).toBe(false)
+    expect(areAllItemsNegative({ itemCount: 5, negativeCount: 5 })).toBe(true)
+    expect(areAllItemsNegative({ itemCount: 5, negativeCount: 4 })).toBe(false)
+    expect(areAllItemsNegative({ itemCount: 0, negativeCount: 0 })).toBe(false)
+  })
+
+  it('MAT_NEGATIVE_BALANCE gets a second wording when the ledger already has receipts; other findings are untouched', () => {
+    const out = remapMaterialFindings([
+      { code: 'MAT_NEGATIVE_BALANCE', params: { ledgerHasInbound: false } },
+      { code: 'MAT_NEGATIVE_BALANCE', params: { ledgerHasInbound: true } },
+      { code: 'MAT_ZERO_STOCK', params: {} }
+    ])
+    expect(out.map((i) => i.code)).toEqual(['MAT_NEGATIVE_BALANCE', 'MAT_NEGATIVE_BALANCE_INBOUND', 'MAT_ZERO_STOCK'])
+    expect(remapMaterialFindings(null)).toEqual([])
+  })
+
+  it('the finding routes to the negative toggle; the group bar skips groups with a negative balance', () => {
+    expect(resolveItemFilter({ findingCode: 'MAT_NEGATIVE_BALANCE' })).toBe('negative')
+    expect(resolveItemFilter({ itemFilter: 'negative' })).toBe('negative')
+    const groups = [{ code: 'YG', name: 'ทอง', itemCount: 3, onHand: -20, negativeCount: 3 }, { code: 'WG', name: 'ขาว', itemCount: 1, onHand: 7, negativeCount: 0 }]
+    expect(buildGroupBarRows(groups).map((g) => g.code)).toEqual(['WG'])
+    expect(buildGroupRows(groups).map((g) => [g.code, g.negativeCount])).toEqual([['WG', 0], ['YG', 3]])
+    expect(buildGroupSlices(groups)).toEqual([{ label: 'ขาว', value: 7 }])
+    expect(buildGroupBarRows([{ code: 'YG', onHand: -1 }])).toEqual([])
   })
 })

@@ -10,7 +10,7 @@
     tabs / tabFor(ref, params, ctx) / floating — โหมดแท็บ (opt-in): tabFor คืน { tab, reveal?, anchor? } หรือ null เพื่อเลือกแท็บจาก params ของ finding/การ์ด KPI (เช่น workerType/deptKey) · floating = block ที่ mount เสมอนอกแท็บ
     helpParams(filter) — params เสริมของข้อความคำอธิบาย (view.productionInsight.help.<CODE>)
     masters           — ['fetchGem', 'fetchGemShape'] ชื่อ action ของ master-store ที่ต้องโหลดก่อนใช้ (cache-aware) → ctx.masters (state ของ master store)
-    sources           — { Name: { endpoint, method:'post'|'get', params(filter, state), enabled?(filter, state) } } (enabled=false → ไม่ยิงและเคลียร์ผลเดิม) · scoped:false = ไม่เติม metal ลง body ยิงทีละ source เมื่อ "params ของตัวเอง" เปลี่ยน
+    sources           — { Name: { endpoint, method:'post'|'get', params(filter, state), enabled?(filter, state) } } (enabled=false → ไม่ยิงและเคลียร์ผลเดิม) · scoped:false = ไม่เติม metal ลง body · optional:true = ยิงพลาดไม่กระทบหมวดที่เหลือ ยิงทีละ source เมื่อ "params ของตัวเอง" เปลี่ยน
                         (key = JSON ของ params → 1 request ต่อ endpoint ต่อการกด 1 ครั้ง · แท็บไม่ active = ติดธง stale แล้วยิงตอนกลับมา active)
     onSourceLoaded    — (name, data, emit) hook หลัง source โหลดเสร็จ · ctx.updateFilter(patch) → emit 'update-filter'
     state             — { key: { initial, resetOn: { source, value(data, current) } } } state ร่วมของ block (แถวที่เลือก/โฟกัส/draft)
@@ -270,7 +270,9 @@ export default {
       const body = source.params ? source.params(this.filter, this.state) : null
       // source.scoped === false → ไม่เติม metal ของทั้งหน้าลง body (endpoint ที่ไม่เกี่ยวกับโลหะ)
       const post = source.scoped === false ? this.productionInsightStore.postRaw : this.productionInsightStore.post
-      const res = source.method === 'get' ? await this.productionInsightStore.get(source.endpoint, body) : await post(source.endpoint, body)
+      const request = source.method === 'get' ? this.productionInsightStore.get(source.endpoint, body) : post(source.endpoint, body)
+      // source.optional = ข้อมูลเสริม: ยิงพลาด → ถือว่าไม่มีข้อมูล (ctx.data[name] = undefined) หมวดที่เหลือยังแสดงตามปกติ (axios interceptor ยังแจ้ง error ให้ผู้ใช้ตามเดิม)
+      const res = source.optional ? await request.catch(() => undefined) : await request
 
       if (this.requestSeq[name] !== seq) return
       this.responses = { ...this.responses, [name]: res }

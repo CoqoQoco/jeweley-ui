@@ -34,7 +34,7 @@ function collectI18nKeys(value, out = new Set()) {
 const overview = {
   asOf: '2026-10-21T09:00:00',
   policy: { deadStockDays: 90 },
-  kpi: { itemCount: 20, withUsageCount: 12, totalOnHand: 1234.5, zeroCount: 1, belowMinCount: 2, nearMinCount: 0, deadCount: 4, deadOnHand: 99.5 },
+  kpi: { itemCount: 20, withUsageCount: 12, negativeCount: 0, negativeWeight: 0, inboundRecorded: true, totalOnHand: 1234.5, zeroCount: 1, belowMinCount: 2, nearMinCount: 0, deadCount: 4, deadOnHand: 99.5 },
   groups: [{ code: 'YG', name: 'ทอง', itemCount: 10, onHand: 800 }, { code: 'WG', name: 'ขาว', itemCount: 10, onHand: 434.5 }],
   items: []
 }
@@ -60,7 +60,7 @@ describe('material config structure', () => {
 
   it('no on-process KPI or column for gold (onProcess is not maintained)', () => {
     const kpi = materialGoldConfig.blocks.find((n) => n.id === 'matKpi')
-    expect(kpi.cards.map((c) => c.id)).toEqual(['items', 'onHand', 'attention', 'near', 'dead'])
+    expect(kpi.cards.map((c) => c.id)).toEqual(['items', 'onHand', 'attention', 'negative', 'near', 'dead', 'withWorker'])
     const fields = materialGoldConfig.blocks.find((n) => n.id === 'matItems').sections[0].columns.map((c) => c.field)
     expect(fields.some((f) => /onProcess/i.test(f))).toBe(false)
   })
@@ -74,8 +74,14 @@ describe('material config structure', () => {
     })
   })
 
-  it('Overview is the one eager source, not metal-scoped, requested with {kind, months} only', () => {
-    expect(Object.keys(materialGoldConfig.sources)).toEqual(['Overview'])
+  it('Overview is the eager source, not metal-scoped, requested with {kind, months} only; GoldByStage is an optional extra gated to overview/items', () => {
+    expect(Object.keys(materialGoldConfig.sources)).toEqual(['Overview', 'GoldByStage'])
+    const stage = materialGoldConfig.sources.GoldByStage
+    expect(stage).toMatchObject({ endpoint: 'ProductionInsight/GoldByStage', optional: true, tab: ['overview', 'items'] })
+    expect(stage.params()).toMatchObject({ metal: 'GOLD' })
+    expect(isSourceTabGated(stage, [])).toBe(true)
+    expect(isSourceTabGated(stage, ['groups'])).toBe(true)
+    expect(isSourceTabGated(stage, ['items'])).toBe(false)
     const source = materialGoldConfig.sources.Overview
     expect(source).toMatchObject({ endpoint: 'MaterialInsight/Overview', scoped: false })
     expect(source.params({ kind: 'GOLD', canManage: true })).toEqual({ kind: 'GOLD', months: 12 })
@@ -101,10 +107,10 @@ describe('material tabs', () => {
 
   it('blocks per tab', () => {
     const ids = (key) => blocksForTab(materialGoldConfig, key).map((n) => n.id)
-    expect(ids('overview')).toEqual(['matKpi', 'matShare'])
+    expect(ids('overview')).toEqual(['matNegativeNoteOverview', 'matKpi', 'matShare'])
     expect(ids('groups')).toEqual(['matGroups', 'matGroupTable', 'matSizeTable'])
     expect(ids('trend')).toEqual(['matTrend'])
-    expect(ids('items')).toEqual(['matItemsToolbar', 'matItems', 'matItemsEdit'])
+    expect(ids('items')).toEqual(['matNegativeNoteItems', 'matItemsToolbar', 'matItems', 'matItemsEdit'])
   })
 
   it('only the table matching the permission is visible', () => {
@@ -125,17 +131,17 @@ describe('material tabs', () => {
 
   it('KPI cards link to their tab / toggle', () => {
     const kpi = materialGoldConfig.blocks.find((n) => n.id === 'matKpi')
-    const targets = kpi.cards.map((c) => {
+    const targets = kpi.cards.filter((c) => c.reportRef).map((c) => {
       const target = tabOf(c.reportRef, c.reportParams)
       return [c.id, target.tab, target.reveal?.value ?? null]
     })
-    expect(targets).toEqual([['items', 'items', 'all'], ['onHand', 'groups', null], ['attention', 'items', 'zero'], ['near', 'items', 'near'], ['dead', 'items', 'dead']])
+    expect(targets).toEqual([['items', 'items', 'all'], ['onHand', 'groups', null], ['attention', 'items', 'zero'], ['negative', 'items', 'negative'], ['near', 'items', 'near'], ['dead', 'items', 'dead']])
   })
 
   it('the items toolbar slot lists the five filters with KPI counts, shows the policy button only for managers and writes itemsFilter', () => {
     const slot = materialGoldConfig.blocks.find((n) => n.id === 'matItemsToolbar')
     const props = slot.props(ctx(true))
-    expect(props.options.map((o) => o.value)).toEqual(['all', 'zero', 'below', 'near', 'dead'])
+    expect(props.options.map((o) => o.value)).toEqual(['all', 'zero', 'negative', 'below', 'near', 'dead'])
     expect(props.options[0].label).toContain('20')
     expect(props.canManage).toBe(true)
     expect(slot.props(ctx(false)).canManage).toBe(false)
@@ -165,8 +171,21 @@ describe('material KPI cards, donut and rule texts', () => {
   it('KPI values use grams and thousands separators with tones from counts', () => {
     const kpi = materialGoldConfig.blocks.find((n) => n.id === 'matKpi')
     const cards = buildKpiCards(kpi, ctx(false), t)
-    expect(cards.map((c) => c.value)).toEqual(['20', '1,234.5 g', '3', '0', '4'])
-    expect(cards.map((c) => c.tone)).toEqual(['main', 'main', 'warning', 'green', 'warning'])
+    expect(cards.map((c) => c.value).slice(0, 6)).toEqual(['20', '1,234.5 g', '3', '0', '0', '4'])
+    expect(cards.map((c) => c.tone).slice(0, 6)).toEqual(['main', 'main', 'warning', 'green', 'green', 'warning'])
+  })
+
+  it('the gold-held-by-workers card sums the job figures: warning when > 0, green at 0, grey with a note when GoldByStage has no data', () => {
+    const kpi = materialGoldConfig.blocks.find((n) => n.id === 'matKpi')
+    const withStage = (departments) => ({ ...ctx(false), data: { ...ctx(false).data, GoldByStage: departments ? { departments } : undefined } })
+    const held = buildKpiCards(kpi, withStage([{ pendingWithWorkerCount: 3, pendingWithWorkerGram: 10.5 }, { pendingWithWorkerCount: 2, pendingWithWorkerGram: 4.25 }]), t).at(-1)
+    expect(held).toMatchObject({ value: '14.75 g', tone: 'warning' })
+    expect(held.sub).toContain('5 ใบงาน')
+    expect(buildKpiCards(kpi, withStage([{ pendingWithWorkerCount: 0, pendingWithWorkerGram: 0 }]), t).at(-1)).toMatchObject({ value: '0 g', tone: 'green' })
+    const none = buildKpiCards(kpi, withStage(undefined), t).at(-1)
+    expect(none).toMatchObject({ value: '—', tone: 'grey' })
+    expect(none.sub).toBe('ยังโหลดข้อมูลใบงานไม่ได้')
+    expect(kpi.footNote).toBe('view.productionInsight.materialInsight.kpi.withWorkerNote')
   })
 
   it('donut: on-hand by gold group with the grams total in the centre', () => {
@@ -208,3 +227,67 @@ describe('material KPI cards, donut and rule texts', () => {
     })
   })
 })
+
+describe('material negative balances (prod: only issue / return rows in the ledger)', () => {
+  const kpi = materialGoldConfig.blocks.find((n) => n.id === 'matKpi')
+  const negativeKpi = { itemCount: 5, totalOnHand: 0, totalAvailable: 0, zeroCount: 0, belowMinCount: 0, nearMinCount: 0, deadCount: 0, deadOnHand: 0, negativeCount: 5, negativeWeight: -123.456, inboundRecorded: false, withUsageCount: 5 }
+  const negCtx = { ...ctx(false), data: { Overview: { ...overview, kpi: negativeKpi, groups: [{ code: 'YG', name: 'ทอง', itemCount: 3, onHand: -80, negativeCount: 3 }, { code: 'SV', name: 'เงิน', itemCount: 2, onHand: -43.456, negativeCount: 2 }] } } }
+
+  it('the total on-hand card shows a dash and says why; the invalid-balance card shows count and absolute weight', () => {
+    const cards = buildKpiCards(kpi, negCtx, t)
+    const byId = Object.fromEntries(cards.map((c) => [c.key, c]))
+    expect(byId.onHand.value).toBe('—')
+    expect(byId.onHand.sub).toBe('ทุกรายการติดลบ — ยังไม่มียอดยกมา/รับเข้า')
+    expect(byId.negative).toMatchObject({ value: '5', tone: 'warning' })
+    expect(byId.negative.sub).toContain('123.46 g')
+    expect(byId.attention.tone).toBe('green')
+  })
+
+  it('the notice appears on the overview and items tabs only for negative items without receipts', () => {
+    const notes = ['matNegativeNoteOverview', 'matNegativeNoteItems'].map((id) => materialGoldConfig.blocks.find((n) => n.id === id))
+    notes.forEach((note) => {
+      expect(isNodeVisible(note, negCtx)).toBe(true)
+      expect(isNodeVisible(note, ctx(false))).toBe(false)
+      expect(isNodeVisible(note, { ...negCtx, data: { Overview: { ...overview, kpi: { ...negativeKpi, inboundRecorded: true } } } })).toBe(false)
+      expect(note.text(negCtx, t)).toContain('ยังไม่มีการบันทึกยอดยกมา/รับเข้าในคลังทอง')
+    })
+  })
+
+  it('the donut and the group bar plot no negative values (empty state when everything is negative)', () => {
+    const donut = materialGoldConfig.blocks.find((n) => n.id === 'matShare')
+    const bar = materialGoldConfig.blocks.find((n) => n.id === 'matGroups')
+    expect(buildDonutChart(donut, donut.slices(negCtx), t, negCtx).series).toEqual([])
+    expect(bar.rows(negCtx)).toEqual([])
+    expect(donut.notes).toEqual(['view.productionInsight.materialInsight.negativeNotPlotted'])
+    expect(bar.notes).toEqual(['view.productionInsight.materialInsight.negativeNotPlotted'])
+  })
+
+  it('the group and size tables show negative balances in red', () => {
+    const table = materialGoldConfig.blocks.find((n) => n.id === 'matGroupTable').sections[0].columns.find((c) => c.field === 'onHand')
+    expect(table.color({ onHand: -5 })).toBe('var(--base-red)')
+    expect(table.color({ onHand: 5 })).toBe('')
+    const itemOnHand = materialGoldConfig.blocks.find((n) => n.id === 'matItems').sections[0].columns.find((c) => c.field === 'onHand')
+    expect(itemOnHand.color({ onHand: -1 })).toBe('var(--base-red)')
+    expect(itemOnHand.badge({ onHandHint: 'x' })).toBe('x')
+  })
+
+  it('rule texts: both wordings of the negative-balance finding and the opening-balance action (th + en) interpolate fully, with grams formatted', () => {
+    const params = { count: 5, totalWeight: 123.456, topItems: 'A, B', ledgerHasInbound: false }
+    ;['MAT_NEGATIVE_BALANCE', 'MAT_NEGATIVE_BALANCE_INBOUND', 'ACT_RECORD_OPENING_BALANCE'].forEach((code) => {
+      ;[th, en].forEach((i18n) => {
+        const key = `view.productionInsight.materialInsight.rules.${code}`
+        const text = i18n.global.t(key, { ...params, totalWeight: '123.46' })
+        expect(text, code).not.toBe(key)
+        expect(text, code).not.toContain('{')
+      })
+    })
+    expect(productionInsightTh.codeLabel.MAT_NEGATIVE_BALANCE).toBeTruthy()
+    expect(productionInsightEn.codeLabel.MAT_NEGATIVE_BALANCE).toBeTruthy()
+    expect(materialGoldConfig.filterFindings([{ code: 'MAT_NEGATIVE_BALANCE', params: { ledgerHasInbound: true } }])[0].code).toBe('MAT_NEGATIVE_BALANCE_INBOUND')
+    expect(tabOfNegative()).toMatchObject({ tab: 'items', reveal: { value: 'negative' } })
+  })
+})
+
+function tabOfNegative() {
+  return materialGoldConfig.tabFor('matItems', { findingCode: 'MAT_NEGATIVE_BALANCE' }, { filter: { canManage: false }, data: {} })
+}
