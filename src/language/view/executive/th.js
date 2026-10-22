@@ -37,6 +37,36 @@ export default {
     lossOverSlipAllSub: 'เกินรายใบ ทอง {goldCount} · เงิน {silverCount} ใบ'
   },
 
+  digest: {
+    title: 'สถานะรายโดเมน',
+    topTitle: 'เรื่องที่ต้องดูก่อน',
+    unavailable: 'ไม่พบข้อมูล / โหลดไม่ได้',
+    problemCount: '{count} ปัญหา',
+    forecastCount: '{count} คาดการณ์',
+    domain: {
+      production: 'ผลิต',
+      sales: 'ขายและเงิน',
+      stock: 'คลังสินค้า',
+      material: 'คลังวัตถุดิบ'
+    },
+    status: {
+      critical: 'วิกฤต',
+      warning: 'เตือน',
+      ok: 'ปกติ',
+      unknown: 'ไม่ทราบ'
+    },
+    excel: {
+      sheetName: 'สรุปสถานะ',
+      colDomain: 'โดเมน',
+      colStatus: 'สถานะ',
+      colProblems: 'ปัญหา',
+      colForecasts: 'คาดการณ์',
+      colTopRank: 'ลำดับ',
+      colSeverity: 'ระดับ',
+      colText: 'ข้อความ'
+    }
+  },
+
   department: {
     design: 'ออกแบบ',
     trim: 'แต่ง',

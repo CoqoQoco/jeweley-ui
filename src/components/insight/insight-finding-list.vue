@@ -8,6 +8,7 @@
   Props:
     findings — Array (required) ของ { key, severity: 'critical'|'warning'|'info', text, helpText?, reportRef? }
                `helpText` ว่าง = ไม่แสดงไอคอน ⓘ (ไม่ใช่ทุก finding จะมีคำอธิบาย)
+               `tag` (optional) = ป้ายสั้นหน้าข้อความ เช่น ชื่อโดเมนใน Executive Digest — ว่าง = ไม่แสดง
     loading  — Boolean (false)
 
   Emits: goto-report(reportRef, reportParams?) — เมื่อกดปุ่ม [ดู ›] ของ finding ที่มี reportRef (reportParams = params ของ finding ถ้ามี ใช้กับ config.tabFor)
@@ -29,6 +30,7 @@
         :class="`insight-finding-list__item--${finding.severity}`"
       >
         <i :class="['bi', severityIcon(finding.severity)]"></i>
+        <span v-if="finding.tag" class="insight-finding-list__tag">{{ finding.tag }}</span>
         <span class="insight-finding-list__text">{{ finding.text }}</span>
         <InfoTipGeneric v-if="finding.helpText" :text="finding.helpText" />
         <ButtonGeneric
@@ -149,6 +151,16 @@ export default {
 
     > i:first-child { color: var(--base-green); }
   }
+}
+
+.insight-finding-list__tag {
+  flex-shrink: 0;
+  padding: 0 var(--sp-sm);
+  border: 1px solid currentColor;
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .insight-finding-list__text {

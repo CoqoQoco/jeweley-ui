@@ -437,7 +437,9 @@ export default {
   props: {
     // โลหะทั้งหน้า (GOLD|SILVER|ALL) ที่หน้า executive ส่งมา — มี = แสดงปุ่มสลับโลหะในแถบเครื่องมือแถวเดียวกับช่วงเวลา/ตัวกรอง
     // (หน้า executive เป็นเจ้าของ state/URL/summary ตัวจริง: เปลี่ยนค่าแล้ว emit update:metal) · ไม่ส่ง = ไม่แสดงปุ่ม
-    metal: { type: String, default: '' }
+    metal: { type: String, default: '' },
+    // หมวดย่อยปลายทางจาก Executive Digest { view } (object ใหม่ทุกครั้งที่กด) — มีตอน mount = เปิดหมวดนั้นแทน ?view= · เปลี่ยนตอนเปิดอยู่ = สลับหมวด
+    target: { type: Object, default: null }
   },
 
   emits: ['update:metal'],
@@ -617,6 +619,10 @@ export default {
   },
 
   watch: {
+    target() {
+      this.applyTarget()
+    },
+
     activeSection() {
       this.visitedSections.add(this.activeSection)
       this.syncStateToQuery()
@@ -691,6 +697,11 @@ export default {
 
     onSubTabChange(section, value) {
       this.subTabs = { ...this.subTabs, [section]: value }
+    },
+
+    applyTarget() {
+      if (!this.target?.view || !SECTION_VALUES.includes(this.target.view)) return
+      this.activeSection = this.target.view
     },
 
     applyQueryToState(query) {
@@ -904,7 +915,9 @@ export default {
   },
 
   created() {
-    this.applyQueryToState(this.$route.query)
+    const hasTarget = !!this.target?.view && SECTION_VALUES.includes(this.target.view)
+    this.applyQueryToState(hasTarget ? { ...this.$route.query, view: this.target.view } : this.$route.query)
+    if (hasTarget) this.$nextTick(() => this.syncStateToQuery())
   }
 }
 </script>

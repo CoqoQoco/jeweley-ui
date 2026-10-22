@@ -17,6 +17,11 @@ export const useExecutiveReportApiStore = defineStore('executiveReportApi', {
       return await postScoped('ExecutiveReport/Summary', {})
     },
 
+    // Executive Digest — สถานะ 4 โดเมน + เรื่องที่ต้องดูก่อน (ตาม metal ของทั้งหน้า) · ส่วนเสริมของหน้า: ล้มแล้วเงียบ (คืน null) ไม่ขึ้น modal/ไม่ลากส่วนอื่น
+    async fetchDigest() {
+      return await api.jewelry.post('ExecutiveReport/Digest', useMetalScopeStore().scoped({}), { skipError: true }).catch(() => null)
+    },
+
     async fetchProductionWip() {
       return await postScoped('ExecutiveReport/ProductionWip', {})
     },

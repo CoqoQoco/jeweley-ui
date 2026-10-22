@@ -37,6 +37,36 @@ export default {
     lossOverSlipAllSub: 'Over allowance per slip: gold {goldCount} / silver {silverCount}'
   },
 
+  digest: {
+    title: 'Status by domain',
+    topTitle: 'Needs attention first',
+    unavailable: 'No data / failed to load',
+    problemCount: '{count} problems',
+    forecastCount: '{count} forecasts',
+    domain: {
+      production: 'Production',
+      sales: 'Sales & Money',
+      stock: 'Stock',
+      material: 'Raw materials'
+    },
+    status: {
+      critical: 'Critical',
+      warning: 'Warning',
+      ok: 'OK',
+      unknown: 'Unknown'
+    },
+    excel: {
+      sheetName: 'Status digest',
+      colDomain: 'Domain',
+      colStatus: 'Status',
+      colProblems: 'Problems',
+      colForecasts: 'Forecasts',
+      colTopRank: 'Rank',
+      colSeverity: 'Severity',
+      colText: 'Message'
+    }
+  },
+
   department: {
     design: 'Design',
     trim: 'Trim',

@@ -15,9 +15,11 @@
 
     <summaryView :summary="summary" @select-tab="onTabChange" />
 
+    <digestView :digest="digest" :loading="digestLoading" @select-tab="onDigestSelect" />
+
     <TabViewGeneric :modelValue="activeTab" :tabs="tabsConfig" variant="segmented" @update:modelValue="onTabChange">
       <template #production>
-        <productionInsightView :key="metal" ref="insight" :metal="metal" @update:metal="onMetalChange" />
+        <productionInsightView :key="metal" ref="insight" :metal="metal" :target="productionTarget" @update:metal="onMetalChange" />
       </template>
       <template #sales>
         <salesInsightView :key="metal" :metal="metal" :refreshToken="refreshToken" :initialSub="salesInitialSub" :target="salesTarget" @update:sub="salesInitialSub = $event" />
@@ -76,6 +78,7 @@ import {
   buildMaterialsWaitingExcelRows
 } from './executive-insight-excel-helpers.js'
 import { buildSnapshotInsightSheets } from './executive-insight-excel-stock-sales-material.js'
+import { resolveDigestNavigation, buildDigestExcelSheet } from './executive-digest-helpers.js'
 import { stockConfig } from './stock/stock.config.js'
 import { salesConfig } from './sales/sales.config.js'
 import { materialGoldConfig } from './material/material.config.js'
@@ -97,6 +100,7 @@ import TabViewGeneric from '@/components/generic/TabViewGeneric.vue'
 import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 
 import summaryView from './components/summary-view.vue'
+import digestView from './components/digest-view.vue'
 import salesInsightView from './components/sales-insight-view.vue'
 import stockInsightView from './components/stock-insight-view.vue'
 import materialInsightView from './components/material-insight-view.vue'
@@ -144,6 +148,7 @@ export default {
     TabViewGeneric,
     ToggleGroupGeneric,
     summaryView,
+    digestView,
     salesInsightView,
     stockInsightView,
     materialInsightView,
@@ -162,6 +167,11 @@ export default {
   data() {
     return {
       summary: emptySummary(),
+      // Executive Digest (null = ยังไม่โหลด/โหลดไม่ได้ — ส่วนอื่นของหน้าไม่ขึ้นกับค่านี้)
+      digest: null,
+      digestLoading: false,
+      // แท็บผลิต: หมวดย่อยปลายทางจาก Digest { view } (object ใหม่ทุกครั้งที่กด)
+      productionTarget: null,
       productionFilter: { departmentKeys: [], minDays: 180 },
       goldLossRankingRange: '3m',
       // โลหะทั้งหน้า GOLD|SILVER|ALL — ค่าจริงอ่านจาก ?metal= ใน created() ก่อน child mount (store ฝั่ง API อ่านจาก metalScopeStore)
@@ -230,8 +240,10 @@ export default {
     // ไม่ถูก mount) — Summary ยิงที่นี่
     metal(value) {
       this.metalScopeStore.setMetal(value)
+      this.productionTarget = null
       this.syncStateToQuery()
       this.fetchSummary()
+      this.fetchDigest()
     }
   },
 
@@ -239,6 +251,13 @@ export default {
     async fetchSummary() {
       const res = await this.executiveReportStore.fetchSummary()
       this.summary = res ? { ...emptySummary(), ...res } : emptySummary()
+    },
+
+    // Digest เป็นส่วนเสริม — fetchDigest คืน null เมื่อล้ม (ไม่ขึ้น modal) การ์ดแสดงสถานะ "ไม่ทราบ" โดยส่วนอื่นยังใช้งานได้
+    async fetchDigest() {
+      this.digestLoading = true
+      this.digest = await this.executiveReportStore.fetchDigest()
+      this.digestLoading = false
     },
 
     // อ่าน ?tab= ตอนเข้าหน้า/back-forward — ตั้ง guard กัน syncStateToQuery ยิง replace ซ้ำระหว่างที่กำลัง apply จาก query เอง
@@ -281,11 +300,21 @@ export default {
     // kpiKey (เฉพาะกดการ์ดสรุป) → แท็บ "ขายและเงิน" เปิดตรงแท็บย่อย/ตัวสลับของบิลนั้น
     onTabChange(tab, kpiKey) {
       this.activeTab = resolveActiveTab(tab)
+      this.productionTarget = null
       this.salesTarget = this.activeTab === 'sales' && kpiKey ? resolveKpiSalesTarget(kpiKey) : null
+    },
+
+    // การ์ดโดเมน / [ดู ›] ของ Digest → แท็บ + (ผลิต: หมวดย่อย · ขาย: แท็บย่อย/ตัวสลับของบิล) — ใช้กลไก target เดียวกับการ์ดสรุป
+    onDigestSelect(domain, target) {
+      const nav = resolveDigestNavigation(domain, target)
+      this.activeTab = resolveActiveTab(nav.tab)
+      this.productionTarget = nav.productionTarget
+      this.salesTarget = nav.salesTarget
     },
 
     onRefresh() {
       this.fetchSummary()
+      this.fetchDigest()
       this.refreshToken += 1
     },
 
@@ -508,7 +537,7 @@ export default {
 
     async onExportExcel() {
       const insightFilters = this.resolveInsightExportFilters()
-      const [stalePlansRes, receivablesRes, salesOrdersRes, stockHealthRes, goldLossWorkerRows, insightData, snapshotData] = await Promise.all([
+      const [stalePlansRes, receivablesRes, salesOrdersRes, stockHealthRes, goldLossWorkerRows, insightData, snapshotData, digestData] = await Promise.all([
         this.executiveReportStore.fetchStalePlans({
           take: EXPORT_TAKE,
           skip: 0,
@@ -521,7 +550,8 @@ export default {
         this.executiveReportStore.fetchStockHealth(),
         this.fetchGoldLossWorkerReportsForExport(),
         this.fetchInsightExportData(insightFilters),
-        this.fetchSnapshotInsightData()
+        this.fetchSnapshotInsightData(),
+        this.digest ? this.digest : this.executiveReportStore.fetchDigest()
       ])
 
       const goldLossCompareMonthKeys = buildMonthRange(dayjs().subtract(5, 'month'), dayjs()).map((m) => monthKeyOf(m.year, m.month))
@@ -687,6 +717,7 @@ export default {
               { header: this.$t('view.executive.goldLossTrend.excel.colLossPercent'), key: 'lossPercent' }
             ]
           },
+          ...(digestData ? [buildDigestExcelSheet(digestData, (key, params) => this.$t(key, params))] : []),
           ...this.buildInsightExportSheets(insightData, insightFilters),
           ...this.buildSnapshotExportSheets(snapshotData)
         ],
@@ -702,6 +733,7 @@ export default {
 
   mounted() {
     this.fetchSummary()
+    this.fetchDigest()
   }
 }
 </script>
