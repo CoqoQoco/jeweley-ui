@@ -71,13 +71,23 @@
           <div class="filter-container-bg-focus">
             <barcodePreview
               :selectedType="selectedType"
-              :barcode="barcode"
+              :barcode="labelBarcode"
               :price="previewPrice"
               :hidePrice="hidePrice"
               :qrUrl="selectedType === 'original-qr' ? publicUrl : ''"
               :remarkSymbol="showRemarkSelect ? remarkSymbol : ''"
             />
           </div>
+        </div>
+
+        <div v-if="showRemarkSelect" class="pl-4 pr-4 pt-2 top-line-select">
+          <FormFieldGeneric :label="$t('view.stock.product.labelTopLine')">
+            <ToggleGroupGeneric
+              v-model="labelTopLine"
+              :options="topLineOptions"
+              :ariaLabel="$t('view.stock.product.labelTopLine')"
+            />
+          </FormFieldGeneric>
         </div>
 
         <div class="pl-4 pr-4 pt-2">
@@ -210,11 +220,13 @@ import { layoutGt800, REMARK_SYMBOLS, REMARK_SYMBOL_NONE } from '@/services/help
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
+import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 
 export default {
   components: {
     modal,
     barcodePreview,
+    ToggleGroupGeneric,
     DropdownGeneric,
     FormFieldGeneric,
     CheckboxGeneric
@@ -268,6 +280,8 @@ export default {
           tagPriceMultiplier: Number(val.tagPriceMultiplier) || 1,
           print: getPieceQty(val)
         }
+        // เงินใช้แม่พิมพ์เป็นบรรทัดบนป้ายเป็นค่าเริ่มต้น
+        this.labelTopLine = this.barcode.isSilver ? 'mold' : 'name'
 
         // fetch price แยก API เพื่อไม่ให้ list ช้า
         if (val.stockNumber) {
@@ -390,9 +404,24 @@ export default {
       ]
     },
 
+    topLineOptions() {
+      return [
+        { value: 'name', label: this.$t('view.stock.product.labelTopLineName') },
+        { value: 'mold', label: this.$t('view.stock.product.labelTopLineMold') }
+      ]
+    },
+
+    // บรรทัดบนป้าย: เลือกแม่พิมพ์ → ใช้ mold แทนชื่อสินค้า (ว่างให้ fallback เป็นชื่อ)
+    labelBarcode() {
+      if (this.showRemarkSelect && this.labelTopLine === 'mold' && this.barcode.mold) {
+        return { ...this.barcode, productNameEn: this.barcode.mold }
+      }
+      return this.barcode
+    },
+
     showRemarkNoRoomWarning() {
       if (!this.showRemarkSelect) return false
-      return layoutGt800({ ...this.barcode, remarkSymbol: this.remarkSymbol }, 'original').remarkNoRoom
+      return layoutGt800({ ...this.labelBarcode, remarkSymbol: this.remarkSymbol }, 'original').remarkNoRoom
     },
 
     isPrintDisabled() {
@@ -415,6 +444,7 @@ export default {
       publicUrl: '',
       publicLinkStatus: 'idle',
       remarkSymbol: REMARK_SYMBOL_NONE,
+      labelTopLine: 'name',
       hidePrice: false
     }
   },
@@ -430,6 +460,7 @@ export default {
       this.publicUrl = ''
       this.publicLinkStatus = 'idle'
       this.remarkSymbol = REMARK_SYMBOL_NONE
+      this.labelTopLine = 'name'
       this.hidePrice = false
     },
 
@@ -485,7 +516,7 @@ export default {
 
     async onPrintBarcode() {
       const zplData = {
-        ...this.barcode,
+        ...this.labelBarcode,
         price: this.previewPrice,
         barcodeType: this.selectedType,
         publicUrl: this.publicUrl,
