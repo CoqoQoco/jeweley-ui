@@ -37,12 +37,13 @@ export function resolveMetalShareHint(row, metal) {
 
 // ---- Tab navigation (TabViewGeneric — ผูก query string ?tab=) ----
 
-export const EXECUTIVE_TABS = ['production', 'sales', 'stock', 'flow']
+export const EXECUTIVE_TABS = ['production', 'sales', 'stock', 'material', 'flow']
 
 // ปุ่มสลับโลหะ (ทอง/เงิน/รวม) ใน header แสดงเฉพาะเมื่อแท็บที่เปิดไม่ใช่ 'production' — แท็บผลิตมีปุ่มเดียวกันในแถบเครื่องมือของ insight
 // (แถวเดียวกับช่วงเวลา/ตัวกรอง) จึงมองเห็นปุ่มเพียงอันเดียวเสมอ
+// แท็บ 'material' (คลังวัตถุดิบ) ไม่ผูกกับ metal scope ของทั้งหน้า → ซ่อนปุ่มด้วย
 export function shouldShowHeaderMetalToggle(activeTab) {
-  return activeTab !== 'production'
+  return activeTab !== 'production' && activeTab !== 'material'
 }
 
 // ค่า tab จาก query string — ค่าไม่ถูกต้อง/ไม่มี → fallback เป็น 'production' เสมอ

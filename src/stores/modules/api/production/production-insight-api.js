@@ -19,6 +19,11 @@ export const useProductionInsightApiStore = defineStore('productionInsightApi', 
       return await postScoped(path, body)
     },
 
+    // เหมือน post แต่ไม่เติม metal ของทั้งหน้า — สำหรับ endpoint ที่ไม่เกี่ยวกับโลหะ (เช่น MaterialInsight) ส่ง body ตามที่ config กำหนดเป๊ะ
+    async postRaw(path, body = {}) {
+      return await api.jewelry.post(path, body)
+    },
+
     async get(path, params = null) {
       return await api.jewelry.get(path, params)
     },

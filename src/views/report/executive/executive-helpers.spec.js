@@ -594,14 +594,17 @@ describe('resolveMetalShareHint', () => {
 describe('shouldShowHeaderMetalToggle (exactly one metal toggle is visible)', () => {
   it('the header toggle is hidden on the production tab (the insight toolbar owns it there) and shown on every other tab', () => {
     expect(shouldShowHeaderMetalToggle('production')).toBe(false)
+    // คลังวัตถุดิบไม่ผูก metal scope → ไม่มีปุ่มที่ไหนเลย
+    expect(shouldShowHeaderMetalToggle('material')).toBe(false)
     ;['sales', 'stock', 'flow'].forEach((tab) => expect(shouldShowHeaderMetalToggle(tab), tab).toBe(true))
   })
 
   it('every resolvable executive tab shows exactly one toggle (header xor production toolbar)', () => {
-    ;['production', 'sales', 'stock', 'flow', 'bogus', undefined].forEach((raw) => {
+    ;['production', 'sales', 'stock', 'material', 'flow', 'bogus', undefined].forEach((raw) => {
       const tab = resolveActiveTab(raw)
       const toolbarToggle = tab === 'production'
-      expect([shouldShowHeaderMetalToggle(tab), toolbarToggle].filter(Boolean)).toHaveLength(1)
+      // material = ไม่มีปุ่มเลย (ไม่ใช้ metal scope)
+      expect([shouldShowHeaderMetalToggle(tab), toolbarToggle].filter(Boolean)).toHaveLength(tab === 'material' ? 0 : 1)
     })
   })
 })

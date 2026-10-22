@@ -58,7 +58,7 @@
   <PlanWorkersCell v-else-if="cell.kind === 'workers'" :workers="data.workers" :worker-items="data.workerItems" />
 
   <div v-else-if="cell.kind === 'number'" :class="numberClass">
-    <ButtonGeneric v-if="cell.asAction" variant="plain" :label="cell.text" :title="col.actionTitle ? $t(col.actionTitle) : ''" @click.stop="col.onClick(data, ctx)" />
+    <ButtonGeneric v-if="cell.asAction" variant="plain" :icon="col.actionIcon || ''" :label="cell.text" :title="col.actionTitle ? $t(col.actionTitle) : ''" @click.stop="col.onClick(data, ctx)" />
     <template v-else>
       <span :style="numberStyle">{{ cell.text }}</span><sup v-if="cell.sup">{{ cell.sup }}</sup>
       <InfoTipGeneric v-if="cell.tip" :text="cell.tip" />
@@ -99,6 +99,7 @@
   <ButtonGeneric
     v-else-if="cell.asAction"
     variant="plain"
+    :icon="col.actionIcon || ''"
     :label="cell.text"
     :title="col.actionTitle ? $t(col.actionTitle) : ''"
     @click.stop="col.onClick(data, ctx)"

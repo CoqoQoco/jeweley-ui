@@ -25,6 +25,9 @@
       <template #stock>
         <stockInsightView :key="metal" :metal="metal" :refreshToken="refreshToken" :initialSub="stockInitialSub" @update:sub="stockInitialSub = $event" />
       </template>
+      <template #material>
+        <materialInsightView :refreshToken="refreshToken" :initialSub="materialInitialSub" :initialKind="materialInitialKind" @update:sub="materialInitialSub = $event" @update:kind="materialInitialKind = $event" />
+      </template>
       <template #flow>
         <flowView :active="activeTab === 'flow'" :refreshToken="refreshToken" />
       </template>
@@ -89,6 +92,7 @@ import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 import summaryView from './components/summary-view.vue'
 import salesInsightView from './components/sales-insight-view.vue'
 import stockInsightView from './components/stock-insight-view.vue'
+import materialInsightView from './components/material-insight-view.vue'
 import flowView from './components/flow-view.vue'
 import productionInsightView from '@/views/production/insight/index-view.vue'
 
@@ -135,6 +139,7 @@ export default {
     summaryView,
     salesInsightView,
     stockInsightView,
+    materialInsightView,
     flowView,
     productionInsightView
   },
@@ -161,6 +166,9 @@ export default {
       stockInitialSub: '',
       // แท็บ "ขายและเงิน": sub ตั้งต้นจาก ?sub= (เข้าหน้าด้วย tab=sales) · salesTarget = ปลายทางจากการ์ดสรุป (object ใหม่ทุกครั้งที่กด)
       salesInitialSub: '',
+      // แท็บ "คลังวัตถุดิบ": sub/kind ตั้งต้นจาก ?sub= ?kind= (เข้าหน้าด้วย tab=material เท่านั้น)
+      materialInitialSub: '',
+      materialInitialKind: '',
       salesTarget: null
     }
   },
@@ -185,6 +193,7 @@ export default {
         { value: 'production', label: this.$t('view.executive.tabs.production') },
         { value: 'sales', label: this.$t('view.executive.tabs.sales') },
         { value: 'stock', label: this.$t('view.executive.tabs.stock') },
+        { value: 'material', label: this.$t('view.executive.tabs.material') },
         { value: 'flow', label: this.$t('view.executive.tabs.flow') }
       ]
     },
@@ -231,16 +240,21 @@ export default {
       this.activeTab = resolveActiveTab(query.tab)
       this.stockInitialSub = this.activeTab === 'stock' ? String(query.sub || '') : ''
       this.salesInitialSub = this.activeTab === 'sales' ? String(query.sub || '') : ''
+      this.materialInitialSub = this.activeTab === 'material' ? String(query.sub || '') : ''
+      this.materialInitialKind = this.activeTab === 'material' ? String(query.kind || '') : ''
       this.$nextTick(() => {
         this.isApplyingRouteQuery = false
       })
     },
 
-    // resetSub: เปลี่ยนแท็บ → ลบ ?sub= (เป็นของแท็บผลิต/คลังสินค้าที่เพิ่งออกมา กันค้างข้ามแท็บ)
+    // resetSub: เปลี่ยนแท็บ → ลบ ?sub= (เป็นของแท็บผลิต/ขาย/คลังสินค้า/คลังวัตถุดิบที่เพิ่งออกมา กันค้างข้ามแท็บ) · kind= เป็นของแท็บคลังวัตถุดิบ
     syncStateToQuery(resetSub = false) {
       if (this.isApplyingRouteQuery) return
       const query = { ...this.$route.query, tab: this.activeTab }
-      if (resetSub) delete query.sub
+      if (resetSub) {
+        delete query.sub
+        delete query.kind
+      }
       const metalQuery = metalToQuery(this.metal)
       if (metalQuery) query.metal = metalQuery
       else delete query.metal

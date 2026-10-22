@@ -136,6 +136,9 @@ const NUMERIC_SUFFIX_MAX_FRACTION_DIGITS = {
   Money: 0,
   // Thb (ยอดเงินบาทของหมวดขายและเงิน/คลัง เช่น overdueThb, amountThb) ใส่ตัวคั่นหลักพัน ไม่มีทศนิยม
   Thb: 0,
+  // OnHand / OnProcess (totalOnHand, totalOnProcess ของหมวดคลังวัตถุดิบ — กรัม) ใส่ตัวคั่นหลักพัน ทศนิยมไม่เกิน 2 ตำแหน่ง
+  OnHand: 2,
+  OnProcess: 2,
   Gram: 2,
   Percent: 2,
   // Wages (FC_WAGES_NEXT_MONTH.projectedWages/avgWages ของหมวด "ช่างและค่าแรง") จัดรูปแบบเหมือน Money เป๊ะ
@@ -224,6 +227,10 @@ export function resolveFindingParams(
   // array ที่ส่งมาคือรายชื่อเต็มเสมอ ไม่มีการตัดสั้นลงแบบ workers[]+count) ใช้ joiner ตัวเดียวกับ workers[]
   if (resolved.workerNames !== undefined) {
     resolved.workerNames = formatWorkerNameList(resolved.workerNames, resolved.workerNames.length, maxWorkerNames)
+  }
+  // topItems (MAT_* ของหมวดคลังวัตถุดิบ) เป็น array ชื่อรายการ → ต่อด้วยจุลภาค
+  if (Array.isArray(resolved.topItems)) {
+    resolved.topItems = resolved.topItems.join(', ')
   }
   if (resolved.depts !== undefined) {
     resolved.depts = formatDeptQueueList(resolved.depts, translateDept)

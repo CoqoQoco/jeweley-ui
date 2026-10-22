@@ -10,6 +10,7 @@ export default {
     production: '🏭 ผลิต',
     sales: '💰 ขายและเงิน',
     stock: '📦 คลังสินค้า',
+    material: '💎 คลังวัตถุดิบ',
     flow: '🔀 การไหลของงาน'
   },
 
