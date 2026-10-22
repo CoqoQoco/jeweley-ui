@@ -53,7 +53,10 @@ export default {
         { field: 'createDate', header: t('colDate'), sortable: false, minWidth: '150px', format: 'datetime' },
         { field: 'createBy', header: t('colBy'), sortable: false, minWidth: '110px' },
         { field: 'goldPrice', header: t('colGoldPrice'), sortable: false, minWidth: '100px', align: 'right' },
-        { field: 'markup', header: t('markup'), sortable: false, minWidth: '80px', align: 'right' }
+        { field: 'markup', header: t('markup'), sortable: false, minWidth: '80px', align: 'right' },
+        { field: 'karat', header: t('colKarat'), sortable: false, minWidth: '70px', align: 'center' },
+        { field: 'alloyWeight', header: t('colAlloyWeight'), sortable: false, minWidth: '90px', align: 'right', format: 'decimal3' },
+        { field: 'goldCostTotal', header: t('goldCostTotal'), sortable: false, minWidth: '130px', align: 'right', format: 'decimal2' }
       ]
       if (this.showCost) {
         cols.push({ field: 'costExGold', header: t('costExGold'), sortable: false, minWidth: '130px', align: 'right', format: 'decimal2' })
@@ -61,6 +64,7 @@ export default {
       cols.push(
         { field: 'percent', header: t('colPercent'), sortable: false, minWidth: '80px', align: 'right' },
         { field: 'quickPrice', header: t('colQuickPrice'), sortable: false, minWidth: '130px', align: 'right', format: 'decimal2' },
+        { field: 'totalPrice', header: t('colTotalPriceQuick'), sortable: false, minWidth: '130px', align: 'right', format: 'decimal2' },
         { field: 'remark', header: this.$t('common.field.remark'), sortable: false, minWidth: '160px' }
       )
       return cols

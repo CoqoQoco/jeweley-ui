@@ -13,6 +13,7 @@
         :salePrice="salePrice"
         :materials="materials"
         :isLot="isLot"
+        :productionTypeSize="productionTypeSize"
         @validChange="canSave = $event"
         @saved="onSaved"
       />
@@ -64,6 +65,10 @@ export default {
     isLot: {
       type: Boolean,
       default: false
+    },
+    productionTypeSize: {
+      type: String,
+      default: ''
     }
   },
 

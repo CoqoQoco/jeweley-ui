@@ -73,6 +73,10 @@
         <span>{{ formatDecimal(getPieceQtyAvailable(data), 2) }}</span>
       </template>
 
+      <template #quickPriceTotalTemplate="{ data }">
+        <span>{{ formatMoney2(data.quickPriceTotal) }}</span>
+      </template>
+
       <template #quickPriceTemplate="{ data }">
         <div v-if="data.quickPrice !== null && data.quickPrice !== undefined" class="quick-price-cell">
           <span class="quick-price-value">{{ formatMoney2(data.quickPrice) }}</span>
@@ -293,6 +297,13 @@ export default {
           header: this.$t('view.stock.product.quickPrice.colQuickPrice'),
           sortable: false,
           minWidth: '200px',
+          align: 'right'
+        },
+        {
+          field: 'quickPriceTotal',
+          header: this.$t('view.stock.product.quickPrice.colTotalPriceQuick'),
+          sortable: false,
+          minWidth: '150px',
           align: 'right'
         },
         {

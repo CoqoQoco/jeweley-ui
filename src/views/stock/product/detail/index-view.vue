@@ -234,6 +234,7 @@
       :salePrice="salePrice"
       :materials="item.materials || []"
       :isLot="isLot"
+      :productionTypeSize="item.productionTypeSize || ''"
       @closeModal="quickPriceVisible = false"
       @saved="onQuickPriceSaved"
     />
@@ -352,6 +353,7 @@ export default {
         tagPriceMultiplier: i.tagPriceMultiplier,
         hasNormalAppraisal: i.hasNormalAppraisal,
         quickPrice: i.quickPrice,
+        quickPriceTotal: i.quickPriceTotal,
         quickPriceDate: i.quickPriceDate,
         quickPriceGoldPrice: i.quickPriceGoldPrice,
         quickPriceMarkup: i.quickPriceMarkup,

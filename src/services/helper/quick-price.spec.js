@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest'
 import {
   STALE_DAYS,
   applyRounding,
+  calcAlloyWeight,
   calcQuickPrice,
+  getAlloyKarat,
   getMetalWeight,
   getQuickPriceAgeDays,
   isQuickPriceStale
@@ -47,6 +49,48 @@ describe('calcQuickPrice', () => {
     expect(
       calcQuickPrice({ salePrice: 35000, markup: 3.5, goldWeight: 2, goldPrice: 2000, percent: -1 }).error
     ).toBe('percent')
+  })
+})
+
+describe('alloy', () => {
+  it('getAlloyKarat normalize เฉพาะ 18K/14K/9K', () => {
+    expect(getAlloyKarat('18K')).toBe('18K')
+    expect(getAlloyKarat(' 14k ')).toBe('14K')
+    expect(getAlloyKarat('9K')).toBe('9K')
+    expect(['Silver', '10K', 'N/A', '', null, undefined].map(getAlloyKarat)).toEqual(['', '', '', '', '', ''])
+  })
+
+  it('calcAlloyWeight 2.00g 18K => 0.5376', () => {
+    expect(calcAlloyWeight(2, '18K')).toBeCloseTo(0.5376, 6)
+    expect(calcAlloyWeight(2, '')).toBe(0)
+    expect(calcAlloyWeight('', '18K')).toBe(0)
+  })
+
+  it('goldCostTotal = 2.00g@3800 + alloy 0.5376g@20 = 7610.752', () => {
+    const r = calcQuickPrice({
+      salePrice: 46900, markup: 3.5, goldWeight: 2, goldPrice: 3800,
+      alloyWeight: calcAlloyWeight(2, '18K'), alloyPrice: 20, percent: 0, rounding: 100
+    })
+    expect(r.goldCostTotal).toBeCloseTo(7610.752, 6)
+  })
+
+  it('ตัวอย่างหน้าจอ: 1.88g@3800 + alloy 0.505344g@20 => 6300 / 13400', () => {
+    const r = calcQuickPrice({
+      salePrice: 46900, markup: 3.5, goldWeight: 1.88, goldPrice: 3800,
+      alloyWeight: 0.505344, alloyPrice: 20, percent: 0, rounding: 100
+    })
+    expect(r.valid).toBe(true)
+    expect(r.costExGold).toBeCloseTo(6245.89312, 5)
+    expect(r.quickPrice).toBe(6300)
+    expect(r.totalPrice).toBe(13400)
+  })
+
+  it('alloyWeight > 0 ต้องมี alloyPrice', () => {
+    const base = { salePrice: 46900, markup: 3.5, goldWeight: 2, goldPrice: 3800, alloyWeight: 0.5 }
+    expect(calcQuickPrice({ ...base, alloyPrice: '' }).error).toBe('alloyPrice')
+    expect(calcQuickPrice({ ...base, alloyPrice: -1 }).error).toBe('alloyPrice')
+    expect(calcQuickPrice({ ...base, alloyWeight: -1, alloyPrice: 20 }).error).toBe('alloyWeight')
+    expect(calcQuickPrice({ ...base, alloyWeight: '', alloyPrice: '' }).valid).toBe(true)
   })
 })
 

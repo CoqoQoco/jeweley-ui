@@ -29,14 +29,19 @@
     </div>
 
     <div class="quick-result">
-      <span class="price-label">{{ $t('view.stock.product.quickPrice.newPrice') }}</span>
+      <span class="price-label">
+        {{ hasTotal ? $t('view.stock.product.quickPrice.totalPrice') : $t('view.stock.product.quickPrice.newPrice') }}
+      </span>
       <template v-if="hasQuickPrice">
         <div class="quick-result-main">
-          <span class="price-value price-value--xl">{{ formatMoney2(summary.quickPrice) }}</span>
+          <span class="price-value price-value--xl">{{ formatMoney2(hasTotal ? summary.quickPriceTotal : summary.quickPrice) }}</span>
           <span v-if="isStale" class="tag-chip tag-chip--stale">
             {{ $t('view.stock.product.quickPrice.staleDays', { days: ageDays }) }}
           </span>
         </div>
+        <span v-if="hasTotal" class="price-meta">
+          {{ $t('view.stock.product.quickPrice.newPrice') }}: {{ formatMoney2(summary.quickPrice) }}
+        </span>
         <span class="price-meta">{{ metaLine }}</span>
         <span class="price-meta">{{ detailLine }}</span>
         <span v-if="summary.quickPriceRemark" class="price-meta">
@@ -82,6 +87,10 @@ export default {
 
     hasQuickPrice() {
       return this.summary.quickPrice !== null && this.summary.quickPrice !== undefined
+    },
+
+    hasTotal() {
+      return this.summary.quickPriceTotal !== null && this.summary.quickPriceTotal !== undefined
     },
 
     ageDays() {

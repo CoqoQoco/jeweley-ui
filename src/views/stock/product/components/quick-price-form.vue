@@ -22,7 +22,7 @@
 
     <div class="qp-step">
       <div class="qp-step-title">{{ $t('view.stock.product.quickPrice.step2') }}</div>
-      <div class="qp-row qp-row--4">
+      <div class="qp-row qp-row--3">
         <FormFieldGeneric :label="$t('view.stock.product.quickPrice.goldWeight')">
           <InputTextGeneric v-model="form.goldWeight" type="number" :min="0" step="any" @input="weightTouched = true" />
           <span v-if="metal.source" class="qp-hint">
@@ -45,6 +45,39 @@
         <FormFieldGeneric :label="$t('view.stock.product.quickPrice.goldCost')">
           <div class="qp-readonly">{{ formatMoney2(result.goldCost) }}</div>
         </FormFieldGeneric>
+      </div>
+
+      <div class="qp-row qp-row--4 qp-row--spaced">
+        <FormFieldGeneric :label="$t('view.stock.product.quickPrice.karat')">
+          <DropdownGeneric
+            v-model="form.karat"
+            :options="karatOptions"
+            optionLabel="label"
+            optionValue="value"
+            :ariaLabel="$t('view.stock.product.quickPrice.karat')"
+          />
+          <span v-if="isKaratAuto" class="qp-hint">
+            {{ $t('view.stock.product.quickPrice.karatFrom', { size: productionTypeSize }) }}
+          </span>
+        </FormFieldGeneric>
+        <FormFieldGeneric :label="$t('view.stock.product.quickPrice.alloyWeight')">
+          <InputTextGeneric v-model="form.alloyWeight" type="number" :min="0" step="any" @input="alloyTouched = true" />
+          <span v-if="form.karat" class="qp-hint">
+            {{ $t('view.stock.product.quickPrice.alloyFormula', { w: form.goldWeight === '' ? 0 : form.goldWeight, factor: karatFactor }) }}
+          </span>
+        </FormFieldGeneric>
+        <FormFieldGeneric :label="$t('view.stock.product.quickPrice.alloyPrice')">
+          <InputTextGeneric v-model="form.alloyPrice" type="number" :min="0" step="any" />
+        </FormFieldGeneric>
+        <FormFieldGeneric :label="$t('view.stock.product.quickPrice.alloyCost')">
+          <div class="qp-readonly">{{ formatMoney2(result.alloyCost) }}</div>
+        </FormFieldGeneric>
+      </div>
+
+      <div class="qp-row qp-row--2 qp-row--spaced">
+        <FormFieldGeneric :label="$t('view.stock.product.quickPrice.goldCostTotal')">
+          <div class="qp-readonly">{{ formatMoney2(result.goldCostTotal) }}</div>
+        </FormFieldGeneric>
         <FormFieldGeneric :label="$t('view.stock.product.quickPrice.costExGold')">
           <div class="qp-readonly" :class="{ 'qp-readonly--negative': result.costExGold !== null && result.costExGold <= 0 }">
             {{ formatMoney2(result.costExGold) }}
@@ -53,6 +86,12 @@
       </div>
       <p v-if="!metal.source && !hasWeightInput" class="qp-warning">
         <i class="bi bi-exclamation-triangle"></i> {{ $t('view.stock.product.quickPrice.noMetalWeight') }}
+      </p>
+      <p v-if="result.error === 'alloyPrice'" class="qp-warning">
+        <i class="bi bi-exclamation-triangle"></i> {{ $t('view.stock.product.quickPrice.invalid.alloyPrice') }}
+      </p>
+      <p v-if="result.error === 'alloyWeight'" class="qp-warning">
+        <i class="bi bi-exclamation-triangle"></i> {{ $t('view.stock.product.quickPrice.invalid.alloyWeight') }}
       </p>
       <p v-if="result.error === 'costExGold'" class="qp-warning">
         <i class="bi bi-exclamation-triangle"></i> {{ $t('view.stock.product.quickPrice.invalid.costExGold') }}
@@ -80,12 +119,23 @@
     </div>
 
     <div class="qp-result">
-      <span class="qp-result-label">{{ $t('view.stock.product.quickPrice.newPrice') }}</span>
-      <div class="qp-result-amount">
-        <span class="qp-result-value">{{ result.valid ? formatMoney2(result.quickPrice) : '—' }}</span>
-        <span v-if="result.valid && Number(form.rounding) !== 0" class="qp-hint">
-          {{ $t('view.stock.product.quickPrice.beforeRounding', { raw: formatMoney2(result.raw) }) }}
-        </span>
+      <div class="qp-result-line">
+        <span class="qp-result-label">{{ $t('view.stock.product.quickPrice.newPrice') }}</span>
+        <div class="qp-result-amount">
+          <span class="qp-result-value qp-result-value--sub">{{ result.valid ? formatMoney2(result.quickPrice) : '—' }}</span>
+          <span v-if="result.valid && Number(form.rounding) !== 0" class="qp-hint">
+            {{ $t('view.stock.product.quickPrice.beforeRounding', { raw: formatMoney2(result.raw) }) }}
+          </span>
+        </div>
+      </div>
+      <div class="qp-result-line">
+        <span class="qp-result-label">{{ $t('view.stock.product.quickPrice.totalPrice') }}</span>
+        <div class="qp-result-amount">
+          <span class="qp-result-value">{{ result.valid ? formatMoney2(result.totalPrice) : '—' }}</span>
+          <span v-if="result.valid && Number(form.rounding) !== 0" class="qp-hint">
+            {{ $t('view.stock.product.quickPrice.beforeRounding', { raw: formatMoney2(result.totalRaw) }) }}
+          </span>
+        </div>
       </div>
     </div>
 
@@ -106,17 +156,21 @@ import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.
 import { storage } from '@/services/storage.js'
 import { success, warning } from '@/services/alert/sweetAlerts.js'
 import {
+  ALLOY_FACTORS,
   DEFAULT_MARKUP,
   DEFAULT_ROUNDING,
   QUICK_PRICE_ROUNDINGS,
+  calcAlloyWeight,
   calcQuickPrice,
   formatMoney2,
+  getAlloyKarat,
   getMetalWeight
 } from '@/services/helper/quick-price.js'
 
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import RadioGroupGeneric from '@/components/prime-vue/RadioGroupGeneric.vue'
 import GoldCalculatorModal from '@/components/modal/gold-calculator-modal.vue'
 
@@ -128,6 +182,7 @@ const loadDefaults = () => {
   return {
     markup: Number(saved.markup) > 0 ? saved.markup : DEFAULT_MARKUP,
     goldPrice: Number(saved.goldPrice) > 0 ? saved.goldPrice : '',
+    alloyPrice: Number(saved.alloyPrice) > 0 ? saved.alloyPrice : '',
     rounding: QUICK_PRICE_ROUNDINGS.includes(rounding) ? rounding : DEFAULT_ROUNDING
   }
 }
@@ -141,6 +196,7 @@ export default {
     FormFieldGeneric,
     InputTextGeneric,
     ButtonGeneric,
+    DropdownGeneric,
     RadioGroupGeneric,
     GoldCalculatorModal
   },
@@ -161,6 +217,10 @@ export default {
     isLot: {
       type: Boolean,
       default: false
+    },
+    productionTypeSize: {
+      type: String,
+      default: ''
     }
   },
 
@@ -173,16 +233,22 @@ export default {
 
   data() {
     const defaults = loadDefaults()
+    const goldWeight = weightToInput(getMetalWeight(this.materials).weight)
+    const karat = getAlloyKarat(this.productionTypeSize)
     return {
       form: {
         markup: defaults.markup,
-        goldWeight: weightToInput(getMetalWeight(this.materials).weight),
+        goldWeight,
         goldPrice: defaults.goldPrice,
+        karat,
+        alloyWeight: weightToInput(calcAlloyWeight(goldWeight, karat)),
+        alloyPrice: defaults.alloyPrice,
         percent: '',
         rounding: defaults.rounding,
         remark: ''
       },
       weightTouched: false,
+      alloyTouched: false,
       showGoldCalculator: false
     }
   },
@@ -196,12 +262,33 @@ export default {
       return this.form.goldWeight !== '' && this.form.goldWeight !== null
     },
 
+    karatOptions() {
+      return [
+        ...Object.entries(ALLOY_FACTORS).map(([value, factor]) => ({ value, label: `${value} (${factor})` })),
+        { value: '', label: this.$t('view.stock.product.quickPrice.karatNone') }
+      ]
+    },
+
+    karatFactor() {
+      return ALLOY_FACTORS[this.form.karat] ?? 0
+    },
+
+    isKaratAuto() {
+      return !!this.form.karat && this.form.karat === getAlloyKarat(this.productionTypeSize)
+    },
+
+    autoAlloyWeight() {
+      return weightToInput(calcAlloyWeight(this.form.goldWeight, this.form.karat))
+    },
+
     result() {
       return calcQuickPrice({
         salePrice: this.salePrice,
         markup: this.form.markup,
         goldWeight: this.form.goldWeight,
         goldPrice: this.form.goldPrice,
+        alloyWeight: this.form.alloyWeight,
+        alloyPrice: this.form.alloyPrice,
         percent: this.form.percent,
         rounding: this.form.rounding
       })
@@ -221,6 +308,15 @@ export default {
       handler(val) {
         this.$emit('validChange', val)
       }
+    },
+
+    'form.karat'() {
+      this.alloyTouched = false
+      this.form.alloyWeight = this.autoAlloyWeight
+    },
+
+    autoAlloyWeight(val) {
+      if (!this.alloyTouched) this.form.alloyWeight = val
     },
 
     metal(val) {
@@ -243,11 +339,17 @@ export default {
 
     onReset() {
       const defaults = loadDefaults()
+      const goldWeight = weightToInput(this.metal.weight)
+      const karat = getAlloyKarat(this.productionTypeSize)
       this.weightTouched = false
+      this.alloyTouched = false
       this.form = {
         markup: defaults.markup,
-        goldWeight: weightToInput(this.metal.weight),
+        goldWeight,
         goldPrice: defaults.goldPrice,
+        karat,
+        alloyWeight: weightToInput(calcAlloyWeight(goldWeight, karat)),
+        alloyPrice: defaults.alloyPrice,
         percent: '',
         rounding: defaults.rounding,
         remark: ''
@@ -256,9 +358,12 @@ export default {
 
     rememberDefaults() {
       try {
+        const saved = storage.getJSON(STORAGE_KEY, {}) || {}
+        const alloyPrice = Number(this.form.alloyPrice)
         storage.setJSON(STORAGE_KEY, {
           markup: Number(this.form.markup),
           goldPrice: Number(this.form.goldPrice),
+          alloyPrice: alloyPrice > 0 ? alloyPrice : saved.alloyPrice,
           rounding: Number(this.form.rounding)
         })
       } catch {
@@ -275,6 +380,10 @@ export default {
           markup: Number(this.form.markup),
           goldWeight: Number(this.form.goldWeight),
           goldPrice: Number(this.form.goldPrice),
+          karat: this.form.karat || null,
+          alloyFactor: this.karatFactor,
+          alloyWeight: Number(this.form.alloyWeight) || 0,
+          alloyPrice: Number(this.form.alloyPrice) || 0,
           percent: this.form.percent === '' ? 0 : Number(this.form.percent),
           rounding: Number(this.form.rounding),
           remark: remark || null
@@ -283,7 +392,7 @@ export default {
       if (!res) return
       this.rememberDefaults()
       this.form.remark = ''
-      success(this.$t('view.stock.product.quickPrice.saveSuccess', { price: formatMoney2(res.quickPrice ?? this.result.quickPrice) }))
+      success(this.$t('view.stock.product.quickPrice.saveSuccess', { price: formatMoney2(res.totalPrice ?? this.result.totalPrice) }))
       this.$emit('saved')
     }
   }
@@ -319,6 +428,10 @@ export default {
 
   &--4 {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  &--spaced {
+    margin-top: var(--sp-md);
   }
 
   @media (max-width: 768px) {
@@ -400,13 +513,19 @@ export default {
 
 .qp-result {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-lg);
+  flex-direction: column;
+  gap: var(--sp-md);
   margin-bottom: var(--sp-lg);
   padding: var(--sp-lg);
   border-radius: var(--radius-lg);
   background: var(--color-highlight-bg);
+}
+
+.qp-result-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-lg);
 }
 
 .qp-result-label {
@@ -426,5 +545,9 @@ export default {
   font-size: var(--fs-xl);
   font-weight: 700;
   color: var(--base-font-color);
+}
+
+.qp-result-value--sub {
+  font-size: var(--fs-lg);
 }
 </style>

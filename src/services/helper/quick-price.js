@@ -1,10 +1,15 @@
 // quick-price — สูตรตีราคาด่วน (Quick Price) ของสินค้าในคลัง
 // pure function ล้วน ห้าม import Vue/Pinia/i18n — ผลที่หน้าจอต้องตรงกับที่ backend คำนวณซ้ำตอนบันทึก
 //
-// cost        = salePrice / markup
-// costExGold  = cost - goldWeight * goldPrice
-// raw         = costExGold * (1 + percent / 100)
-// quickPrice  = rounding 0 → ปัด 2 ตำแหน่ง half-up | 10/100/1000 → ปัดขึ้นเป็นพหุคูณ
+// cost          = salePrice / markup
+// goldCost      = goldWeight * goldPrice
+// alloyCost     = alloyWeight * alloyPrice        (alloyWeight = goldWeight * 1.12 * factor ของกะรัต)
+// goldCostTotal = goldCost + alloyCost
+// costExGold    = cost - goldCostTotal            (ทุนเพชรพลอย + ค่าแรง)
+// raw           = costExGold * (1 + percent / 100)
+// quickPrice    = round(raw)                      ราคาเพชรพลอย + ค่าแรง + %
+// totalPrice    = round(raw + goldCostTotal)      บวกทุนทองกลับ
+// round: rounding 0 → ปัด 2 ตำแหน่ง half-up | 10/100/1000 → ปัดขึ้นเป็นพหุคูณ
 // ไม่ปัดระหว่างทาง — ปัดครั้งเดียวที่ราคาสุดท้าย
 
 import { roundHalfUp } from '../utils/money.js'
@@ -13,6 +18,8 @@ export const STALE_DAYS = 7
 export const QUICK_PRICE_ROUNDINGS = [0, 10, 100, 1000]
 export const DEFAULT_MARKUP = 3.5
 export const DEFAULT_ROUNDING = 100
+export const ALLOY_FACTORS = { '18K': 0.24, '14K': 0.41, '9K': 0.62 }
+export const ALLOY_GOLD_MULTIPLIER = 1.12
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 
@@ -46,17 +53,54 @@ export function applyRounding(raw, rounding) {
   return Math.ceil(roundHalfUp(raw / step, 6)) * step
 }
 
-// คืน { valid, error, cost, goldCost, costExGold, raw, quickPrice }
-// error: 'salePrice' | 'markup' | 'goldWeight' | 'goldPrice' | 'percent' | 'costExGold' | null
-// cost/goldCost/costExGold คืนเท่าที่คำนวณได้แม้ยังไม่ valid (เพื่อโชว์ระหว่างกรอก)
-export function calcQuickPrice({ salePrice, markup, goldWeight, goldPrice, percent, rounding } = {}) {
+// '18K' | '14K' | '9K' ที่คิด alloy ได้ — ค่าอื่น (Silver, 10K, N/A, ว่าง) = '' (ไม่คิด alloy)
+export function getAlloyKarat(productionTypeSize) {
+  const normalized = String(productionTypeSize || '').trim().toUpperCase().replace(/\s+/g, '')
+  return Object.prototype.hasOwnProperty.call(ALLOY_FACTORS, normalized) ? normalized : ''
+}
+
+export function calcAlloyWeight(goldWeight, karat) {
+  const weight = toNumber(goldWeight)
+  const factor = ALLOY_FACTORS[karat]
+  if (!factor || !(weight > 0)) return 0
+  return weight * ALLOY_GOLD_MULTIPLIER * factor
+}
+
+// คืน { valid, error, cost, goldCost, alloyCost, goldCostTotal, costExGold, raw, quickPrice, totalRaw, totalPrice }
+// error: 'salePrice' | 'markup' | 'goldWeight' | 'goldPrice' | 'alloyWeight' | 'alloyPrice' | 'percent' | 'costExGold' | null
+// ค่าที่คำนวณได้คืนเท่าที่ได้แม้ยังไม่ valid (เพื่อโชว์ระหว่างกรอก)
+export function calcQuickPrice({
+  salePrice,
+  markup,
+  goldWeight,
+  goldPrice,
+  alloyWeight,
+  alloyPrice,
+  percent,
+  rounding
+} = {}) {
   const sale = toNumber(salePrice)
   const mk = toNumber(markup)
   const weight = toNumber(goldWeight)
   const price = toNumber(goldPrice)
   const pct = percent === '' || percent === null || percent === undefined ? 0 : Number(percent)
 
-  const result = { valid: false, error: null, cost: null, goldCost: null, costExGold: null, raw: null, quickPrice: null }
+  const aWeight = alloyWeight === '' || alloyWeight === null || alloyWeight === undefined ? 0 : Number(alloyWeight)
+  const aPrice = toNumber(alloyPrice)
+
+  const result = {
+    valid: false,
+    error: null,
+    cost: null,
+    goldCost: null,
+    alloyCost: null,
+    goldCostTotal: null,
+    costExGold: null,
+    raw: null,
+    quickPrice: null,
+    totalRaw: null,
+    totalPrice: null
+  }
 
   if (!(sale > 0)) return { ...result, error: 'salePrice' }
   if (!(mk > 0)) return { ...result, error: 'markup' }
@@ -68,15 +112,32 @@ export function calcQuickPrice({ salePrice, markup, goldWeight, goldPrice, perce
   if (!(price > 0)) return { ...result, error: 'goldPrice' }
 
   const goldCost = weight * price
-  const costExGold = cost - goldCost
   result.goldCost = goldCost
+
+  if (!Number.isFinite(aWeight) || aWeight < 0) return { ...result, error: 'alloyWeight' }
+  if (aWeight > 0 && !(aPrice >= 0)) return { ...result, error: 'alloyPrice' }
+  if (aPrice < 0) return { ...result, error: 'alloyPrice' }
+
+  const alloyCost = aWeight > 0 ? aWeight * aPrice : 0
+  const goldCostTotal = goldCost + alloyCost
+  const costExGold = cost - goldCostTotal
+  result.alloyCost = alloyCost
+  result.goldCostTotal = goldCostTotal
   result.costExGold = costExGold
 
   if (!Number.isFinite(pct) || pct < 0) return { ...result, error: 'percent' }
   if (!(costExGold > 0)) return { ...result, error: 'costExGold' }
 
   const raw = costExGold * (1 + pct / 100)
-  return { ...result, valid: true, raw, quickPrice: applyRounding(raw, rounding) }
+  const totalRaw = raw + goldCostTotal
+  return {
+    ...result,
+    valid: true,
+    raw,
+    quickPrice: applyRounding(raw, rounding),
+    totalRaw,
+    totalPrice: applyRounding(totalRaw, rounding)
+  }
 }
 
 const isGramUnit = (unit) => {
