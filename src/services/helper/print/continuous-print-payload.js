@@ -11,7 +11,7 @@ const BILL_FLAG_KEYS = [
   'showItemNo', 'showDescription', 'showStockNumber', 'showProductNumber',
   'showPriceBeforeDiscount', 'showPriceIncludingVat',
   'showGoldWeight', 'showStoneWeight', 'showDiamondWeight', 'showDiamondGrade',
-  'showQty', 'showUnitPrice', 'showAmount', 'showRemark',
+  'showQty', 'showUnitPrice', 'showAmount', 'showRemark', 'showSoNumber',
   'showSubtotal', 'showVat', 'showTotal', 'showAmountText',
   'unitPriceMode', 'unitVatPercent', 'summaryVatPercent'
 ]
@@ -51,6 +51,16 @@ async function buildVatModel({ invoiceData, invoiceItems, printData, invoiceNo, 
   return { model, logPayload }
 }
 
+function collectSoNumbers(invoiceData, invoiceItems) {
+  const fromItems = (invoiceItems || [])
+    .map(i => String(i.soNumber ?? i.so_number ?? '').trim())
+    .filter(Boolean)
+  const unique = [...new Set(fromItems)]
+  if (unique.length > 0) return unique
+  const header = String(invoiceData?.soNumber ?? '').trim()
+  return header ? [header] : []
+}
+
 async function buildBillModel({ invoiceData, invoiceItems, printData, invoiceNo, invoiceDate }) {
   const billLayout = await getBillLayout()
   const offsetMm = printData.billOffset || { x: 0, y: 0 }
@@ -67,6 +77,7 @@ async function buildBillModel({ invoiceData, invoiceItems, printData, invoiceNo,
       taxId: invoiceData.customerTaxId || ''
     },
     customerTaxId: invoiceData.customerTaxId || '',
+    soNumbers: collectSoNumbers(invoiceData, invoiceItems),
     items: (invoiceItems || []).map(i => {
       const mats = Array.isArray(i.materials) ? i.materials : []
       const goldWeight = mats.filter(m => m.type === 'Gold').reduce((s, m) => s + (Number(m.weight) || 0), 0)

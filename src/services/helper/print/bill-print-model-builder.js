@@ -57,6 +57,34 @@ function wrapText(text, maxChars) {
   return lines
 }
 
+const SO_LABEL = 'SO No. '
+const SO_MAX_LINES = 3
+
+function buildSoLines(soNumbers, maxChars) {
+  const numbers = (soNumbers || []).map(s => String(s).trim()).filter(Boolean)
+  if (numbers.length === 0) return []
+  const lines = []
+  let current = ''
+  let used = 0
+  for (const num of numbers) {
+    const prefixLen = lines.length === 0 ? SO_LABEL.length : 0
+    const candidate = current ? `${current}, ${num}` : num
+    if (current && prefixLen + candidate.length > maxChars) {
+      if (lines.length === SO_MAX_LINES - 1) break
+      lines.push(current)
+      current = num
+    } else {
+      current = candidate
+    }
+    used++
+  }
+  lines.push(current)
+  if (lines.length > 0) lines[0] = SO_LABEL + lines[0]
+  const remaining = numbers.length - used
+  if (remaining > 0) lines[lines.length - 1] += ` (+${remaining})`
+  return lines
+}
+
 function resolveLayout(layout) {
   const L = layout || {}
   return {
@@ -102,6 +130,10 @@ function resolveLayout(layout) {
     useBuddhistYear: L.useBuddhistYear !== undefined ? L.useBuddhistYear : true,
     xRemark: Number(L.xRemark ?? 2.0) || 0,
     yRemark: Number(L.yRemark ?? ((Number(L.amountText?.y ?? 8.3) || 8.3) - (Number(L.rowHeight ?? 0.17) || 0.17))) || 0,
+    xSoNumber: Number(L.xSoNumber ?? 1.0) || 0,
+    ySoNumber: Number(L.ySoNumber ?? (L.subtotal?.y ?? 7.6)) || 0,
+    soIndent: Number(L.soIndent ?? 0.42) || 0,
+    soMaxChars: Number(L.soMaxChars ?? 45) || 45,
 
     // Unit price mode: 'tag' | 'addVat' | 'subVat'
     unitPriceMode: L.unitPriceMode ?? 'tag',
@@ -132,6 +164,7 @@ function resolveLayout(layout) {
     showUnitPrice: flag(L, 'showUnitPrice'),
     showAmount: flag(L, 'showAmount'),
     showRemark: flag(L, 'showRemark'),
+    showSoNumber: flag(L, 'showSoNumber'),
 
     // Footer flags
     showSubtotal: flag(L, 'showSubtotal'),
@@ -219,6 +252,12 @@ export function buildBillPrintModel(invoice, layout, options = {}) {
       const addressLines = wrapText(customerAddress, L.customerAddressMaxChars)
       addressLines.forEach((line, i) => {
         left(line, L.xCustomerAddress, L.yCustomerAddress + i * L.rowHeight, cfs)
+      })
+    }
+
+    if (L.showSoNumber) {
+      buildSoLines(invoice.soNumbers, L.soMaxChars).forEach((line, i) => {
+        left(line, i === 0 ? L.xSoNumber : L.xSoNumber + L.soIndent, L.ySoNumber + i * L.rowHeight, hfs)
       })
     }
 

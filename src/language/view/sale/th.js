@@ -126,6 +126,7 @@ export const invoiceDetail = {
   billColumnStockNumber: 'รหัสเก่า (Stock No.)',
   billColumnProductNumber: 'รหัสสินค้า',
   billColumnRemark: 'หมายเหตุ (ขนาดแป้นต่างหู)',
+  billElemSoNumber: 'เลขที่ SO',
   billGroupHeader: 'Header',
   billGroupTable: 'ตาราง',
   billGroupFooter: 'Footer',

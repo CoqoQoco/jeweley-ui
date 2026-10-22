@@ -126,6 +126,7 @@ export const invoiceDetail = {
   billColumnStockNumber: 'Old Code (Stock No.)',
   billColumnProductNumber: 'Product Code',
   billColumnRemark: 'Remark (Earring Stem Size)',
+  billElemSoNumber: 'SO No.',
   billGroupHeader: 'Header',
   billGroupTable: 'Table',
   billGroupFooter: 'Footer',

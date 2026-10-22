@@ -176,6 +176,34 @@
           </div>
 
           <div class="form-row">
+            <label class="form-label-col">ตำแหน่ง X — SO No.</label>
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.xSoNumber" type="number" step="0.01" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">ตำแหน่ง Y — SO No.</label>
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.ySoNumber" type="number" step="0.01" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">ย่อหน้าบรรทัดต่อ — SO No. (นิ้ว)</label>
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.soIndent" type="number" step="0.01" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">จำนวนตัวอักษรสูงสุดต่อบรรทัด — SO No.</label>
+            <div class="form-input-col single-input">
+              <InputTextGeneric v-model="form.soMaxChars" type="number" step="1" />
+            </div>
+          </div>
+
+          <div class="form-row">
             <label class="form-label-col">Unit Price X</label>
             <div class="form-input-col single-input">
               <InputTextGeneric v-model="form.itemPriceX" type="number" step="0.01" />
@@ -401,6 +429,13 @@
             <label class="form-label-col">แสดงคอลัมน์ หมายเหตุ (ขนาดแป้นต่างหู)</label>
             <div class="form-input-col">
               <CheckboxGeneric v-model="form.showRemark" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">แสดงเลขที่ SO (ทุกหน้า)</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showSoNumber" />
             </div>
           </div>
 
@@ -672,6 +707,11 @@ const DEFAULT_LAYOUT = {
   showPriceIncludingVat: true,
   xRemark: 2.0,
   showRemark: true,
+  xSoNumber: 1.0,
+  ySoNumber: 7.6,
+  soIndent: 0.42,
+  soMaxChars: 45,
+  showSoNumber: true,
   showStockNumber: true,
   showProductNumber: true,
   // Header element flags
@@ -782,7 +822,7 @@ export default {
       const numFields = [
         'itemNoX', 'xStockNumber', 'xProductNumber', 'itemDescX', 'xPriceBeforeDiscount',
         'xPriceIncludingVat', 'itemQtyX', 'xGoldWeight', 'xStoneWeight', 'xDiamondWeight', 'xDiamondGrade',
-        'itemPriceX', 'itemAmountX', 'xRemark', 'rowHeight', 'maxRowsPerPage',
+        'itemPriceX', 'itemAmountX', 'xRemark', 'xSoNumber', 'ySoNumber', 'soIndent', 'soMaxChars', 'rowHeight', 'maxRowsPerPage',
         'headerFontSize', 'customerFontSize', 'itemFontSize', 'offsetX', 'offsetY', 'stockSecondLineDy',
         'unitVatPercent', 'summaryVatPercent', 'customerAddressMaxChars'
       ]

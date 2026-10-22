@@ -394,6 +394,11 @@
                     :label="$t('view.sale.invoiceDetail.billColumnRemark')"
                     @update:modelValue="onBillFlagChange"
                   />
+                  <CheckboxGeneric
+                    v-model="billElementFlags.showSoNumber"
+                    :label="$t('view.sale.invoiceDetail.billElemSoNumber')"
+                    @update:modelValue="onBillFlagChange"
+                  />
                 </div>
               </div>
 
@@ -619,6 +624,7 @@ export default {
         showUnitPrice: true,
         showAmount: true,
         showRemark: true,
+        showSoNumber: true,
         // Footer
         showSubtotal: true,
         showVat: true,
@@ -773,6 +779,7 @@ export default {
             showUnitPrice: boolFlag('showUnitPrice'),
             showAmount: boolFlag('showAmount'),
             showRemark: boolFlag('showRemark'),
+            showSoNumber: boolFlag('showSoNumber'),
             showSubtotal: boolFlag('showSubtotal'),
             showVat: boolFlag('showVat'),
             showTotal: boolFlag('showTotal'),
