@@ -43,7 +43,7 @@
           {{ $t('view.stock.product.quickPrice.newPrice') }}: {{ formatMoney2(summary.quickPrice) }}
         </span>
         <span v-if="hasGoldLossTotal" class="price-meta">
-          {{ $t('view.stock.product.quickPrice.totalPriceGoldLoss') }}{{ goldLossPercentText }}: {{ formatMoney2(summary.quickPriceGoldLossTotal) }}
+          {{ goldLossLabel }}: {{ formatMoney2(summary.quickPriceGoldLossTotal) }}
         </span>
         <span class="price-meta">{{ metaLine }}</span>
         <span class="price-meta">{{ detailLine }}</span>
@@ -100,9 +100,11 @@ export default {
       return this.summary.quickPriceGoldLossTotal !== null && this.summary.quickPriceGoldLossTotal !== undefined
     },
 
-    goldLossPercentText() {
+    goldLossLabel() {
       const pct = this.summary.quickPriceGoldLossPercent
-      return pct === null || pct === undefined ? '' : ` (${this.$t('view.stock.product.quickPrice.goldLossPercent')} ${formatPlainNumber(pct)}%)`
+      return pct === null || pct === undefined
+        ? this.$t('view.stock.product.quickPrice.totalPriceGoldLossShort')
+        : this.$t('view.stock.product.quickPrice.totalPriceGoldLoss', { gl: formatPlainNumber(pct) })
     },
 
     ageDays() {
@@ -121,8 +123,13 @@ export default {
     detailLine() {
       const s = this.summary
       const roundingKey = [0, 10, 100, 1000].includes(Number(s.quickPriceRounding)) ? Number(s.quickPriceRounding) : 0
+      const saleGold = s.quickPriceSaleGoldPrice ?? s.quickPriceGoldPrice
+      const hasProdGold = s.quickPriceGoldPrice !== null && s.quickPriceGoldPrice !== undefined
       return [
-        this.$t('view.stock.product.quickPrice.goldPerGram', { price: formatPlainNumber(s.quickPriceGoldPrice) }),
+        this.$t('view.stock.product.quickPrice.saleGoldPerGram', { price: formatPlainNumber(saleGold) }),
+        ...(hasProdGold && saleGold !== s.quickPriceGoldPrice
+          ? [this.$t('view.stock.product.quickPrice.goldPerGram', { price: formatPlainNumber(s.quickPriceGoldPrice) })]
+          : []),
         `${this.$t('view.stock.product.quickPrice.markup')} ${formatPlainNumber(s.quickPriceMarkup)}`,
         `+${formatPlainNumber(s.quickPricePercent ?? 0)}%`,
         this.$t(`view.stock.product.quickPrice.roundingSummary.r${roundingKey}`)

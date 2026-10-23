@@ -54,6 +54,43 @@ describe('calcQuickPrice', () => {
   })
 })
 
+describe('saleGoldPrice (ราคาทองวันขาย)', () => {
+  const base = { salePrice: 35000, markup: 3.5, goldWeight: 2, goldPrice: 2000, percent: 20, rounding: 0 }
+
+  it('ราคาทองวันขายต่างจากตอนผลิต: ทุนผลิตเดิม แต่ราคารวมใช้ราคาวันขาย', () => {
+    const r = calcQuickPrice({ ...base, saleGoldPrice: 2500 })
+    expect(r.valid).toBe(true)
+    expect(r.goldCost).toBe(4000)
+    expect(r.goldCostTotal).toBe(4000)
+    expect(r.costExGold).toBe(6000)
+    expect(r.saleGoldCost).toBe(5000)
+    expect(r.saleGoldCostTotal).toBe(5000)
+    expect(r.quickPrice).toBe(7200)
+    expect(r.totalPrice).toBe(12200)
+  })
+
+  it('gold loss ใช้ราคาวันขาย', () => {
+    const r = calcQuickPrice({ ...base, saleGoldPrice: 2500, goldLossPercent: 10 })
+    expect(r.goldWithLossCost).toBeCloseTo(5500, 6)
+    expect(r.goldLossTotalPrice).toBeCloseTo(12700, 6)
+  })
+
+  it('saleGoldPrice ว่าง/ไม่ส่ง => ใช้ goldPrice', () => {
+    for (const empty of ['', null, undefined]) {
+      const r = calcQuickPrice({ ...base, saleGoldPrice: empty })
+      expect(r.valid).toBe(true)
+      expect(r.saleGoldCostTotal).toBe(r.goldCostTotal)
+      expect(r.totalPrice).toBe(11200)
+    }
+  })
+
+  it('saleGoldPrice ไม่ > 0 => error saleGoldPrice', () => {
+    expect(calcQuickPrice({ ...base, saleGoldPrice: 0 }).error).toBe('saleGoldPrice')
+    expect(calcQuickPrice({ ...base, saleGoldPrice: -5 }).error).toBe('saleGoldPrice')
+    expect(calcQuickPrice({ ...base, saleGoldPrice: 'abc' }).error).toBe('saleGoldPrice')
+  })
+})
+
 describe('alloy', () => {
   it('getAlloyKarat normalize เฉพาะ 18K/14K/9K', () => {
     expect(getAlloyKarat('18K')).toBe('18K')

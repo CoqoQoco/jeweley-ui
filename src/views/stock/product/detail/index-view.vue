@@ -358,6 +358,7 @@ export default {
         quickPriceGoldLossPercent: i.quickPriceGoldLossPercent,
         quickPriceDate: i.quickPriceDate,
         quickPriceGoldPrice: i.quickPriceGoldPrice,
+        quickPriceSaleGoldPrice: i.quickPriceSaleGoldPrice,
         quickPriceMarkup: i.quickPriceMarkup,
         quickPricePercent: i.quickPricePercent,
         quickPriceRounding: i.quickPriceRounding,

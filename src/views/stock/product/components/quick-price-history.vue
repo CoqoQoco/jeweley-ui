@@ -14,6 +14,9 @@
       <template #goldPriceTemplate="{ data }">
         <span>{{ formatPlainNumber(data.goldPrice) }}</span>
       </template>
+      <template #saleGoldPriceTemplate="{ data }">
+        <span>{{ formatPlainNumber(data.saleGoldPrice) }}</span>
+      </template>
       <template #markupTemplate="{ data }">
         <span>{{ formatPlainNumber(data.markup) }}</span>
       </template>
@@ -62,6 +65,7 @@ export default {
         { field: 'createDate', header: t('colDate'), sortable: false, minWidth: '150px', format: 'datetime' },
         { field: 'createBy', header: t('colBy'), sortable: false, minWidth: '110px' },
         { field: 'goldPrice', header: t('colGoldPrice'), sortable: false, minWidth: '100px', align: 'right' },
+        { field: 'saleGoldPrice', header: t('colSaleGoldPrice'), sortable: false, minWidth: '100px', align: 'right' },
         { field: 'markup', header: t('markup'), sortable: false, minWidth: '80px', align: 'right' },
         { field: 'karat', header: t('colKarat'), sortable: false, minWidth: '70px', align: 'center' },
         { field: 'alloyWeight', header: t('colAlloyWeight'), sortable: false, minWidth: '90px', align: 'right', format: 'decimal3' },
@@ -76,7 +80,7 @@ export default {
         { field: 'totalPrice', header: t('colTotalPriceQuick'), sortable: false, minWidth: '130px', align: 'right', format: 'decimal2' },
         { field: 'goldLossPercent', header: t('colGoldLossPercent'), sortable: false, minWidth: '100px', align: 'right' },
         { field: 'goldLossCostTotal', header: t('goldLossCostTotal'), sortable: false, minWidth: '150px', align: 'right' },
-        { field: 'goldLossTotalPrice', header: t('totalPriceGoldLoss'), sortable: false, minWidth: '170px', align: 'right' },
+        { field: 'goldLossTotalPrice', header: t('totalPriceGoldLossShort'), sortable: false, minWidth: '170px', align: 'right' },
         { field: 'remark', header: this.$t('common.field.remark'), sortable: false, minWidth: '160px' }
       )
       return cols

@@ -2,18 +2,20 @@
 // pure function ล้วน ห้าม import Vue/Pinia/i18n — ผลที่หน้าจอต้องตรงกับที่ backend คำนวณซ้ำตอนบันทึก
 //
 // cost          = salePrice / markup
-// goldCost      = goldWeight * goldPrice
+// goldCost      = goldWeight * goldPrice          (ราคาทองตอนสั่งผลิต)
 // alloyCost     = alloyWeight * alloyPrice        (alloyWeight = goldWeight * (1 + goldLoss%) * factor ของกะรัต)
-// goldCostTotal = goldCost + alloyCost
+// goldCostTotal = goldCost + alloyCost            (ทุนทองตอนผลิต)
 // costExGold    = cost - goldCostTotal            (ทุนเพชรพลอย + ค่าแรง)
 // raw           = costExGold * (1 + percent / 100)
 // quickPrice    = round(raw)                      ราคาเพชรพลอย + ค่าแรง + %
-// totalPrice    = round(raw + goldCostTotal)      บวกทุนทองกลับ
+// saleGoldCost      = goldWeight * saleGoldPrice  (ราคาทอง ณ วันขาย — ว่าง = ใช้ goldPrice)
+// saleGoldCostTotal = saleGoldCost + alloyCost
+// totalPrice    = round(raw + saleGoldCostTotal)  บวกทุนทองใหม่ (ราคาวันขาย) กลับ
 // round: rounding 0 → ปัด 2 ตำแหน่ง half-up | 10/100/1000 → ปัดขึ้นเป็นพหุคูณ
 // ไม่ปัดระหว่างทาง — ปัดครั้งเดียวที่ราคาสุดท้าย
 //
 // บรรทัดที่ 3 (รวม Gold loss) — คิดเฉพาะเมื่อ goldLossPercent เป็นเลข >= 0 (ไม่กระทบ valid ของบรรทัดเดิม):
-// goldWithLossCost   = goldWeight * (1 + goldLoss / 100) * goldPrice
+// goldWithLossCost   = goldWeight * (1 + goldLoss / 100) * saleGoldPrice
 // goldLossCostTotal  = goldWithLossCost + alloyCost      (alloy ไม่บวก gold loss ซ้ำ)
 // goldLossTotalRaw   = raw + goldLossCostTotal
 // goldLossTotalPrice = round(goldLossTotalRaw)
@@ -86,15 +88,16 @@ export function calcAlloyWeight(goldWeight, karat, goldLossPercent = DEFAULT_GOL
   return weight * (1 + gl / 100) * factor
 }
 
-// คืน { valid, error, cost, goldCost, alloyCost, goldCostTotal, costExGold, raw, quickPrice, totalRaw, totalPrice,
+// คืน { valid, error, cost, goldCost, alloyCost, goldCostTotal, saleGoldCost, saleGoldCostTotal, costExGold, raw, quickPrice, totalRaw, totalPrice,
 //       goldLossValid, goldWithLossCost, goldLossCostTotal, goldLossTotalRaw, goldLossTotalPrice }
-// error: 'salePrice' | 'markup' | 'goldWeight' | 'goldPrice' | 'alloyWeight' | 'alloyPrice' | 'percent' | 'costExGold' | null
+// error: 'salePrice' | 'markup' | 'goldWeight' | 'goldPrice' | 'saleGoldPrice' | 'alloyWeight' | 'alloyPrice' | 'percent' | 'costExGold' | null
 // ค่าที่คำนวณได้คืนเท่าที่ได้แม้ยังไม่ valid (เพื่อโชว์ระหว่างกรอก)
 export function calcQuickPrice({
   salePrice,
   markup,
   goldWeight,
   goldPrice,
+  saleGoldPrice,
   alloyWeight,
   alloyPrice,
   percent,
@@ -105,6 +108,8 @@ export function calcQuickPrice({
   const mk = toNumber(markup)
   const weight = toNumber(goldWeight)
   const price = toNumber(goldPrice)
+  const saleEmpty = saleGoldPrice === '' || saleGoldPrice === null || saleGoldPrice === undefined
+  const salePriceGold = saleEmpty ? price : toNumber(saleGoldPrice)
   const pct = percent === '' || percent === null || percent === undefined ? 0 : Number(percent)
 
   const aWeight = alloyWeight === '' || alloyWeight === null || alloyWeight === undefined ? 0 : Number(alloyWeight)
@@ -119,6 +124,8 @@ export function calcQuickPrice({
     goldCost: null,
     alloyCost: null,
     goldCostTotal: null,
+    saleGoldCost: null,
+    saleGoldCostTotal: null,
     costExGold: null,
     raw: null,
     quickPrice: null,
@@ -139,10 +146,13 @@ export function calcQuickPrice({
 
   if (!(weight > 0)) return { ...result, error: 'goldWeight' }
   if (!(price > 0)) return { ...result, error: 'goldPrice' }
+  if (!saleEmpty && !(salePriceGold > 0)) return { ...result, error: 'saleGoldPrice' }
 
   const goldCost = weight * price
   result.goldCost = goldCost
-  if (glValid) result.goldWithLossCost = weight * (1 + gl / 100) * price
+  const saleGoldCost = weight * salePriceGold
+  result.saleGoldCost = saleGoldCost
+  if (glValid) result.goldWithLossCost = weight * (1 + gl / 100) * salePriceGold
 
   if (!Number.isFinite(aWeight) || aWeight < 0) return { ...result, error: 'alloyWeight' }
   if (aWeight > 0 && !(aPrice >= 0)) return { ...result, error: 'alloyPrice' }
@@ -152,7 +162,9 @@ export function calcQuickPrice({
   const goldCostTotal = goldCost + alloyCost
   const costExGold = cost - goldCostTotal
   result.alloyCost = alloyCost
+  const saleGoldCostTotal = saleGoldCost + alloyCost
   result.goldCostTotal = goldCostTotal
+  result.saleGoldCostTotal = saleGoldCostTotal
   result.costExGold = costExGold
   if (glValid) result.goldLossCostTotal = result.goldWithLossCost + alloyCost
 
@@ -160,7 +172,7 @@ export function calcQuickPrice({
   if (!(costExGold > 0)) return { ...result, error: 'costExGold' }
 
   const raw = costExGold * (1 + pct / 100)
-  const totalRaw = raw + goldCostTotal
+  const totalRaw = raw + saleGoldCostTotal
 
   const goldLoss = {}
   if (glValid) {

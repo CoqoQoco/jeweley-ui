@@ -30,17 +30,7 @@
           </span>
         </FormFieldGeneric>
         <FormFieldGeneric :label="$t('view.stock.product.quickPrice.goldPricePerGram')">
-          <div class="qp-inline">
-            <InputTextGeneric v-model="form.goldPrice" type="number" :min="0" step="any" />
-            <ButtonGeneric
-              variant="outline"
-              icon="bi-calculator"
-              class="qp-calc-btn"
-              :title="$t('view.stock.product.quickPrice.spot')"
-              :aria-label="$t('view.stock.product.quickPrice.spot')"
-              @click="showGoldCalculator = true"
-            />
-          </div>
+          <InputTextGeneric v-model="form.goldPrice" type="number" :min="0" step="any" />
         </FormFieldGeneric>
         <FormFieldGeneric :label="$t('view.stock.product.quickPrice.goldCost')">
           <div class="qp-readonly">{{ formatMoney2(result.goldCost) }}</div>
@@ -85,6 +75,31 @@
         </FormFieldGeneric>
       </div>
 
+      <div class="qp-row qp-row--2 qp-row--spaced">
+        <FormFieldGeneric :label="$t('view.stock.product.quickPrice.saleGoldPricePerGram')">
+          <div class="qp-inline">
+            <InputTextGeneric v-model="form.saleGoldPrice" type="number" :min="0" step="any" />
+            <ButtonGeneric
+              variant="outline"
+              icon="bi-calculator"
+              class="qp-calc-btn"
+              :title="$t('view.stock.product.quickPrice.spot')"
+              :aria-label="$t('view.stock.product.quickPrice.spot')"
+              @click="showGoldCalculator = true"
+            />
+          </div>
+        </FormFieldGeneric>
+        <FormFieldGeneric :label="$t('view.stock.product.quickPrice.saleGoldCostTotal')">
+          <div class="qp-readonly">{{ formatMoney2(result.saleGoldCostTotal) }}</div>
+          <span v-if="result.saleGoldCostTotal !== null" class="qp-hint">
+            {{ $t('view.stock.product.quickPrice.saleGoldCostTotalFormula', { gold: formatMoney2(result.saleGoldCost), alloy: formatMoney2(result.alloyCost) }) }}
+          </span>
+        </FormFieldGeneric>
+      </div>
+      <p v-if="result.error === 'saleGoldPrice'" class="qp-warning">
+        <i class="bi bi-exclamation-triangle"></i> {{ $t('view.stock.product.quickPrice.invalid.saleGoldPrice') }}
+      </p>
+
       <div class="qp-row qp-row--3 qp-row--spaced">
         <FormFieldGeneric :label="$t('view.stock.product.quickPrice.goldLossPercent')">
           <InputTextGeneric v-model="form.goldLossPercent" type="number" :min="0" step="any" @input="goldLossTouched = true" />
@@ -92,7 +107,7 @@
         <FormFieldGeneric :label="$t('view.stock.product.quickPrice.goldWithLoss')">
           <div class="qp-readonly">{{ formatMoney2(result.goldWithLossCost) }}</div>
           <span v-if="result.goldWithLossCost !== null" class="qp-hint">
-            {{ $t('view.stock.product.quickPrice.goldWithLossFormula', { w: form.goldWeight, gl: goldLossText, price: formatPlainNumber(form.goldPrice) }) }}
+            {{ $t('view.stock.product.quickPrice.goldWithLossFormula', { w: form.goldWeight, gl: goldLossText, price: formatPlainNumber(salePriceGold) }) }}
           </span>
         </FormFieldGeneric>
         <FormFieldGeneric :label="$t('view.stock.product.quickPrice.goldLossCostTotal')">
@@ -153,13 +168,16 @@
         <span class="qp-result-label">{{ $t('view.stock.product.quickPrice.totalPrice') }}</span>
         <div class="qp-result-amount">
           <span class="qp-result-value">{{ result.valid ? formatMoney2(result.totalPrice) : '—' }}</span>
+          <span v-if="result.valid" class="qp-hint">
+            {{ $t('view.stock.product.quickPrice.saleGoldPriceHint', { price: formatPlainNumber(salePriceGold) }) }}
+          </span>
           <span v-if="result.valid && Number(form.rounding) !== 0" class="qp-hint">
             {{ $t('view.stock.product.quickPrice.beforeRounding', { raw: formatMoney2(result.totalRaw) }) }}
           </span>
         </div>
       </div>
       <div class="qp-result-line">
-        <span class="qp-result-label">{{ $t('view.stock.product.quickPrice.totalPriceGoldLoss') }}</span>
+        <span class="qp-result-label">{{ $t('view.stock.product.quickPrice.totalPriceGoldLoss', { gl: goldLossText }) }}</span>
         <div class="qp-result-amount">
           <span class="qp-result-value">{{ result.goldLossValid ? formatMoney2(result.goldLossTotalPrice) : '—' }}</span>
           <span v-if="result.goldLossValid && Number(form.rounding) !== 0" class="qp-hint">
@@ -219,6 +237,7 @@ const loadDefaults = () => {
     goldLossPercent: hasGoldLoss ? Number(savedGoldLoss) : null,
     markup: Number(saved.markup) > 0 ? saved.markup : DEFAULT_MARKUP,
     goldPrice: Number(saved.goldPrice) > 0 ? saved.goldPrice : '',
+    saleGoldPrice: Number(saved.saleGoldPrice) > 0 ? saved.saleGoldPrice : '',
     alloyPrice: Number(saved.alloyPrice) > 0 ? saved.alloyPrice : '',
     rounding: QUICK_PRICE_ROUNDINGS.includes(rounding) ? rounding : DEFAULT_ROUNDING
   }
@@ -279,6 +298,7 @@ export default {
         goldLossPercent,
         goldWeight,
         goldPrice: defaults.goldPrice,
+        saleGoldPrice: defaults.saleGoldPrice,
         karat,
         alloyWeight: weightToInput(calcAlloyWeight(goldWeight, karat, goldLossPercent)),
         alloyPrice: defaults.alloyPrice,
@@ -340,12 +360,17 @@ export default {
       return weightToInput(calcAlloyWeight(this.form.goldWeight, this.form.karat, this.goldLossValue, this.factors))
     },
 
+    salePriceGold() {
+      return this.form.saleGoldPrice === '' ? this.form.goldPrice : this.form.saleGoldPrice
+    },
+
     result() {
       return calcQuickPrice({
         salePrice: this.salePrice,
         markup: this.form.markup,
         goldWeight: this.form.goldWeight,
         goldPrice: this.form.goldPrice,
+        saleGoldPrice: this.form.saleGoldPrice,
         alloyWeight: this.form.alloyWeight,
         alloyPrice: this.form.alloyPrice,
         percent: this.form.percent,
@@ -407,7 +432,7 @@ export default {
         warning(this.$t('view.stock.product.quickPrice.spotNoRate'), this.$t('alert.alertTitle.warning'))
         return
       }
-      this.form.goldPrice = Number(perGram.toFixed(2))
+      this.form.saleGoldPrice = Number(perGram.toFixed(2))
       this.showGoldCalculator = false
     },
 
@@ -428,6 +453,7 @@ export default {
         goldLossPercent,
         goldWeight,
         goldPrice: defaults.goldPrice,
+        saleGoldPrice: defaults.saleGoldPrice,
         karat,
         alloyWeight: weightToInput(calcAlloyWeight(goldWeight, karat, goldLossPercent, this.factors)),
         alloyPrice: defaults.alloyPrice,
@@ -444,6 +470,7 @@ export default {
         storage.setJSON(STORAGE_KEY, {
           markup: Number(this.form.markup),
           goldPrice: Number(this.form.goldPrice),
+          saleGoldPrice: Number(this.form.saleGoldPrice) > 0 ? Number(this.form.saleGoldPrice) : saved.saleGoldPrice,
           alloyPrice: alloyPrice > 0 ? alloyPrice : saved.alloyPrice,
           goldLossPercent: this.goldLossValue ?? saved.goldLossPercent,
           rounding: Number(this.form.rounding)
@@ -462,6 +489,7 @@ export default {
           markup: Number(this.form.markup),
           goldWeight: Number(this.form.goldWeight),
           goldPrice: Number(this.form.goldPrice),
+          saleGoldPrice: Number(this.form.saleGoldPrice),
           karat: this.form.karat || null,
           alloyFactor: this.karatFactor,
           alloyWeight: Number(this.form.alloyWeight) || 0,

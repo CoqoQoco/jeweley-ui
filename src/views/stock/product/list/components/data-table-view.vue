@@ -361,8 +361,8 @@ export default {
 
     quickPriceMeta(data) {
       const date = data.quickPriceDate ? formatDate(data.quickPriceDate) : ''
-      const gold = this.$t('view.stock.product.quickPrice.goldPerGram', {
-        price: formatPlainNumber(data.quickPriceGoldPrice)
+      const gold = this.$t('view.stock.product.quickPrice.saleGoldPerGram', {
+        price: formatPlainNumber(data.quickPriceSaleGoldPrice ?? data.quickPriceGoldPrice)
       })
       return date ? `${date} · ${gold}` : gold
     },
