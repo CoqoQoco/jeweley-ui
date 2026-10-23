@@ -737,6 +737,7 @@ export default {
               { header: this.$t('view.executive.goldLossTrend.excel.colIssuedGram'), key: 'issuedGram' },
               { header: this.$t('view.executive.goldLossTrend.excel.colLossGram'), key: 'lossGram' },
               { header: this.$t('view.executive.goldLossTrend.excel.colAllowedGram'), key: 'allowedGram' },
+              { header: this.$t('view.executive.goldLossTrend.excel.colScrapReturnGram'), key: 'scrapReturnGram' },
               { header: this.$t('view.executive.goldLossTrend.excel.colLossPercent'), key: 'lossPercent' }
             ]
           },
@@ -755,6 +756,7 @@ export default {
               { header: this.$t('view.executive.goldLossTrend.excel.colIssuedGram'), key: 'issuedGram' },
               { header: this.$t('view.executive.goldLossTrend.excel.colLossGram'), key: 'lossGram' },
               { header: this.$t('view.executive.goldLossTrend.excel.colAllowedGram'), key: 'allowedGram' },
+              { header: this.$t('view.executive.goldLossTrend.excel.colScrapReturnGram'), key: 'scrapReturnGram' },
               { header: this.$t('view.executive.goldLossTrend.excel.colLossPercent'), key: 'lossPercent' }
             ]
           },

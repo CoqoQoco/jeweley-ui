@@ -100,7 +100,8 @@ describe('normalizeTangRow / normalizeSetterRow', () => {
       returned: 990,
       loss: 10,
       allowed: 15,
-      allowedBase: 1000
+      allowedBase: 1000,
+      scrapReturn: 0
     })
   })
 
@@ -115,8 +116,16 @@ describe('normalizeTangRow / normalizeSetterRow', () => {
       returned: 198,
       loss: 2,
       allowed: 3,
-      allowedBase: 198
+      allowedBase: 198,
+      scrapReturn: 0
     })
+  })
+
+  it('normalizeSetterRow หัก totalReturnWeight (เศษทองคืน) ออกจาก loss แต่ allowedBase ยังเป็นน้ำหนักเช็คงาน', () => {
+    const row = normalizeSetterRow({ ...RAW_SETTER_ROWS[0], totalReturnWeight: 1.5 })
+    expect(row.loss).toBeCloseTo(0.5, 5)
+    expect(row.scrapReturn).toBe(1.5)
+    expect(row.allowedBase).toBe(198)
   })
 
   it('edge case issued=0 ไม่พังทั้งสองฝั่ง', () => {
@@ -130,8 +139,8 @@ describe('aggregateMonthlyTotals', () => {
     const rows = RAW_TANG_ROWS.map(normalizeTangRow)
     const totals = aggregateMonthlyTotals(rows)
 
-    expect(totals.get('2026-07')).toEqual({ issued: 1000, loss: 10, allowed: 15, allowedBase: 1000, slipCount: 2 })
-    expect(totals.get('2026-08')).toEqual({ issued: 1300, loss: 20, allowed: 19.5, allowedBase: 1300, slipCount: 3 })
+    expect(totals.get('2026-07')).toEqual({ issued: 1000, loss: 10, allowed: 15, allowedBase: 1000, slipCount: 2, scrapReturn: 0 })
+    expect(totals.get('2026-08')).toEqual({ issued: 1300, loss: 20, allowed: 19.5, allowedBase: 1300, slipCount: 3, scrapReturn: 0 })
   })
 })
 
@@ -160,9 +169,9 @@ describe('sumWorkerTotals', () => {
   it('รวมยอดทั้งช่วงต่อช่าง เรียง loss มากไปน้อย', () => {
     const rows = RAW_TANG_ROWS.map(normalizeTangRow)
     expect(sumWorkerTotals(rows)).toEqual([
-      { workerCode: 'A', workerName: 'Worker A', totalIssued: 1800, totalLoss: 25, totalAllowed: 27, totalAllowedBase: 1800 },
-      { workerCode: 'B', workerName: 'Worker B', totalIssued: 500, totalLoss: 5, totalAllowed: 7.5, totalAllowedBase: 500 },
-      { workerCode: 'C', workerName: 'Worker C', totalIssued: 0, totalLoss: 0, totalAllowed: 0, totalAllowedBase: 0 }
+      { workerCode: 'A', workerName: 'Worker A', totalIssued: 1800, totalLoss: 25, totalAllowed: 27, totalAllowedBase: 1800, totalScrapReturn: 0 },
+      { workerCode: 'B', workerName: 'Worker B', totalIssued: 500, totalLoss: 5, totalAllowed: 7.5, totalAllowedBase: 500, totalScrapReturn: 0 },
+      { workerCode: 'C', workerName: 'Worker C', totalIssued: 0, totalLoss: 0, totalAllowed: 0, totalAllowedBase: 0, totalScrapReturn: 0 }
     ])
   })
 })

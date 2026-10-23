@@ -332,13 +332,14 @@ export function buildGoldLossMonthlyExcelRows(monthKeys, tangRows, setterRows, d
       { dept: deptLabels.tang, totals: tangTotals.get(key) },
       { dept: deptLabels.setter, totals: setterTotals.get(key) }
     ].forEach(({ dept, totals }) => {
-      const t = totals || { issued: 0, loss: 0, allowed: 0 }
+      const t = totals || { issued: 0, loss: 0, allowed: 0, scrapReturn: 0 }
       rows.push({
         month: formatMonthLabel(key),
         dept: dept || '',
         issuedGram: Number(t.issued || 0).toFixed(2),
         lossGram: Number(t.loss || 0).toFixed(2),
         allowedGram: Number(t.allowed || 0).toFixed(2),
+        scrapReturnGram: Number(t.scrapReturn || 0).toFixed(2),
         lossPercent: computeLossPercent(t.loss, t.issued).toFixed(2)
       })
     })
@@ -358,6 +359,7 @@ export function buildGoldLossByWorkerExcelRows(tangRows, setterRows, deptLabels 
       issuedGram: Number(w.totalIssued || 0).toFixed(2),
       lossGram: Number(w.totalLoss || 0).toFixed(2),
       allowedGram: Number(w.totalAllowed || 0).toFixed(2),
+      scrapReturnGram: Number(w.totalScrapReturn || 0).toFixed(2),
       lossPercent: computeLossPercent(w.totalLoss, w.totalIssued).toFixed(2)
     }))
 

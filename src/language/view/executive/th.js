@@ -176,6 +176,7 @@ export default {
       colIssuedGram: 'จ่าย (กรัม)',
       colLossGram: 'หาย (กรัม)',
       colAllowedGram: 'เกณฑ์ในใบ (กรัม)',
+      colScrapReturnGram: 'คืนเศษทอง (กรัม)',
       colLossPercent: '% หาย',
       colRank: 'อันดับ',
       colWorkerCode: 'รหัสช่าง',

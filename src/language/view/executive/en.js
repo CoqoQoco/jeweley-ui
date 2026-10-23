@@ -176,6 +176,7 @@ export default {
       colIssuedGram: 'Issued (g)',
       colLossGram: 'Loss (g)',
       colAllowedGram: 'Allowed (g)',
+      colScrapReturnGram: 'Scrap returned (g)',
       colLossPercent: '% loss',
       colRank: 'Rank',
       colWorkerCode: 'Worker code',

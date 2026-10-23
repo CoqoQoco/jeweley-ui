@@ -531,10 +531,10 @@ describe('executive-helpers', () => {
       const rows = buildGoldLossMonthlyExcelRows(['2026-07', '2026-08'], tangRows, setterRows, deptLabels)
 
       expect(rows).toEqual([
-        { month: '07/2026', dept: 'ช่างแต่ง', issuedGram: '1000.00', lossGram: '10.00', allowedGram: '15.00', lossPercent: '1.00' },
-        { month: '07/2026', dept: 'ช่างฝัง', issuedGram: '200.00', lossGram: '2.00', allowedGram: '3.00', lossPercent: '1.00' },
-        { month: '08/2026', dept: 'ช่างแต่ง', issuedGram: '0.00', lossGram: '0.00', allowedGram: '0.00', lossPercent: '0.00' },
-        { month: '08/2026', dept: 'ช่างฝัง', issuedGram: '0.00', lossGram: '0.00', allowedGram: '0.00', lossPercent: '0.00' }
+        { month: '07/2026', dept: 'ช่างแต่ง', issuedGram: '1000.00', lossGram: '10.00', allowedGram: '15.00', scrapReturnGram: '0.00', lossPercent: '1.00' },
+        { month: '07/2026', dept: 'ช่างฝัง', issuedGram: '200.00', lossGram: '2.00', allowedGram: '3.00', scrapReturnGram: '0.00', lossPercent: '1.00' },
+        { month: '08/2026', dept: 'ช่างแต่ง', issuedGram: '0.00', lossGram: '0.00', allowedGram: '0.00', scrapReturnGram: '0.00', lossPercent: '0.00' },
+        { month: '08/2026', dept: 'ช่างฝัง', issuedGram: '0.00', lossGram: '0.00', allowedGram: '0.00', scrapReturnGram: '0.00', lossPercent: '0.00' }
       ])
     })
   })
@@ -550,9 +550,9 @@ describe('executive-helpers', () => {
       const rows = buildGoldLossByWorkerExcelRows(tangRows, setterRows, { tang: 'ช่างแต่ง', setter: 'ช่างฝัง' })
 
       expect(rows).toEqual([
-        { rank: 1, dept: 'ช่างแต่ง', workerCode: 'B', workerName: 'B', issuedGram: '1000.00', lossGram: '20.00', allowedGram: '15.00', lossPercent: '2.00' },
-        { rank: 2, dept: 'ช่างแต่ง', workerCode: 'A', workerName: 'A', issuedGram: '500.00', lossGram: '5.00', allowedGram: '7.50', lossPercent: '1.00' },
-        { rank: 1, dept: 'ช่างฝัง', workerCode: 'X', workerName: 'X', issuedGram: '200.00', lossGram: '2.00', allowedGram: '3.00', lossPercent: '1.00' }
+        { rank: 1, dept: 'ช่างแต่ง', workerCode: 'B', workerName: 'B', issuedGram: '1000.00', lossGram: '20.00', allowedGram: '15.00', scrapReturnGram: '0.00', lossPercent: '2.00' },
+        { rank: 2, dept: 'ช่างแต่ง', workerCode: 'A', workerName: 'A', issuedGram: '500.00', lossGram: '5.00', allowedGram: '7.50', scrapReturnGram: '0.00', lossPercent: '1.00' },
+        { rank: 1, dept: 'ช่างฝัง', workerCode: 'X', workerName: 'X', issuedGram: '200.00', lossGram: '2.00', allowedGram: '3.00', scrapReturnGram: '0.00', lossPercent: '1.00' }
       ])
     })
   })

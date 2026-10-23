@@ -48,15 +48,18 @@ export function normalizeTangRow(row) {
     returned: row.totalReturned || 0,
     loss: row.totalRawLoss || 0,
     allowed: row.totalAllowedLoss || 0,
-    allowedBase: row.totalAllowedLossBase || 0
+    allowedBase: row.totalAllowedLossBase || 0,
+    scrapReturn: 0
   }
 }
 
 // ฝั่งช่างฝัง (Worker/ReportGoldLossSlipByWorker) ไม่มีฟิลด์ loss ตรงๆ ต้องคำนวณจาก
-// totalWeightSend - totalWeightCheck เอง
+// totalWeightSend - totalWeightCheck - totalReturnWeight (เศษทองที่ช่างคืนปลายเดือน หักออกจาก loss)
+// allowedBase ยังเป็นน้ำหนักเช็คงาน (ตรงกับสูตรในใบ)
 export function normalizeSetterRow(row) {
   const issued = row.totalWeightSend || 0
   const returned = row.totalWeightCheck || 0
+  const scrapReturn = row.totalReturnWeight || 0
   return {
     workerCode: row.workerCode,
     workerName: row.workerName,
@@ -65,9 +68,10 @@ export function normalizeSetterRow(row) {
     slipCount: row.slipCount || 0,
     issued,
     returned,
-    loss: issued - returned,
+    loss: issued - returned - scrapReturn,
     allowed: row.totalWeightLossAllowed || 0,
-    allowedBase: returned
+    allowedBase: returned,
+    scrapReturn
   }
 }
 
@@ -76,12 +80,13 @@ export function aggregateMonthlyTotals(rows) {
   const map = new Map()
   rows.forEach((r) => {
     const key = monthKeyOf(r.year, r.month)
-    const acc = map.get(key) || { issued: 0, loss: 0, allowed: 0, allowedBase: 0, slipCount: 0 }
+    const acc = map.get(key) || { issued: 0, loss: 0, allowed: 0, allowedBase: 0, slipCount: 0, scrapReturn: 0 }
     acc.issued += r.issued
     acc.loss += r.loss
     acc.allowed += r.allowed
     acc.allowedBase += r.allowedBase
     acc.slipCount += r.slipCount
+    acc.scrapReturn += r.scrapReturn || 0
     map.set(key, acc)
   })
   return map
@@ -123,12 +128,14 @@ export function sumWorkerTotals(rows) {
       totalIssued: 0,
       totalLoss: 0,
       totalAllowed: 0,
-      totalAllowedBase: 0
+      totalAllowedBase: 0,
+      totalScrapReturn: 0
     }
     acc.totalIssued += r.issued
     acc.totalLoss += r.loss
     acc.totalAllowed += r.allowed
     acc.totalAllowedBase += r.allowedBase
+    acc.totalScrapReturn += r.scrapReturn || 0
     map.set(r.workerCode, acc)
   })
   return [...map.values()].sort((a, b) => b.totalLoss - a.totalLoss)
