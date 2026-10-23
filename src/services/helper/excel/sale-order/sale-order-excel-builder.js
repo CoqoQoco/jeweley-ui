@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import ExcelJS from 'exceljs'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount, roundHalfUp } from '@/services/utils/money.js'
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
+import { writeMaterialsSheet } from '@/services/helper/excel/shared/material-rows.js'
 
 export class SaleOrderExcelBuilder {
   constructor(soData, options = {}) {
@@ -97,6 +98,15 @@ export class SaleOrderExcelBuilder {
     }).format(Number(amount) || 0)
   }
 
+  // ค่าเงินสำหรับเขียนลง cell เป็นตัวเลข — ปัดแบบเดียวกับ formatCurrency (ไม่ใช้ทศนิยม → ปัดเต็มหน่วย, ไม่งั้น 2 ตำแหน่ง)
+  moneyValue(amount) {
+    return roundHalfUp(Number(amount) || 0, this.showDecimals ? 2 : 0)
+  }
+
+  get moneyNumFmt() {
+    return this.showDecimals ? '#,##0.00' : '#,##0'
+  }
+
   // === ASYNC PREPARE (logo + item images) ===
 
   async prepare() {
@@ -155,6 +165,9 @@ export class SaleOrderExcelBuilder {
     currentRow = this.buildSummarySection(worksheet, currentRow)
 
     this.autoFitColumns(worksheet)
+
+    // sheet 2 — แตกวัตถุดิบเป็นตัวเลขให้ผู้ใช้ SUM เอง (ใช้รายการชุดเดียวกับที่พิมพ์ใน sheet 1)
+    writeMaterialsSheet(workbook, this.mergedPrintItems)
 
     // Add logo image
     if (this.logoBase64) {
@@ -492,13 +505,14 @@ export class SaleOrderExcelBuilder {
         { col: 'F', value: buildMaterialText('Diamond'), align: 'left', wrap: true },
         { col: 'G', value: buildMaterialText('Gem'), align: 'left', wrap: true },
         { col: 'H', value: qty, align: 'right', wrap: false },
-        { col: 'I', value: this.formatCurrency(convertedPrice), align: 'right', wrap: false },
-        { col: 'J', value: this.formatCurrency(amount), align: 'right', wrap: false }
+        { col: 'I', value: this.moneyValue(convertedPrice), align: 'right', wrap: false, numFmt: this.moneyNumFmt },
+        { col: 'J', value: this.moneyValue(amount), align: 'right', wrap: false, numFmt: this.moneyNumFmt }
       ]
 
-      cells.forEach(({ col, value, align, wrap }) => {
+      cells.forEach(({ col, value, align, wrap, numFmt }) => {
         const cell = worksheet.getCell(`${col}${row}`)
         cell.value = value
+        if (numFmt) cell.numFmt = numFmt
         cell.font = { name: 'Arial', size: 9 }
         cell.alignment = { vertical: 'top', horizontal: align, wrapText: wrap }
         cell.border = {
@@ -537,16 +551,17 @@ export class SaleOrderExcelBuilder {
       { col: 'B', value: '' },
       { col: 'C', value: '' },
       { col: 'D', value: '' },
-      { col: 'E', value: this.formatCurrency(sumGold), align: 'right' },
-      { col: 'F', value: this.formatCurrency(sumDiamond), align: 'right' },
-      { col: 'G', value: this.formatCurrency(sumGem), align: 'right' },
+      { col: 'E', value: sumGold, align: 'right', numFmt: '#,##0.00' },
+      { col: 'F', value: sumDiamond, align: 'right', numFmt: '#,##0.00' },
+      { col: 'G', value: sumGem, align: 'right', numFmt: '#,##0.00' },
       { col: 'H', value: sumQty, align: 'right' },
       { col: 'I', value: '' },
-      { col: 'J', value: this.formatCurrency(sumAmount), align: 'right' }
+      { col: 'J', value: this.moneyValue(sumAmount), align: 'right', numFmt: this.moneyNumFmt }
     ]
-    totalRowData.forEach(({ col, value, align }) => {
+    totalRowData.forEach(({ col, value, align, numFmt }) => {
       const cell = worksheet.getCell(`${col}${row}`)
       cell.value = value
+      if (numFmt) cell.numFmt = numFmt
       cell.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } }
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF921313' } }
       cell.alignment = { vertical: 'middle', horizontal: align || 'left' }
@@ -576,7 +591,7 @@ export class SaleOrderExcelBuilder {
     // === Summary Rows (mirrors PDF buildFinalTableBody) ===
 
     // F.O.B Bangkok — always shown (mirrors PDF which always shows it)
-    this.addSummaryRow(worksheet, row, 'F.O.B Bangkok', this.formatCurrency(this.subtotal))
+    this.addSummaryRow(worksheet, row, 'F.O.B Bangkok', this.moneyValue(this.subtotal))
     row++
 
     if (this.specialDiscount > 0) {
@@ -584,8 +599,9 @@ export class SaleOrderExcelBuilder {
         worksheet,
         row,
         'SPECIAL DISCOUNT',
-        '-' + this.formatCurrency(this.specialDiscount),
-        'FFFF4D4D'
+        this.moneyValue(this.specialDiscount),
+        'FFFF4D4D',
+        this.showDecimals ? '"-"#,##0.00' : '"-"#,##0'
       )
       row++
     }
@@ -595,8 +611,9 @@ export class SaleOrderExcelBuilder {
         worksheet,
         row,
         'SPECIAL ADDITION',
-        '+' + this.formatCurrency(this.specialAddition),
-        'FF038387'
+        this.moneyValue(this.specialAddition),
+        'FF038387',
+        this.showDecimals ? '"+"#,##0.00' : '"+"#,##0'
       )
       row++
     }
@@ -606,13 +623,13 @@ export class SaleOrderExcelBuilder {
         worksheet,
         row,
         'FREIGHT & INSURANCE',
-        this.formatCurrency(this.freightAndInsurance)
+        this.moneyValue(this.freightAndInsurance)
       )
       row++
     }
 
     if (this.vatPercent > 0) {
-      this.addSummaryRow(worksheet, row, `VAT (${this.vatPercent}%)`, this.formatCurrency(this.vatAmount))
+      this.addSummaryRow(worksheet, row, `VAT (${this.vatPercent}%)`, this.moneyValue(this.vatAmount))
       row++
     }
 
@@ -646,7 +663,8 @@ export class SaleOrderExcelBuilder {
     }
 
     const cifAmountCell = worksheet.getCell(`J${row}`)
-    cifAmountCell.value = this.formatCurrency(this.grandTotalRounded)
+    cifAmountCell.value = this.moneyValue(this.grandTotalRounded)
+    cifAmountCell.numFmt = this.moneyNumFmt
     cifAmountCell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FF921313' } }
     cifAmountCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0E0E0' } }
     cifAmountCell.alignment = { vertical: 'middle', horizontal: 'right' }
@@ -665,7 +683,7 @@ export class SaleOrderExcelBuilder {
   }
 
   // Summary row helper (label in H:I, value in J, empty borders A-G)
-  addSummaryRow(worksheet, row, label, value, valueColor = 'FF921313') {
+  addSummaryRow(worksheet, row, label, value, valueColor = 'FF921313', numFmt = null) {
     ;['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach((col) => {
       worksheet.getCell(`${col}${row}`).border = {
         top: { style: 'thin' },
@@ -697,6 +715,7 @@ export class SaleOrderExcelBuilder {
     }
 
     worksheet.getCell(`J${row}`).value = value
+    worksheet.getCell(`J${row}`).numFmt = numFmt || this.moneyNumFmt
     worksheet.getCell(`J${row}`).font = {
       name: 'Arial',
       size: 10,
