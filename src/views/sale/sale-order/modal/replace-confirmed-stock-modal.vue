@@ -71,6 +71,7 @@ import { fetchStockProduct } from '@/services/utils/stock-scan.js'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
+import { isSameStockNumber } from '@/services/helper/stock-number.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -179,7 +180,7 @@ export default {
       const rawData = result.data
 
       const availabilityList = await this.productStore.fetchStockAvailability([rawData.stockNumber])
-      const row = availabilityList.find((a) => a.stockNumber === rawData.stockNumber)
+      const row = availabilityList.find((a) => isSameStockNumber(a.stockNumber, rawData.stockNumber))
       this.freshQtyAvailable = Number(row ? row.qtyAvailable : rawData.qtyAvailable) || 0
 
       const needed = Number(this.copyItem.qty) || 1

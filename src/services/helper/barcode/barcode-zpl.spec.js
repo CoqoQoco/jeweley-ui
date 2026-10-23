@@ -87,17 +87,31 @@ function originalGenerateZPLVertical(formValue) {
   return zpl
 }
 
+// ไม่มี stockNumberOrigin → ป้ายตัดขีดออกจากเลขสินค้า (ตัวเลขพิกัดยังเหมือนต้นฉบับทุกตัวอักษร)
+function stripDashForm(form) {
+  return { ...form, stockNumber: String(form.stockNumber || '').replace(/-/g, '') }
+}
+
 describe('resolveLabelCode', () => {
   it('คืน stockNumberOrigin (trim แล้ว) ถ้ามีค่า', () => {
     expect(resolveLabelCode({ stockNumber: 'NEW-001', stockNumberOrigin: '  OLD-001  ' })).toBe('OLD-001')
   })
 
   it('ไม่มี stockNumberOrigin → คืน stockNumber', () => {
-    expect(resolveLabelCode({ stockNumber: 'NEW-001' })).toBe('NEW-001')
+    expect(resolveLabelCode({ stockNumber: 'NEW001' })).toBe('NEW001')
+  })
+
+  it('ไม่มี stockNumberOrigin → ตัดขีดออกจาก stockNumber', () => {
+    expect(resolveLabelCode({ stockNumber: 'DK-20G-123' })).toBe('DK20G123')
+    expect(resolveLabelCode({ stockNumber: 'DK20I969' })).toBe('DK20I969')
+  })
+
+  it('stockNumberOrigin ชนะ stockNumber เสมอ แม้ stockNumber มีขีด', () => {
+    expect(resolveLabelCode({ stockNumber: 'DK-20G-123', stockNumberOrigin: 'OLD123' })).toBe('OLD123')
   })
 
   it('stockNumberOrigin เป็นช่องว่างล้วน → fallback เป็น stockNumber', () => {
-    expect(resolveLabelCode({ stockNumber: 'NEW-001', stockNumberOrigin: '   ' })).toBe('NEW-001')
+    expect(resolveLabelCode({ stockNumber: 'NEW-001', stockNumberOrigin: '   ' })).toBe('NEW001')
   })
 
   it('ไม่มีทั้งคู่ → คืนค่าว่าง', () => {
@@ -248,7 +262,7 @@ describe('generateLegacyZPL / generateLegacyZPLVertical — ต้องเห�
 
   cases.forEach(({ name, form }) => {
     it(`generateLegacyZPL: ${name} — ไม่มี stockNumberOrigin`, () => {
-      expect(generateLegacyZPL(form)).toBe(originalGenerateZPLs(form))
+      expect(generateLegacyZPL(form)).toBe(originalGenerateZPLs(stripDashForm(form)))
     })
 
     it(`generateLegacyZPL: ${name} — มี stockNumberOrigin แทนเลขที่ผลิต`, () => {
@@ -258,7 +272,7 @@ describe('generateLegacyZPL / generateLegacyZPLVertical — ต้องเห�
     })
 
     it(`generateLegacyZPLVertical: ${name} — ไม่มี stockNumberOrigin`, () => {
-      expect(generateLegacyZPLVertical(form)).toBe(originalGenerateZPLVertical(form))
+      expect(generateLegacyZPLVertical(form)).toBe(originalGenerateZPLVertical(stripDashForm(form)))
     })
 
     it(`generateLegacyZPLVertical: ${name} — มี stockNumberOrigin แทนเลขที่ผลิต`, () => {
@@ -635,7 +649,7 @@ describe('layoutGt800Qr / generateGt800ZPLQr — layout ใหม่ (บล็�
 
   it('generateGt800ZPLQr: 4 บรรทัดข้อความตรงตำแหน่งที่กำหนด และไม่มี goldType นำหน้าบรรทัดทอง', () => {
     const zpl = generateGt800ZPLQr(worst, 1)
-    const code = 'DK-18K-20A-12810'
+    const code = 'DK18K20A12810'
     expect(zpl).toContain(`^FO256,31^A0N,16,16^FD${worst.productNameEn}^FS`)
     expect(zpl).toContain(`^FO262,47^BY1,3.0:1,18^BCN,18,N,N^FD${code}^FS`)
     expect(zpl).toContain(`^FO256,68^A0N,17,17^FD${code} - 123456R^FS`)

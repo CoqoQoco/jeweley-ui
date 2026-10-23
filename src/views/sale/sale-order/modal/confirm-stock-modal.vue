@@ -403,6 +403,7 @@ import { convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 import { isPlaceholderItem } from '@/services/utils/copy-item.js'
 import { hasMarginAccess } from '@/services/permission/margin-access.js'
+import { normalizeStockNumber } from '@/services/helper/stock-number.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -556,14 +557,15 @@ export default {
       const list = await this.productStore.fetchStockAvailability(stockNumbers)
       const map = {}
       list.forEach((row) => {
-        map[row.stockNumber] = row.qtyAvailable
+        map[normalizeStockNumber(row.stockNumber)] = row.qtyAvailable
       })
       this.availabilityMap = map
     },
 
     rowAvailable(item) {
-      if (Object.prototype.hasOwnProperty.call(this.availabilityMap, item.stockNumber)) {
-        return Number(this.availabilityMap[item.stockNumber]) || 0
+      const key = normalizeStockNumber(item.stockNumber)
+      if (Object.prototype.hasOwnProperty.call(this.availabilityMap, key)) {
+        return Number(this.availabilityMap[key]) || 0
       }
       return getPieceQtyAvailable(item)
     },

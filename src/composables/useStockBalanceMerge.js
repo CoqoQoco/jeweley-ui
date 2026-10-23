@@ -1,5 +1,7 @@
 // เติมยอดคงเหลือ (SKU รวมทุกคลัง/ทุกล็อต) ลงใน items — ใช้ร่วมกันระหว่างหน้า list และหน้า detail
 // ยกมาจาก data-table-view.vue เดิม (mergeBalanceIntoItems) เพื่อไม่ให้ตรรกะซ้ำ 3 ที่ (web list, web detail, mobile)
+import { normalizeStockNumber } from '@/services/helper/stock-number.js'
+
 export async function mergeBalanceIntoItems(items, { balanceStore, locationStore }) {
   const stockNumbers = items.map((i) => i.stockNumber).filter(Boolean)
   if (!stockNumbers.length) return
@@ -16,7 +18,7 @@ export async function mergeBalanceIntoItems(items, { balanceStore, locationStore
 
   const map = await balanceStore.fetchByStockNumbers(stockNumbers)
   for (const item of items) {
-    const b = map[item.stockNumber]
+    const b = map[normalizeStockNumber(item.stockNumber)]
     // ยอดนี้เป็นยอดรวมทั้ง SKU (ทุกล็อต ทุกคลัง) — ห้ามเขียนทับ item.qty/qtyReserved/qtyAvailable
     // ของ piece เอง (มาจาก StockProduct/List อยู่แล้ว) ใช้ prefix sku ชัดเจน
     item.skuQtyOnHand = b?.qtyOnHand ?? null

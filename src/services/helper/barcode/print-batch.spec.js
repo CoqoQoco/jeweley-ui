@@ -29,6 +29,10 @@ describe('parseCodeList', () => {
     expect(parseCodeList('A\nB\nA\nC\nB').codes).toEqual(['A', 'B', 'C'])
   })
 
+  it('dedupe ไม่สนขีด/ตัวพิมพ์ (DK-20G-123 กับ DK20G123 คือชิ้นเดียวกัน)', () => {
+    expect(parseCodeList('DK-20G-123\nDK20G123\ndk20g123\nDK20G124').codes).toEqual(['DK-20G-123', 'DK20G124'])
+  })
+
   it('ตัดที่ cap และบอก truncated + total จริง', () => {
     const text = Array.from({ length: MAX_PASTE_CODES + 5 }, (_, i) => `C${i}`).join('\n')
     const res = parseCodeList(text)

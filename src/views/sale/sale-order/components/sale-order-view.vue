@@ -675,6 +675,7 @@ import { buildCopyItem, isPlaceholderItem } from '@/services/utils/copy-item.js'
 import { moveMovableItem } from '@/services/utils/item-reorder.js'
 import { getPieceQtyAvailable, sumUnconfirmedQtyByStockNumber } from '@/services/utils/stock-piece-qty.js'
 import { lookupStockProduct } from '@/services/utils/stock-scan.js'
+import { isSameStockNumber, normalizeStockNumber } from '@/services/helper/stock-number.js'
 import { CURRENCY_UNITS } from '@/constants/currency-units.js'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import { hasMarginAccess } from '@/services/permission/margin-access.js'
@@ -1677,12 +1678,13 @@ export default {
       const list = await this.productStore.fetchStockAvailability(stockNumbers)
       if (!Array.isArray(list) || list.length === 0) return
 
-      const availabilityMap = new Map(list.map((row) => [row.stockNumber, row.qtyAvailable]))
+      const availabilityMap = new Map(list.map((row) => [normalizeStockNumber(row.stockNumber), row.qtyAvailable]))
 
       this.stockItems.forEach((item) => {
         if (item.isConfirm || item.invoice) return
-        if (!availabilityMap.has(item.stockNumber)) return
-        item.qtyAvailable = availabilityMap.get(item.stockNumber)
+        const key = normalizeStockNumber(item.stockNumber)
+        if (!availabilityMap.has(key)) return
+        item.qtyAvailable = availabilityMap.get(key)
       })
     },
 
@@ -2767,7 +2769,7 @@ export default {
       if (!value) return
 
       const duplicate = [...this.stockItems, ...this.copyItems].some(
-        (i) => i.lineKey !== item.lineKey && i.stockNumber === value
+        (i) => i.lineKey !== item.lineKey && isSameStockNumber(i.stockNumber, value)
       )
       if (duplicate) {
         warning(this.$t('view.sale.saleOrder.warn.productionNumberDuplicate', { code: value }))
@@ -2775,7 +2777,7 @@ export default {
       }
 
       const list = await this.productStore.fetchStockAvailability([value])
-      if (Array.isArray(list) && list.some((row) => row.stockNumber === value)) {
+      if (Array.isArray(list) && list.some((row) => isSameStockNumber(row.stockNumber, value))) {
         warning(this.$t('view.sale.saleOrder.warn.productionNumberMatchesStock'))
       }
     },

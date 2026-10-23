@@ -2,6 +2,8 @@
   <div class="app-container">
     <searchView @search="onSearch" @clear="onClear" />
 
+    <BarcodeNoDashNotice class="no-dash-notice" />
+
     <div v-if="notFound.length" class="not-found-box">
       <i class="bi bi-exclamation-triangle mr-1"></i>
       <span class="not-found-title">{{ $t('view.stock.printBarcode.notFoundTitle', { count: notFound.length }) }}</span>
@@ -61,6 +63,8 @@ import { getPieceQty } from '@/services/utils/stock-piece-qty.js'
 import { getBarcodeProfile, PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
 import { buildPublicUrl } from '@/config/public-site-config.js'
 
+import BarcodeNoDashNotice from '@/components/custom/barcode-no-dash-notice.vue'
+
 import searchView from './components/search-view.vue'
 import dataTable from './components/data-table-view.vue'
 import printPanel from './components/print-panel.vue'
@@ -72,7 +76,7 @@ const LINK_CONCURRENCY = 3
 export default {
   name: 'StockProductPrintBarcode',
 
-  components: { searchView, dataTable, printPanel },
+  components: { BarcodeNoDashNotice, searchView, dataTable, printPanel },
 
   setup() {
     const productStore = usrStockProductApiStore()
@@ -395,6 +399,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.no-dash-notice {
+  margin-top: var(--sp-md);
+}
+
 .not-found-box {
   margin-top: var(--sp-md);
   padding: var(--sp-sm) var(--sp-md);

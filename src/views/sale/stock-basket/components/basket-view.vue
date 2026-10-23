@@ -187,6 +187,7 @@ import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import { useStockBasketApiStore } from '@/stores/modules/api/sale/stock-basket-store.js'
 import { warning, success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
+import { isSameStockNumber } from '@/services/helper/stock-number.js'
 import stockSearchModal from '../modal/stock-search-modal.vue'
 import categorySelectModal from '../modal/category-select-modal.vue'
 
@@ -312,7 +313,7 @@ export default {
       })
 
       if (response) {
-        if (response.skippedStockNumbers && response.skippedStockNumbers.includes(stockNumber)) {
+        if (response.skippedStockNumbers && response.skippedStockNumbers.some((skipped) => isSameStockNumber(skipped, stockNumber))) {
           warning(this.$t('view.sale.stockBasket.validation.alreadyInBasket'), this.$t('view.sale.stockBasket.cannotAddTitle'))
         }
         if (response.addedCount > 0) {
@@ -337,7 +338,7 @@ export default {
       })
 
       if (response) {
-        if (response.skippedStockNumbers && response.skippedStockNumbers.includes(stockNumber)) {
+        if (response.skippedStockNumbers && response.skippedStockNumbers.some((skipped) => isSameStockNumber(skipped, stockNumber))) {
           warning(this.$t('view.sale.stockBasket.validation.alreadyInBasket'), this.$t('view.sale.stockBasket.cannotAddTitle'))
         } else if (response.addedCount > 0) {
           success(this.$t('view.sale.stockBasket.success.addItem'))

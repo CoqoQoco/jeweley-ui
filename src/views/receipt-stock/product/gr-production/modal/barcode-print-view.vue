@@ -7,6 +7,10 @@
           <span>บันทึกสินค้าสำเร็จ | เลือกสินค้าเพื่อพิมพ์ Barcode</span>
         </div>
 
+        <div class="px-3 pt-2">
+          <BarcodeNoDashNotice />
+        </div>
+
         <div>
           <BaseDataTable
             scrollHeight="600px"
@@ -101,10 +105,12 @@ import { error } from '@/services/alert/sweetAlerts.js'
 import { applyGoldTypeName } from '@/services/helper/barcode/gold-type-name.js'
 
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import BarcodeNoDashNotice from '@/components/custom/barcode-no-dash-notice.vue'
 
 export default {
   components: {
     modal,
+    BarcodeNoDashNotice,
     BaseDataTable
   },
 

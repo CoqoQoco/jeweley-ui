@@ -49,7 +49,7 @@
       <template #stockNumberTemplate="{ data }">
         <div class="stock-number-cell">
           <span>{{ data.stockNumber }}</span>
-          <BarcodeButtonGeneric :value="data.stockNumber" />
+          <BarcodeButtonGeneric :value="stripStockNumberDash(data.stockNumber)" />
         </div>
       </template>
 
@@ -118,6 +118,7 @@ import { formatDecimal } from '@/services/utils/decimal.js'
 import { getPieceQty, getPieceQtyReserved, getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 import { mergeBalanceIntoItems } from '@/composables/useStockBalanceMerge.js'
 import { formatDate } from '@/services/utils/dayjs.js'
+import { stripStockNumberDash } from '@/services/helper/stock-number.js'
 import {
   formatMoney2,
   formatPlainNumber,
@@ -348,6 +349,8 @@ export default {
   },
 
   methods: {
+    stripStockNumberDash,
+
     formatDecimal,
     getPieceQty,
     getPieceQtyReserved,

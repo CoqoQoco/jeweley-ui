@@ -7,6 +7,10 @@
           <span>{{ $t('view.receiptStock.product.grProduction.barcodePrintTitle') }}</span>
         </div>
 
+        <div class="px-3 pt-2">
+          <BarcodeNoDashNotice />
+        </div>
+
         <!-- Tab เลือกแบบ -->
         <div>
           <div class="label-type-tabs">
@@ -123,10 +127,12 @@ import { applyGoldTypeName } from '@/services/helper/barcode/gold-type-name.js'
 
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
+import BarcodeNoDashNotice from '@/components/custom/barcode-no-dash-notice.vue'
 
 export default {
   components: {
     modal,
+    BarcodeNoDashNotice,
     BaseDataTable,
     CheckboxGeneric
   },

@@ -49,6 +49,10 @@
           </div>
         </div>
 
+        <div class="pl-4 pr-4 pt-2">
+          <BarcodeNoDashNotice />
+        </div>
+
         <div v-if="showCostMissingWarning" class="pl-4 pr-4 pt-2">
           <div class="cost-missing-warning">
             <span class="bi bi-exclamation-triangle mr-1"></span>
@@ -221,10 +225,12 @@ import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
+import BarcodeNoDashNotice from '@/components/custom/barcode-no-dash-notice.vue'
 
 export default {
   components: {
     modal,
+    BarcodeNoDashNotice,
     barcodePreview,
     ToggleGroupGeneric,
     DropdownGeneric,

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { storage } from '@/services/storage.js'
+import { isSameStockNumber } from '@/services/helper/stock-number.js'
 
 const CARTS_STORAGE_KEY = 'pos-carts'
 
@@ -155,7 +156,7 @@ export const usePosCartStore = defineStore('posCart', {
       if (!cart) return { success: false, reason: 'no-cart' }
 
       const qtyAvailable = Number(item.qtyAvailable ?? item.qty ?? 1)
-      const existing = item.stockNumber ? cart.items.find((i) => i.stockNumber === item.stockNumber) : null
+      const existing = item.stockNumber ? cart.items.find((i) => isSameStockNumber(i.stockNumber, item.stockNumber)) : null
 
       if (existing) {
         const currentQty = Number(existing.qty) || 0

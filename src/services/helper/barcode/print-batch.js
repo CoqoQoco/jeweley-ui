@@ -1,4 +1,5 @@
 // helper ล้วน (ไม่แตะ store/DOM) สำหรับหน้าพิมพ์บาร์โค้ดหลายรายการ
+import { normalizeStockNumber } from '../stock-number.js'
 
 export const MAX_PASTE_CODES = 200
 export const MAX_LABELS_PER_RUN = 200
@@ -20,8 +21,9 @@ export function parseCodeList(text, cap = MAX_PASTE_CODES) {
     .map((code) => code.trim())
     .filter(Boolean)
     .forEach((code) => {
-      if (seen.has(code)) return
-      seen.add(code)
+      const key = normalizeStockNumber(code)
+      if (seen.has(key)) return
+      seen.add(key)
       all.push(code)
     })
 
@@ -145,7 +147,7 @@ export function formatCodeListForDialog(codes, maxShown = 10) {
 
 // เทียบรหัสแบบไม่สนขีด/ตัวพิมพ์/ช่องว่างหัวท้าย — ตรงกับ StockNumberSearch.Normalize ฝั่ง API
 export function normalizeCode(value) {
-  return String(value ?? '').trim().replace(/-/g, '').toUpperCase()
+  return normalizeStockNumber(value)
 }
 
 // API ค้น stockNumber/stockNumberOrigin แบบ Contains — ต้องคัดเฉพาะแถวที่รหัส "ตรง" จริง ไม่งั้นรหัสสั้นจะไปหยิบแถวอื่นที่มีรหัสเราเป็นส่วนหนึ่ง

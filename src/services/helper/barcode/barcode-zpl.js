@@ -177,11 +177,11 @@ const QR_BYTE_CAPACITY = [
 // helpers
 // ─────────────────────────────────────────────────────────────
 
-// เลขที่ผลิตเก่าก่อนเสมอ ไม่งั้นใช้เลขใหม่
+// เลขที่ผลิตเก่าก่อนเสมอ ไม่งั้นใช้เลขสินค้า — ตัดขีดออกเพื่อให้ป้ายสั้น (ข้อมูลในระบบไม่เปลี่ยน)
 export function resolveLabelCode(formValue) {
   const origin = typeof formValue?.stockNumberOrigin === 'string' ? formValue.stockNumberOrigin.trim() : ''
   if (origin) return origin
-  return formValue?.stockNumber || ''
+  return (formValue?.stockNumber || '').replace(/-/g, '')
 }
 
 // GT800 เท่านั้น — แทรกเว้นวรรคให้อ่านง่าย โดยไม่แตะข้อมูลจริงในระบบ ห้ามแตะเกรด (VS1, VVS2, SI1, G,VS1 ฯลฯ)

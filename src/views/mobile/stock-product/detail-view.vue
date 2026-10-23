@@ -72,6 +72,7 @@ import detailInfo from './components/detail-info.vue'
 import detailBalance from './components/detail-balance.vue'
 import detailCost from './components/detail-cost.vue'
 import detailCostHistory from './components/detail-cost-history.vue'
+import { normalizeStockNumber } from '@/services/helper/stock-number.js'
 
 export default {
   name: 'MobileStockProductDetail',
@@ -171,7 +172,7 @@ export default {
 
       const map = await this.balanceStore.fetchByStockNumbers(stockNumbers)
       for (const item of items) {
-        const b = map[item.stockNumber]
+        const b = map[normalizeStockNumber(item.stockNumber)]
         // ยอดนี้เป็นยอดรวมทั้ง SKU (ทุกล็อต ทุกคลัง) — ห้ามเขียนทับ item.qty/qtyReserved/qtyAvailable
         // ของ piece เอง (มาจาก StockProduct/List อยู่แล้ว) ใช้ prefix sku ชัดเจน
         item.skuQtyOnHand = b?.qtyOnHand ?? null
