@@ -16,7 +16,7 @@ const GT800_MADE_IN_FONT = [17, 17]
 
 // แท็บ original — ชื่อสินค้า + บาร์โค้ด + เลขที่ผลิต-ราคา + บรรทัดทอง
 // พิกัดชุดนี้เหมือนแท็บ original-qr ทุกจุด (verify กับกระดาษจริงแล้ว) — พับครึ่งป้ายที่ x≈425
-// ฝั่งซ้าย (ชื่อ/บาร์โค้ด/เลขที่ผลิต/ทอง) ต้องจบก่อน x≈420 พลอยอยู่ฝั่งขวาที่ GT800_O_GEM_X
+// ฝั่งซ้าย (ชื่อ/บาร์โค้ด/เลขที่ผลิต/ทอง) ต้องจบก่อน x≈420 พลอยอยู่ฝั่งขวาที่ GT800_GEM_X
 const GT800_O_NAME_X = 256
 const GT800_O_NAME_Y = 31
 const GT800_O_NAME_FONT = [16, 16]
@@ -83,27 +83,21 @@ export function buildRemarkSymbolZpl(key, x, y, dpiScale = 1) {
   return `${origin}^GB${size},${size},${thickness}^FS`
 }
 
-const GT800_O_GEM_X = 428// คอลัมน์พลอยฝั่งขวาของแนวพับ (ฝั่งซ้ายจบ x≈420, พับ x≈425) คงที่ทุก level — ที่ว่างถึงขอบขวา 594 = 166 dots
-// ขนาดตัวอักษรพลอยแท็บ original ตามจำนวนบรรทัด (1 พลอย = 1 บรรทัด ห้ามตัด/wrap) — ความกว้างเริ่มต้นแล้ว fitGemFont บีบเมื่อบรรทัดยาว
-const GT800_O_GEM_WIDTH = 14
-const GT800_O_GEM_SIZE_BY_LINES = [
-  { maxLines: 3, height: 20, lineHeight: 20 },
-  { maxLines: 4, height: 17, lineHeight: 17 }
-]
-const GT800_O_GEM_MAX_STACK_HEIGHT = 70 // พื้นที่ซ้อนบรรทัดพลอยตั้งแต่ GEM_START_Y (y31 → ~y101) ใช้ลดขนาดเมื่อ 5 บรรทัดขึ้นไป
-const GT800_O_GEM_DENSE_MAX = 14 // สูงสุดของ 5 บรรทัดขึ้นไป
+const GT800_GEM_X = 428// คอลัมน์พลอยฝั่งขวาของแนวพับ (ฝั่งซ้ายจบ x≈420, พับ x≈425) คงที่ทุก level — ที่ว่างถึงขอบขวา 594 = 166 dots
+// ฟอนต์พลอย GT800 (original + แนวตั้ง) เป็นสี่เหลี่ยมจัตุรัสเสมอ (สูง = กว้าง) ใช้ขนาดเดียวทุกบรรทัดในป้าย
+const GT800_GEM_FONT = 16 // ขนาดมาตรฐาน (ตรงกับข้อความอื่นบนป้าย) ระยะบรรทัด = ขนาดฟอนต์
+const GT800_O_GEM_MAX_STACK_HEIGHT = 70 // พื้นที่ซ้อนบรรทัดพลอยตั้งแต่ GEM_START_Y (y31 → ~y101) 5 บรรทัดขึ้นไปจะลดขนาดให้พอดี (ใช้ทั้ง original และแนวตั้ง)
 const GT800_O_GEM_MIN_HEIGHT = 8
 
 // template แนวตั้ง (4 แท็บราคา)
 const GT800_V_NAME_X = 256
 const GT800_V_NAME_Y = 31
-const GT800_V_NAME_FONT = [16, 16]
 
 const GT800_V_GOLD_X = 256
 const GT800_V_GOLD_Y = 46
 const GT800_V_GOLD_FONT = [16, 16]
 
-const GT800_V_BARCODE_X = 262
+const GT800_V_BARCODE_X = 256 // ชิดซ้าย 6 dots เพื่อให้รหัส 12 ตัวจบก่อนแนวพับ x≈425
 const GT800_V_BARCODE_Y = 61
 const GT800_V_BARCODE_MODULE = 1
 const GT800_V_BARCODE_RATIO = '3.0:1'
@@ -112,27 +106,28 @@ const GT800_V_BARCODE_HEIGHT = 18
 const GT800_V_CODE_LINE_X = 256
 const GT800_V_CODE_LINE_Y = 83
 const GT800_V_CODE_LINE_FONT = [17, 17]
+const GT800_V_CODE_LINE_CHAR_W = 8.9 // dot ต่อตัวอักษรที่ฟอนต์ 17
+const GT800_V_GOLD_CHAR_W = 7.1 // dot ต่อตัวอักษรที่ฟอนต์ 16
+const GT800_V_MIN_FONT = 10
 
 // คอลัมน์พลอย — เลือก 2 ระดับอัตโนมัติตามความยาวบาร์โค้ด/ข้อความ
 const GEM_START_Y = 31
+// ใช้เลือกฟอนต์บรรทัดรหัส/ราคาของแท็บ original เท่านั้น (คอลัมน์พลอยคงที่ที่ GT800_GEM_X ทุกแท็บ)
 const GEM_LEVELS = {
-  ROOMY: { name: 'ROOMY', x: 422, gemFont: [16, 17], lineHeight: 15, priceFontHorizontal: [18, 18] },
-  TIGHT: { name: 'TIGHT', x: 472, gemFont: [14, 13], lineHeight: 14, priceFontHorizontal: [17, 15] }
+  ROOMY: { name: 'ROOMY', priceFontHorizontal: [18, 18] },
+  TIGHT: { name: 'TIGHT', priceFontHorizontal: [17, 15] }
 }
 
 // เกณฑ์เลือก ROOMY/TIGHT (ปรับได้ที่เดียว)
-const GT800_BARCODE_START_X = 262 // จุดเริ่ม x ของบาร์โค้ด ใช้คำนวณความกว้างบาร์โค้ดโดยประมาณ
 const GT800_BARCODE_CHAR_EXTRA = 3
 const GT800_BARCODE_CHAR_WIDTH = 11
 const GT800_BARCODE_END_PAD = 2
-const GT800_ROOMY_BARCODE_SAFETY = 10
-const GT800_ROOMY_BARCODE_END_MAX = 422
 const GT800_ROOMY_LINE_COUNT_THRESHOLD = 3
 const GT800_ROOMY_LINE_MAX_LEN = 20
 const GT800_ROOMY_GEM_MAX_LEN = 21
 const GT800_GEM_RIGHT_EDGE = 594 // ขอบขวาสุดที่ข้อความพลอยยังไม่ถูกตัด (หัวป้ายสีขาวจบที่ x≈596)
 const GT800_GEM_CHAR_W_RATIO = 0.46 // dot ต่อ 1 หน่วยความกว้างฟอนต์ (วัดจากภาพ Labelary) ใช้ย่อความกว้างอัตโนมัติเมื่อบรรทัดพลอยยาว
-const GT800_GEM_MIN_WIDTH = 9
+const GT800_GEM_MIN_FONT = 9 // ขนาดต่ำสุดเมื่อย่อเพราะบรรทัดยาว (ไม่ต่ำกว่าขนาดที่ได้จากจำนวนบรรทัด)
 
 // แท็บ original-qr — บล็อกข้อความชิดซ้าย 4 บรรทัด (ไม่มีพลอย) + QR วางกลางพื้นที่ว่างด้านขวาของบล็อก
 const GT800_QR_NAME_X = 256
@@ -305,14 +300,17 @@ export function generateLegacyZPLVertical(formValue) {
 // GT800 — layout ใหม่
 // ─────────────────────────────────────────────────────────────
 
-function chooseGemLevel({ code, gems, checkLines, ignoreBarcodeFit = false }) {
-  const formattedGems = (Array.isArray(gems) ? gems : []).filter(Boolean).map(formatGemText)
+function formatGt800Gems(gems) {
+  return (Array.isArray(gems) ? gems : []).filter(Boolean).map(formatGemText)
+}
 
-  const barcodeEnd =
-    GT800_BARCODE_START_X + (code.length + GT800_BARCODE_CHAR_EXTRA) * GT800_BARCODE_CHAR_WIDTH + GT800_BARCODE_END_PAD
+// ตำแหน่งท้ายบาร์โค้ด (ประมาณ) — ฝั่งซ้ายต้องจบก่อน GT800_O_NAME_RIGHT_LIMIT
+function estimateGt800BarcodeEnd(code, startX) {
+  return startX + (code.length + GT800_BARCODE_CHAR_EXTRA) * GT800_BARCODE_CHAR_WIDTH + GT800_BARCODE_END_PAD
+}
 
-  // แท็บ original วางบาร์โค้ดในซีกซ้ายของป้าย (จบก่อนแนวพับ) เลยไม่ต้องพิจารณาความยาวบาร์โค้ดเทียบคอลัมน์พลอยอีก
-  const fitsBarcode = ignoreBarcodeFit || barcodeEnd + GT800_ROOMY_BARCODE_SAFETY <= GT800_ROOMY_BARCODE_END_MAX
+function chooseGemLevel({ gems, checkLines }) {
+  const formattedGems = formatGt800Gems(gems)
 
   const hasManyGemLines = formattedGems.length >= GT800_ROOMY_LINE_COUNT_THRESHOLD
   const linesFitLength =
@@ -321,43 +319,46 @@ function chooseGemLevel({ code, gems, checkLines, ignoreBarcodeFit = false }) {
   const longestGemLen = formattedGems.reduce((max, gem) => Math.max(max, gem.length), 0)
   const gemFitsLength = longestGemLen <= GT800_ROOMY_GEM_MAX_LEN
 
-  const level = fitsBarcode && linesFitLength && gemFitsLength ? GEM_LEVELS.ROOMY : GEM_LEVELS.TIGHT
+  const level = linesFitLength && gemFitsLength ? GEM_LEVELS.ROOMY : GEM_LEVELS.TIGHT
 
-  return { level, barcodeEnd, formattedGems }
+  return { level, formattedGems }
 }
 
-// ย่อความกว้างฟอนต์พลอยเมื่อบรรทัดที่ยาวสุดจะล้นขอบขวาของป้าย (ความสูงคงเดิม)
-function fitGemFont(font, longestLen, x) {
-  const budget = GT800_GEM_RIGHT_EDGE - x
-  const fitWidth = Math.floor(budget / (Math.max(1, longestLen) * GT800_GEM_CHAR_W_RATIO))
-  return [font[0], Math.max(GT800_GEM_MIN_WIDTH, Math.min(font[1], fitWidth))]
-}
-
-// ขนาด/ระยะบรรทัดพลอยแท็บ original ตามจำนวนบรรทัด
-function computeGt800OriginalGemSize(lineCount) {
-  const tier = GT800_O_GEM_SIZE_BY_LINES.find((t) => lineCount <= t.maxLines)
-  if (tier) return { height: tier.height, lineHeight: tier.lineHeight }
-  const size = Math.max(
+// ขนาดฟอนต์พลอยสี่เหลี่ยมจัตุรัส: 16 เมื่อซ้อนไม่เกินพื้นที่, 5 บรรทัดขึ้นไปลดตามพื้นที่ซ้อน แล้วย่อเท่ากันทั้งสูง/กว้างเมื่อบรรทัดยาวสุดล้นขอบขวา
+function computeGt800GemFont(lineCount, longestLen, x) {
+  const byLines = Math.max(
     GT800_O_GEM_MIN_HEIGHT,
-    Math.min(GT800_O_GEM_DENSE_MAX, Math.floor(GT800_O_GEM_MAX_STACK_HEIGHT / lineCount))
+    Math.min(GT800_GEM_FONT, Math.floor(GT800_O_GEM_MAX_STACK_HEIGHT / Math.max(1, lineCount)))
   )
-  return { height: size, lineHeight: size }
+  const budget = GT800_GEM_RIGHT_EDGE - x
+  const byWidth = Math.floor(budget / (Math.max(1, longestLen) * GT800_GEM_CHAR_W_RATIO))
+  const size = Math.min(byLines, Math.max(GT800_GEM_MIN_FONT, byWidth))
+  return { font: [size, size], lineHeight: size }
 }
 
 function longestLength(lines) {
   return lines.reduce((max, line) => Math.max(max, line.length), 0)
 }
 
-// ย่อฟอนต์ชื่อสินค้าอัตโนมัติถ้ากว้างเกินพื้นที่ก่อนแนวพับ x≈420 (แท็บ original เท่านั้น)
-function computeGt800NameFont(name) {
-  const budget = GT800_O_NAME_RIGHT_LIMIT - GT800_O_NAME_X
-  const estWidth = name.length * GT800_O_NAME_CHAR_W * (GT800_O_NAME_FONT[0] / GT800_O_NAME_REF_FONT)
-  if (estWidth <= budget) return GT800_O_NAME_FONT
-  const size = Math.max(
-    GT800_O_NAME_MIN_FONT,
-    Math.floor((GT800_O_NAME_REF_FONT * budget) / (name.length * GT800_O_NAME_CHAR_W))
-  )
+// ย่อฟอนต์ข้อความฝั่งซ้ายอัตโนมัติ (สี่เหลี่ยมจัตุรัส) ถ้ากว้างเกินพื้นที่ก่อนแนวพับ x≈420
+// charW = dot ต่อตัวอักษรที่ฟอนต์ refFont
+function fitGt800LeftFont({ text, x, baseFont, charW, refFont, minFont }) {
+  const budget = GT800_O_NAME_RIGHT_LIMIT - x
+  const estWidth = text.length * charW * (baseFont[0] / refFont)
+  if (estWidth <= budget) return baseFont
+  const size = Math.max(minFont, Math.floor((refFont * budget) / (text.length * charW)))
   return [size, size]
+}
+
+function computeGt800NameFont(name) {
+  return fitGt800LeftFont({
+    text: name,
+    x: GT800_O_NAME_X,
+    baseFont: GT800_O_NAME_FONT,
+    charW: GT800_O_NAME_CHAR_W,
+    refFont: GT800_O_NAME_REF_FONT,
+    minFont: GT800_O_NAME_MIN_FONT
+  })
 }
 
 // ไซซ์บนบรรทัดทอง (แท็บ original) — ตัดช่องว่าง, ว่างหรือมีแค่ # ตัดทิ้ง, ไม่ขึ้นต้นด้วย # ให้เติมให้
@@ -395,19 +396,14 @@ export function layoutGt800(formValue, template) {
   if (template === 'original') {
     const salePriceText = formValue?.hidePrice ? '' : formatLabelPrice(formValue?.salePrice)
     const codeLine = [code, salePriceText].filter(Boolean).join(' - ')
-    const { level, barcodeEnd, formattedGems } = chooseGemLevel({
-      code,
-      gems,
-      checkLines: [codeLine],
-      ignoreBarcodeFit: true
-    })
+    const { level, formattedGems } = chooseGemLevel({ gems, checkLines: [codeLine] })
 
     const productNameEn = formValue?.productNameEn || ''
     const nameFont = computeGt800NameFont(productNameEn)
     const sizeText = normalizeGt800Size(formValue?.size)
     const goldLine = [formValue?.gold || '', sizeText].filter(Boolean).join(' ')
 
-    const gemSize = computeGt800OriginalGemSize(formattedGems.length)
+    const gem = computeGt800GemFont(formattedGems.length, longestLength(formattedGems), GT800_GEM_X)
 
     const remarkKey = isKnownRemarkSymbol(formValue?.remarkSymbol) ? formValue.remarkSymbol : ''
     const remarkPlacement = remarkKey ? placeGt800Remark(productNameEn, nameFont, goldLine) : null
@@ -419,13 +415,13 @@ export function layoutGt800(formValue, template) {
       levelName: level.name,
       code,
       codeLine,
-      barcodeEnd,
+      barcodeEnd: estimateGt800BarcodeEnd(code, GT800_O_BARCODE_X),
       productNameEn,
       nameFont,
       goldLine,
-      gemColumnX: GT800_O_GEM_X,
-      gemFont: fitGemFont([gemSize.height, GT800_O_GEM_WIDTH], longestLength(formattedGems), GT800_O_GEM_X),
-      gemLineHeight: gemSize.lineHeight,
+      gemColumnX: GT800_GEM_X,
+      gemFont: gem.font,
+      gemLineHeight: gem.lineHeight,
       codeLineFont: level.priceFontHorizontal,
       formattedGems
     }
@@ -437,23 +433,37 @@ export function layoutGt800(formValue, template) {
   const priceText = hasPrice ? formatLabelPrice(formValue.price) : ''
   const codeLine = [formValue?.productNumber, priceText].filter(Boolean).join(' - ')
 
-  const { level, barcodeEnd, formattedGems } = chooseGemLevel({
-    code,
-    gems,
-    checkLines: [formValue?.productNameEn || '', goldSizeLine]
-  })
+  const formattedGems = formatGt800Gems(gems)
+  const gem = computeGt800GemFont(formattedGems.length, longestLength(formattedGems), GT800_GEM_X)
+  const productNameEn = formValue?.productNameEn || ''
 
   return {
     template: 'vertical',
-    levelName: level.name,
     code,
     codeLine,
     goldSizeLine,
-    barcodeEnd,
-    gemColumnX: level.x,
-    gemFont: fitGemFont(level.gemFont, longestLength(formattedGems), level.x),
-    gemLineHeight: level.lineHeight,
-    codeLineFont: GT800_V_CODE_LINE_FONT,
+    productNameEn,
+    nameFont: computeGt800NameFont(productNameEn),
+    goldFont: fitGt800LeftFont({
+      text: goldSizeLine,
+      x: GT800_V_GOLD_X,
+      baseFont: GT800_V_GOLD_FONT,
+      charW: GT800_V_GOLD_CHAR_W,
+      refFont: GT800_V_GOLD_FONT[0],
+      minFont: GT800_V_MIN_FONT
+    }),
+    barcodeEnd: estimateGt800BarcodeEnd(code, GT800_V_BARCODE_X),
+    gemColumnX: GT800_GEM_X,
+    gemFont: gem.font,
+    gemLineHeight: gem.lineHeight,
+    codeLineFont: fitGt800LeftFont({
+      text: codeLine,
+      x: GT800_V_CODE_LINE_X,
+      baseFont: GT800_V_CODE_LINE_FONT,
+      charW: GT800_V_CODE_LINE_CHAR_W,
+      refFont: GT800_V_CODE_LINE_FONT[0],
+      minFont: GT800_V_MIN_FONT
+    }),
     formattedGems
   }
 }
@@ -586,9 +596,9 @@ export function generateGt800ZPLVertical(formValue, dpiScale = 1, options = {}) 
 
   zpl += `^FO${s(GT800_MADE_IN_X)},${s(GT800_MADE_IN_Y)}^A0N,${s(GT800_MADE_IN_FONT[0])},${s(GT800_MADE_IN_FONT[1])}^FD${formValue?.madeIn || ''}^FS`
 
-  zpl += `^FO${s(GT800_V_NAME_X)},${s(GT800_V_NAME_Y)}^A0N,${s(GT800_V_NAME_FONT[0])},${s(GT800_V_NAME_FONT[1])}^FD${formValue?.productNameEn || ''}^FS`
+  zpl += `^FO${s(GT800_V_NAME_X)},${s(GT800_V_NAME_Y)}^A0N,${s(layout.nameFont[0])},${s(layout.nameFont[1])}^FD${layout.productNameEn}^FS`
 
-  zpl += `^FO${s(GT800_V_GOLD_X)},${s(GT800_V_GOLD_Y)}^A0N,${s(GT800_V_GOLD_FONT[0])},${s(GT800_V_GOLD_FONT[1])}^FD${layout.goldSizeLine}^FS`
+  zpl += `^FO${s(GT800_V_GOLD_X)},${s(GT800_V_GOLD_Y)}^A0N,${s(layout.goldFont[0])},${s(layout.goldFont[1])}^FD${layout.goldSizeLine}^FS`
 
   zpl += `^FO${s(GT800_V_BARCODE_X)},${s(GT800_V_BARCODE_Y)}^BY${s(GT800_V_BARCODE_MODULE)},${GT800_V_BARCODE_RATIO},${s(GT800_V_BARCODE_HEIGHT)}^BCN,${s(GT800_V_BARCODE_HEIGHT)},N,N^FD${layout.code}^FS`
 
