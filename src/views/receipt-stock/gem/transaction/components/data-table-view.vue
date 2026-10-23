@@ -18,6 +18,18 @@
         </div>
       </template>
 
+      <template #runningTemplate="{ data: rowData }">
+        <GemDocLink :value="rowData.running" @open="openDoc" />
+      </template>
+      <template #refRunning1Template="{ data: rowData }">
+        <GemDocLink :value="rowData.refRunning1" @open="openDoc" />
+      </template>
+      <template #refRunning2Template="{ data: rowData }">
+        <GemDocLink :value="rowData.refRunning2" @open="openDoc" />
+      </template>
+      <template #operatorByTemplate="{ data: rowData }">{{ rowData.operatorBy || '-' }}</template>
+      <template #createByTemplate="{ data: rowData }">{{ rowData.createBy || '-' }}</template>
+
       <template #qtyTemplate="{ data: rowData }">
         <div>
           <span><i class="mr-1" :class="getIconQty(rowData.type)"></i></span>
@@ -38,11 +50,15 @@
         </div>
       </template>
     </BaseDataTable>
+
+    <GemDocumentModal :isShow="isShowDoc" :running="docRunning" @closeModal="isShowDoc = false" />
   </div>
 </template>
 
 <script>
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import GemDocLink from '@/views/receipt-stock/gem/components/gem-doc-link.vue'
+import GemDocumentModal from '@/views/receipt-stock/gem/components/gem-document-modal.vue'
 import Papa from 'papaparse'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 
@@ -51,7 +67,9 @@ import api from '@/axios/axios-helper.js'
 
 export default {
   components: {
-    BaseDataTable
+    BaseDataTable,
+    GemDocLink,
+    GemDocumentModal
   },
 
   mixins: [dataTablePaging],
@@ -107,7 +125,9 @@ export default {
       dataExcel: {},
       expnadData: [],
       form: { ...this.modelForm },
-      export: null
+      export: null,
+      isShowDoc: false,
+      docRunning: ''
     }
   },
 
@@ -165,6 +185,16 @@ export default {
           field: 'running',
           header: this.$t('view.receiptStock.gem.transaction.running'),
           sortable: true,
+          minWidth: '200px'
+        },
+        {
+          field: 'operatorBy',
+          header: this.$t('view.stock.gem.txOperatorBy'),
+          minWidth: '200px'
+        },
+        {
+          field: 'createBy',
+          header: this.$t('view.stock.gem.txCreateBy'),
           minWidth: '200px'
         },
         {
@@ -321,6 +351,8 @@ export default {
           return {
             วันทำรายการ: formatDate(item.requestDate),
             เลขที่รายการ: item.running,
+            'ผู้เบิก/ผู้เกี่ยวข้อง': item.operatorBy,
+            ผู้ทำรายการ: item.createBy,
             เลขที่อ้างอิง: item.refRunning,
             ประเภท: this.getTypeName(item.type),
             'พลอย/เพชร': item.name,
@@ -423,9 +455,13 @@ export default {
         default:
           return ''
       }
-    }
+    },
 
     // -------- event -------- //
+    openDoc(running) {
+      this.docRunning = running
+      this.isShowDoc = true
+    }
   },
 
   created() {

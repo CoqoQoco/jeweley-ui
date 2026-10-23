@@ -24,6 +24,17 @@
             <template #requestDateTemplate="{ data: row }">
               {{ formatDateTime(row.requestDate) }}
             </template>
+            <template #runningTemplate="{ data: row }">
+              <GemDocLink :value="row.running" @open="openDoc" />
+            </template>
+            <template #refRunning1Template="{ data: row }">
+              <GemDocLink :value="row.refRunning1" @open="openDoc" />
+            </template>
+            <template #refRunning2Template="{ data: row }">
+              <GemDocLink :value="row.refRunning2" @open="openDoc" />
+            </template>
+            <template #operatorByTemplate="{ data: row }">{{ row.operatorBy || '-' }}</template>
+            <template #createByTemplate="{ data: row }">{{ row.createBy || '-' }}</template>
             <template #typeTemplate="{ data: row }">
               <div>
                 <span><i class="mr-1" :class="getIconQty(row.type)"></i></span>
@@ -65,6 +76,7 @@
             </template>
           </BaseDataTable>
         </div>
+        <GemDocumentModal :isShow="isShowDoc" :running="docRunning" @closeModal="isShowDoc = false" />
       </template>
     </modal>
   </div>
@@ -76,6 +88,8 @@ import { defineAsyncComponent } from 'vue'
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import GemDocLink from '@/views/receipt-stock/gem/components/gem-doc-link.vue'
+import GemDocumentModal from '@/views/receipt-stock/gem/components/gem-document-modal.vue'
 
 import api from '@/axios/axios-helper.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
@@ -83,7 +97,9 @@ import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 export default {
   components: {
     modal,
-    BaseDataTable
+    BaseDataTable,
+    GemDocLink,
+    GemDocumentModal
   },
   props: {
     isShow: {
@@ -108,6 +124,8 @@ export default {
       return [
         { field: 'requestDate', header: this.$t('view.stock.gem.txDate'), minWidth: '200px' },
         { field: 'running', header: this.$t('view.stock.gem.txRunning'), minWidth: '200px' },
+        { field: 'operatorBy', header: this.$t('view.stock.gem.txOperatorBy'), minWidth: '200px' },
+        { field: 'createBy', header: this.$t('view.stock.gem.txCreateBy'), minWidth: '200px' },
         { field: 'refRunning1', header: this.$t('view.stock.gem.txRef1'), minWidth: '200px' },
         { field: 'refRunning2', header: this.$t('view.stock.gem.txRef2'), minWidth: '200px' },
         { field: 'type', header: this.$t('view.stock.gem.txType'), minWidth: '200px', sortable: false },
@@ -164,13 +182,19 @@ export default {
           dir: 'desc'
         }
       ],
-      take: 100
+      take: 100,
+      isShowDoc: false,
+      docRunning: ''
     }
   },
   methods: {
     // ----- event
     closeModal() {
       this.$emit('closeModal')
+    },
+    openDoc(running) {
+      this.docRunning = running
+      this.isShowDoc = true
     },
 
     // ------ APIs
