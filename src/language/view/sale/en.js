@@ -347,11 +347,13 @@ export const quotation = {
     noItems: 'No items to create Excel'
   },
   error: {
+    exportBreakdownPriceExcel: 'Cannot export Break Down Price Excel',
     exportBreakdownExcel: 'Cannot export Breakdown Excel',
     exportBreakdownExcelTitle: 'Error'
   },
   success: {
     exportExcel: 'Excel exported successfully',
+    exportBreakdownPriceExcel: 'Break Down Price Excel exported successfully',
     exportBreakdownExcel: 'Breakdown Excel exported successfully',
     exportSummaryExcel: 'Summary Excel exported successfully',
     mergeSuccess: 'Quotation merge successful',
@@ -386,6 +388,8 @@ export const quotation = {
   previewBtn: 'Preview',
   breakdownBtn: 'Breakdown',
   breakdownExcelBtn: 'Breakdown Excel',
+  breakdownPriceBtn: 'Break Down Price',
+  breakdownPriceExcelBtn: 'Break Down Price Excel',
   costCheckBtn: 'Cost Check',
   summaryBtn: 'Summary by Type',
   summaryExcelBtn: 'Summary Excel',
@@ -1121,6 +1125,7 @@ export const costStock = {
   materialRegion: 'Region',
   totalCostAll: 'Total Cost',
   costPerPieceLabel: 'Cost per Piece',
+  stoneAsOptions: 'Colour stones as options (priced per type)',
   useCostPerPiece: 'Use cost per piece as appraisal price',
   priceReferenceLabel: '[ Ref. Price --> {price} ]',
   validation: {

@@ -57,6 +57,9 @@ export default {
     alloyFactor9K: 'ตัวคูณ Alloy 9K',
     alloyRateYgWgUsd: 'ค่า Alloy สีทอง YG/WG (USD/กรัม)',
     alloyRatePgUsd: 'ค่า Alloy สีทอง PG (USD/กรัม)',
+    laborSectionTitle: 'ค่าแรงเริ่มต้นของ Break Down Price',
+    laborAllSettingUsd: 'ค่าฝังรวม All Setting (USD/เม็ด)',
+    laborWcpfrUsd: 'ค่าแรง W.C.P.F.R (USD/ชิ้น)',
     validation: {
       invalidNumber: 'กรุณากรอกตัวเลขที่ไม่ติดลบ'
     },

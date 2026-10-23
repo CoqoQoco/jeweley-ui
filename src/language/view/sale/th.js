@@ -347,11 +347,13 @@ export const quotation = {
     noItems: 'ไม่มีสินค้าสำหรับสร้าง Excel'
   },
   error: {
+    exportBreakdownPriceExcel: 'ไม่สามารถ Export Break Down Price Excel ได้',
     exportBreakdownExcel: 'ไม่สามารถ Export Breakdown Excel ได้',
     exportBreakdownExcelTitle: 'เกิดข้อผิดพลาด'
   },
   success: {
     exportExcel: 'Export Excel สำเร็จ',
+    exportBreakdownPriceExcel: 'Export Break Down Price Excel สำเร็จ',
     exportBreakdownExcel: 'Export Breakdown Excel สำเร็จ',
     exportSummaryExcel: 'Export Excel ใบสรุปตามประเภทสินค้าสำเร็จ',
     mergeSuccess: 'รวม Quotation สำเร็จ',
@@ -386,6 +388,8 @@ export const quotation = {
   previewBtn: 'Preview',
   breakdownBtn: 'Breakdown',
   breakdownExcelBtn: 'Breakdown Excel',
+  breakdownPriceBtn: 'Break Down Price',
+  breakdownPriceExcelBtn: 'Break Down Price Excel',
   costCheckBtn: 'ตรวจต้นทุน',
   summaryBtn: 'ใบสรุปตามประเภท',
   summaryExcelBtn: 'Excel ใบสรุปตามประเภท',
@@ -1114,6 +1118,7 @@ export const costStock = {
   materialRegion: 'เเหล่งผลิต',
   totalCostAll: 'ต้นทุนรวมทั้งหมด',
   costPerPieceLabel: 'ต้นทุนต่อชิ้น',
+  stoneAsOptions: 'พลอยสีเป็นตัวเลือก (คิดราคาแยกต่อชนิด)',
   useCostPerPiece: 'ใช้ต้นทุนต่อชิ้นเป็นราคาประเมิน',
   priceReferenceLabel: '[ ราคาอ้างอิง --> {price} ]',
   validation: {

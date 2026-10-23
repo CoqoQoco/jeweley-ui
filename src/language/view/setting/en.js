@@ -57,6 +57,9 @@ export default {
     alloyFactor9K: 'Alloy Factor 9K',
     alloyRateYgWgUsd: 'Alloy Rate YG/WG (USD/g)',
     alloyRatePgUsd: 'Alloy Rate PG (USD/g)',
+    laborSectionTitle: 'Default Labor for Break Down Price',
+    laborAllSettingUsd: 'All Setting Rate (USD/stone)',
+    laborWcpfrUsd: 'W.C.P.F.R Labor (USD/piece)',
     validation: {
       invalidNumber: 'Please enter a non-negative number'
     },

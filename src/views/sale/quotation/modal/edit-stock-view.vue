@@ -614,6 +614,14 @@
               <input type="checkbox" id="useCostPerPiece" v-model="useCostPerPiece" class="mr-1" />
               <span for="useCostPerPiece">{{ $t('view.sale.costStock.useCostPerPiece') }}</span>
             </div>
+            <div v-if="canViewMargin" class="mt-2">
+              <CheckboxGeneric
+                :modelValue="stock.stoneAsOptions !== false"
+                :binary="true"
+                :label="$t('view.sale.costStock.stoneAsOptions')"
+                @update:modelValue="stock.stoneAsOptions = $event"
+              />
+            </div>
             <div v-if="canViewMargin" class="action-group-container mt-2">
               <div class="d-flex align-items-center gap-2">
                 <DropdownGeneric

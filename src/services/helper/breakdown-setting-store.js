@@ -8,7 +8,9 @@ export const BREAKDOWN_SETTING_DEFAULT = {
   alloyFactor14K: 0.41,
   alloyFactor9K: 0.625,
   alloyRateYgWgUsd: 0.6,
-  alloyRatePgUsd: 2.0
+  alloyRatePgUsd: 2.0,
+  laborAllSettingUsd: 0.5,
+  laborWcpfrUsd: 11
 }
 
 export async function getBreakdownSetting() {

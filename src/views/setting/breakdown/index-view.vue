@@ -56,6 +56,22 @@
       </div>
     </SectionCardGeneric>
 
+    <SectionCardGeneric
+      class="mt-4"
+      :title="$t('view.setting.breakdown.laborSectionTitle')"
+      icon="bi-tools"
+      headerStyle="filled"
+    >
+      <div class="form-row two-col">
+        <FormFieldGeneric :label="$t('view.setting.breakdown.laborAllSettingUsd')" :required="true">
+          <InputTextGeneric type="number" step="0.01" :min="0" v-model.number="form.laborAllSettingUsd" />
+        </FormFieldGeneric>
+        <FormFieldGeneric :label="$t('view.setting.breakdown.laborWcpfrUsd')" :required="true">
+          <InputTextGeneric type="number" step="0.01" :min="0" v-model.number="form.laborWcpfrUsd" />
+        </FormFieldGeneric>
+      </div>
+    </SectionCardGeneric>
+
     <div class="action-bar">
       <div></div>
       <ButtonGeneric variant="main" icon="bi-save" :label="$t('common.btn.save')" @click="onSave" />
@@ -166,7 +182,9 @@ export default {
         'alloyFactor14K',
         'alloyFactor9K',
         'alloyRateYgWgUsd',
-        'alloyRatePgUsd'
+        'alloyRatePgUsd',
+        'laborAllSettingUsd',
+        'laborWcpfrUsd'
       ]
       for (const key of fields) {
         const val = Number(this.form[key])
@@ -189,7 +207,9 @@ export default {
         alloyFactor14K: Number(this.form.alloyFactor14K),
         alloyFactor9K: Number(this.form.alloyFactor9K),
         alloyRateYgWgUsd: Number(this.form.alloyRateYgWgUsd),
-        alloyRatePgUsd: Number(this.form.alloyRatePgUsd)
+        alloyRatePgUsd: Number(this.form.alloyRatePgUsd),
+        laborAllSettingUsd: Number(this.form.laborAllSettingUsd),
+        laborWcpfrUsd: Number(this.form.laborWcpfrUsd)
       }
       await saveBreakdownSetting(payload)
       success(this.$t('view.setting.breakdown.saveSuccess'))

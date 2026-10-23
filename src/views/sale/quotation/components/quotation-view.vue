@@ -324,6 +324,26 @@
                 type="button"
                 :disabled="!canViewMargin || !customer.quotationItems || customer.quotationItems.length === 0"
                 :title="canViewMargin ? '' : $t('view.sale.quotation.noMarginAccessTooltip')"
+                @click="printBreakdownPrice()"
+              >
+                <i class="bi bi-file-earmark-pdf mr-1"></i>
+                <span>{{ $t('view.sale.quotation.breakdownPriceBtn') }}</span>
+              </button>
+              <button
+                class="btn btn-sm btn-outline-main"
+                type="button"
+                :disabled="!canViewMargin || !customer.quotationItems || customer.quotationItems.length === 0"
+                :title="canViewMargin ? '' : $t('view.sale.quotation.noMarginAccessTooltip')"
+                @click="previewBreakdownPrice()"
+              >
+                <i class="bi bi-eye mr-1"></i>
+                <span>{{ $t('view.sale.quotation.previewBtn') }}</span>
+              </button>
+              <button
+                class="btn btn-sm btn-green"
+                type="button"
+                :disabled="!canViewMargin || !customer.quotationItems || customer.quotationItems.length === 0"
+                :title="canViewMargin ? '' : $t('view.sale.quotation.noMarginAccessTooltip')"
                 @click="printCostCheck()"
               >
                 <i class="bi bi-file-earmark-pdf mr-1"></i>
@@ -358,6 +378,12 @@
                 :title="canViewMargin ? '' : $t('view.sale.quotation.noMarginAccessTooltip')">
                 <i class="bi bi-file-earmark-excel mr-1"></i>
                 <span>{{ $t('view.sale.quotation.breakdownExcelBtn') }}</span>
+              </button>
+              <button class="btn btn-sm btn-green" type="button" @click="exportBreakdownPriceExcel"
+                :disabled="!canViewMargin || !customer.quotationItems || customer.quotationItems.length === 0"
+                :title="canViewMargin ? '' : $t('view.sale.quotation.noMarginAccessTooltip')">
+                <i class="bi bi-file-earmark-excel mr-1"></i>
+                <span>{{ $t('view.sale.quotation.breakdownPriceExcelBtn') }}</span>
               </button>
               <button class="btn btn-sm btn-green" type="button" @click="exportSummaryExcel"
                 :disabled="!customer.quotationItems || customer.quotationItems.length === 0">
@@ -475,12 +501,14 @@ import CostVersionPickerModal from '@/views/sale/quotation/modal/cost-version-pi
 import CustomerEditModal from '@/views/sale/quotation/modal/customer-edit-modal.vue'
 import { generateInvoicePdf } from '@/services/helper/pdf/quotation/quotation-pdf-integration.js'
 import { generateBreakdownPdf } from '@/services/helper/pdf/quotation/breakdown-pdf-integration.js'
+import { generateBreakdownPricePdf } from '@/services/helper/pdf/quotation/breakdown-price-pdf-integration.js'
 import { generateCostCheckPdf } from '@/services/helper/pdf/quotation/cost-check-pdf-integration.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
 import { InvoiceExcelBuilder } from '@/services/helper/excel/invoice/invoice-excel-builder.js'
 import { BreakdownExcelBuilder } from '@/services/helper/excel/quotation/breakdown-excel-builder.js'
+import { BreakdownPriceExcelBuilder } from '@/services/helper/excel/quotation/breakdown-price-excel-builder.js'
 import { SaleSummaryPdfBuilder } from '@/services/helper/pdf/sale-summary/sale-summary-pdf-builder.js'
 import { SaleSummaryExcelBuilder } from '@/services/helper/excel/sale-summary/sale-summary-excel-builder.js'
 import { buildProductTypeLabelMap } from '@/services/helper/sale-summary/sale-summary-data.js'
@@ -986,6 +1014,35 @@ export default {
       })
     },
 
+    printBreakdownPrice() {
+      if (!this.canViewMargin) return
+      if (!this.validateBreakdownComplete()) return
+      generateBreakdownPricePdf({
+        items: this.customer.quotationItems,
+        customer: this.customer,
+        invoiceDate: this.customer.quotationDate,
+        filename: `BreakdownPrice_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`,
+        openInNewTab: false,
+        profitPercent: this.customer.profitPercent ?? 15,
+        goldLossPercent: this.customer.goldLossPercent
+      })
+    },
+    previewBreakdownPrice() {
+      if (!this.canViewMargin) return
+      if (!this.validateBreakdownComplete()) return
+      const win1 = window.open('', '_blank')
+      generateBreakdownPricePdf({
+        items: this.customer.quotationItems,
+        customer: this.customer,
+        invoiceDate: this.customer.quotationDate,
+        filename: `BreakdownPrice_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`,
+        openInNewTab: true,
+        targetWindow: win1,
+        profitPercent: this.customer.profitPercent ?? 15,
+        goldLossPercent: this.customer.goldLossPercent
+      })
+    },
+
     printCostCheck() {
       if (!this.canViewMargin) return
       const filename = `CostCheck_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`
@@ -1435,6 +1492,37 @@ export default {
       } catch (err) {
         error(
           err.message || this.$t('view.sale.quotation.error.exportBreakdownExcel'),
+          this.$t('view.sale.quotation.error.exportBreakdownExcelTitle')
+        )
+      }
+    },
+
+    async exportBreakdownPriceExcel() {
+      if (!this.canViewMargin) return
+      if (!this.customer.quotationItems || this.customer.quotationItems.length === 0) {
+        warning(this.$t('view.sale.quotation.validation.noItems'), this.$t('common.label.incompleteData'))
+        return
+      }
+      if (!this.validateBreakdownComplete()) return
+      try {
+        const breakdownSetting = await getBreakdownSetting()
+        const builder = new BreakdownPriceExcelBuilder({
+          items: this.customer.quotationItems,
+          customer: this.customer,
+          invoiceDate: this.customer.quotationDate,
+          invoiceNo: this.customer.invoiceNumber,
+          currencyUnit: this.customer.currencyUnit,
+          currencyMultiplier: this.customer.currencyMultiplier,
+          profitPercent: this.customer.profitPercent ?? 15,
+          goldLossPercent: this.customer.goldLossPercent ?? breakdownSetting.goldLossPercent,
+          laborAllSettingUsd: breakdownSetting.laborAllSettingUsd,
+          laborWcpfrUsd: breakdownSetting.laborWcpfrUsd
+        })
+        await builder.downloadExcel()
+        success(this.$t('view.sale.quotation.success.exportBreakdownPriceExcel'))
+      } catch (err) {
+        error(
+          err.message || this.$t('view.sale.quotation.error.exportBreakdownPriceExcel'),
           this.$t('view.sale.quotation.error.exportBreakdownExcelTitle')
         )
       }
