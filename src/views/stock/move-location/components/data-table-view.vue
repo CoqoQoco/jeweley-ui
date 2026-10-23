@@ -28,7 +28,7 @@
 
       <template #woTextTemplate="{ data }">
         <div>
-          {{ `${data.wo}-${data.woNumber}` }}
+          {{ getWoText(data) }}
         </div>
       </template>
 
@@ -57,6 +57,7 @@ import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
+import { formatWoText } from '@/views/stock/price-review/price-review-helpers.js'
 
 import { useStockMoveLocationApiStore } from '@/stores/modules/api/stock/stock-move-location-api.js'
 
@@ -135,6 +136,10 @@ export default {
   },
 
   methods: {
+    getWoText(data) {
+      return formatWoText(data) || '-'
+    },
+
     formatDecimal,
     getPieceQtyAvailable,
 

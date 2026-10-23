@@ -42,7 +42,7 @@
 
       <template #woTextTemplate="{ data }">
         <div>
-          {{ `${data.wo}-${data.woNumber}` }}
+          {{ getWoText(data) }}
         </div>
       </template>
 
@@ -119,6 +119,7 @@ import { getPieceQty, getPieceQtyReserved, getPieceQtyAvailable } from '@/servic
 import { mergeBalanceIntoItems } from '@/composables/useStockBalanceMerge.js'
 import { formatDate } from '@/services/utils/dayjs.js'
 import { stripStockNumberDash } from '@/services/helper/stock-number.js'
+import { formatWoText } from '@/views/stock/price-review/price-review-helpers.js'
 import {
   formatMoney2,
   formatPlainNumber,
@@ -349,6 +350,10 @@ export default {
   },
 
   methods: {
+    getWoText(data) {
+      return formatWoText(data) || '-'
+    },
+
     stripStockNumberDash,
 
     formatDecimal,

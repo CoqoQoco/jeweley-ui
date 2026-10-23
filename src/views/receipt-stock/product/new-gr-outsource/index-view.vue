@@ -91,6 +91,8 @@ import modalBarcodePrint from '../new-gr-production/modal/barcode-print-view.vue
 import modalSearchProductName from '../new-gr-production/modal/search-product-name-view.vue'
 import modalEditAllMaterials from '../new-gr-production/modal/edit-all-materials-view.vue'
 
+const materialUnitType = new WeakMap()
+
 const interfaceIsShow = {
   imageSelect: false,
   barcodePrint: false,
@@ -377,6 +379,7 @@ export default {
         qtyUnit: 'pc',
         weight: null,
         weightUnit: 'ct.',
+        qtyWeightUnit: 'ct.',
         description: ''
       })
     },
@@ -386,7 +389,16 @@ export default {
     },
 
     updateTypeBarcode(item) {
-      console.log('updateTypeBarcode', item)
+      if (!item || materialUnitType.get(item) === item.type) return
+      materialUnitType.set(item, item.type)
+      const isMetal = item.type === 'Gold' || item.type === 'Silver'
+      if (isMetal) {
+        item.weightUnit = 'g.'
+        item.qtyWeightUnit = 'g.'
+      } else if (item.qtyWeightUnit === 'g.' || item.weightUnit === 'g.') {
+        item.weightUnit = 'ct.'
+        item.qtyWeightUnit = 'ct.'
+      }
     },
 
     onEditAllMaterials() {
