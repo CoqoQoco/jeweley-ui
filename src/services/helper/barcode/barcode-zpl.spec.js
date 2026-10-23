@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   resolveLabelCode,
   formatGemText,
+  abbreviateGemText,
   formatLabelPrice,
   generateLegacyZPL,
   generateLegacyZPLVertical,
@@ -420,54 +421,101 @@ describe('layoutGt800 / generateGt800ZPL — แท็บ original ใหม่ 
     expect(layout.nameFont).toEqual([10, 10])
   })
 
-  it('layoutGt800: ฟอนต์พลอยสี่เหลี่ยมจัตุรัส (1-4 → 16, 5 → 14, 6+ → floor(70/n) ไม่ต่ำกว่า 8)', () => {
+  it('layoutGt800: ฟอนต์พลอย — 1-4 รายการ → 16 สูง, 5+ จับคู่เป็นแถว สูง = floor(73/แถว) ไม่ต่ำกว่า 8', () => {
     const gems = (n) => Array.from({ length: n }, () => '0.10ct.')
     ;[1, 2, 3, 4].forEach((n) => {
       const l = layoutGt800({ ...form, gems: gems(n) }, 'original')
       expect(l.gemFont).toEqual([16, 16])
       expect(l.gemLineHeight).toBe(16)
+      expect(l.gemRows.length).toBe(n)
     })
     const five = layoutGt800({ ...form, gems: gems(5) }, 'original')
-    expect(five.gemFont).toEqual([14, 14])
-    expect(five.gemLineHeight).toBe(14)
+    expect(five.gemRows.length).toBe(3)
+    expect(five.gemFont).toEqual([16, 16])
     const seven = layoutGt800({ ...form, gems: gems(7) }, 'original')
-    expect(seven.gemFont).toEqual([10, 10])
-    expect(seven.gemLineHeight).toBe(10)
-    expect(31 + 7 * seven.gemLineHeight).toBeLessThanOrEqual(104)
-    expect(layoutGt800({ ...form, gems: gems(12) }, 'original').gemFont).toEqual([8, 8])
+    expect(seven.gemRows.length).toBe(4)
+    expect(seven.gemFont).toEqual([16, 16])
+    expect(31 + seven.gemRows.length * seven.gemLineHeight).toBeLessThanOrEqual(104)
+    const twelve = layoutGt800({ ...form, gems: gems(12) }, 'original')
+    expect(twelve.gemRows.length).toBe(6)
+    expect(twelve.gemFont[0]).toBe(12)
+    expect(layoutGt800({ ...form, gems: gems(30) }, 'original').gemFont[0]).toBe(8)
   })
 
-  it('layoutGt800: บรรทัดพลอยยาว 26 ตัวไม่ถูกตัด ย่อสูง+กว้างเท่ากันให้พอดีขอบขวา และไม่ต่ำกว่า 9', () => {
+  it('layoutGt800: บรรทัดพลอยยาวไม่ถูกตัด ย่อความกว้างให้พอดีขอบขวา และไม่ต่ำกว่า 9', () => {
     const long = layoutGt800({ ...form, gems: ['19Ruby 0.365 ct., RD - 1.5', '1Diamond 0.02 ct., G,VS1'] }, 'original')
-    expect(long.formattedGems[0]).toBe('19Ruby 0.365 ct., RD - 1.5')
-    expect(long.formattedGems[0].length).toBe(26)
-    expect(long.gemFont[0]).toBe(long.gemFont[1])
-    expect(long.gemFont[0]).toBeGreaterThanOrEqual(9)
-    expect(long.gemFont[0]).toBeLessThan(16)
-    expect(428 + 26 * long.gemFont[0] * 0.46).toBeLessThanOrEqual(594)
+    expect(long.formattedGems[0]).toBe('19RU 0.365ct RD - 1.5')
+    expect(long.gemFont[0]).toBe(16)
+    expect(long.gemFont[1]).toBeGreaterThanOrEqual(9)
+    expect(428 + long.formattedGems[0].length * long.gemFont[1] * 0.46).toBeLessThanOrEqual(594)
     const huge = layoutGt800({ ...form, gems: ['ThisIsAVeryLongGemNameCt.5.00'] }, 'original')
-    expect(huge.gemFont[0]).toBe(huge.gemFont[1])
-    expect(huge.gemFont[0]).toBeGreaterThanOrEqual(9)
+    expect(huge.gemFont[1]).toBeGreaterThanOrEqual(9)
+    expect(huge.gemFont[1]).toBeLessThan(16)
   })
 
-  it('layoutGt800: ฟอนต์พลอยเป็นสี่เหลี่ยมจัตุรัสเสมอทั้ง original และแนวตั้ง ทุกจำนวนบรรทัด/ความยาว', () => {
+  it('layoutGt800: lineHeight = ความสูงฟอนต์ ทั้ง original และแนวตั้ง ทุกจำนวนพลอย/ความยาว', () => {
     ;['original', 'vertical'].forEach((tpl) => {
       for (let n = 0; n <= 10; n++) {
         ;['0.10ct.', '19Ruby 0.365 ct., RD - 1.5', 'X'.repeat(40)].forEach((g) => {
           const l = layoutGt800({ ...form, price: 100, gems: Array.from({ length: n }, () => g) }, tpl)
-          expect(l.gemFont[0]).toBe(l.gemFont[1])
           expect(l.gemLineHeight).toBe(l.gemFont[0])
+          expect(l.gemFont[1]).toBeGreaterThanOrEqual(9)
+          expect(31 + l.gemRows.length * l.gemLineHeight).toBeLessThanOrEqual(104)
         })
       }
     })
   })
 
-  it('layoutGt800: แนวตั้ง 1-4 บรรทัด → 16, 5 บรรทัด → 14', () => {
+  it('layoutGt800: แนวตั้ง 1-4 พลอย → 16, 5 พลอยจับคู่ 3 แถว', () => {
     const gems = (n) => Array.from({ length: n }, () => '0.10ct.')
     ;[1, 4].forEach((n) => {
       expect(layoutGt800({ ...form, price: 100, gems: gems(n) }, 'vertical').gemFont).toEqual([16, 16])
     })
-    expect(layoutGt800({ ...form, price: 100, gems: gems(5) }, 'vertical').gemFont).toEqual([14, 14])
+    expect(layoutGt800({ ...form, price: 100, gems: gems(5) }, 'vertical').gemRows.length).toBe(3)
+  })
+
+  it('abbreviateGemText: ย่อชื่อพลอยเป็นรหัส master + ct', () => {
+    expect(abbreviateGemText('120Diamond 0.297 ct., 0.8 RD')).toBe('120DI 0.297ct 0.8 RD')
+    expect(abbreviateGemText(formatGemText('24Diamond0.24 ct. G,VS1'))).toBe('24DI 0.24ct G,VS1')
+    expect(abbreviateGemText('4Yellow Sapphire 0.33 ct., 2.5 RD')).toBe('4YS 0.33ct 2.5 RD')
+    expect(abbreviateGemText('4Sapphire 0.32 ct., 2.5 RD')).toBe('4SA 0.32ct 2.5 RD')
+    expect(abbreviateGemText('3Burmese Ruby 0.15 ct.')).toBe('3RU 0.15ct')
+    expect(abbreviateGemText('2Diamond CVD 0.10 ct.')).toBe('2DC 0.10ct')
+    expect(abbreviateGemText('1diamond 0.02 CT., VVS2')).toBe('1DI 0.02ct VVS2')
+  })
+
+  it('abbreviateGemText: ไม่แตะเกรด และชื่อที่ไม่รู้จักคงเดิม', () => {
+    expect(abbreviateGemText('1Diamond 0.02 ct., SI1')).toBe('1DI 0.02ct SI1')
+    expect(abbreviateGemText('5Moonlight 0.5ct')).toBe('5Moonlight 0.5ct')
+    expect(abbreviateGemText('2Rubyx 0.1 ct.')).toBe('2Rubyx 0.1ct')
+    expect(abbreviateGemText('')).toBe('')
+    expect(abbreviateGemText(null)).toBe('')
+  })
+
+  it('จับคู่พลอย: 4 รายการ → 4 แถว, 5 รายการ → 3 แถว คั่น 2 ช่องว่าง', () => {
+    const four = layoutGt800({ ...form, gems: ['1Ruby 0.1ct.', '2Ruby 0.1ct.', '3Ruby 0.1ct.', '4Ruby 0.1ct.'] }, 'original')
+    expect(four.gemRows).toEqual(four.formattedGems)
+    const five = layoutGt800({ ...form, gems: ['1Ruby 0.1ct.', '2Ruby 0.1ct.', '3Ruby 0.1ct.', '4Ruby 0.1ct.', '5Ruby 0.1ct.'] }, 'original')
+    expect(five.gemRows).toEqual(['1RU 0.1ct  2RU 0.1ct', '3RU 0.1ct  4RU 0.1ct', '5RU 0.1ct'])
+  })
+
+  it('พลอยจริง 7 รายการ → 4 แถว ความสูงฟอนต์ >= 14 และไม่ล้นล่างป้าย', () => {
+    const real = [
+      '2Diamond 0.03 ct., 1.5 RD',
+      '120Diamond 0.297 ct., 0.8 RD',
+      '4Fancy Sapphire 0.33 ct., 2.5 RD',
+      '4Yellow Sapphire 0.33 ct., 2.5 RD',
+      '4Yellow Sapphire 0.34 ct., 2.5 RD',
+      '4Pink Sapphire 0.33 ct., 2.5 RD',
+      '4Sapphire 0.32 ct., 2.5 RD'
+    ]
+    ;['original', 'vertical'].forEach((tpl) => {
+      const l = layoutGt800({ ...form, price: 100, gems: real }, tpl)
+      expect(l.gemRows.length).toBe(4)
+      expect(l.gemFont[0]).toBeGreaterThanOrEqual(14)
+      expect(31 + 4 * l.gemLineHeight).toBeLessThanOrEqual(104)
+      expect(428 + Math.max(...l.gemRows.map((r) => r.length)) * l.gemFont[1] * 0.46).toBeLessThanOrEqual(594)
+    })
   })
 
   it('layoutGt800: ฝั่งซ้าย (codeLineFont) ไม่เปลี่ยนตามฟอนต์พลอยใหม่', () => {
@@ -526,16 +574,16 @@ describe('layoutGt800 / generateGt800ZPL — แท็บ original ใหม่ 
 
   it('generateGt800ZPL: คอลัมน์พลอยอยู่ที่ x=428 (ไม่ใช่ 422/472 เหมือนเดิม)', () => {
     const zpl = generateGt800ZPL(form, 1)
-    expect(zpl).toContain('^FO428,31^A0N,16,16^FD0.24 ct.^FS')
-    expect(zpl).toContain('^FO428,47^A0N,16,16^FD0.15 ct.^FS')
+    expect(zpl).toContain('^FO428,31^A0N,16,16^FD0.24ct^FS')
+    expect(zpl).toContain('^FO428,47^A0N,16,16^FD0.15ct^FS')
   })
 
   it('generateGt800ZPL: บรรทัดพลอยพิมพ์ครั้งเดียวต่อบรรทัด (ไม่พิมพ์ซ้ำจำลองตัวหนา)', () => {
     const zpl = generateGt800ZPL(form, 1)
-    expect(zpl).toContain('^FO428,31^A0N,16,16^FD0.24 ct.^FS')
-    expect(zpl).toContain('^FO428,47^A0N,16,16^FD0.15 ct.^FS')
+    expect(zpl).toContain('^FO428,31^A0N,16,16^FD0.24ct^FS')
+    expect(zpl).toContain('^FO428,47^A0N,16,16^FD0.15ct^FS')
     expect(zpl).not.toContain('^FO441,')
-    expect(zpl.split('^FD0.24 ct.^FS').length - 1).toBe(1)
+    expect(zpl.split('^FD0.24ct^FS').length - 1).toBe(1)
   })
 
   it('generateGt800ZPL/Vertical: ที่ dpiScale 1.5 พลอยพิมพ์ครั้งเดียว', () => {
@@ -544,17 +592,17 @@ describe('layoutGt800 / generateGt800ZPL — แท็บ original ใหม่ 
     const y = Math.round(31 * scale)
     const font = `${Math.round(16 * scale)},${Math.round(16 * scale)}`
     const zpl = generateGt800ZPL(form, scale)
-    expect(zpl).toContain(`^FO${x},${y}^A0N,${font}^FD0.24 ct.^FS`)
-    expect(zpl.split('^FD0.24 ct.^FS').length - 1).toBe(1)
+    expect(zpl).toContain(`^FO${x},${y}^A0N,${font}^FD0.24ct^FS`)
+    expect(zpl.split('^FD0.24ct^FS').length - 1).toBe(1)
     const vertical = generateGt800ZPLVertical(form, scale)
-    expect(vertical.split('^FD0.24 ct.^FS').length - 1).toBe(1)
+    expect(vertical.split('^FD0.24ct^FS').length - 1).toBe(1)
   })
 
   it('generateGt800ZPLVertical: พลอยพิมพ์ครั้งเดียวที่ x=428', () => {
     const zpl = generateGt800ZPLVertical(form, 1)
-    expect(zpl).toContain('^FO428,31^A0N,16,16^FD0.24 ct.^FS')
+    expect(zpl).toContain('^FO428,31^A0N,16,16^FD0.24ct^FS')
     expect(zpl).not.toContain('^FO422,31')
-    expect(zpl.split('^FD0.24 ct.^FS').length - 1).toBe(1)
+    expect(zpl.split('^FD0.24ct^FS').length - 1).toBe(1)
   })
 
   it('generateGt800ZPLVertical: ฝั่งซ้ายทุกฟิลด์ (ชื่อ/ทอง/รหัส) ประมาณความกว้างแล้วไม่เกิน 420', () => {

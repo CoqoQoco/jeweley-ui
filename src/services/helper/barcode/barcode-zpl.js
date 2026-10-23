@@ -84,9 +84,11 @@ export function buildRemarkSymbolZpl(key, x, y, dpiScale = 1) {
 }
 
 const GT800_GEM_X = 428// คอลัมน์พลอยฝั่งขวาของแนวพับ (ฝั่งซ้ายจบ x≈420, พับ x≈425) คงที่ทุก level — ที่ว่างถึงขอบขวา 594 = 166 dots
-// ฟอนต์พลอย GT800 (original + แนวตั้ง) เป็นสี่เหลี่ยมจัตุรัสเสมอ (สูง = กว้าง) ใช้ขนาดเดียวทุกบรรทัดในป้าย
+// ฟอนต์พลอย GT800 (original + แนวตั้ง) สูง/กว้างแยกกันได้ ใช้ขนาดเดียวทุกแถวในป้าย
 const GT800_GEM_FONT = 16 // ขนาดมาตรฐาน (ตรงกับข้อความอื่นบนป้าย) ระยะบรรทัด = ขนาดฟอนต์
-const GT800_O_GEM_MAX_STACK_HEIGHT = 70 // พื้นที่ซ้อนบรรทัดพลอยตั้งแต่ GEM_START_Y (y31 → ~y101) 5 บรรทัดขึ้นไปจะลดขนาดให้พอดี (ใช้ทั้ง original และแนวตั้ง)
+const GT800_O_GEM_MAX_STACK_HEIGHT = 73 // พื้นที่ซ้อนแถวพลอยตั้งแต่ GEM_START_Y (y31 → y104 ขอบล่างป้าย) 5 แถวขึ้นไปจะลดความสูงให้พอดี (ใช้ทั้ง original และแนวตั้ง)
+const GT800_GEM_PAIR_THRESHOLD = 5 // พลอยตั้งแต่ 5 รายการขึ้นไปจับคู่ 2 รายการต่อแถว
+const GT800_GEM_PAIR_SEPARATOR = '  '
 const GT800_O_GEM_MIN_HEIGHT = 8
 
 // template แนวตั้ง (4 แท็บราคา)
@@ -300,8 +302,71 @@ export function generateLegacyZPLVertical(formValue) {
 // GT800 — layout ใหม่
 // ─────────────────────────────────────────────────────────────
 
+// ชื่อพลอย (อังกฤษ) → รหัส master (tbm_gem.code) เรียงชื่อยาวก่อน
+const GT800_GEM_CODES = [
+  ['Diamond CVD', 'DC'],
+  ['Diamond', 'DI'],
+  ['Brown Sapphire', 'BR'],
+  ['Blue Sapphire', 'SB'],
+  ['Fancy Sapphire', 'FS'],
+  ['Green Sapphire', 'GS'],
+  ['Orange Sapphire', 'OR'],
+  ['Pink Sapphire', 'PS'],
+  ['White Sapphire', 'WS'],
+  ['Yellow Sapphire', 'YS'],
+  ['Sapphire', 'SA'],
+  ['Burmese Ruby', 'RU'],
+  ['Songea Ruby', 'RU'],
+  ['Ruby', 'RU'],
+  ['Amethyst', 'AM'],
+  ['Aquamarine', 'AQ'],
+  ['Blue Topaz', 'BT'],
+  ['White Topaz', 'WT'],
+  ['Citrine', 'CI'],
+  ['Emerald', 'EM'],
+  ['Garnet', 'GA'],
+  ['Peridot', 'PE'],
+  ['Tanzanite', 'TZ'],
+  ['Cubic Zirconia', 'CZ'],
+  ['White Zircon', 'WZ'],
+  ['Morganite', 'MO'],
+  ['Onyx', 'ON'],
+  ['Rose Quartz', 'RQ'],
+  ['Smoky Quartz', 'SQ'],
+  ['Moon Stone', 'MS'],
+  ['White Pearl', 'WP'],
+  ['Coral', 'CO']
+]
+  .sort((a, b) => b[0].length - a[0].length)
+  .map(([name, code]) => ({ re: new RegExp(`(?<![A-Za-z])${name.replace(/ /g, '\\s+')}(?![A-Za-z])`, 'gi'), code }))
+
+// GT800 เท่านั้น — ย่อชื่อพลอยเป็นรหัส master + ย่อ "ct.," เป็น "ct" ไม่แตะเกรด (VS1, G,VS1, VVS2, SI1 ฯลฯ)
+export function abbreviateGemText(text) {
+  if (!text) return text || ''
+  let result = text
+  GT800_GEM_CODES.forEach(({ re, code }) => {
+    result = result.replace(re, code)
+  })
+  result = result.replace(/(\d)\s*ct\.?,?\s*/gi, (match, digit, offset, str) =>
+    `${digit}ct${offset + match.length < str.length ? ' ' : ''}`
+  )
+  return result.replace(/\s{2,}/g, ' ').trim()
+}
+
 function formatGt800Gems(gems) {
-  return (Array.isArray(gems) ? gems : []).filter(Boolean).map(formatGemText)
+  return (Array.isArray(gems) ? gems : [])
+    .filter(Boolean)
+    .map((gem) => abbreviateGemText(formatGemText(gem)))
+}
+
+// พลอยตั้งแต่ 5 รายการขึ้นไปจับคู่ 2 รายการต่อแถว
+function buildGt800GemRows(formattedGems) {
+  if (formattedGems.length < GT800_GEM_PAIR_THRESHOLD) return formattedGems
+  const rows = []
+  for (let i = 0; i < formattedGems.length; i += 2) {
+    rows.push(formattedGems.slice(i, i + 2).join(GT800_GEM_PAIR_SEPARATOR))
+  }
+  return rows
 }
 
 // ตำแหน่งท้ายบาร์โค้ด (ประมาณ) — ฝั่งซ้ายต้องจบก่อน GT800_O_NAME_RIGHT_LIMIT
@@ -324,16 +389,16 @@ function chooseGemLevel({ gems, checkLines }) {
   return { level, formattedGems }
 }
 
-// ขนาดฟอนต์พลอยสี่เหลี่ยมจัตุรัส: 16 เมื่อซ้อนไม่เกินพื้นที่, 5 บรรทัดขึ้นไปลดตามพื้นที่ซ้อน แล้วย่อเท่ากันทั้งสูง/กว้างเมื่อบรรทัดยาวสุดล้นขอบขวา
-function computeGt800GemFont(lineCount, longestLen, x) {
-  const byLines = Math.max(
+// ฟอนต์พลอย: สูง = min(16, floor(73/แถว)) ไม่ต่ำกว่า 8, กว้างย่อตามแถวที่ยาวสุดให้พอดีขอบขวา (ไม่ต่ำกว่า 9) สูง/กว้างไม่ต้องเท่ากัน
+function computeGt800GemFont(rowCount, longestLen, x) {
+  const height = Math.max(
     GT800_O_GEM_MIN_HEIGHT,
-    Math.min(GT800_GEM_FONT, Math.floor(GT800_O_GEM_MAX_STACK_HEIGHT / Math.max(1, lineCount)))
+    Math.min(GT800_GEM_FONT, Math.floor(GT800_O_GEM_MAX_STACK_HEIGHT / Math.max(1, rowCount)))
   )
   const budget = GT800_GEM_RIGHT_EDGE - x
   const byWidth = Math.floor(budget / (Math.max(1, longestLen) * GT800_GEM_CHAR_W_RATIO))
-  const size = Math.min(byLines, Math.max(GT800_GEM_MIN_FONT, byWidth))
-  return { font: [size, size], lineHeight: size }
+  const width = Math.min(GT800_GEM_FONT, Math.max(GT800_GEM_MIN_FONT, byWidth))
+  return { font: [height, width], lineHeight: height }
 }
 
 function longestLength(lines) {
@@ -403,7 +468,8 @@ export function layoutGt800(formValue, template) {
     const sizeText = normalizeGt800Size(formValue?.size)
     const goldLine = [formValue?.gold || '', sizeText].filter(Boolean).join(' ')
 
-    const gem = computeGt800GemFont(formattedGems.length, longestLength(formattedGems), GT800_GEM_X)
+    const gemRows = buildGt800GemRows(formattedGems)
+    const gem = computeGt800GemFont(gemRows.length, longestLength(gemRows), GT800_GEM_X)
 
     const remarkKey = isKnownRemarkSymbol(formValue?.remarkSymbol) ? formValue.remarkSymbol : ''
     const remarkPlacement = remarkKey ? placeGt800Remark(productNameEn, nameFont, goldLine) : null
@@ -423,7 +489,8 @@ export function layoutGt800(formValue, template) {
       gemFont: gem.font,
       gemLineHeight: gem.lineHeight,
       codeLineFont: level.priceFontHorizontal,
-      formattedGems
+      formattedGems,
+      gemRows
     }
   }
 
@@ -434,7 +501,8 @@ export function layoutGt800(formValue, template) {
   const codeLine = [formValue?.productNumber, priceText].filter(Boolean).join(' - ')
 
   const formattedGems = formatGt800Gems(gems)
-  const gem = computeGt800GemFont(formattedGems.length, longestLength(formattedGems), GT800_GEM_X)
+  const gemRows = buildGt800GemRows(formattedGems)
+  const gem = computeGt800GemFont(gemRows.length, longestLength(gemRows), GT800_GEM_X)
   const productNameEn = formValue?.productNameEn || ''
 
   return {
@@ -464,7 +532,8 @@ export function layoutGt800(formValue, template) {
       refFont: GT800_V_CODE_LINE_FONT[0],
       minFont: GT800_V_MIN_FONT
     }),
-    formattedGems
+    formattedGems,
+    gemRows
   }
 }
 
@@ -479,7 +548,7 @@ function buildGemFieldsZpl(layout, s) {
   let fields = ''
   let y = GEM_START_Y
   const x = s(layout.gemColumnX)
-  layout.formattedGems.forEach((gem) => {
+  layout.gemRows.forEach((gem) => {
     fields += `^FO${x},${s(y)}^A0N,${s(layout.gemFont[0])},${s(layout.gemFont[1])}^FD${gem}^FS`
     y += layout.gemLineHeight
   })
