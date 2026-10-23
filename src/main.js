@@ -99,4 +99,18 @@ window.addEventListener('unhandledrejection', (event) => {
   }
 })
 
+// กันล้อเมาส์เปลี่ยนค่า input[type=number] ที่กำลัง focus อยู่ (TK202610230003)
+// ใช้ preventDefault ไม่ใช้ blur — กันไม่ให้ไปยิง @blur/@change ที่คำนวณต่อ
+// ช่องที่ไม่ได้ focus ไม่แตะ → หน้าเลื่อนผ่านได้ตามปกติ
+window.addEventListener(
+  'wheel',
+  (event) => {
+    const el = event.target
+    if (el instanceof HTMLInputElement && el.type === 'number' && el === document.activeElement) {
+      event.preventDefault()
+    }
+  },
+  { capture: true, passive: false }
+)
+
 app.mount('#app')
