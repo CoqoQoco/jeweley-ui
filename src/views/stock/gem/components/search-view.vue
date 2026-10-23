@@ -16,25 +16,46 @@
       </template>
     </pageTitle>
     <form @submit.prevent="onSubmit">
-      <div class="form-col-container">
-        <!-- code -->
+      <div class="status-row">
+        <span class="title-text">{{ $t('view.stock.gem.stockStatus') }}</span>
+        <ToggleGroupGeneric
+          :modelValue="form.stockStatus ?? 'all'"
+          :options="statusOptions"
+          :ariaLabel="$t('view.stock.gem.stockStatus')"
+          @update:modelValue="onStatusChange"
+        />
+      </div>
+
+      <div class="main-filter-grid">
         <div>
-          <span class="title-text">{{ $t('view.stock.gem.code') }}</span>
-          <input type="text" class="form-control" v-model="form.code" />
+          <span class="title-text">{{ $t('view.stock.gem.generalSearch') }}</span>
+          <InputTextGeneric v-model="form.text" :placeholder="$t('view.stock.gem.generalSearchPlaceholder')" />
         </div>
 
-        <!-- type check -->
         <div>
-          <span class="title-text">{{ $t('view.stock.gem.checkType') }}</span>
-          <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
+          <span class="title-text">{{ $t('view.stock.gem.groupName') }}</span>
           <MultiSelectGeneric
-            v-model="form.typeCheck"
-            :options="masterTypeCheck"
-            :filter="true"
-            optionLabel="name"
+            v-model="form.groupName"
+            :options="groupOptions"
+            filter
+            optionLabel="value"
             optionValue="value"
           />
         </div>
+
+        <div>
+          <span class="title-text">{{ $t('view.stock.gem.idleDays') }}</span>
+          <DropdownGeneric
+            v-model="form.idleDays"
+            :options="idleOptions"
+            optionLabel="label"
+            optionValue="value"
+          />
+        </div>
+      </div>
+
+      <div class="no-price-row">
+        <CheckboxGeneric v-model="form.noPrice" :label="$t('view.stock.gem.noPrice')" />
       </div>
 
       <dialogView
@@ -45,20 +66,6 @@
       >
         <template #content>
           <div class="form-col-container">
-            <!-- groupName -->
-            <div>
-              <span class="title-text">{{ $t('view.stock.gem.groupName') }}</span>
-              <!-- <input type="text" class="form-control" v-model="form.groupName" /> -->
-              <MultiSelectGeneric
-                v-model="form.groupName"
-                :options="groupOptions"
-                filter
-                optionLabel="value"
-                optionValue="value"
-                class="w-full md:w-14rem"
-              />
-            </div>
-
             <!-- grade -->
             <div>
               <span class="title-text">{{ $t('view.stock.gem.grade') }}</span>
@@ -151,6 +158,10 @@ const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-ti
 const dialogView = defineAsyncComponent(() => import('@/components/prime-vue/DialogSearchView.vue'))
 
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 
 import createView from './create-view.vue'
 
@@ -162,6 +173,10 @@ export default {
   components: {
     pageTitle,
     MultiSelectGeneric,
+    DropdownGeneric,
+    CheckboxGeneric,
+    InputTextGeneric,
+    ToggleGroupGeneric,
     createView,
     dialogView
   },
@@ -204,11 +219,6 @@ export default {
       type: Array,
       Required: true,
       default: () => []
-    },
-    masterTypeCheckOption: {
-      type: Array,
-      Required: true,
-      default: () => []
     }
   },
 
@@ -243,8 +253,21 @@ export default {
     masterGrade() {
       return this.masterGradeData
     },
-    masterTypeCheck() {
-      return this.masterTypeCheckOption
+    statusOptions() {
+      return [
+        { value: 'all', label: this.$t('view.stock.gem.statusAll') },
+        { value: 'in-stock', label: this.$t('view.stock.gem.statusInStock') },
+        { value: 'out-of-stock', label: this.$t('view.stock.gem.statusOutOfStock') },
+        { value: 'on-process', label: this.$t('view.stock.gem.statusOnProcess') }
+      ]
+    },
+    idleOptions() {
+      return [
+        { value: null, label: this.$t('view.stock.gem.idleAny') },
+        { value: 90, label: this.$t('view.stock.gem.idle90') },
+        { value: 180, label: this.$t('view.stock.gem.idle180') },
+        { value: 365, label: this.$t('view.stock.gem.idle365') }
+      ]
     }
   },
 
@@ -258,6 +281,10 @@ export default {
   methods: {
     // ---------------- event
     onSubmit() {
+      this.$emit('search', this.form)
+    },
+    onStatusChange(value) {
+      this.form.stockStatus = value === 'all' ? null : value
       this.$emit('search', this.form)
     },
     dialogSearch() {
@@ -291,10 +318,26 @@ export default {
 @import '@/assets/scss/custom-style/standard-search-bar';
 @import '@/assets/scss/custom-style/standard-form.scss';
 
-.header-bar-container {
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-md);
+  margin-bottom: var(--sp-md);
+}
+
+.main-filter-grid {
   display: grid;
-  grid-template-columns: 2fr 2fr 2fr 2fr;
-  gap: 10px;
-  margin-bottom: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-md);
+  margin-bottom: var(--sp-md);
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.no-price-row {
+  margin-bottom: var(--sp-md);
 }
 </style>

@@ -14,12 +14,16 @@ export const usrStockGemApiStore = defineStore('stockGem', {
     initSearchRequeast(form) {
       return {
         search: {
-          code: form.code ?? null,
+          code: null,
+          text: form.text?.trim() || null,
+          stockStatus: form.stockStatus ?? null,
+          noPrice: !!form.noPrice,
+          idleDays: form.idleDays ?? null,
           groupName: form.groupName ?? null,
           grade: form.grade ?? null,
           shape: form.shape ?? null,
           size: form.size ?? null,
-          typeCheck: form.typeCheck ?? null
+          typeCheck: form.typeCheck ?? []
         }
       }
     },

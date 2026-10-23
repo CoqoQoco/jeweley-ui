@@ -9,7 +9,6 @@
       :masterSizeOptions="gradeOptions"
       :masterGemShapeData="masterGemShape"
       :masterGradeData="masterGrade"
-      :masterTypeCheckOption="masterTypeCheck"
       @search="onSearchFilter"
       @export="exportExcel"
       @clear="onClearFilter"
@@ -38,6 +37,10 @@ import api from '@/axios/axios-helper.js'
 const interfaceForm = {
   id: null,
   code: null,
+  text: null,
+  stockStatus: 'in-stock',
+  noPrice: false,
+  idleDays: null,
   groupName: [],
   grade: [],
   shape: [],
@@ -51,21 +54,10 @@ export default {
     dataTable
   },
 
-  computed: {
-    masterTypeCheck() {
-      return [
-        { id: 1, name: this.$t('view.stock.gem.typeCheckQtyRemain'), value: 'qty-remain' },
-        { id: 2, name: this.$t('view.stock.gem.typeCheckQtyProcess'), value: 'qty-process-remain' },
-        { id: 3, name: this.$t('view.stock.gem.typeCheckWeightRemain'), value: 'qty-weight-remain' },
-        { id: 4, name: this.$t('view.stock.gem.typeCheckWeightProcess'), value: 'qty-weight-process-remain' }
-      ]
-    }
-  },
-
   data() {
     return {
       form: { ...interfaceForm },
-      search: {},
+      search: { ...interfaceForm },
       exportData: {},
       isExport: false,
 
