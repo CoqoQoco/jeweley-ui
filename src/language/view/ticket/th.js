@@ -25,6 +25,7 @@ export default {
     createDate: 'วันที่แจ้ง',
     updateDate: 'อัปเดตล่าสุด',
     changeStatus: 'เปลี่ยนสถานะ',
+    viewDetailNewTab: 'ดูรายละเอียด (แท็บใหม่)',
     latestAnalysis: 'ผลวิเคราะห์ล่าสุด',
     keyword: 'ค้นหา',
     newMsg: 'ข้อความใหม่'

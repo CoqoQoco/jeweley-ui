@@ -25,6 +25,7 @@ export default {
     createDate: 'Date Reported',
     updateDate: 'Last Updated',
     changeStatus: 'Change Status',
+    viewDetailNewTab: 'View detail (new tab)',
     latestAnalysis: 'Latest Analysis',
     keyword: 'Search',
     newMsg: 'New message'

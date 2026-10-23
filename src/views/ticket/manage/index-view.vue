@@ -75,6 +75,7 @@
           <ButtonGeneric
             variant="green"
             icon="bi-eye"
+            :title="$t('view.ticket.field.viewDetailNewTab')"
             @click="onViewDetail(data)"
           />
           <ButtonGeneric
@@ -233,7 +234,11 @@ export default {
     },
 
     onViewDetail(ticket) {
-      this.$router.push({ name: 'ticket-manage-detail', params: { id: ticket.id } })
+      window.open(
+        this.$router.resolve({ name: 'ticket-manage-detail', params: { id: ticket.id } }).href,
+        '_blank',
+        'noopener'
+      )
     },
 
     onOpenStatusModal(row) {
