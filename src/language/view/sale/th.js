@@ -590,6 +590,8 @@ export const saleOrder = {
   productionNumberPlaceholder: 'พิมพ์เลขที่ผลิต',
   productionNumberHint: 'ต้องกรอกก่อนยืนยัน',
   printInternalBtn: 'พิมพ์ฉบับภายใน',
+  summaryExcelBtn: 'Excel ใบสรุปตามประเภท',
+  summaryDocTitle: 'ใบสรุปตามประเภทสินค้า',
   internalStatusColLabel: 'สถานะของ',
   internalStatusInStock: 'มีของ',
   internalStatusPendingConvertWithDoc: 'รอแปลง (CV {running})',
@@ -657,7 +659,8 @@ export const saleOrder = {
     deleteSO: 'ลบใบสั่งขายสำเร็จ',
     fillFromStock: 'เติมสินค้า {stockNumber} เข้ารายการแล้ว',
     convertCreated: 'สร้างใบแปลงสินค้าเลขที่ {running} สำเร็จ',
-    replaceConfirmedStock: 'เปลี่ยนเป็นของจริงเลข {stockNumber} สำเร็จ'
+    replaceConfirmedStock: 'เปลี่ยนเป็นของจริงเลข {stockNumber} สำเร็จ',
+    exportSummaryExcel: 'Export Excel ใบสรุปตามประเภทสินค้าสำเร็จ'
   },
   warn: {
     incompleteCustomer: 'ข้อมูลลูกค้าไม่ครบ',

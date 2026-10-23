@@ -590,6 +590,8 @@ export const saleOrder = {
   productionNumberPlaceholder: 'Type the production number',
   productionNumberHint: 'Required before confirming',
   printInternalBtn: 'Print Internal Copy',
+  summaryExcelBtn: 'Summary Excel',
+  summaryDocTitle: 'SUMMARY BY PRODUCT TYPE',
   internalStatusColLabel: 'Stock Status',
   internalStatusInStock: 'In Stock',
   internalStatusPendingConvertWithDoc: 'Pending Conversion (CV {running})',
@@ -657,7 +659,8 @@ export const saleOrder = {
     deleteSO: 'Sale order deleted successfully',
     fillFromStock: 'Filled item {stockNumber} into the order',
     convertCreated: 'Created stock convert document {running} successfully',
-    replaceConfirmedStock: 'Replaced with real stock {stockNumber} successfully'
+    replaceConfirmedStock: 'Replaced with real stock {stockNumber} successfully',
+    exportSummaryExcel: 'Summary Excel exported successfully'
   },
   warn: {
     incompleteCustomer: 'Incomplete customer info',

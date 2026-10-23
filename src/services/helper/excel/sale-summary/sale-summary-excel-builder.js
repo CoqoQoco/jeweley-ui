@@ -3,7 +3,7 @@
 
 import dayjs from 'dayjs'
 import ExcelJS from 'exceljs'
-import { formatMoney } from '@/services/utils/decimal.js'
+import { roundHalfUp } from '@/services/utils/money.js'
 import { COMPANY_INFO } from '@/config/company-info.js'
 import { buildSaleSummaryGroups } from '@/services/helper/sale-summary/sale-summary-data.js'
 
@@ -18,7 +18,10 @@ const stdBorder = () => ({
   right: { style: 'thin' }
 })
 
-const fmtWeight = (value, decimals) => (Number(value) || 0).toFixed(decimals)
+const MONEY_FMT = '#,##0.00'
+const NUM_FMT = { 2: '#,##0.00', 3: '#,##0.000' }
+
+const numValue = (value, decimals) => roundHalfUp(Number(value) || 0, decimals)
 
 export class SaleSummaryExcelBuilder {
   constructor({
@@ -67,7 +70,7 @@ export class SaleSummaryExcelBuilder {
   }
 
   _money(value) {
-    return formatMoney(value, { showDecimals: true })
+    return numValue(value, 2)
   }
 
   fillBand(worksheet, row, columns) {
@@ -210,19 +213,21 @@ export class SaleSummaryExcelBuilder {
     worksheet.getRow(row).height = 25
     row++
 
+    const firstGroupRow = row
     groups.forEach((group) => {
       const values = [
         { value: group.label, align: 'left' },
-        { value: group.qty, align: 'right' },
-        { value: fmtWeight(group.diamondWeight, 3), align: 'right' },
-        { value: fmtWeight(group.stoneWeight, 2), align: 'right' },
-        { value: fmtWeight(group.goldWeight, 2), align: 'right' },
-        { value: fmtWeight(group.netWeight, 3), align: 'right' },
-        { value: this._money(group.amount), align: 'right' }
+        { value: group.qty, align: 'right', numFmt: '#,##0' },
+        { value: numValue(group.diamondWeight, 3), align: 'right', numFmt: NUM_FMT[3] },
+        { value: numValue(group.stoneWeight, 2), align: 'right', numFmt: NUM_FMT[2] },
+        { value: numValue(group.goldWeight, 2), align: 'right', numFmt: NUM_FMT[2] },
+        { value: numValue(group.netWeight, 3), align: 'right', numFmt: NUM_FMT[3] },
+        { value: this._money(group.amount), align: 'right', numFmt: MONEY_FMT }
       ]
-      values.forEach(({ value, align }, index) => {
+      values.forEach(({ value, align, numFmt }, index) => {
         const cell = worksheet.getCell(`${COLUMNS[index]}${row}`)
         cell.value = value
+        if (numFmt) cell.numFmt = numFmt
         cell.font = { name: 'Arial', size: 9, color: { argb: 'FF393939' } }
         cell.alignment = { vertical: 'middle', horizontal: align }
         cell.border = stdBorder()
@@ -230,18 +235,28 @@ export class SaleSummaryExcelBuilder {
       row++
     })
 
+    const lastGroupRow = row - 1
+    const sumOf = (col, result) =>
+      groups.length
+        ? { formula: `SUM(${col}${firstGroupRow}:${col}${lastGroupRow})`, result }
+        : result
     const totalValues = [
       { value: 'GRAND TOTAL', align: 'left' },
-      { value: totals.qty, align: 'right' },
-      { value: fmtWeight(totals.diamondWeight, 3), align: 'right' },
-      { value: fmtWeight(totals.stoneWeight, 2), align: 'right' },
-      { value: fmtWeight(totals.goldWeight, 2), align: 'right' },
-      { value: fmtWeight(totals.netWeight, 3), align: 'right' },
-      { value: this._money(totals.amount), align: 'right' }
+      { value: sumOf('B', totals.qty), align: 'right', numFmt: '#,##0' },
+      {
+        value: sumOf('C', numValue(totals.diamondWeight, 3)),
+        align: 'right',
+        numFmt: NUM_FMT[3]
+      },
+      { value: sumOf('D', numValue(totals.stoneWeight, 2)), align: 'right', numFmt: NUM_FMT[2] },
+      { value: sumOf('E', numValue(totals.goldWeight, 2)), align: 'right', numFmt: NUM_FMT[2] },
+      { value: sumOf('F', numValue(totals.netWeight, 3)), align: 'right', numFmt: NUM_FMT[3] },
+      { value: sumOf('G', this._money(totals.amount)), align: 'right', numFmt: MONEY_FMT }
     ]
-    totalValues.forEach(({ value, align }, index) => {
+    totalValues.forEach(({ value, align, numFmt }, index) => {
       const cell = worksheet.getCell(`${COLUMNS[index]}${row}`)
       cell.value = value
+      if (numFmt) cell.numFmt = numFmt
       cell.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF8B0000' } }
       cell.fill = BAND_FILL
       cell.alignment = { vertical: 'middle', horizontal: align }

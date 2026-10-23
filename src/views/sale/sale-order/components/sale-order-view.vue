@@ -499,6 +499,16 @@
           <button
             class="btn btn-sm btn-outline-main"
             type="button"
+            @click="exportSummaryExcel"
+            :disabled="(stockItems.length === 0 && copyItems.length === 0) || isExportingSummaryExcel"
+          >
+            <span v-if="isExportingSummaryExcel" class="spinner-border spinner-border-sm mr-2"></span>
+            <i v-else class="bi bi-file-earmark-excel mr-1"></i>
+            {{ $t('view.sale.saleOrder.summaryExcelBtn') }}
+          </button>
+          <button
+            class="btn btn-sm btn-outline-main"
+            type="button"
             @click="exportInternalPDF"
             :disabled="(stockItems.length === 0 && copyItems.length === 0) || isExportingInternalPDF"
           >
@@ -682,6 +692,9 @@ import { hasMarginAccess } from '@/services/permission/margin-access.js'
 
 import { SaleOrderPdfBuilder } from '@/services/helper/pdf/sale-order/sale-order-pdf-builder.js'
 import { SaleOrderExcelBuilder } from '@/services/helper/excel/sale-order/sale-order-excel-builder.js'
+import { SaleSummaryExcelBuilder } from '@/services/helper/excel/sale-summary/sale-summary-excel-builder.js'
+import { buildProductTypeLabelMap } from '@/services/helper/sale-summary/sale-summary-data.js'
+import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { useUserApiStore } from '@/stores/modules/api/user/user-store.js'
@@ -750,7 +763,8 @@ export default {
     const saleOrderStore = usrSaleOrderApiStore()
     const userApiStore = useUserApiStore()
     const stockConvertStore = useStockConvertApiStore()
-    return { saleOrderStore, productStore, userApiStore, stockConvertStore }
+    const masterStore = useMasterApiStore()
+    return { saleOrderStore, productStore, userApiStore, stockConvertStore, masterStore }
   },
 
   emits: ['update:modelForm', 'update:modelQuotation', 'update:modelSaleOrder'],
@@ -786,6 +800,7 @@ export default {
       isExportingPDF: false,
       isPreviewingPDF: false,
       isExportingExcel: false,
+      isExportingSummaryExcel: false,
       isExportingInternalPDF: false,
       pdfShowCifLabel: true,
       pdfShowDecimals: true,
@@ -2329,6 +2344,55 @@ export default {
       await builder.prepare()
       await builder.downloadExcel('SO_' + (this.formSaleOrder.number || 'DRAFT') + '.xlsx')
       this.isExportingExcel = false
+    },
+
+    // ใบสรุปตามประเภทสินค้า — ชื่อประเภทต้องเป็นภาษาอังกฤษจาก master (productTypeName เป็นภาษาไทย)
+    async loadProductTypeLabels() {
+      try {
+        await this.masterStore.fetchProductType()
+      } catch {
+        // ดึง master ไม่สำเร็จ — ออกเอกสารต่อได้โดยใช้ค่า fallback เดิม
+        return {}
+      }
+      return buildProductTypeLabelMap(this.masterStore.productType)
+    },
+
+    // ตัวหารสกุลเงินของหน้านี้คือ currencyRate; ราคาใช้ appraisalPrice ตกไป price เหมือนตารางหน้าจอ
+    // copyItems ที่ qty = 0 (เติมของครบแล้ว) ตัดออกเหมือน SaleOrderExcelBuilder
+    buildSummaryOptions(productTypeLabels) {
+      const items = [
+        ...this.stockItems,
+        ...this.copyItems.filter((item) => (Number(item.qty) || 0) > 0)
+      ].map((item) => ({ ...item, appraisalPrice: this.getAppraisalPrice(item) }))
+      return {
+        items,
+        customer: {
+          name: this.formSaleOrder.customerName,
+          address: this.formSaleOrder.customerAddress,
+          phone: this.formSaleOrder.customerPhone,
+          email: this.formSaleOrder.customerEmail
+        },
+        documentDate: this.formSaleOrder.date,
+        documentTitle: this.$t('view.sale.saleOrder.summaryDocTitle'),
+        documentNumber: this.formSaleOrder.number,
+        currencyUnit: this.formSaleOrder.currencyUnit || 'THB',
+        divisor: Number(this.formSaleOrder.currencyRate) || 1,
+        productTypeLabels
+      }
+    },
+
+    async exportSummaryExcel() {
+      if (this.stockItems.length === 0 && this.copyItems.length === 0) {
+        warning(this.$t('view.sale.saleOrder.warn.noItemsForExcel'))
+        return
+      }
+
+      this.isExportingSummaryExcel = true
+      const productTypeLabels = await this.loadProductTypeLabels()
+      const builder = new SaleSummaryExcelBuilder(this.buildSummaryOptions(productTypeLabels))
+      await builder.downloadExcel()
+      this.isExportingSummaryExcel = false
+      success(this.$t('view.sale.saleOrder.success.exportSummaryExcel'))
     },
 
     // T6: ฉบับภายใน — เอกสารเดียวกับที่ลูกค้าเห็น บวกคอลัมน์ "สถานะของ" ต่อบรรทัด (มีของ/ต้องผลิต/รอแปลง)
