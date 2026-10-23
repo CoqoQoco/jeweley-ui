@@ -16,7 +16,7 @@ function mountView(query = {}) {
     global: {
       plugins: [PrimeVue],
       mocks: { $t: (key) => key, $route: { query: { ...query } }, $router: { replace, resolve: () => ({ meta: { permissions: [] }, href: '/x' }) } },
-      stubs: { summaryView: true, salesInsightView: true, stockInsightView: true, materialInsightView: true, flowView: true, productionInsightView: true }
+      stubs: { summaryView: true, salesInsightView: true, stockInsightView: true, materialInsightView: true, qualityInsightView: true, flowView: true, productionInsightView: true }
     }
   })
   return { wrapper, replace }
@@ -34,7 +34,7 @@ describe('Executive material tab (smoke)', { timeout: 20000 }, () => {
     const { wrapper } = mountView({ tab: 'material', sub: 'items', kind: 'gold' })
     await flushPromises()
     const labels = wrapper.vm.tabsConfig.map((t) => t.value)
-    expect(labels).toEqual(['production', 'sales', 'stock', 'material', 'flow'])
+    expect(labels).toEqual(['production', 'sales', 'stock', 'material', 'flow', 'quality'])
     expect(wrapper.vm.tabsConfig[3].label).toBe('view.executive.tabs.material')
     expect(wrapper.vm.activeTab).toBe('material')
     expect(material(wrapper).exists()).toBe(true)

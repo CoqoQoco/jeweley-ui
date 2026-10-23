@@ -22,6 +22,7 @@ function respond(path) {
   if (path === 'StockInsight/Overview') return { ...EMPTY_INSIGHT, asOf: '2026-10-22T09:00:00', ageBuckets: [{ key: 'lt1y', count: 1, noCostCount: 0, costThb: 1, qty: 1 }], receiptTypes: [], categories: [] }
   if (path === 'SalesInsight/Overview') return { ...EMPTY_INSIGHT, asOf: '2026-10-22T09:00:00', aging: [], topCustomers: [] }
   if (path === 'MaterialInsight/Overview') return { ...EMPTY_INSIGHT, asOf: '2026-10-22T09:00:00' }
+  if (path === 'ExecutiveReport/DataQuality') return { ...EMPTY_INSIGHT, asOf: '2026-10-22T09:00:00', checks: [{ code: 'NO_COST', count: 3, total: 10, ratio: 30, severity: 'warning', impact: 'stockValuation', tab: 'stock', reportRef: 'stkCost', available: true }] }
   return { ...EMPTY_INSIGHT }
 }
 
@@ -30,7 +31,7 @@ function mountView() {
     global: {
       plugins: [PrimeVue],
       mocks: { $t: (key) => key, $route: { query: { tab: 'sales' } }, $router: { replace: vi.fn(() => Promise.resolve()), resolve: () => ({ meta: { permissions: [] }, href: '/x' }) } },
-      stubs: { summaryView: true, salesInsightView: true, stockInsightView: true, materialInsightView: true, flowView: true, productionInsightView: true }
+      stubs: { summaryView: true, salesInsightView: true, stockInsightView: true, materialInsightView: true, qualityInsightView: true, flowView: true, productionInsightView: true }
     }
   })
 }
@@ -58,6 +59,7 @@ describe('Executive Excel export includes the stock / sales / material insight s
     expect(bodyOf('StockInsight/Overview')).toEqual([{ months: 12, metal: 'SILVER' }])
     expect(bodyOf('SalesInsight/Overview')).toEqual([{ months: 12, metal: 'SILVER' }])
     expect(bodyOf('MaterialInsight/Overview')).toEqual([{ kind: 'GOLD', months: 12 }])
+    expect(bodyOf('ExecutiveReport/DataQuality')).toEqual([{ metal: 'SILVER' }])
 
     expect(exportMock).toHaveBeenCalledTimes(1)
     const sheets = exportMock.mock.calls[0][0]
@@ -65,11 +67,28 @@ describe('Executive Excel export includes the stock / sales / material insight s
     // sheet เดิมยังอยู่ครบ (สรุป ... + 7 sheet insight เดิม) และ sheet ใหม่ 12 ตัวต่อท้าย
     expect(names.slice(0, 3)).toEqual(['view.executive.excel.sheetSummary', 'view.executive.excel.sheetStalePlans', 'view.executive.excel.sheetReceivables'])
     expect(names).toContain('view.executive.excel.insight.sheetMaterials')
-    expect(names.slice(-12)).toEqual(
+    expect(names.at(-1)).toBe('view.executive.excel.snapshot.quality')
+    expect(names.slice(-13, -1)).toEqual(
       ['stockFindings', 'stockAge', 'stockReceipt', 'stockCategory', 'stockSeries', 'salesFindings', 'salesAging', 'salesTopCustomers', 'salesSeries', 'materialFindings', 'materialItems', 'materialSeries'].map(
         (key) => `view.executive.excel.snapshot.${key}`
       )
     )
     expect(new Set(names).size).toBe(names.length)
+  })
+
+  it('skips the data-quality sheet when its request fails, without breaking the export', async () => {
+    const wrapper = mountView()
+    await flushPromises()
+    postMock.mockImplementation(async (path) => {
+      if (path === 'ExecutiveReport/DataQuality') throw new Error('boom')
+      return respond(path)
+    })
+
+    await wrapper.vm.onExportExcel()
+
+    expect(exportMock).toHaveBeenCalledTimes(1)
+    const names = exportMock.mock.calls[0][0].map((s) => s.sheetName)
+    expect(names).not.toContain('view.executive.excel.snapshot.quality')
+    expect(names.at(-1)).toBe('view.executive.excel.snapshot.materialSeries')
   })
 })

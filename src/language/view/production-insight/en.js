@@ -1000,6 +1000,68 @@ export default {
     }
   },
 
+  qualityInsight: {
+    title: 'Data quality',
+    kpiGroupTitle: 'Data quality overview',
+    tabs: { overview: 'Overview' },
+    kpi: {
+      problems: 'Total issues',
+      problemsSub: 'Checks at warning or critical',
+      critical: 'Critical',
+      criticalSub: 'Fix these first',
+      passed: 'Passed',
+      passedSub: 'Out of {total} checks',
+      affected: 'Affected screens',
+      affectedSub: 'Screens whose figures may be off'
+    },
+    checksTitle: 'Checks',
+    emptyChecks: 'No check results yet',
+    colCheck: 'Check',
+    colCount: 'Count',
+    colCountTip: 'Number of records with incomplete data. The share of all checked records is in the ratio column',
+    colRatio: 'Ratio',
+    colStatus: 'Status',
+    colImpact: 'Impact',
+    viewLabel: 'View',
+    viewTitle: 'Go to the related screen',
+    checks: {
+      NO_COST: 'In-stock items without cost',
+      NEGATIVE_GOLD: 'Negative gold balance',
+      INVOICE_NO_DUE: 'Invoices without a due date',
+      SO_NO_DELIVERY_DATE: 'SOs without a delivery date',
+      SO_NO_INVOICE: 'Open SOs without an invoice',
+      PLACEHOLDER_WORKER_WIP: 'WIP held by queue workers'
+    },
+    impact: {
+      stockValuation: 'Stock value and profit',
+      goldBalance: 'Gold balance',
+      receivableAging: 'Receivable aging',
+      deliveryPlanning: 'Delivery planning',
+      revenueRecognition: 'Revenue recognition',
+      workerAccountability: 'Worker accountability'
+    },
+    tab: {
+      stock: 'Stock',
+      sales: 'Sales and money',
+      material: 'Materials',
+      production: 'Production'
+    },
+    rules: {
+      DQ_NO_COST: '{count} of {total} in-stock items ({ratio}%) have no cost, so stock value and profit cannot be fully calculated',
+      DQ_NEGATIVE_GOLD: '{count} gold items in stock show a total negative balance of {negativeWeight} g because no receipt or opening balance has been recorded',
+      DQ_INVOICE_NO_DUE: '{count} of {total} invoices ({ratio}%) have no due date, so receivable aging cannot be calculated',
+      DQ_SO_NO_DELIVERY: '{count} of {total} SOs that are not yet invoiced ({ratio}%) have no delivery date',
+      DQ_SO_NO_INVOICE: '{count} open SOs have not been invoiced, worth {amountThb} THB',
+      DQ_PLACEHOLDER_WIP: '{count} of {total} WIP items are still with a queue worker, so the real owner cannot be identified',
+      ACT_DQ_PRICE_NO_COST: 'Price the items that still have no cost',
+      ACT_DQ_RECORD_OPENING_BALANCE: 'Record the opening balance / receipts for gold in stock',
+      ACT_DQ_SET_INVOICE_DUE: 'Set the due date on invoices',
+      ACT_DQ_SET_SO_DELIVERY_DATE: 'Set the delivery date on SOs',
+      ACT_DQ_INVOICE_FROM_SO: 'Issue invoices for the open SOs',
+      ACT_DQ_ASSIGN_REAL_WORKER: 'Assign the real responsible worker instead of the queue worker'
+    }
+  },
+
   workerProfile: {
     tabsAria: 'Worker profile sections',
     tabs: {

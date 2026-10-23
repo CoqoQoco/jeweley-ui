@@ -1000,6 +1000,68 @@ export default {
     }
   },
 
+  qualityInsight: {
+    title: 'คุณภาพข้อมูล',
+    kpiGroupTitle: 'ภาพรวมคุณภาพข้อมูล',
+    tabs: { overview: 'ภาพรวม' },
+    kpi: {
+      problems: 'ปัญหาทั้งหมด',
+      problemsSub: 'รายการตรวจที่ต้องระวังหรือวิกฤต',
+      critical: 'วิกฤต',
+      criticalSub: 'ควรแก้ก่อน',
+      passed: 'ผ่านแล้ว',
+      passedSub: 'จาก {total} รายการตรวจ',
+      affected: 'จอที่ได้รับผลกระทบ',
+      affectedSub: 'จอที่ตัวเลขอาจคลาดเคลื่อน'
+    },
+    checksTitle: 'รายการตรวจ',
+    emptyChecks: 'ยังไม่มีผลการตรวจ',
+    colCheck: 'ตัวตรวจ',
+    colCount: 'จำนวน',
+    colCountTip: 'จำนวนรายการที่ข้อมูลไม่ครบ ต่อจำนวนที่ตรวจทั้งหมดอยู่ในช่องสัดส่วน',
+    colRatio: 'สัดส่วน',
+    colStatus: 'สถานะ',
+    colImpact: 'ผลกระทบ',
+    viewLabel: 'ดู',
+    viewTitle: 'ไปดูข้อมูลในจอที่เกี่ยวข้อง',
+    checks: {
+      NO_COST: 'สินค้าในคลังไม่มีต้นทุน',
+      NEGATIVE_GOLD: 'ทองในคลังติดลบ',
+      INVOICE_NO_DUE: 'บิลไม่มีวันครบกำหนดชำระ',
+      SO_NO_DELIVERY_DATE: 'SO ไม่มีวันส่งมอบ',
+      SO_NO_INVOICE: 'SO ค้างไม่ออกบิล',
+      PLACEHOLDER_WORKER_WIP: 'งานค้างที่ช่างรอคิว'
+    },
+    impact: {
+      stockValuation: 'มูลค่าสต็อกและกำไร',
+      goldBalance: 'ยอดทองคงเหลือ',
+      receivableAging: 'อายุหนี้ค้างรับ',
+      deliveryPlanning: 'การวางแผนส่งมอบ',
+      revenueRecognition: 'การรับรู้รายได้',
+      workerAccountability: 'ความรับผิดชอบของช่าง'
+    },
+    tab: {
+      stock: 'คลังสินค้า',
+      sales: 'ขายและเงิน',
+      material: 'คลังวัตถุดิบ',
+      production: 'ผลิต'
+    },
+    rules: {
+      DQ_NO_COST: 'สินค้าในคลัง {count} จาก {total} ชิ้น ({ratio}%) ยังไม่มีต้นทุน ทำให้มูลค่าสต็อกและกำไรคำนวณไม่ได้ครบ',
+      DQ_NEGATIVE_GOLD: 'ทองในคลัง {count} รายการ ยอดติดลบรวม {negativeWeight} g เพราะยังไม่มีรายการรับเข้า/ยกมา',
+      DQ_INVOICE_NO_DUE: 'บิล {count} จาก {total} ใบ ({ratio}%) ไม่มีวันครบกำหนดชำระ ทำให้คำนวณอายุหนี้ไม่ได้',
+      DQ_SO_NO_DELIVERY: 'SO ที่ยังไม่ออกบิล {count} จาก {total} ใบ ({ratio}%) ไม่มีวันส่งมอบ',
+      DQ_SO_NO_INVOICE: 'SO ค้างไม่ออกบิล {count} ใบ มูลค่า {amountThb} บาท',
+      DQ_PLACEHOLDER_WIP: 'งานค้าง {count} จาก {total} รายการ ยังอยู่กับช่างรอคิว ทำให้ระบุผู้รับผิดชอบจริงไม่ได้',
+      ACT_DQ_PRICE_NO_COST: 'ตีราคาสินค้าที่ยังไม่มีต้นทุน',
+      ACT_DQ_RECORD_OPENING_BALANCE: 'บันทึกยอดยกมา/รับเข้าของทองในคลัง',
+      ACT_DQ_SET_INVOICE_DUE: 'ระบุวันครบกำหนดชำระในบิล',
+      ACT_DQ_SET_SO_DELIVERY_DATE: 'ระบุวันส่งมอบใน SO',
+      ACT_DQ_INVOICE_FROM_SO: 'ออกบิลจาก SO ที่ค้าง',
+      ACT_DQ_ASSIGN_REAL_WORKER: 'ระบุช่างผู้รับผิดชอบจริงแทนช่างรอคิว'
+    }
+  },
+
   workerProfile: {
     tabsAria: 'ส่วนของโปรไฟล์ช่าง',
     tabs: {

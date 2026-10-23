@@ -11,7 +11,8 @@ export default {
     sales: '💰 Sales & Money',
     stock: '📦 Stock',
     material: '💎 Raw materials',
-    flow: '🔀 Flow'
+    flow: '🔀 Flow',
+    quality: '🧪 Data quality'
   },
 
   summary: {
@@ -251,6 +252,14 @@ export default {
       materialFindings: 'Materials - findings',
       materialItems: 'Materials - items',
       materialSeries: 'Materials - monthly',
+      quality: 'Data quality',
+      qualityColCheck: 'Check',
+      qualityColCount: 'Count',
+      qualityColTotal: 'Total',
+      qualityColRatio: 'Ratio (%)',
+      qualityColStatus: 'Status',
+      qualityColImpact: 'Impact',
+      qualityColTab: 'Tab',
       colMonth: 'Month',
       colSaleQty: 'Sold',
       colReturnQty: 'Returned (voided)',

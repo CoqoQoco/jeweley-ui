@@ -11,7 +11,8 @@ export default {
     sales: '💰 ขายและเงิน',
     stock: '📦 คลังสินค้า',
     material: '💎 คลังวัตถุดิบ',
-    flow: '🔀 การไหลของงาน'
+    flow: '🔀 การไหลของงาน',
+    quality: '🧪 คุณภาพข้อมูล'
   },
 
   summary: {
@@ -251,6 +252,14 @@ export default {
       materialFindings: 'วัตถุดิบ-สรุปปัญหา',
       materialItems: 'วัตถุดิบ-รายการ',
       materialSeries: 'วัตถุดิบ-รายเดือน',
+      quality: 'คุณภาพข้อมูล',
+      qualityColCheck: 'ตัวตรวจ',
+      qualityColCount: 'จำนวน',
+      qualityColTotal: 'ทั้งหมด',
+      qualityColRatio: 'สัดส่วน (%)',
+      qualityColStatus: 'สถานะ',
+      qualityColImpact: 'ผลกระทบ',
+      qualityColTab: 'แท็บ',
       colMonth: 'เดือน',
       colSaleQty: 'ขาย',
       colReturnQty: 'คืนจากลบบิล',

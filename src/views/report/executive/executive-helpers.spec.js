@@ -41,6 +41,11 @@ describe('executive-helpers', () => {
       })
     })
 
+    it('knows the data quality tab and keeps it last', () => {
+      expect(EXECUTIVE_TABS.at(-1)).toBe('quality')
+      expect(resolveActiveTab('quality')).toBe('quality')
+    })
+
     it('falls back to production for invalid/missing values', () => {
       expect(resolveActiveTab('bogus')).toBe('production')
       expect(resolveActiveTab(undefined)).toBe('production')
@@ -596,11 +601,11 @@ describe('shouldShowHeaderMetalToggle (exactly one metal toggle is visible)', ()
     expect(shouldShowHeaderMetalToggle('production')).toBe(false)
     // คลังวัตถุดิบไม่ผูก metal scope → ไม่มีปุ่มที่ไหนเลย
     expect(shouldShowHeaderMetalToggle('material')).toBe(false)
-    ;['sales', 'stock', 'flow'].forEach((tab) => expect(shouldShowHeaderMetalToggle(tab), tab).toBe(true))
+    ;['sales', 'stock', 'flow', 'quality'].forEach((tab) => expect(shouldShowHeaderMetalToggle(tab), tab).toBe(true))
   })
 
   it('every resolvable executive tab shows exactly one toggle (header xor production toolbar)', () => {
-    ;['production', 'sales', 'stock', 'material', 'flow', 'bogus', undefined].forEach((raw) => {
+    ;['production', 'sales', 'stock', 'material', 'flow', 'quality', 'bogus', undefined].forEach((raw) => {
       const tab = resolveActiveTab(raw)
       const toolbarToggle = tab === 'production'
       // material = ไม่มีปุ่มเลย (ไม่ใช้ metal scope)

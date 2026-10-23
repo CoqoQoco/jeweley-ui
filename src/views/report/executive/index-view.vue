@@ -34,6 +34,9 @@
       <template #flow>
         <flowView :active="activeTab === 'flow'" :refreshToken="refreshToken" />
       </template>
+      <template #quality>
+        <qualityInsightView :key="metal" :metal="metal" :refreshToken="refreshToken" :initialSub="qualityInitialSub" @update:sub="qualityInitialSub = $event" @navigate="onDigestSelect" />
+      </template>
     </TabViewGeneric>
     </div>
   </div>
@@ -81,12 +84,14 @@ import {
 } from './executive-insight-excel-helpers.js'
 import { buildSnapshotInsightSheets } from './executive-insight-excel-stock-sales-material.js'
 import { resolveDigestNavigation, buildDigestExcelSheet } from './executive-digest-helpers.js'
+import { buildQualitySheet } from './quality/quality-excel.js'
 import { stockConfig } from './stock/stock.config.js'
 import { salesConfig } from './sales/sales.config.js'
 import { materialGoldConfig } from './material/material.config.js'
 import { STOCK_INSIGHT_ENDPOINT, buildOverviewParams as buildStockOverviewParams } from './stock/stock-helpers.js'
 import { SALES_INSIGHT_ENDPOINT, buildOverviewParams as buildSalesOverviewParams } from './sales/sales-helpers.js'
 import { MATERIAL_ENDPOINT, buildOverviewParams as buildMaterialOverviewParams } from './material/material-helpers.js'
+import { DATA_QUALITY_ENDPOINT, buildOverviewParams as buildQualityOverviewParams } from './quality/quality-helpers.js'
 import {
   buildDefaultWipFilter,
   buildDefaultDeliveryFilter,
@@ -106,6 +111,7 @@ import digestView from './components/digest-view.vue'
 import salesInsightView from './components/sales-insight-view.vue'
 import stockInsightView from './components/stock-insight-view.vue'
 import materialInsightView from './components/material-insight-view.vue'
+import qualityInsightView from './components/quality-insight-view.vue'
 import flowView from './components/flow-view.vue'
 import productionInsightView from '@/views/production/insight/index-view.vue'
 
@@ -156,6 +162,7 @@ export default {
     salesInsightView,
     stockInsightView,
     materialInsightView,
+    qualityInsightView,
     flowView,
     productionInsightView
   },
@@ -190,6 +197,8 @@ export default {
       // แท็บ "คลังวัตถุดิบ": sub/kind ตั้งต้นจาก ?sub= ?kind= (เข้าหน้าด้วย tab=material เท่านั้น)
       materialInitialSub: '',
       materialInitialKind: '',
+      // แท็บ "คุณภาพข้อมูล": sub ตั้งต้นจาก ?sub= (เข้าหน้าด้วย tab=quality เท่านั้น)
+      qualityInitialSub: '',
       salesTarget: null,
       scrollToken: 0
     }
@@ -216,7 +225,8 @@ export default {
         { value: 'sales', label: this.$t('view.executive.tabs.sales') },
         { value: 'stock', label: this.$t('view.executive.tabs.stock') },
         { value: 'material', label: this.$t('view.executive.tabs.material') },
-        { value: 'flow', label: this.$t('view.executive.tabs.flow') }
+        { value: 'flow', label: this.$t('view.executive.tabs.flow') },
+        { value: 'quality', label: this.$t('view.executive.tabs.quality') }
       ]
     },
 
@@ -273,6 +283,7 @@ export default {
       this.salesInitialSub = this.activeTab === 'sales' ? String(query.sub || '') : ''
       this.materialInitialSub = this.activeTab === 'material' ? String(query.sub || '') : ''
       this.materialInitialKind = this.activeTab === 'material' ? String(query.kind || '') : ''
+      this.qualityInitialSub = this.activeTab === 'quality' ? String(query.sub || '') : ''
       this.$nextTick(() => {
         this.isApplyingRouteQuery = false
       })
@@ -435,13 +446,15 @@ export default {
     // ข้อมูล insight ของแท็บคลังสินค้า / ขายและเงิน / คลังวัตถุดิบ (snapshot ไม่มีช่วงเวลา) — ยิงพร้อมกันตอนกดปุ่ม เหมือนที่แท็บเรียก (body ตรงกับ view ของแต่ละแท็บ)
     async fetchSnapshotInsightData() {
       const store = this.productionInsightStore
-      const [stock, sales, material] = await Promise.all([
+      const [stock, sales, material, quality] = await Promise.all([
         store.post(STOCK_INSIGHT_ENDPOINT, buildStockOverviewParams()),
         store.post(SALES_INSIGHT_ENDPOINT, buildSalesOverviewParams()),
         // คลังวัตถุดิบไม่ผูก metal scope → postRaw (ไม่เติม metal)
-        store.postRaw(MATERIAL_ENDPOINT, buildMaterialOverviewParams('GOLD'))
+        store.postRaw(MATERIAL_ENDPOINT, buildMaterialOverviewParams('GOLD')),
+        // คุณภาพข้อมูลเป็นส่วนเสริม: ล้มแล้วเงียบ (null) ข้าม sheet นี้ — เหมือน Digest
+        api.jewelry.post(DATA_QUALITY_ENDPOINT, this.metalScopeStore.scoped(buildQualityOverviewParams()), { skipError: true, skipLoading: true }).catch(() => null)
       ])
-      return { stock, sales, material }
+      return { stock, sales, material, quality }
     },
 
     buildSnapshotExportSheets(data) {
@@ -762,7 +775,8 @@ export default {
           },
           ...(digestData ? [buildDigestExcelSheet(digestData, (key, params) => this.$t(key, params))] : []),
           ...this.buildInsightExportSheets(insightData, insightFilters),
-          ...this.buildSnapshotExportSheets(snapshotData)
+          ...this.buildSnapshotExportSheets(snapshotData),
+          ...[buildQualitySheet(snapshotData.quality, (key, params) => this.$t(key, params))].filter(Boolean)
         ],
         { filename: `${this.$t('view.executive.excel.filenamePrefix')}-${dayjs().format('YYYY-MM-DD')}.xlsx` }
       )
