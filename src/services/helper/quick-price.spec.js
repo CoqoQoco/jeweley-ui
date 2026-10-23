@@ -4,6 +4,8 @@ import {
   applyRounding,
   calcAlloyWeight,
   calcQuickPrice,
+  buildAlloyFactors,
+  ALLOY_FACTORS,
   getAlloyKarat,
   getMetalWeight,
   getQuickPriceAgeDays,
@@ -85,12 +87,70 @@ describe('alloy', () => {
     expect(r.totalPrice).toBe(13400)
   })
 
+  it('calcAlloyWeight ใช้ gold loss % และ factors ที่ส่งเข้ามา', () => {
+    expect(calcAlloyWeight(1.88, '18K', 12)).toBeCloseTo(0.505344, 6)
+    expect(calcAlloyWeight(2, '18K', 0)).toBeCloseTo(0.48, 6)
+    expect(calcAlloyWeight(2, '9K', 12)).toBeCloseTo(2 * 1.12 * 0.625, 6)
+    expect(calcAlloyWeight(2, '18K', 12, { '18K': 0.3 })).toBeCloseTo(0.672, 6)
+    expect(calcAlloyWeight(2, '18K', '')).toBe(0)
+    expect(calcAlloyWeight(2, '18K', -1)).toBe(0)
+  })
+
+  it('buildAlloyFactors อ่านจาก setting และ fallback เมื่อขาด', () => {
+    expect(ALLOY_FACTORS['9K']).toBe(0.625)
+    expect(buildAlloyFactors({ alloyFactor18K: 0.25, alloyFactor14K: 0, alloyFactor9K: 0.7 })).toEqual({
+      '18K': 0.25,
+      '14K': 0.41,
+      '9K': 0.7
+    })
+    expect(buildAlloyFactors(undefined)).toEqual(ALLOY_FACTORS)
+  })
+
   it('alloyWeight > 0 ต้องมี alloyPrice', () => {
     const base = { salePrice: 46900, markup: 3.5, goldWeight: 2, goldPrice: 3800, alloyWeight: 0.5 }
     expect(calcQuickPrice({ ...base, alloyPrice: '' }).error).toBe('alloyPrice')
     expect(calcQuickPrice({ ...base, alloyPrice: -1 }).error).toBe('alloyPrice')
     expect(calcQuickPrice({ ...base, alloyWeight: -1, alloyPrice: 20 }).error).toBe('alloyWeight')
     expect(calcQuickPrice({ ...base, alloyWeight: '', alloyPrice: '' }).valid).toBe(true)
+  })
+})
+
+describe('gold loss line (บรรทัดที่ 3)', () => {
+  const base = {
+    salePrice: 46900, markup: 3.5, goldWeight: 1.88, goldPrice: 3800,
+    alloyWeight: 0.505, alloyPrice: 20, percent: 50, rounding: 10
+  }
+
+  it('ตัวอย่างจริง gl 12%', () => {
+    const r = calcQuickPrice({ ...base, goldLossPercent: 12 })
+    expect(r.valid).toBe(true)
+    expect(r.raw).toBeCloseTo(9368.85, 2)
+    expect(r.quickPrice).toBe(9370)
+    expect(r.totalPrice).toBe(16530)
+    expect(r.goldLossValid).toBe(true)
+    expect(r.goldWithLossCost).toBeCloseTo(8001.28, 2)
+    expect(r.goldLossCostTotal).toBeCloseTo(8011.38, 2)
+    expect(r.goldLossTotalRaw).toBeCloseTo(17380.23, 2)
+    expect(r.goldLossTotalPrice).toBe(17390)
+  })
+
+  it('gl ว่าง/ติดลบ/ไม่ใช่เลข => บรรทัดเดิมยังคำนวณได้ บรรทัดใหม่เป็น null', () => {
+    for (const bad of ['', null, undefined, -1, 'abc']) {
+      const r = calcQuickPrice({ ...base, goldLossPercent: bad })
+      expect(r.valid).toBe(true)
+      expect(r.quickPrice).toBe(9370)
+      expect(r.totalPrice).toBe(16530)
+      expect(r.goldLossValid).toBe(false)
+      expect(r.goldLossCostTotal).toBeNull()
+      expect(r.goldLossTotalPrice).toBeNull()
+    }
+  })
+
+  it('gl = 0 ใช้ได้ และ goldLossCostTotal = goldCostTotal', () => {
+    const r = calcQuickPrice({ ...base, goldLossPercent: 0 })
+    expect(r.goldLossValid).toBe(true)
+    expect(r.goldLossCostTotal).toBeCloseTo(r.goldCostTotal, 6)
+    expect(r.goldLossTotalPrice).toBe(r.totalPrice)
   })
 })
 

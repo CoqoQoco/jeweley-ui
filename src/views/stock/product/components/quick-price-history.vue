@@ -20,12 +20,21 @@
       <template #percentTemplate="{ data }">
         <span>{{ formatPlainNumber(data.percent ?? 0) }}%</span>
       </template>
+      <template #goldLossPercentTemplate="{ data }">
+        <span>{{ hasValue(data.goldLossPercent) ? `${formatPlainNumber(data.goldLossPercent)}%` : '—' }}</span>
+      </template>
+      <template #goldLossCostTotalTemplate="{ data }">
+        <span>{{ formatMoney2(data.goldLossCostTotal) }}</span>
+      </template>
+      <template #goldLossTotalPriceTemplate="{ data }">
+        <span>{{ formatMoney2(data.goldLossTotalPrice) }}</span>
+      </template>
     </BaseDataTable>
   </SectionCardGeneric>
 </template>
 
 <script>
-import { formatPlainNumber } from '@/services/helper/quick-price.js'
+import { formatMoney2, formatPlainNumber } from '@/services/helper/quick-price.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
@@ -65,6 +74,9 @@ export default {
         { field: 'percent', header: t('colPercent'), sortable: false, minWidth: '80px', align: 'right' },
         { field: 'quickPrice', header: t('colQuickPrice'), sortable: false, minWidth: '130px', align: 'right', format: 'decimal2' },
         { field: 'totalPrice', header: t('colTotalPriceQuick'), sortable: false, minWidth: '130px', align: 'right', format: 'decimal2' },
+        { field: 'goldLossPercent', header: t('colGoldLossPercent'), sortable: false, minWidth: '100px', align: 'right' },
+        { field: 'goldLossCostTotal', header: t('goldLossCostTotal'), sortable: false, minWidth: '150px', align: 'right' },
+        { field: 'goldLossTotalPrice', header: t('totalPriceGoldLoss'), sortable: false, minWidth: '170px', align: 'right' },
         { field: 'remark', header: this.$t('common.field.remark'), sortable: false, minWidth: '160px' }
       )
       return cols
@@ -72,7 +84,12 @@ export default {
   },
 
   methods: {
-    formatPlainNumber
+    formatMoney2,
+    formatPlainNumber,
+
+    hasValue(value) {
+      return value !== null && value !== undefined && value !== ''
+    }
   }
 }
 </script>

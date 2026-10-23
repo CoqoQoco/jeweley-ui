@@ -354,6 +354,8 @@ export default {
         hasNormalAppraisal: i.hasNormalAppraisal,
         quickPrice: i.quickPrice,
         quickPriceTotal: i.quickPriceTotal,
+        quickPriceGoldLossTotal: i.quickPriceGoldLossTotal,
+        quickPriceGoldLossPercent: i.quickPriceGoldLossPercent,
         quickPriceDate: i.quickPriceDate,
         quickPriceGoldPrice: i.quickPriceGoldPrice,
         quickPriceMarkup: i.quickPriceMarkup,

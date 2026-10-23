@@ -42,6 +42,9 @@
         <span v-if="hasTotal" class="price-meta">
           {{ $t('view.stock.product.quickPrice.newPrice') }}: {{ formatMoney2(summary.quickPrice) }}
         </span>
+        <span v-if="hasGoldLossTotal" class="price-meta">
+          {{ $t('view.stock.product.quickPrice.totalPriceGoldLoss') }}{{ goldLossPercentText }}: {{ formatMoney2(summary.quickPriceGoldLossTotal) }}
+        </span>
         <span class="price-meta">{{ metaLine }}</span>
         <span class="price-meta">{{ detailLine }}</span>
         <span v-if="summary.quickPriceRemark" class="price-meta">
@@ -91,6 +94,15 @@ export default {
 
     hasTotal() {
       return this.summary.quickPriceTotal !== null && this.summary.quickPriceTotal !== undefined
+    },
+
+    hasGoldLossTotal() {
+      return this.summary.quickPriceGoldLossTotal !== null && this.summary.quickPriceGoldLossTotal !== undefined
+    },
+
+    goldLossPercentText() {
+      const pct = this.summary.quickPriceGoldLossPercent
+      return pct === null || pct === undefined ? '' : ` (${this.$t('view.stock.product.quickPrice.goldLossPercent')} ${formatPlainNumber(pct)}%)`
     },
 
     ageDays() {

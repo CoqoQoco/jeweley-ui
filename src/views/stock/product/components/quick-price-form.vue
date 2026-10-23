@@ -63,7 +63,7 @@
         <FormFieldGeneric :label="$t('view.stock.product.quickPrice.alloyWeight')">
           <InputTextGeneric v-model="form.alloyWeight" type="number" :min="0" step="any" @input="alloyTouched = true" />
           <span v-if="form.karat" class="qp-hint">
-            {{ $t('view.stock.product.quickPrice.alloyFormula', { w: form.goldWeight === '' ? 0 : form.goldWeight, factor: karatFactor }) }}
+            {{ $t('view.stock.product.quickPrice.alloyFormula', { w: form.goldWeight === '' ? 0 : form.goldWeight, gl: goldLossText, factor: karatFactor }) }}
           </span>
         </FormFieldGeneric>
         <FormFieldGeneric :label="$t('view.stock.product.quickPrice.alloyPrice')">
@@ -84,6 +84,27 @@
           </div>
         </FormFieldGeneric>
       </div>
+
+      <div class="qp-row qp-row--3 qp-row--spaced">
+        <FormFieldGeneric :label="$t('view.stock.product.quickPrice.goldLossPercent')">
+          <InputTextGeneric v-model="form.goldLossPercent" type="number" :min="0" step="any" @input="goldLossTouched = true" />
+        </FormFieldGeneric>
+        <FormFieldGeneric :label="$t('view.stock.product.quickPrice.goldWithLoss')">
+          <div class="qp-readonly">{{ formatMoney2(result.goldWithLossCost) }}</div>
+          <span v-if="result.goldWithLossCost !== null" class="qp-hint">
+            {{ $t('view.stock.product.quickPrice.goldWithLossFormula', { w: form.goldWeight, gl: goldLossText, price: formatPlainNumber(form.goldPrice) }) }}
+          </span>
+        </FormFieldGeneric>
+        <FormFieldGeneric :label="$t('view.stock.product.quickPrice.goldLossCostTotal')">
+          <div class="qp-readonly">{{ formatMoney2(result.goldLossCostTotal) }}</div>
+          <span v-if="result.goldLossCostTotal !== null" class="qp-hint">
+            {{ $t('view.stock.product.quickPrice.goldLossCostTotalFormula', { gold: formatMoney2(result.goldWithLossCost), alloy: formatMoney2(result.alloyCost) }) }}
+          </span>
+        </FormFieldGeneric>
+      </div>
+      <p v-if="goldLossInvalid" class="qp-warning">
+        <i class="bi bi-exclamation-triangle"></i> {{ $t('view.stock.product.quickPrice.invalid.goldLossPercent') }}
+      </p>
       <p v-if="!metal.source && !hasWeightInput" class="qp-warning">
         <i class="bi bi-exclamation-triangle"></i> {{ $t('view.stock.product.quickPrice.noMetalWeight') }}
       </p>
@@ -137,6 +158,15 @@
           </span>
         </div>
       </div>
+      <div class="qp-result-line">
+        <span class="qp-result-label">{{ $t('view.stock.product.quickPrice.totalPriceGoldLoss') }}</span>
+        <div class="qp-result-amount">
+          <span class="qp-result-value">{{ result.goldLossValid ? formatMoney2(result.goldLossTotalPrice) : '—' }}</span>
+          <span v-if="result.goldLossValid && Number(form.rounding) !== 0" class="qp-hint">
+            {{ $t('view.stock.product.quickPrice.beforeRounding', { raw: formatMoney2(result.goldLossTotalRaw) }) }}
+          </span>
+        </div>
+      </div>
     </div>
 
     <FormFieldGeneric :label="$t('view.stock.product.quickPrice.remark')">
@@ -154,15 +184,19 @@
 <script>
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { storage } from '@/services/storage.js'
+import { getBreakdownSetting } from '@/services/helper/breakdown-setting-store.js'
 import { success, warning } from '@/services/alert/sweetAlerts.js'
 import {
   ALLOY_FACTORS,
+  DEFAULT_GOLD_LOSS_PERCENT,
   DEFAULT_MARKUP,
   DEFAULT_ROUNDING,
   QUICK_PRICE_ROUNDINGS,
   calcAlloyWeight,
+  buildAlloyFactors,
   calcQuickPrice,
   formatMoney2,
+  formatPlainNumber,
   getAlloyKarat,
   getMetalWeight
 } from '@/services/helper/quick-price.js'
@@ -179,7 +213,10 @@ const STORAGE_KEY = 'quick-price-defaults-dk'
 const loadDefaults = () => {
   const saved = storage.getJSON(STORAGE_KEY, {}) || {}
   const rounding = Number(saved.rounding)
+  const savedGoldLoss = saved.goldLossPercent
+  const hasGoldLoss = savedGoldLoss !== null && savedGoldLoss !== undefined && savedGoldLoss !== '' && Number(savedGoldLoss) >= 0
   return {
+    goldLossPercent: hasGoldLoss ? Number(savedGoldLoss) : null,
     markup: Number(saved.markup) > 0 ? saved.markup : DEFAULT_MARKUP,
     goldPrice: Number(saved.goldPrice) > 0 ? saved.goldPrice : '',
     alloyPrice: Number(saved.alloyPrice) > 0 ? saved.alloyPrice : '',
@@ -235,20 +272,26 @@ export default {
     const defaults = loadDefaults()
     const goldWeight = weightToInput(getMetalWeight(this.materials).weight)
     const karat = getAlloyKarat(this.productionTypeSize)
+    const goldLossPercent = defaults.goldLossPercent ?? DEFAULT_GOLD_LOSS_PERCENT
     return {
       form: {
         markup: defaults.markup,
+        goldLossPercent,
         goldWeight,
         goldPrice: defaults.goldPrice,
         karat,
-        alloyWeight: weightToInput(calcAlloyWeight(goldWeight, karat)),
+        alloyWeight: weightToInput(calcAlloyWeight(goldWeight, karat, goldLossPercent)),
         alloyPrice: defaults.alloyPrice,
         percent: '',
         rounding: defaults.rounding,
         remark: ''
       },
+      factors: { ...ALLOY_FACTORS },
+      breakdownSetting: null,
+      hasSavedGoldLoss: defaults.goldLossPercent !== null,
       weightTouched: false,
       alloyTouched: false,
+      goldLossTouched: false,
       showGoldCalculator: false
     }
   },
@@ -264,13 +307,28 @@ export default {
 
     karatOptions() {
       return [
-        ...Object.entries(ALLOY_FACTORS).map(([value, factor]) => ({ value, label: `${value} (${factor})` })),
+        ...Object.entries(this.factors).map(([value, factor]) => ({ value, label: `${value} (${factor})` })),
         { value: '', label: this.$t('view.stock.product.quickPrice.karatNone') }
       ]
     },
 
     karatFactor() {
-      return ALLOY_FACTORS[this.form.karat] ?? 0
+      return this.factors[this.form.karat] ?? 0
+    },
+
+    goldLossValue() {
+      const raw = this.form.goldLossPercent
+      if (raw === '' || raw === null || raw === undefined) return null
+      const num = Number(raw)
+      return Number.isFinite(num) && num >= 0 ? num : null
+    },
+
+    goldLossInvalid() {
+      return this.goldLossValue === null
+    },
+
+    goldLossText() {
+      return this.goldLossValue === null ? 0 : this.goldLossValue
     },
 
     isKaratAuto() {
@@ -278,7 +336,8 @@ export default {
     },
 
     autoAlloyWeight() {
-      return weightToInput(calcAlloyWeight(this.form.goldWeight, this.form.karat))
+      if (this.goldLossValue === null) return null
+      return weightToInput(calcAlloyWeight(this.form.goldWeight, this.form.karat, this.goldLossValue, this.factors))
     },
 
     result() {
@@ -290,7 +349,8 @@ export default {
         alloyWeight: this.form.alloyWeight,
         alloyPrice: this.form.alloyPrice,
         percent: this.form.percent,
-        rounding: this.form.rounding
+        rounding: this.form.rounding,
+        goldLossPercent: this.form.goldLossPercent
       })
     },
 
@@ -312,11 +372,11 @@ export default {
 
     'form.karat'() {
       this.alloyTouched = false
-      this.form.alloyWeight = this.autoAlloyWeight
+      if (this.autoAlloyWeight !== null) this.form.alloyWeight = this.autoAlloyWeight
     },
 
     autoAlloyWeight(val) {
-      if (!this.alloyTouched) this.form.alloyWeight = val
+      if (val !== null && !this.alloyTouched) this.form.alloyWeight = val
     },
 
     metal(val) {
@@ -324,8 +384,22 @@ export default {
     }
   },
 
+  async created() {
+    this.applyBreakdownSetting(await getBreakdownSetting())
+  },
+
   methods: {
     formatMoney2,
+    formatPlainNumber,
+
+    applyBreakdownSetting(setting) {
+      this.breakdownSetting = setting
+      this.factors = buildAlloyFactors(setting)
+      const gl = Number(setting?.goldLossPercent)
+      if (!this.goldLossTouched && !this.hasSavedGoldLoss && Number.isFinite(gl) && gl >= 0) {
+        this.form.goldLossPercent = gl
+      }
+    },
 
     onGoldCalculatorSelect(data) {
       const perGram = Number(data.pricePerGramThb) || 0
@@ -341,14 +415,21 @@ export default {
       const defaults = loadDefaults()
       const goldWeight = weightToInput(this.metal.weight)
       const karat = getAlloyKarat(this.productionTypeSize)
+      const settingGoldLoss = Number(this.breakdownSetting?.goldLossPercent)
+      const goldLossPercent =
+        defaults.goldLossPercent ??
+        (Number.isFinite(settingGoldLoss) && settingGoldLoss >= 0 ? settingGoldLoss : DEFAULT_GOLD_LOSS_PERCENT)
       this.weightTouched = false
       this.alloyTouched = false
+      this.goldLossTouched = false
+      this.hasSavedGoldLoss = defaults.goldLossPercent !== null
       this.form = {
         markup: defaults.markup,
+        goldLossPercent,
         goldWeight,
         goldPrice: defaults.goldPrice,
         karat,
-        alloyWeight: weightToInput(calcAlloyWeight(goldWeight, karat)),
+        alloyWeight: weightToInput(calcAlloyWeight(goldWeight, karat, goldLossPercent, this.factors)),
         alloyPrice: defaults.alloyPrice,
         percent: '',
         rounding: defaults.rounding,
@@ -364,6 +445,7 @@ export default {
           markup: Number(this.form.markup),
           goldPrice: Number(this.form.goldPrice),
           alloyPrice: alloyPrice > 0 ? alloyPrice : saved.alloyPrice,
+          goldLossPercent: this.goldLossValue ?? saved.goldLossPercent,
           rounding: Number(this.form.rounding)
         })
       } catch {
@@ -385,6 +467,7 @@ export default {
           alloyWeight: Number(this.form.alloyWeight) || 0,
           alloyPrice: Number(this.form.alloyPrice) || 0,
           percent: this.form.percent === '' ? 0 : Number(this.form.percent),
+          goldLossPercent: this.goldLossValue,
           rounding: Number(this.form.rounding),
           remark: remark || null
         }
