@@ -270,7 +270,7 @@ export default {
         return this.bridgeCheck.status === 'success' ? 'green' : 'red'
       }
       if (this.bridgeCheck.status === 'success') return 'green'
-      if (this.bridgeCheck.status === 'bridge-error') return 'red'
+      if (['bridge-error', 'printer-offline', 'printer-paused', 'printer-error'].includes(this.bridgeCheck.status)) return 'red'
       return 'warning'
     },
 
@@ -307,6 +307,12 @@ export default {
           return this.$t('common.printer.noPrinterSet')
         case 'printer-not-found':
           return this.$t('common.printer.savedNotFound', { name: this.bridgeCheck.printerName })
+        case 'printer-offline':
+          return this.$t('common.printer.statusOffline', { name: this.bridgeCheck.printerName })
+        case 'printer-paused':
+          return this.$t('common.printer.statusPaused', { name: this.bridgeCheck.printerName })
+        case 'printer-error':
+          return this.$t('common.printer.statusError', { name: this.bridgeCheck.printerName })
         case 'bridge-error':
           if (this.bridgeErrorBucket === 'blocked') return this.$t('common.printer.statusBlocked')
           if (this.bridgeErrorBucket === 'empty') return this.$t('common.printer.statusEmpty')

@@ -95,3 +95,25 @@ export async function checkBridgeHealth() {
     return false
   }
 }
+
+// สถานะคิวเครื่องพิมพ์จริงใน Windows (offline/paused/error/jobs) — bridge เก่า (v2.0) ตอบ 404
+// คืน null เมื่อ 404 / network error / non-ok เพื่อให้ผู้เรียก fallback เป็นพฤติกรรมเดิม — ห้าม throw
+export async function getPrinterState(name) {
+  try {
+    const res = await fetch(`${BRIDGE_BASE}/printers/status?name=${encodeURIComponent(name || '')}`)
+    if (!res.ok) return null
+    return await res.json()
+  } catch {
+    return null
+  }
+}
+
+export async function getBridgeConfig() {
+  try {
+    const res = await fetch(`${BRIDGE_BASE}/config`)
+    if (!res.ok) return null
+    return await res.json()
+  } catch {
+    return null
+  }
+}

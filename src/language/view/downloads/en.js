@@ -1,6 +1,30 @@
 export default {
   pageTitle: 'Download Programs',
   manualBtn: 'Manual',
+  bridgeTest: {
+    btn: 'Test connection',
+    running: 'Testing connection...',
+    runningOk: 'Bridge is running · v{version}',
+    runningUnknownVersion: 'Bridge is running (version unknown)',
+    latest: '(latest)',
+    shouldUpdate: 'Should update to {latest}',
+    blockedTitle: 'The browser is blocking the Bridge connection',
+    blockedHint: 'The program is running, but the browser has not allowed this site to call a local program, or the certificate has not been accepted. Click "Open Bridge page", accept the certificate (or allow local network access), then test again.',
+    unreachableTitle: 'Cannot connect to the Bridge',
+    unreachableHint: 'It may not be installed or not running. Check for the printer icon at the bottom-right; if it is missing, double-click "ติดตั้ง.bat" again.',
+    openBridge: 'Open Bridge page',
+    retry: 'Test again',
+    printers: 'Printers found',
+    noPrinters: 'No printers installed in Windows were found',
+    tagBarcode: 'Barcode printer of this computer',
+    tagDefault: 'Bridge default',
+    stateReady: 'Ready',
+    stateOffline: 'Offline',
+    statePaused: 'Queue paused',
+    stateError: 'Error',
+    stateJobs: '{n} job(s) pending',
+    stateUnknown: 'Status unknown'
+  },
   printBridge: {
     name: 'DK Print Bridge',
     desc: 'A bridge program for printing labels and documents from the system to your local printer. Install once — it then starts by itself every time you turn on the computer, with nothing more to do.'

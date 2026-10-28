@@ -30,7 +30,20 @@
                 class="ml-2"
                 @click="openManual(item)"
               />
+              <ButtonGeneric
+                v-if="item.hasBridgeTest"
+                variant="outline"
+                icon="bi-plug"
+                :label="$t('view.downloads.bridgeTest.btn')"
+                class="ml-2"
+                @click="openBridgeTest(item)"
+              />
             </div>
+            <bridgeTestPanel
+              v-if="item.hasBridgeTest && activeTestId === item.id"
+              ref="bridgeTest"
+              :latestVersion="item.version"
+            />
           </div>
         </div>
       </SectionCardGeneric>
@@ -49,6 +62,7 @@ import { defineAsyncComponent } from 'vue'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import bridgeTestPanel from './components/bridge-test-panel.vue'
 import { DOWNLOAD_ITEMS } from '@/config/downloads-config.js'
 
 const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-title.vue'))
@@ -63,6 +77,7 @@ export default {
     pageTitle,
     SectionCardGeneric,
     ButtonGeneric,
+    bridgeTestPanel,
     printBridgeManualView
   },
 
@@ -70,7 +85,8 @@ export default {
     return {
       downloadItems: DOWNLOAD_ITEMS,
       isShowManual: false,
-      activeManualId: null
+      activeManualId: null,
+      activeTestId: null
     }
   },
 
@@ -82,6 +98,14 @@ export default {
     openManual(item) {
       this.activeManualId = item.id
       this.isShowManual = true
+    },
+
+    openBridgeTest(item) {
+      if (this.activeTestId === item.id) {
+        this.$refs.bridgeTest?.[0]?.run()
+        return
+      }
+      this.activeTestId = item.id
     },
 
     closeManual() {

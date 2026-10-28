@@ -163,6 +163,14 @@ export default {
     noPrinterSet: 'Barcode printer is not set up yet',
     goToSetting: 'Go to barcode printer settings',
     printFailedTitle: 'Print failed',
-    legacyServiceError: 'Cannot connect to Zebra Print Service — please keep the program running before printing'
+    legacyServiceError: 'Cannot connect to Zebra Print Service — please keep the program running before printing',
+    statusOffline: 'Printer is offline · {name} — check the USB cable / power on the printer',
+    statusPaused: 'Printer queue is paused · {name}',
+    statusError: 'Printer reports an error (out of labels/ribbon, or cover open) · {name}',
+    queueJobs: '{n} job(s) are stuck in the printer queue — if labels do not come out, clear the queue in Windows first',
+    printing: 'Printing {done}/{total}',
+    sentMessage: 'Sent {n} label(s) to the printer',
+    sentHint: 'If no label comes out, check the printer queue in Windows',
+    needBridgeUpdate: 'Update the bridge to see printer status'
   }
 }

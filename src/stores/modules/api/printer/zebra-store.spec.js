@@ -12,7 +12,8 @@ vi.mock('@/axios/axios-helper.js', () => ({
 }))
 
 vi.mock('@/services/api/print-bridge-service.js', () => ({
-  printZpl: vi.fn()
+  printZpl: vi.fn(),
+  getPrinterState: vi.fn()
 }))
 
 vi.mock('@/services/api/printer-config-service.js', () => ({
@@ -20,7 +21,7 @@ vi.mock('@/services/api/printer-config-service.js', () => ({
 }))
 
 import api from '@/axios/axios-helper.js'
-import { printZpl } from '@/services/api/print-bridge-service.js'
+import { printZpl, getPrinterState } from '@/services/api/print-bridge-service.js'
 import { fetchPrinterList } from '@/services/api/printer-config-service.js'
 import {
   setBarcodeProfile,
@@ -39,6 +40,7 @@ describe('zebraPrinterApi — เลือก template ตาม profile + ส�
     api.zebraPrinter.printsZPL.mockReset()
     api.zebraPrinter.getStatus.mockReset()
     printZpl.mockReset()
+    getPrinterState.mockReset()
     fetchPrinterList.mockReset()
     setCopyDelayMs(0)
   })
@@ -382,6 +384,47 @@ describe('zebraPrinterApi — เลือก template ตาม profile + ส�
 
       expect(res.profile).toBe('legacy')
       expect(fetchPrinterList).not.toHaveBeenCalled()
+    })
+
+    describe('gt800: สถานะคิวจริงจาก bridge (/printers/status)', () => {
+      beforeEach(() => {
+        setBarcodeProfile(PRINTER_PROFILES.GT800)
+        setBarcodePrinterName('GT800 RAW')
+        fetchPrinterList.mockResolvedValue({ status: 'ok', printers: [{ name: 'GT800 RAW', label: 'GT800 RAW' }], detail: '' })
+      })
+
+      it('offline → printer-offline', async () => {
+        getPrinterState.mockResolvedValue({ found: true, offline: true, paused: false, error: false, jobs: 0 })
+        const res = await zebraPrinterApi().fetchBarcodePrinterStatus()
+        expect(getPrinterState).toHaveBeenCalledWith('GT800 RAW')
+        expect(res.status).toBe('printer-offline')
+      })
+
+      it('paused → printer-paused', async () => {
+        getPrinterState.mockResolvedValue({ found: true, offline: false, paused: true, error: false, jobs: 0 })
+        const res = await zebraPrinterApi().fetchBarcodePrinterStatus()
+        expect(res.status).toBe('printer-paused')
+      })
+
+      it('error → printer-error', async () => {
+        getPrinterState.mockResolvedValue({ found: true, offline: false, paused: false, error: true, jobs: 0 })
+        const res = await zebraPrinterApi().fetchBarcodePrinterStatus()
+        expect(res.status).toBe('printer-error')
+      })
+
+      it('jobs > 0 แต่ปกติ → success พร้อม detail.jobs', async () => {
+        getPrinterState.mockResolvedValue({ found: true, offline: false, paused: false, error: false, jobs: 3 })
+        const res = await zebraPrinterApi().fetchBarcodePrinterStatus()
+        expect(res.status).toBe('success')
+        expect(res.detail.jobs).toBe(3)
+      })
+
+      it('getPrinterState = null (bridge เก่า) → success เหมือนเดิม', async () => {
+        getPrinterState.mockResolvedValue(null)
+        const res = await zebraPrinterApi().fetchBarcodePrinterStatus()
+        expect(res.status).toBe('success')
+        expect(res.detail).toBeNull()
+      })
     })
 
     it('ไม่ส่ง profileOverride → ใช้ saved profile เหมือนเดิม', async () => {

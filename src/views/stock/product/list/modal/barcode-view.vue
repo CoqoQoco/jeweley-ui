@@ -172,13 +172,25 @@
                   @input="validateInput"
                 />
               </div>
-              <button
-                class="btn btn-sm btn-main"
+              <ButtonGeneric
+                variant="main"
+                icon="bi-upc-scan"
+                :loading="isPrinting"
                 :disabled="isPrintDisabled"
                 @click="onPrintBarcode"
-              >
-                <span class="bi bi-upc-scan"></span>
-              </button>
+              />
+            </div>
+          </div>
+
+          <div v-if="isPrinting" class="pt-2 printing-progress">
+            <span class="bi bi-printer mr-1"></span>
+            <span>{{ $t('common.printer.printing', { done: progress.done, total: progress.total }) }}</span>
+          </div>
+
+          <div v-if="pendingJobs > 0" class="pt-2">
+            <div class="cost-missing-warning">
+              <span class="bi bi-exclamation-triangle mr-1"></span>
+              <span>{{ $t('common.printer.queueJobs', { n: pendingJobs }) }}</span>
             </div>
           </div>
         </div>
@@ -216,11 +228,12 @@ import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { buildBarcodeModel } from '@/services/helper/barcode/barcode-model.js'
 import { getPieceQty } from '@/services/utils/stock-piece-qty.js'
-import { error } from '@/services/alert/sweetAlerts.js'
+import { error, success } from '@/services/alert/sweetAlerts.js'
 import { getBarcodeProfile, PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
 import { buildPublicUrl } from '@/config/public-site-config.js'
 import { layoutGt800, REMARK_SYMBOLS, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
 
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
@@ -233,6 +246,7 @@ export default {
     BarcodeNoDashNotice,
     barcodePreview,
     ToggleGroupGeneric,
+    ButtonGeneric,
     DropdownGeneric,
     FormFieldGeneric,
     CheckboxGeneric
@@ -360,6 +374,12 @@ export default {
           return this.$t('common.printer.noPrinterSet')
         case 'printer-not-found':
           return this.$t('common.printer.savedNotFound', { name: this.printerCheck.printerName })
+        case 'printer-offline':
+          return this.$t('common.printer.statusOffline', { name: this.printerCheck.printerName })
+        case 'printer-paused':
+          return this.$t('common.printer.statusPaused', { name: this.printerCheck.printerName })
+        case 'printer-error':
+          return this.$t('common.printer.statusError', { name: this.printerCheck.printerName })
         case 'bridge-error':
           return this.bridgeErrorText
         default:
@@ -430,7 +450,12 @@ export default {
       return layoutGt800({ ...this.labelBarcode, remarkSymbol: this.remarkSymbol }, 'original').remarkNoRoom
     },
 
+    pendingJobs() {
+      return Number(this.printerCheck.detail?.jobs) || 0
+    },
+
     isPrintDisabled() {
+      if (this.isPrinting) return true
       if (!this.isPrinterReady) return true
       if (this.selectedType === 'original-qr' && this.publicLinkStatus !== 'ready') return true
       return false
@@ -451,7 +476,9 @@ export default {
       publicLinkStatus: 'idle',
       remarkSymbol: REMARK_SYMBOL_NONE,
       labelTopLine: 'name',
-      hidePrice: false
+      hidePrice: false,
+      isPrinting: false,
+      progress: { done: 0, total: 0 }
     }
   },
 
@@ -468,6 +495,8 @@ export default {
       this.remarkSymbol = REMARK_SYMBOL_NONE
       this.labelTopLine = 'name'
       this.hidePrice = false
+      this.isPrinting = false
+      this.progress = { done: 0, total: 0 }
     },
 
     closeModal() {
@@ -529,10 +558,29 @@ export default {
         hidePrice: this.hidePrice,
         remarkSymbol: this.showRemarkSelect ? this.remarkSymbol : ''
       }
-      const res = await this.zebraPrinter.fetchZebraPrint({ formValue: zplData, skipLoading: true })
+      const total = Number(this.barcode.print) || 1
+      this.isPrinting = true
+      this.progress = { done: 0, total }
+      let res
+      try {
+        res = await this.zebraPrinter.fetchZebraPrint({
+          formValue: zplData,
+          skipLoading: true,
+          onProgress: (done, all) => {
+            this.progress = { done, total: all }
+          }
+        })
+      } finally {
+        this.isPrinting = false
+      }
+
       if (res?.status !== 'success') {
         error(res?.message || this.$t('common.printer.printFailedTitle'), this.$t('common.printer.printFailedTitle'))
+        return
       }
+
+      success(`${this.$t('common.printer.sentMessage', { n: total })}<br>${this.$t('common.printer.sentHint')}`)
+      this.checkPrinterStatus()
     }
   }
 }
@@ -554,6 +602,11 @@ export default {
   .bi {
     color: var(--status-open);
   }
+}
+
+.printing-progress {
+  font-size: var(--fs-sm);
+  color: var(--base-font-color);
 }
 
 .print-count-input {

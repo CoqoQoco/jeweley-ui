@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import api from '@/axios/axios-helper.js'
-import { printZpl } from '@/services/api/print-bridge-service.js'
+import { printZpl, getPrinterState } from '@/services/api/print-bridge-service.js'
 import { fetchPrinterList } from '@/services/api/printer-config-service.js'
 import {
   getBarcodePrinterConfig,
@@ -111,10 +111,27 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
         }
       }
 
-      return { profile: PRINTER_PROFILES.GT800, status: 'success', printerName: savedName, printers: result.printers, detail: null }
+      const state = await getPrinterState(savedName)
+      if (!state) {
+        return { profile: PRINTER_PROFILES.GT800, status: 'success', printerName: savedName, printers: result.printers, detail: null }
+      }
+
+      let status = 'success'
+      if (state.offline) status = 'printer-offline'
+      else if (state.paused) status = 'printer-paused'
+      else if (state.error) status = 'printer-error'
+
+      return {
+        profile: PRINTER_PROFILES.GT800,
+        status,
+        printerName: savedName,
+        printers: result.printers,
+        detail: { jobs: Number(state.jobs) || 0 }
+      }
     },
 
-    async fetchZebraPrint({ formValue, skipLoading = true }) {
+    // onProgress(done,total) นับเป็นใบ — เรียกหลังพิมพ์แต่ละใบ
+    async fetchZebraPrint({ formValue, skipLoading = true, onProgress = null }) {
       const config = getBarcodePrinterConfig()
 
       const qrGuardResult = checkQrLabelGuard([formValue], config.profile)
@@ -133,6 +150,8 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
               message: result.message || `เกิดข้อผิดพลาดในการพิมพ์ชิ้นที่ ${i + 1}`
             }
           }
+
+          if (typeof onProgress === 'function') onProgress(i + 1, printCount)
 
           if (i < printCount - 1) {
             await delay(1000)
@@ -156,6 +175,8 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
             message: `เกิดข้อผิดพลาดในการพิมพ์ชิ้นที่ ${i + 1}: ${err.message || ''}`
           }
         }
+
+        if (typeof onProgress === 'function') onProgress(i + 1, printCount)
 
         // ถ้ายังไม่ใช่ชิ้นสุดท้าย ให้รอตามระยะที่ตั้งค่าไว้ก่อนยิงพิมพ์ต่อ
         if (i < printCount - 1) {

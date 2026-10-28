@@ -163,6 +163,14 @@ export default {
     noPrinterSet: 'ยังไม่ได้ตั้งค่าเครื่องพิมพ์บาร์โค้ด',
     goToSetting: 'ไปตั้งค่าเครื่องพิมพ์บาร์โค้ด',
     printFailedTitle: 'พิมพ์ไม่สำเร็จ',
-    legacyServiceError: 'เชื่อมต่อโปรแกรม Zebra Print Service ไม่ได้ — เปิดโปรแกรมค้างไว้ก่อนพิมพ์ครับ'
+    legacyServiceError: 'เชื่อมต่อโปรแกรม Zebra Print Service ไม่ได้ — เปิดโปรแกรมค้างไว้ก่อนพิมพ์ครับ',
+    statusOffline: 'เครื่องพิมพ์ออฟไลน์ · {name} — ตรวจสาย USB / เปิดเครื่อง',
+    statusPaused: 'คิวเครื่องพิมพ์ถูกหยุดไว้ · {name}',
+    statusError: 'เครื่องพิมพ์แจ้งข้อผิดพลาด (ฉลาก/ริบบอนหมด หรือฝาเปิด) · {name}',
+    queueJobs: 'มีงานค้างในคิวเครื่องพิมพ์ {n} งาน — ถ้าป้ายไม่ออก ให้ล้างคิวใน Windows ก่อน',
+    printing: 'กำลังพิมพ์ {done}/{total}',
+    sentMessage: 'ส่งเข้าเครื่องพิมพ์แล้ว {n} ใบ',
+    sentHint: 'ถ้าป้ายไม่ออก ให้ตรวจคิวเครื่องพิมพ์ใน Windows',
+    needBridgeUpdate: 'อัปเดต bridge เพื่อดูสถานะเครื่องพิมพ์'
   }
 }

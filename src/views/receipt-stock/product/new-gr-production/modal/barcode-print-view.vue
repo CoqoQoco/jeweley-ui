@@ -257,6 +257,12 @@ export default {
           return this.$t('common.printer.noPrinterSet')
         case 'printer-not-found':
           return this.$t('common.printer.savedNotFound', { name: this.printerCheck.printerName })
+        case 'printer-offline':
+          return this.$t('common.printer.statusOffline', { name: this.printerCheck.printerName })
+        case 'printer-paused':
+          return this.$t('common.printer.statusPaused', { name: this.printerCheck.printerName })
+        case 'printer-error':
+          return this.$t('common.printer.statusError', { name: this.printerCheck.printerName })
         case 'bridge-error':
           return this.bridgeErrorText
         default:
