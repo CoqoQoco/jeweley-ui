@@ -151,6 +151,8 @@ export default {
 
       masterMaterialType: [
         { value: 'Gold', description: 'Gold' },
+        { value: 'Silver', description: 'Silver' },
+        { value: 'Diamond', description: 'Diamond' },
         { value: 'Gem', description: 'Gem' },
         { value: 'Worker', description: 'Worker' },
         { value: 'Setting', description: 'Setting' },
