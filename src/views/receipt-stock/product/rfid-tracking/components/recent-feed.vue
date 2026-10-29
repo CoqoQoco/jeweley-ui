@@ -18,9 +18,10 @@
                 : $t('view.stock.stockRfidTracking.feedCancelledAction')
             }}
           </span>
-          <span class="feed-stock">{{ item.stockNumber }}</span>
+          <span class="feed-stock">{{ item.stockNumber }}<template v-if="item.unitNo"> · {{ $t('view.stock.stockRfidTracking.feedUnit', { no: item.unitNo }) }}</template></span>
         </div>
         <div class="feed-name">{{ item.productName || '-' }}</div>
+        <div v-if="item.unbindReason === 'SOLD'" class="feed-reason">{{ $t('view.stock.stockRfidTracking.feedUnbindSold') }}</div>
         <div class="feed-meta">
           <span class="feed-epc">{{ item.epc }}</span>
           <span v-if="item.boundBy">{{ $t('view.stock.stockRfidTracking.feedBy', { name: item.boundBy }) }}</span>
@@ -114,6 +115,11 @@ export default {
 .feed-stock {
   margin-left: auto;
   font-weight: 600;
+}
+
+.feed-reason {
+  color: var(--status-cancelled);
+  font-size: var(--fs-sm);
 }
 
 .feed-meta {

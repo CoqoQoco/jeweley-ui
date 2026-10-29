@@ -5,7 +5,15 @@
       <SectionCardGeneric v-if="boundResult" :title="$t('view.mobile.rfidBind.bindSuccessTitle')">
         <div class="state-box state-ok">
           <i class="bi bi-check-circle-fill"></i>
-          <span>{{ $t('view.mobile.rfidBind.bindSuccessMsg', { epc: boundResult.epc, stockNumber: boundResult.stockNumber }) }}</span>
+          <div class="state-body">
+            <span class="break">{{ $t('view.mobile.rfidBind.bindSuccessMsg', { epc: boundResult.epc, stockNumber: boundResult.stockNumber }) }}</span>
+            <strong v-if="boundResult.unitLabel">
+              {{ $t('view.mobile.rfidBind.boundUnit', { unit: boundResult.unitLabel }) }}
+            </strong>
+            <span v-if="boundResult.locationName">
+              {{ $t('view.mobile.rfidBind.pieceLocation') }}: {{ boundResult.locationName }}
+            </span>
+          </div>
         </div>
         <ButtonGeneric
           class="big-btn"
@@ -61,28 +69,23 @@
               :status="piece.status"
             />
 
-            <div v-if="currentTag" class="state-box state-warn mobile-mt-2">
-              <i class="bi bi-exclamation-triangle-fill"></i>
-              <div class="state-body">
-                <strong>{{ $t('view.mobile.rfidBind.currentTagTitle') }}</strong>
-                <span class="break">{{ currentTag.epc }}</span>
-                <span v-if="currentTagDate">{{ $t('view.mobile.rfidBind.currentTagBoundDate', { date: currentTagDate }) }}</span>
-              </div>
-            </div>
-            <div v-else class="state-box state-info mobile-mt-2">
+            <p class="hint mobile-mt-2">
               <i class="bi bi-info-circle"></i>
-              <span>{{ $t('view.mobile.rfidBind.noCurrentTag') }}</span>
-            </div>
+              {{ $t('view.mobile.rfidBind.lotUnitsSummary', { tagged: taggedCount, total: units.length, qty: lotQty }) }}
+            </p>
 
-            <ButtonGeneric
-              v-if="currentTag"
-              class="big-btn mobile-mt-1"
-              variant="red"
-              icon="bi-link-45deg"
-              :label="$t('view.mobile.rfidBind.unbindBtn')"
-              :block="true"
-              @click="handleUnbind"
+            <UnitList
+              v-if="units.length"
+              :units="units"
+              :lotQty="lotQty"
+              :chosenUnitId="chosenUnitId"
+              @choose="chosenUnitId = $event"
+              @unbind="handleUnbind"
             />
+            <div v-else class="state-box state-warn">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ $t('view.mobile.rfidBind.noUnits') }}</span>
+            </div>
           </div>
         </SectionCardGeneric>
 
@@ -167,13 +170,30 @@
               <span v-if="epcInfo.found && !epcIsThisPiece">
                 {{ $t('view.mobile.rfidBind.epcBoundOwner', { stockNumber: epcInfo.stockNumber, name: epcInfo.productName || '-' }) }}
               </span>
+              <span v-if="epcInfo.found && epcUnitLabel">
+                {{ $t('view.mobile.rfidBind.boundUnit', { unit: epcUnitLabel }) }}
+                <template v-if="epcInfo.unitStatus"> · {{ unitStatusText(epcInfo.unitStatus) }}</template>
+              </span>
+              <span v-if="epcInfo.found && (epcInfo.unitLocationName || epcInfo.unitLocationCode)">
+                {{ $t('view.mobile.rfidBind.pieceLocation') }}: {{ epcInfo.unitLocationName || epcInfo.unitLocationCode }}
+              </span>
             </div>
           </div>
 
-          <div v-if="currentTag && !epcInfo.found" class="state-box state-warn mobile-mt-1">
+          <div v-if="epcInfo.found && epcInfo.soldMismatch" class="state-box state-warn mobile-mt-1">
             <i class="bi bi-exclamation-triangle-fill"></i>
-            <span>{{ $t('view.mobile.rfidBind.pieceHasTagBlock') }}</span>
+            <span>{{ $t('view.mobile.rfidBind.soldMismatchWarn') }}</span>
           </div>
+
+          <div v-if="!epcInfo.found && !freeList.length" class="state-box state-warn mobile-mt-1">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>{{ $t('view.mobile.rfidBind.lotFullyTaggedBlock') }}</span>
+          </div>
+
+          <p v-if="!epcInfo.found && freeList.length" class="hint mobile-mt-1">
+            <i class="bi bi-info-circle"></i>
+            {{ bindTargetText }}
+          </p>
 
           <ButtonGeneric
             class="big-btn mobile-mt-2"
@@ -199,7 +219,6 @@ import { warning, error, success } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { useRfidReader, isValidEpc, normalizeEpc } from '@/composables/useRfidReader.js'
 import { fetchStockProduct } from '@/services/utils/stock-scan.js'
-import { formatDate } from '@/services/utils/dayjs.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
@@ -207,6 +226,8 @@ import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import CameraScanGeneric from '@/components/generic/CameraScanGeneric.vue'
 import PieceSummary from './components/piece-summary.vue'
 import TagList from './components/tag-list.vue'
+import UnitList from './components/unit-list.vue'
+import { formatUnit, freeUnits, resolveChosenUnitId } from './rfid-bind-helpers.js'
 
 export default {
   name: 'MobileRfidBindView',
@@ -217,7 +238,8 @@ export default {
     ButtonGeneric,
     CameraScanGeneric,
     PieceSummary,
-    TagList
+    TagList,
+    UnitList
   },
 
   setup() {
@@ -233,7 +255,9 @@ export default {
       showCamera: false,
       isSearching: false,
       piece: null,
-      currentTag: null,
+      units: [],
+      lotQty: 0,
+      chosenUnitId: null,
       selectedTag: null,
       epcInfo: null,
       manualEpc: '',
@@ -248,8 +272,23 @@ export default {
       return this.piece.productNameTh || this.piece.productNameEn || ''
     },
 
-    currentTagDate() {
-      return this.currentTag?.boundDate ? formatDate(this.currentTag.boundDate) : ''
+    freeList() {
+      return freeUnits(this.units)
+    },
+
+    taggedCount() {
+      return this.units.filter((u) => !!u.epc).length
+    },
+
+    epcUnitLabel() {
+      return this.epcInfo ? formatUnit(this.epcInfo.unitNo, this.epcInfo.lotQty) : ''
+    },
+
+    bindTargetText() {
+      const unit = this.freeList.find((u) => u.unitId === this.chosenUnitId)
+      return unit
+        ? this.$t('view.mobile.rfidBind.bindTargetChosen', { unit: formatUnit(unit.unitNo, this.lotQty) })
+        : this.$t('view.mobile.rfidBind.bindTargetAuto')
     },
 
     epcIsThisPiece() {
@@ -262,7 +301,7 @@ export default {
     },
 
     canBind() {
-      return !!this.piece && !!this.selectedTag && !!this.epcInfo && !this.epcInfo.found && !this.currentTag
+      return !!this.piece && !!this.selectedTag && !!this.epcInfo && !this.epcInfo.found && this.freeList.length > 0
     },
 
     epcStateClass() {
@@ -358,7 +397,7 @@ export default {
             status: data.status || ''
           }
           this.scanInput = ''
-          await this.loadCurrentTag()
+          await this.loadUnits()
         }
       } else if (status === 'not-found') {
         error(this.$t('view.mobile.rfidBind.errorProductNotFound'), this.$t('view.mobile.rfidBind.errorCheckCode'))
@@ -369,20 +408,32 @@ export default {
       this.isSearching = false
     },
 
-    async loadCurrentTag() {
+    async loadUnits() {
       const res = await this.rfidStore.fetchByStock({
         stockNumber: this.piece.stockNumber,
         productCode: this.piece.productCode
       })
-      this.currentTag = res && res.found ? res : null
+      this.units = res?.units || []
+      this.lotQty = Number(res?.lotQty) || this.units.length
+      this.chosenUnitId = resolveChosenUnitId(this.units, this.chosenUnitId)
     },
 
-    handleUnbind() {
+    unitStatusText(status) {
+      const key = { IN_STOCK: 'unitInStock', RESERVED: 'unitReserved', SOLD: 'unitSold' }[status]
+      return key ? this.$t(`view.mobile.rfidBind.${key}`) : status || ''
+    },
+
+    handleUnbind(unit) {
       confirmThenSubmit(
-        this.$t('view.mobile.rfidBind.unbindConfirmMsg', { epc: this.currentTag.epc, stockNumber: this.piece.stockNumber }),
+        this.$t('view.mobile.rfidBind.unbindConfirmMsg', {
+          epc: unit.epc,
+          stockNumber: `${this.piece.stockNumber} (${formatUnit(unit.unitNo, this.lotQty)})`
+        }),
         this.$t('view.mobile.rfidBind.unbindConfirmTitle'),
         async () => {
           const res = await this.rfidStore.fetchUnbind({
+            epc: unit.epc,
+            unitId: unit.unitId,
             stockNumber: this.piece.stockNumber,
             productCode: this.piece.productCode
           })
@@ -392,7 +443,7 @@ export default {
             warning(this.$t('view.mobile.rfidBind.unbindNothing'))
           }
           this.resetTag()
-          await this.loadCurrentTag()
+          await this.loadUnits()
         }
       )
     },
@@ -443,11 +494,17 @@ export default {
             epc: this.selectedTag.epc,
             tid: this.selectedTag.tid,
             stockNumber: this.piece.stockNumber,
-            productCode: this.piece.productCode
+            productCode: this.piece.productCode,
+            unitId: this.chosenUnitId
           })
           if (res) {
             this.stop()
-            this.boundResult = { epc: res.epc || this.selectedTag.epc, stockNumber: res.stockNumber || this.piece.stockNumber }
+            this.boundResult = {
+              epc: res.epc || this.selectedTag.epc,
+              stockNumber: res.stockNumber || this.piece.stockNumber,
+              unitLabel: formatUnit(res.unitNo, res.lotQty),
+              locationName: res.unitLocationName || res.unitLocationCode || ''
+            }
           }
         },
         null,
@@ -458,7 +515,9 @@ export default {
     resetAll() {
       this.resetTag()
       this.piece = null
-      this.currentTag = null
+      this.units = []
+      this.lotQty = 0
+      this.chosenUnitId = null
       this.boundResult = null
       this.scanInput = ''
       this.manualEpc = ''

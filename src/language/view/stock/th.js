@@ -845,7 +845,14 @@ export default {
     feedEmpty: 'ยังไม่มีการผูกแท็ก',
     feedBoundAction: 'ผูกแท็ก',
     feedCancelledAction: 'ยกเลิกผูก',
-    feedBy: 'โดย {name}'
+    feedBy: 'โดย {name}',
+    colUnit: 'ชิ้นที่ (ในใบรับ)',
+    colUnitStatus: 'สถานะชิ้น',
+    unitInStock: 'อยู่ในคลัง',
+    unitReserved: 'จองแล้ว',
+    unitSold: 'ขายแล้ว',
+    feedUnit: 'ชิ้นที่ {no}',
+    feedUnbindSold: 'ปลดอัตโนมัติเมื่อขาย'
   },
   convert: {
     searchTitle: 'ใบแปลงสินค้า',
@@ -975,6 +982,8 @@ export default {
     confirmTitle: 'ยืนยันการพิมพ์',
     confirmMsg: 'พิมพ์ {count} รายการ รวม {labels} ใบ',
     skippedNoCost: 'ข้าม {count} รายการที่ไม่มีข้อมูลต้นทุน: {list}',
+    printUnitNo: 'พิมพ์ลำดับชิ้น (เช่น 3/6)',
+    unitNoMissing: 'มี {count} ใบที่ไม่มีข้อมูลลำดับชิ้น จะพิมพ์โดยไม่มีเลขลำดับ',
     skippedNoLink: 'ข้าม {count} รายการที่สร้างลิงก์หน้าสินค้าไม่ได้: {list}',
     nothingToPrint: 'ไม่มีรายการที่พิมพ์ได้',
     preparing: 'กำลังเตรียมข้อมูลป้าย...',

@@ -46,6 +46,12 @@ const GT800_O_REMARK_OUTLINE_THICKNESS = 2
 const GT800_O_REMARK_GAP = 10 // ระยะห่างจากท้ายชื่อสินค้า/บรรทัดทองถึงสัญลักษณ์
 const GT800_O_GOLD_LINE_CHAR_W = 7.1 // dot ต่อตัวอักษรของบรรทัดทอง (ฟอนต์ 16)
 
+// เลขลำดับชิ้น (เช่น 3/6) แท็บ original — ตัวเลือก ค่าเริ่มต้นไม่พิมพ์ · วางท้ายบรรทัดทองก่อน ไม่พอใช้ท้ายบรรทัดรหัส/ราคา ไม่พอทั้งคู่ไม่พิมพ์
+const GT800_O_UNIT_MARK_FONT = 16
+const GT800_O_UNIT_MARK_CHAR_W = 7.1 // dot ต่อตัวอักษรที่ฟอนต์ 16
+const GT800_O_UNIT_MARK_GAP = 12
+const GT800_O_CODE_LINE_CHAR_W = 9.5 // ประมาณแบบระมัดระวังที่ฟอนต์ 18 (ROOMY)
+
 export const REMARK_SYMBOL_NONE = 'none'
 const REMARK_SYMBOLS_TABLE = {
   star: { kind: 'text', text: '*', preview: '*' },
@@ -453,6 +459,23 @@ function placeGt800Remark(productNameEn, nameFont, goldLine) {
   return null
 }
 
+// ตำแหน่งเลขลำดับชิ้น: ท้ายบรรทัดทอง (เลี่ยงสัญลักษณ์หมายเหตุถ้าอยู่บรรทัดเดียวกัน) → ท้ายบรรทัดรหัส/ราคา → ไม่พอคืน null
+export function placeGt800UnitMark(text, goldLine, codeLine, remark) {
+  const width = text.length * GT800_O_UNIT_MARK_CHAR_W
+  const remarkOnGold = remark?.row === 'gold' ? GT800_O_REMARK_SIZE + GT800_O_REMARK_GAP : 0
+  const goldX = Math.round(
+    GT800_O_GOLD_LINE_X + (goldLine ? goldLine.length * GT800_O_GOLD_LINE_CHAR_W + GT800_O_UNIT_MARK_GAP : 0) + remarkOnGold
+  )
+  if (goldX + width <= GT800_O_NAME_RIGHT_LIMIT) return { x: goldX, y: GT800_O_GOLD_LINE_Y, row: 'gold' }
+
+  const codeX = Math.round(
+    GT800_O_CODE_LINE_X + (codeLine ? codeLine.length * GT800_O_CODE_LINE_CHAR_W + GT800_O_UNIT_MARK_GAP : 0)
+  )
+  if (codeX + width <= GT800_O_NAME_RIGHT_LIMIT) return { x: codeX, y: GT800_O_CODE_LINE_Y, row: 'code' }
+
+  return null
+}
+
 // คืนตำแหน่ง/ขนาด (level ROOMY/TIGHT ที่เลือก + ข้อความแต่ละบรรทัด) ให้ test ได้โดยไม่ต้องยุ่งกับ dpiScale
 export function layoutGt800(formValue, template) {
   const code = resolveLabelCode(formValue)
@@ -474,10 +497,15 @@ export function layoutGt800(formValue, template) {
     const remarkKey = isKnownRemarkSymbol(formValue?.remarkSymbol) ? formValue.remarkSymbol : ''
     const remarkPlacement = remarkKey ? placeGt800Remark(productNameEn, nameFont, goldLine) : null
 
+    const unitMarkText = typeof formValue?.unitMark === 'string' ? formValue.unitMark.trim() : ''
+    const unitMarkPlacement = unitMarkText ? placeGt800UnitMark(unitMarkText, goldLine, codeLine, remarkPlacement) : null
+
     return {
       template: 'original',
       remark: remarkPlacement ? { key: remarkKey, ...remarkPlacement } : null,
       remarkNoRoom: !!remarkKey && !remarkPlacement,
+      unitMark: unitMarkPlacement ? { text: unitMarkText, ...unitMarkPlacement } : null,
+      unitMarkNoRoom: !!unitMarkText && !unitMarkPlacement,
       levelName: level.name,
       code,
       codeLine,
@@ -575,6 +603,10 @@ export function generateGt800ZPL(formValue, dpiScale = 1, options = {}) {
 
   if (layout.remark) {
     zpl += buildRemarkSymbolZpl(layout.remark.key, layout.remark.x, layout.remark.y, dpiScale)
+  }
+
+  if (layout.unitMark) {
+    zpl += `^FO${s(layout.unitMark.x)},${s(layout.unitMark.y)}^A0N,${s(GT800_O_UNIT_MARK_FONT)},${s(GT800_O_UNIT_MARK_FONT)}^FD${layout.unitMark.text}^FS`
   }
 
   zpl += buildGemFieldsZpl(layout, s)

@@ -162,3 +162,25 @@ export function pickAutoSelection(rows, limit = MAX_LABELS_PER_RUN) {
   const list = rows || []
   return summarizeSelection(list).labels <= limit ? [...list] : []
 }
+
+// เลขลำดับชิ้นต่อใบ: เอาชิ้นที่ยังไม่ขาย เรียงตามเลขชิ้น ใบแรก=ชิ้นแรก ... ถ้าชิ้นไม่พอ ใบที่เหลือคืน '' (พิมพ์ไม่มีเลขชิ้น)
+export function buildUnitMarks(units, lotQty, copies) {
+  const available = (units || [])
+    .filter((unit) => unit && unit.status !== 'SOLD' && unit.unitNo !== null && unit.unitNo !== undefined)
+    .sort((a, b) => a.unitNo - b.unitNo)
+  const qty = Number(lotQty) > 0 ? Number(lotQty) : available.length
+  const total = normalizeCopies(copies)
+  return Array.from({ length: total }, (_, i) => (available[i] ? `${available[i].unitNo}/${qty}` : ''))
+}
+
+// แตก form 1 ใบ/ชิ้นที่มีเลขชิ้น (print=1, unitMark) · ใบที่ไม่มีเลขชิ้นรวมเป็น form เดียวที่ print=จำนวนที่เหลือ (ไม่ใส่ unitMark)
+export function expandFormByUnitMarks(form, marks) {
+  const forms = []
+  let unmarked = 0
+  ;(marks || []).forEach((mark) => {
+    if (mark) forms.push({ ...form, print: 1, unitMark: mark })
+    else unmarked += 1
+  })
+  if (unmarked > 0) forms.push({ ...form, print: unmarked })
+  return { forms, unmarked }
+}

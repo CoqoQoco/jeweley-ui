@@ -953,3 +953,56 @@ describe('hidePrice — ไม่แสดงราคาบนป้าย', ()
     expect(generateGt800ZPLQr({ ...form, hidePrice: true }, 1)).not.toContain(PRICE_TEXT)
   })
 })
+
+describe('GT800 original — เลขลำดับชิ้น (unitMark) ตัวเลือก ค่าเริ่มต้นไม่พิมพ์', () => {
+  const form = {
+    stockNumber: 'AH21142',
+    salePrice: 12345,
+    gold: 'PG',
+    size: '55',
+    madeIn: 'MADE IN THAILAND',
+    productNameEn: 'Ring Test',
+    gems: ['0.24ct.']
+  }
+
+  it('ไม่ระบุ/ว่าง → ZPL เหมือนเดิมทุกตัวอักษร', () => {
+    const base = generateGt800ZPL(form, 1)
+    expect(generateGt800ZPL({ ...form, unitMark: '' }, 1)).toBe(base)
+    expect(generateGt800ZPL({ ...form, unitMark: null }, 1)).toBe(base)
+    expect(generateGt800ZPL({ ...form, unitMark: '   ' }, 1)).toBe(base)
+    expect(layoutGt800(form, 'original').unitMark).toBeNull()
+    expect(layoutGt800(form, 'original').unitMarkNoRoom).toBe(false)
+  })
+
+  it('ระบุ → เพิ่มเฉพาะฟิลด์เลขชิ้นท้ายบรรทัดทอง ส่วนอื่นไม่เปลี่ยน', () => {
+    const base = generateGt800ZPL(form, 1)
+    const withMark = generateGt800ZPL({ ...form, unitMark: '3/6' }, 1)
+    const layout = layoutGt800({ ...form, unitMark: '3/6' }, 'original')
+    expect(layout.unitMark).toMatchObject({ text: '3/6', row: 'gold', y: 86 })
+    const field = `^FO${layout.unitMark.x},86^A0N,16,16^FD3/6^FS`
+    expect(withMark).toContain(field)
+    expect(withMark.replace(field, '')).toBe(base)
+  })
+
+  it('dpiScale คูณพิกัดและฟอนต์', () => {
+    const layout = layoutGt800({ ...form, unitMark: '3/6' }, 'original')
+    const zpl = generateGt800ZPL({ ...form, unitMark: '3/6' }, 1.5)
+    expect(zpl).toContain(`^FO${Math.round(layout.unitMark.x * 1.5)},129^A0N,24,24^FD3/6^FS`)
+  })
+
+  it('อยู่แถวทองเดียวกับสัญลักษณ์หมายเหตุ → เลื่อนหลบ', () => {
+    const longName = { ...form, productNameEn: 'A very long product name that fills the row', remarkSymbol: 'star' }
+    const layout = layoutGt800({ ...longName, unitMark: '3/6' }, 'original')
+    if (layout.remark?.row === 'gold' && layout.unitMark) {
+      expect(layout.unitMark.x).toBeGreaterThan(layout.remark.x)
+    }
+  })
+
+  it('ไม่มีที่ทั้งสองแถว → ไม่พิมพ์ + unitMarkNoRoom=true', () => {
+    const crowded = { ...form, gold: 'PG PG PG PG PG PG PG', size: '55555', salePrice: 123456789012, unitMark: '80/80' }
+    const layout = layoutGt800(crowded, 'original')
+    expect(layout.unitMark).toBeNull()
+    expect(layout.unitMarkNoRoom).toBe(true)
+    expect(generateGt800ZPL(crowded, 1)).not.toContain('^FD80/80^FS')
+  })
+})

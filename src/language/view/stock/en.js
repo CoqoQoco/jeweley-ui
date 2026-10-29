@@ -845,7 +845,14 @@ export default {
     feedEmpty: 'No bindings yet',
     feedBoundAction: 'Bound tag',
     feedCancelledAction: 'Unbound',
-    feedBy: 'by {name}'
+    feedBy: 'by {name}',
+    colUnit: 'Piece no. (in receipt)',
+    colUnitStatus: 'Piece status',
+    unitInStock: 'In stock',
+    unitReserved: 'Reserved',
+    unitSold: 'Sold',
+    feedUnit: 'Piece {no}',
+    feedUnbindSold: 'Auto-unbound on sale'
   },
   convert: {
     searchTitle: 'Stock Convert',
@@ -975,6 +982,8 @@ export default {
     confirmTitle: 'Confirm printing',
     confirmMsg: 'Print {count} items, {labels} labels in total',
     skippedNoCost: 'Skipping {count} item(s) without cost data: {list}',
+    printUnitNo: 'Print piece no. (e.g. 3/6)',
+    unitNoMissing: '{count} label(s) have no piece number data and will print without it',
     skippedNoLink: 'Skipping {count} item(s) whose product link could not be created: {list}',
     nothingToPrint: 'Nothing to print',
     preparing: 'Preparing label data...',

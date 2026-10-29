@@ -22,6 +22,7 @@
       v-model:barcodeType="barcodeType"
       v-model:remarkSymbol="remarkSymbol"
       v-model:hidePrice="hidePrice"
+      v-model:printUnitNo="printUnitNo"
       :selectedCount="selectedRows.length"
       :totalCount="rows.length"
       :labelCount="selectedSummary.labels"
@@ -37,6 +38,7 @@
 
 <script>
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
+import { useStockRfidApiStore } from '@/stores/modules/api/stock/rfid-api.js'
 import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
 import { warning, error } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
@@ -47,6 +49,8 @@ import {
   MAX_LABELS_PER_RUN,
   MAX_LIST_ROWS,
   buildRowKey,
+  buildUnitMarks,
+  expandFormByUnitMarks,
   formatCodeListForDialog,
   isCostLabelType,
   mergeRowsByKey,
@@ -72,6 +76,7 @@ import printPanel from './components/print-panel.vue'
 const LOOKUP_CONCURRENCY = 5
 const COST_CONCURRENCY = 5
 const LINK_CONCURRENCY = 3
+const UNIT_CONCURRENCY = 5
 
 export default {
   name: 'StockProductPrintBarcode',
@@ -81,7 +86,8 @@ export default {
   setup() {
     const productStore = usrStockProductApiStore()
     const zebraPrinter = zebraPrinterApi()
-    return { productStore, zebraPrinter }
+    const rfidStore = useStockRfidApiStore()
+    return { productStore, zebraPrinter, rfidStore }
   },
 
   data() {
@@ -92,6 +98,7 @@ export default {
       barcodeType: 'original',
       remarkSymbol: REMARK_SYMBOL_NONE,
       hidePrice: false,
+      printUnitNo: false,
       isPrinting: false,
       progress: { done: 0, total: 0 },
       failedEntries: [],
@@ -107,6 +114,11 @@ export default {
 
     selectedSummary() {
       return summarizeSelection(this.selectedRows)
+    },
+
+    // เลขลำดับชิ้น (3/6) พิมพ์ได้เฉพาะแท็บ original ของ GT800
+    useUnitMarks() {
+      return this.printUnitNo && this.barcodeType === 'original' && getBarcodeProfile() !== PRINTER_PROFILES.LEGACY
     }
   },
 
@@ -311,6 +323,28 @@ export default {
       return { included, skipped, skippedKey: 'skippedNoLink' }
     },
 
+    // ดึงชิ้นของล็อต (GetByStock) แล้วแตก form เป็น 1 ใบต่อชิ้น พร้อมเลขชิ้น — ดึงไม่ได้/ชิ้นไม่พอ ใบนั้นพิมพ์ไม่มีเลขชิ้น
+    async attachUnitMarks(entries) {
+      const results = await runWithConcurrency(entries, UNIT_CONCURRENCY, (entry) =>
+        this.rfidStore.fetchByStock(
+          { stockNumber: entry.row.stockNumber, productCode: entry.row.productCode },
+          { skipLoading: true }
+        )
+      )
+
+      let unmarked = 0
+      const expanded = []
+      entries.forEach((entry, index) => {
+        const result = results[index]
+        const res = result.status === 'fulfilled' ? result.value : null
+        const marks = buildUnitMarks(res?.units, res?.lotQty, entry.form.print)
+        const split = expandFormByUnitMarks(entry.form, marks)
+        unmarked += split.unmarked
+        split.forms.forEach((form) => expanded.push({ row: entry.row, form }))
+      })
+      return { entries: expanded, unmarked }
+    },
+
     async prepareAndConfirm(rows) {
       this.statusMessage = ''
       this.failedEntries = []
@@ -326,6 +360,13 @@ export default {
         prepared = await this.attachPublicLink(entries)
       }
 
+      let unmarkedLabels = 0
+      if (this.useUnitMarks && prepared.included.length > 0) {
+        const marked = await this.attachUnitMarks(prepared.included)
+        prepared = { ...prepared, included: marked.entries }
+        unmarkedLabels = marked.unmarked
+      }
+
       this.isPrinting = false
 
       if (prepared.included.length === 0) {
@@ -334,7 +375,11 @@ export default {
       }
 
       const labels = prepared.included.reduce((sum, entry) => sum + entry.form.print, 0)
-      let message = this.$t('view.stock.printBarcode.confirmMsg', { count: prepared.included.length, labels })
+      const itemCount = new Set(prepared.included.map((entry) => entry.row.rowKey)).size
+      let message = this.$t('view.stock.printBarcode.confirmMsg', { count: itemCount, labels })
+      if (unmarkedLabels > 0) {
+        message += `<br><br>${this.$t('view.stock.printBarcode.unitNoMissing', { count: unmarkedLabels })}`
+      }
       if (prepared.skipped.length > 0) {
         const list = formatCodeListForDialog(prepared.skipped.map((entry) => entry.row.labelCode))
         message += `<br><br>${this.$t(`view.stock.printBarcode.${prepared.skippedKey}`, {

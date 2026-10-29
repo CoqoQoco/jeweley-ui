@@ -35,6 +35,15 @@
         />
       </div>
 
+      <div v-if="showUnitNoOption" class="field field-checkbox">
+        <CheckboxGeneric
+          :modelValue="printUnitNo"
+          :label="$t('view.stock.printBarcode.printUnitNo')"
+          :disabled="isPrinting"
+          @update:modelValue="$emit('update:printUnitNo', $event)"
+        />
+      </div>
+
       <div class="field field-checkbox">
         <CheckboxGeneric
           :modelValue="hidePrice"
@@ -122,6 +131,10 @@ export default {
       type: Boolean,
       default: false
     },
+    printUnitNo: {
+      type: Boolean,
+      default: false
+    },
     barcodeType: {
       type: String,
       default: 'original'
@@ -160,7 +173,7 @@ export default {
     }
   },
 
-  emits: ['update:barcodeType', 'update:remarkSymbol', 'update:hidePrice', 'print', 'retry'],
+  emits: ['update:barcodeType', 'update:remarkSymbol', 'update:hidePrice', 'update:printUnitNo', 'print', 'retry'],
 
   setup() {
     const zebraPrinter = zebraPrinterApi()
@@ -190,6 +203,10 @@ export default {
         options.push({ value: 'original-qr', label: this.$t('view.stock.product.tabOriginalQr') })
       }
       return options
+    },
+
+    showUnitNoOption() {
+      return this.barcodeType === 'original' && !this.isLegacyProfile
     },
 
     showRemarkSelect() {

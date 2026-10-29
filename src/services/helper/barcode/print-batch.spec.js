@@ -16,7 +16,9 @@ import {
   formatCodeListForDialog,
   normalizeCode,
   pickExactMatches,
-  pickAutoSelection
+  pickAutoSelection,
+  buildUnitMarks,
+  expandFormByUnitMarks
 } from './print-batch.js'
 
 describe('parseCodeList', () => {
@@ -232,5 +234,39 @@ describe('pickAutoSelection', () => {
   it('ว่าง/null → ว่าง', () => {
     expect(pickAutoSelection([])).toEqual([])
     expect(pickAutoSelection(null)).toEqual([])
+  })
+})
+
+describe('buildUnitMarks / expandFormByUnitMarks', () => {
+  const units = [
+    { unitNo: 3, status: 'IN_STOCK' },
+    { unitNo: 1, status: 'SOLD' },
+    { unitNo: 2, status: 'RESERVED' },
+    { unitNo: 4, status: 'IN_STOCK' }
+  ]
+
+  it('ข้ามชิ้นที่ขายแล้ว เรียงตามเลขชิ้น และใช้ lotQty เป็นตัวหาร', () => {
+    expect(buildUnitMarks(units, 6, 3)).toEqual(['2/6', '3/6', '4/6'])
+  })
+
+  it('ชิ้นไม่พอ → ใบที่เหลือเป็นค่าว่าง', () => {
+    expect(buildUnitMarks(units, 6, 5)).toEqual(['2/6', '3/6', '4/6', '', ''])
+    expect(buildUnitMarks([], 0, 2)).toEqual(['', ''])
+    expect(buildUnitMarks(null, 0, 1)).toEqual([''])
+  })
+
+  it('lotQty ไม่มี → ใช้จำนวนชิ้นที่มี', () => {
+    expect(buildUnitMarks(units, 0, 1)).toEqual(['2/3'])
+  })
+
+  it('expandFormByUnitMarks: 1 ใบต่อชิ้นที่มีเลข + รวมใบไม่มีเลขเป็น form เดียว', () => {
+    const { forms, unmarked } = expandFormByUnitMarks({ a: 1, print: 4 }, ['1/4', '2/4', '', ''])
+    expect(forms).toEqual([
+      { a: 1, print: 1, unitMark: '1/4' },
+      { a: 1, print: 1, unitMark: '2/4' },
+      { a: 1, print: 2 }
+    ])
+    expect(unmarked).toBe(2)
+    expect(forms.reduce((n, f) => n + f.print, 0)).toBe(4)
   })
 })

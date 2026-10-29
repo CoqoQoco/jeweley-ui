@@ -1,13 +1,28 @@
 export const RECENT_FEED_CAP = 30
 
-export function pieceKey(item) {
+export function lotKey(item) {
   return `${item.stockNumber}|${item.productCode}`
 }
 
+// 1 ล็อตมีหลายแถว (1 แถว = 1 ชิ้น) → key ต้องไม่ซ้ำต่อชิ้น (unitId); ไม่มี unitId (ข้อมูลเก่า) ใช้ key ล็อต
+export function pieceKey(item) {
+  return item.unitId !== null && item.unitId !== undefined ? `u${item.unitId}` : lotKey(item)
+}
+
+// "3/6" — ไม่มีเลขชิ้น คืน '-'
+export function formatUnitLabel(unitNo, total) {
+  if (unitNo === null || unitNo === undefined) return '-'
+  return total ? `${unitNo}/${total}` : String(unitNo)
+}
+
 export function mapPieces(items) {
-  return (items || []).map((item) => ({
+  const list = items || []
+  const lotSizes = new Map()
+  list.forEach((item) => lotSizes.set(lotKey(item), (lotSizes.get(lotKey(item)) || 0) + 1))
+  return list.map((item) => ({
     ...item,
     rowKey: pieceKey(item),
+    unitLabel: formatUnitLabel(item.unitNo, lotSizes.get(lotKey(item))),
     isBound: !!item.epc,
     boundBy: item.boundBy || '-',
     epc: item.epc || '-'

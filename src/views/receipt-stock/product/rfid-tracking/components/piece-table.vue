@@ -23,6 +23,9 @@
       dataKey="rowKey"
       @page="handlePageChange"
     >
+      <template #unitStatusTemplate="{ data }">
+        <span>{{ unitStatusText(data.unitStatus) }}</span>
+      </template>
       <template #bindStateTemplate="{ data }">
         <span :class="['bind-tag', data.isBound ? 'bind-tag--bound' : 'bind-tag--unbound']">
           {{
@@ -80,7 +83,9 @@ export default {
       const t = (key) => this.$t(`view.stock.stockRfidTracking.${key}`)
       return [
         { field: 'stockNumber', header: t('colStockNumber'), sortable: false, minWidth: '140px' },
+        { field: 'unitLabel', header: t('colUnit'), sortable: false, minWidth: '90px' },
         { field: 'productName', header: t('colProductName'), sortable: false, minWidth: '200px' },
+        { field: 'unitStatus', header: t('colUnitStatus'), sortable: false, minWidth: '100px' },
         { field: 'locationCode', header: t('colLocation'), sortable: false, minWidth: '110px' },
         { field: 'bindState', header: t('colBindState'), sortable: false, minWidth: '110px' },
         { field: 'epc', header: t('colEpc'), sortable: false, minWidth: '220px' },
@@ -103,6 +108,11 @@ export default {
   methods: {
     // paging ทำฝั่ง client (ListByReceipt ส่งครบทั้งใบ) — mixin เรียก fetchData หลังเปลี่ยนหน้า จึงไม่ต้องทำอะไร
     fetchData() {},
+
+    unitStatusText(status) {
+      const key = { IN_STOCK: 'unitInStock', RESERVED: 'unitReserved', SOLD: 'unitSold' }[status]
+      return key ? this.$t(`view.stock.stockRfidTracking.${key}`) : status || '-'
+    },
 
     rowClass(data) {
       return this.changedKeys[data.rowKey] ? 'rfid-row-changed' : ''
