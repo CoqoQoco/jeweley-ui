@@ -9,6 +9,13 @@ import {
   generateGt800ZPL,
   generateGt800ZPLVertical,
   generateGt800ZPLQr,
+  generateGt800ZPLSmall,
+  layoutGt800Small,
+  formatPriceCode,
+  buildGemLabelMeta,
+  detectGemCode,
+  sortGt800LabelGems,
+  buildGt800SmallLine2,
   pickQrMagnification,
   layoutGt800,
   layoutGt800Qr,
@@ -1004,5 +1011,148 @@ describe('GT800 original — เลขลำดับชิ้น (unitMark) ต
     expect(layout.unitMark).toBeNull()
     expect(layout.unitMarkNoRoom).toBe(true)
     expect(generateGt800ZPL(crowded, 1)).not.toContain('^FD80/80^FS')
+  })
+})
+
+describe('ป้าย 50×14 มม. (GT800)', () => {
+  const base = {
+    stockNumber: 'DK21AH047',
+    stockNumberOrigin: 'AH21047',
+    mold: 'NF6121SW',
+    salePrice: 409500,
+    goldWeight: '11.78',
+    goldColorCode: 'WG',
+    goldKarat: '18K',
+    gems: ['24Diamond0.24 ct. G,VS1', '1Ruby 0.50 ct., OV']
+  }
+
+  describe('formatPriceCode', () => {
+    it.each([
+      [409500, '040950'],
+      [409551, '040955'],
+      ['5200', '0520'],
+      [12345.9, '01234']
+    ])('%s -> %s', (value, expected) => {
+      expect(formatPriceCode(value)).toBe(expected)
+    })
+
+    it.each([0, -5, null, undefined, '', 'abc', 7])('%s -> ไม่มีรหัสราคา', (value) => {
+      expect(formatPriceCode(value)).toBe('')
+    })
+  })
+
+  describe('บรรทัด 2', () => {
+    it('ราคา + สี + กะรัต + น้ำหนัก', () => {
+      expect(buildGt800SmallLine2(base)).toBe('040950WG18K  11.78g')
+    })
+
+    it('ซ่อนราคา -> เหลือสี กะรัต น้ำหนัก', () => {
+      expect(buildGt800SmallLine2({ ...base, hidePrice: true })).toBe('WG18K  11.78g')
+    })
+
+    it('เงิน/ไม่มีข้อมูลทอง -> ไม่ต่อสีกับกะรัต', () => {
+      expect(buildGt800SmallLine2({ ...base, goldColorCode: '', goldKarat: '' })).toBe('040950  11.78g')
+    })
+
+    it('ซ่อนราคา + ไม่มีข้อมูลทอง -> เหลือแต่น้ำหนัก', () => {
+      expect(buildGt800SmallLine2({ ...base, hidePrice: true, goldColorCode: '', goldKarat: '' })).toBe('11.78g')
+    })
+  })
+
+  describe('การเรียงพลอย', () => {
+    const gems = ['1Peridot 0.7 ct.', '1Ruby 0.5 ct.', '1Tanzanite 0.5 ct.', '1Diamond 0.1 ct.', '1Onyx 1 ct.', '1Emerald 0.3 ct.']
+
+    it('API เก่า (ไม่มี meta) ใช้ลำดับสำรอง DI,RU,SA,EM,PS,YS,AM,BT,CI,GA,PE แล้วที่เหลือเรียงตามรหัส', () => {
+      expect(sortGt800LabelGems(gems)).toEqual(['1 DI 0.1ct', '1 RU 0.5ct', '1 EM 0.3ct', '1 PE 0.7ct', '1 ON 1ct', '1 TZ 0.5ct'])
+    })
+
+    it('meta จาก API: labelSort ชนะ, null ต่อท้ายเรียงตาม labelCode, ใช้ labelCode แทน code', () => {
+      const meta = buildGemLabelMeta([
+        { code: 'DI', labelCode: 'DM', labelSort: 5 },
+        { code: 'RU', labelCode: 'RU', labelSort: 1 },
+        { code: 'PE', labelCode: 'PE', labelSort: null },
+        { code: 'TZ', labelCode: 'AA', labelSort: null }
+      ])
+      expect(sortGt800LabelGems(['1Diamond 0.1 ct.', '1Peridot 0.7 ct.', '1Tanzanite 0.5 ct.', '1Ruby 0.5 ct.'], meta)).toEqual([
+        '1 RU 0.5ct',
+        '1 DM 0.1ct',
+        '1 AA 0.5ct',
+        '1 PE 0.7ct'
+      ])
+    })
+
+    it('detectGemCode เจอชื่อเต็มและรหัสย่อ', () => {
+      expect(detectGemCode('3Pink Sapphire 0.4 ct.')).toBe('PS')
+      expect(detectGemCode('24DI 0.24ct')).toBe('DI')
+      expect(detectGemCode('')).toBe('')
+    })
+
+    it('ไม่มีพลอย -> ไม่มีแถว', () => {
+      expect(sortGt800LabelGems([])).toEqual([])
+      expect(sortGt800LabelGems(undefined)).toEqual([])
+    })
+  })
+
+  describe('layout และ ZPL', () => {
+    it('บรรทัด 1 แม่พิมพ์ - เลขที่ผลิต และบาร์โค้ดเดียวกับป้าย original', () => {
+      const layout = layoutGt800Small(base)
+      expect(layout.line1).toBe('NF6121SW - AH21047')
+      expect(layout.code).toBe(layoutGt800(base, 'original').code)
+    })
+
+    it('hideMold หรือไม่มี mold -> บรรทัด 1 เหลือเลขที่ผลิต', () => {
+      expect(layoutGt800Small({ ...base, hideMold: true }).line1).toBe('AH21047')
+      expect(layoutGt800Small({ ...base, mold: '' }).line1).toBe('AH21047')
+    })
+
+    it('แม่พิมพ์ยาว ย่อฟอนต์ ไม่ล้ำแนวพับ', () => {
+      const layout = layoutGt800Small({ ...base, mold: 'CN-24000XXWPG-LONG', stockNumberOrigin: 'DK18K1XR1747' })
+      expect(layout.line1Font[1]).toBeLessThan(22)
+      expect(layout.line1.length * layout.line1Font[1] * 0.54).toBeLessThanOrEqual(185)
+    })
+
+    it('แม่พิมพ์ยาวเกินจนฟอนต์ถึงขั้นต่ำ -> ตัดท้ายแม่พิมพ์ ไม่ตัดเลขที่ผลิต', () => {
+      const layout = layoutGt800Small({ ...base, mold: 'M'.repeat(60) })
+      expect(layout.line1.endsWith(' - AH21047')).toBe(true)
+      expect(layout.line1.length * layout.line1Font[1] * 0.54).toBeLessThanOrEqual(185)
+    })
+
+    it('พลอย 11 รายการ ยังพอดีพื้นที่หลังป้าย', () => {
+      const gems = Array.from({ length: 11 }, (_, i) => `${i + 1}Diamond 0.${i + 10} ct., G,VS1`)
+      const layout = layoutGt800Small({ ...base, gems })
+      expect(layout.gemRows.length * layout.gemLineHeight).toBeLessThanOrEqual(96)
+      layout.gemRows.forEach((row) => {
+        expect(row.length * layout.gemFont[1] * 0.46).toBeLessThanOrEqual(185)
+      })
+    })
+
+    it('ZPL: ^LL112, บรรทัดข้อความ, บาร์โค้ด, พลอยเริ่ม x=208 เรียงตาม labelSort', () => {
+      const meta = buildGemLabelMeta([
+        { code: 'RU', labelCode: 'RU', labelSort: 1 },
+        { code: 'DI', labelCode: 'DI', labelSort: 2 }
+      ])
+      const zpl = generateGt800ZPLSmall({ ...base, gemLabelMeta: meta })
+      expect(zpl.startsWith('^XA^LL112^MD15^LT0^XZ^XA')).toBe(true)
+      expect(zpl).toContain('^FO10,8^A0N,22,19^FDNF6121SW - AH21047^FS')
+      expect(zpl).toContain('^BCN,32,N,N^FDAH21047^FS')
+      expect(zpl).toContain('^FD040950WG18K  11.78g^FS')
+      expect(zpl).toContain('^FO208,8^A0N,18,18^FD1 RU 0.50ct OV^FS')
+      expect(zpl.endsWith('^XZ')).toBe(true)
+    })
+
+    it('rotate180 ใช้ ^PW400', () => {
+      expect(generateGt800ZPLSmall(base, 1, { rotate180: true })).toContain('^POI^PW400')
+    })
+
+    it('dpiScale 300 คูณพิกัดทุกจุด', () => {
+      const zpl = generateGt800ZPLSmall(base, 300 / 203)
+      expect(zpl).toContain('^LL166')
+      expect(zpl).toContain('^FO15,12')
+    })
+
+    it('ป้ายเดิมไม่เปลี่ยน: header เดิมยังเป็น ^LL104 และ rotate180 ยังเป็น ^PW600', () => {
+      expect(generateGt800ZPL(base, 1)).toContain('^XA^LL104^MD15^LT0^XZ^XA')
+      expect(generateGt800ZPL(base, 1, { rotate180: true })).toContain('^POI^PW600')
+    })
   })
 })

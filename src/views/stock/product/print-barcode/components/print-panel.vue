@@ -35,6 +35,15 @@
         />
       </div>
 
+      <div v-if="showHideMoldOption" class="field field-checkbox">
+        <CheckboxGeneric
+          :modelValue="hideMold"
+          :label="$t('view.stock.printBarcode.hideMold')"
+          :disabled="isPrinting"
+          @update:modelValue="$emit('update:hideMold', $event)"
+        />
+      </div>
+
       <div v-if="showUnitNoOption" class="field field-checkbox">
         <CheckboxGeneric
           :modelValue="printUnitNo"
@@ -131,6 +140,10 @@ export default {
       type: Boolean,
       default: false
     },
+    hideMold: {
+      type: Boolean,
+      default: false
+    },
     printUnitNo: {
       type: Boolean,
       default: false
@@ -173,7 +186,7 @@ export default {
     }
   },
 
-  emits: ['update:barcodeType', 'update:remarkSymbol', 'update:hidePrice', 'update:printUnitNo', 'print', 'retry'],
+  emits: ['update:barcodeType', 'update:remarkSymbol', 'update:hidePrice', 'update:hideMold', 'update:printUnitNo', 'print', 'retry'],
 
   setup() {
     const zebraPrinter = zebraPrinterApi()
@@ -201,8 +214,13 @@ export default {
       ]
       if (!this.isLegacyProfile) {
         options.push({ value: 'original-qr', label: this.$t('view.stock.product.tabOriginalQr') })
+        options.push({ value: 'small-50x14', label: this.$t('view.stock.product.tabSmall50x14') })
       }
       return options
+    },
+
+    showHideMoldOption() {
+      return this.barcodeType === 'small-50x14' && !this.isLegacyProfile
     },
 
     showUnitNoOption() {
@@ -287,7 +305,7 @@ export default {
   watch: {
     isLegacyProfile: {
       handler(isLegacy) {
-        if (isLegacy && this.barcodeType === 'original-qr') {
+        if (isLegacy && (this.barcodeType === 'original-qr' || this.barcodeType === 'small-50x14')) {
           this.$emit('update:barcodeType', 'original')
         }
       },

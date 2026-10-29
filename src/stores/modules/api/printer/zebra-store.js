@@ -12,9 +12,12 @@ import {
   generateLegacyZPLVertical,
   generateGt800ZPL,
   generateGt800ZPLVertical,
-  generateGt800ZPLQr
+  generateGt800ZPLQr,
+  generateGt800ZPLSmall
 } from '@/services/helper/barcode/barcode-zpl.js'
 import { expandIndexesByCopies, collectFailedFormIndexes } from '@/services/helper/barcode/print-batch.js'
+
+const SMALL_LABEL_TYPE = 'small-50x14'
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -25,6 +28,11 @@ const noPrinterSelectedResult = {
 
 // ป้าย QR ใช้ได้เฉพาะ GT800 และต้องมีลิงก์หน้าสินค้าแล้วเท่านั้น — เช็คก่อนสร้าง ZPL ทุกครั้ง
 function checkQrLabelGuard(forms, profile) {
+  const hasSmallLabel = forms.some((form) => form.barcodeType === SMALL_LABEL_TYPE)
+  if (hasSmallLabel && profile === PRINTER_PROFILES.LEGACY) {
+    return { status: 'error', message: 'ป้าย 50×14 ใช้ได้เฉพาะเครื่องพิมพ์ GT800 ครับ' }
+  }
+
   const hasQrLabel = forms.some((form) => form.barcodeType === 'original-qr')
   if (!hasQrLabel) return null
 
@@ -55,6 +63,10 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
       }
 
       const options = { rotate180 }
+
+      if (formValue.barcodeType === SMALL_LABEL_TYPE) {
+        return generateGt800ZPLSmall(formValue, dpiScale, options)
+      }
 
       if (formValue.barcodeType === 'original-qr') {
         return generateGt800ZPLQr(formValue, dpiScale, options)

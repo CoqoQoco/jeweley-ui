@@ -51,3 +51,50 @@ describe('buildBarcodeModel — gold name from typeCode', () => {
     expect(goldOf('SV', '0.83 g.', 'Silver')).toBe('0.83 g.')
   })
 })
+
+describe('buildBarcodeModel — ข้อมูลป้าย 50×14', () => {
+  const stock = {
+    productionTypeSize: '18K',
+    productionType: 'White Gold',
+    mold: 'NF6121SW',
+    materials: [{ type: 'Gold', typeCode: 'WG', typeBarcode: '11.78 g. Gold' }]
+  }
+
+  it('น้ำหนัก/สี/กะรัต', () => {
+    const model = buildBarcodeModel(stock)
+    expect(model.goldWeight).toBe('11.78')
+    expect(model.goldColorCode).toBe('WG')
+    expect(model.goldKarat).toBe('18K')
+  })
+
+  it('สีจาก productionType เมื่อ material ไม่มี typeCode', () => {
+    const model = buildBarcodeModel({ ...stock, materials: [{ type: 'Gold', typeBarcode: '1.5 g. Gold' }], productionType: 'Pink Gold' })
+    expect(model.goldColorCode).toBe('PG')
+  })
+
+  it('เงิน -> ไม่มีสี/กะรัต แต่ยังมีน้ำหนัก', () => {
+    const model = buildBarcodeModel({
+      productionTypeSize: 'Silver',
+      productionType: 'Silver',
+      materials: [{ type: 'Silver', typeCode: 'SV', typeBarcode: '3.52 g. Silver' }]
+    })
+    expect(model.goldColorCode).toBe('')
+    expect(model.goldKarat).toBe('')
+    expect(model.goldWeight).toBe('3.52')
+  })
+
+  it('ไม่มีข้อมูลทอง -> ว่างทั้งหมด', () => {
+    const model = buildBarcodeModel({})
+    expect([model.goldWeight, model.goldColorCode, model.goldKarat]).toEqual(['', '', ''])
+  })
+
+  it('ทองหลายแถวรวมน้ำหนัก', () => {
+    const model = buildBarcodeModel({
+      materials: [
+        { type: 'Gold', typeBarcode: '1.10 g. Gold' },
+        { type: 'Gold', typeBarcode: '2.25 g. Gold' }
+      ]
+    })
+    expect(model.goldWeight).toBe('3.35')
+  })
+})

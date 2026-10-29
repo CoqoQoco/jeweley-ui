@@ -567,9 +567,9 @@ export function layoutGt800(formValue, template) {
 
 // header ร่วมของทุกแท็บ GT800 — เมื่อ rotate180 ให้แทรก ^POI^PW600 ต่อท้าย ^XA ตัวที่สอง (จุดเริ่ม label format)
 // ^PW600 เป็นค่าคงที่ตามสเปกความกว้างป้าย ไม่คูณ dpiScale
-function gt800Header(s, rotate180) {
-  const header = `^XA^LL${s(GT800_LABEL_HEIGHT)}^MD15^LT0^XZ^XA`
-  return rotate180 ? `${header}^POI^PW600` : header
+function gt800Header(s, rotate180, labelHeight = GT800_LABEL_HEIGHT, printWidth = 600) {
+  const header = `^XA^LL${s(labelHeight)}^MD15^LT0^XZ^XA`
+  return rotate180 ? `${header}^POI^PW${printWidth}` : header
 }
 
 function buildGemFieldsZpl(layout, s) {
@@ -708,6 +708,219 @@ export function generateGt800ZPLVertical(formValue, dpiScale = 1, options = {}) 
   }
 
   zpl += buildGemFieldsZpl(layout, s)
+
+  zpl += '^XZ'
+
+  return zpl
+}
+
+// ─────────────────────────────────────────────────────────────
+// GT800: ป้ายเล็ก 50×14 มม. = 400×112 dots ที่ 203 dpi (พับครึ่งที่ x=200)
+// หน้า (ซ้าย x<200): บรรทัด 1 แม่พิมพ์ - เลขที่ผลิต / บรรทัด 2 รหัสราคา+สีทอง+กะรัต น้ำหนักทอง / บรรทัด 3 บาร์โค้ด
+// หลัง (ขวา x>200): รายการพลอยเรียงตามลำดับ master (labelSort)
+// ข้อความทุกบรรทัดต้องไม่ข้ามแนวพับ (เว้นขอบ ~5 dots ทั้งสองฝั่ง) — ย่อฟอนต์อัตโนมัติเมื่อยาว
+// ─────────────────────────────────────────────────────────────
+
+const GT800_S_LABEL_WIDTH = 400
+const GT800_S_LABEL_HEIGHT = 112
+
+const GT800_S_FRONT_X = 10
+const GT800_S_FRONT_RIGHT = 195 // เว้น 5 dots ก่อนแนวพับ x=200
+const GT800_S_BACK_X = 208
+const GT800_S_BACK_RIGHT = 392
+
+const GT800_S_LINE1_Y = 8
+const GT800_S_LINE2_Y = 38
+const GT800_S_BARCODE_Y = 70
+const GT800_S_BARCODE_HEIGHT = 32
+const GT800_S_BARCODE_MODULE = 1
+const GT800_S_BARCODE_RATIO = '3.0:1'
+
+const GT800_S_LINE_FONT = 22 // ฟอนต์พื้นฐานบรรทัด 1-2
+const GT800_S_LINE_CHAR_W = 0.54 // dot ต่อ 1 หน่วยความกว้างฟอนต์ (ตัวพิมพ์ใหญ่+ตัวเลข+ขีด วัดจากภาพ Labelary ได้ 0.52 + เผื่อ)
+const GT800_S_LINE_MIN_W = 9 // ความกว้างฟอนต์ต่ำสุดก่อนตัดชื่อแม่พิมพ์
+const GT800_S_LINE_MIN_H = 12
+const GT800_S_LINE_HEIGHT_RATIO = 1.3 // สูง/กว้าง สูงสุดเมื่อบีบความกว้าง
+
+const GT800_S_GEM_TOP = 8
+const GT800_S_GEM_BOTTOM = 104
+const GT800_S_GEM_FONT = 18 // สูงสูงสุด
+const GT800_S_GEM_MIN_W = 10
+const GT800_S_GEM_MIN_H = 10
+const GT800_S_GEM_ABSOLUTE_MIN_W = 8
+const GT800_S_GEM_CHAR_W = 0.46
+const GT800_S_GEM_MAX_PER_ROW = 4
+
+// ลำดับพลอยสำรอง (ใช้เมื่อ API ยังไม่ส่ง labelSort) — DI, RU, SA, EM, PS, YS, AM, BT, CI, GA, PE
+const GT800_S_GEM_FALLBACK_ORDER = ['DI', 'RU', 'SA', 'EM', 'PS', 'YS', 'AM', 'BT', 'CI', 'GA', 'PE']
+
+// รหัสราคา: "0" + ราคาขาย (จำนวนเต็ม) ตัดหลักสุดท้ายทิ้ง เช่น 409500 → 040950 · ไม่มีราคา → ''
+export function formatPriceCode(value) {
+  const num = Number(value)
+  if (value == null || !Number.isFinite(num) || num <= 0) return ''
+  const body = String(Math.trunc(num)).slice(0, -1)
+  return body ? `0${body}` : ''
+}
+
+// map master gem → { CODE: { labelCode, labelSort } } — labelSort ไม่มีใน response (API เก่า) = undefined, null = ไม่กำหนดลำดับ
+export function buildGemLabelMeta(masterGems) {
+  const meta = {}
+  ;(Array.isArray(masterGems) ? masterGems : []).forEach((gem) => {
+    const code = String(gem?.code ?? '').trim().toUpperCase()
+    if (!code) return
+    meta[code] = {
+      labelCode: gem.labelCode ? String(gem.labelCode).trim().toUpperCase() : null,
+      labelSort: 'labelSort' in gem ? gem.labelSort : undefined
+    }
+  })
+  return meta
+}
+
+// รหัส master (DI/RU/…) ของข้อความพลอย — ชื่อเต็มที่ปรากฏก่อนสุดชนะ ไม่เจอชื่อค่อยหารหัสย่อนำหน้า (ข้อความที่ย่อมาแล้ว)
+export function detectGemCode(text) {
+  const source = String(text ?? '')
+  let best = null
+  GT800_GEM_CODES.forEach(({ re, code }) => {
+    const index = source.search(re)
+    if (index >= 0 && (best === null || index < best.index)) best = { index, code }
+  })
+  if (best) return best.code
+  const abbreviated = source.match(/^\s*\d*\s*([A-Z]{2})(?![A-Za-z])/)
+  return abbreviated ? abbreviated[1] : ''
+}
+
+function resolveGemSortKey(code, meta) {
+  const entry = code ? meta?.[code] : undefined
+  if (entry && entry.labelSort !== undefined) {
+    return typeof entry.labelSort === 'number' && Number.isFinite(entry.labelSort) ? entry.labelSort : null
+  }
+  const fallbackIndex = GT800_S_GEM_FALLBACK_ORDER.indexOf(code)
+  return fallbackIndex >= 0 ? fallbackIndex : null
+}
+
+// เรียงพลอย: labelSort น้อย→มาก, ไม่มี labelSort ต่อท้ายเรียงตามรหัสบนป้าย (ตัวอักษร) · ข้อความย่อด้วย labelCode (ไม่มีใช้ code)
+export function sortGt800LabelGems(gems, meta = {}) {
+  const entries = (Array.isArray(gems) ? gems : [])
+    .filter(Boolean)
+    .map((gem, index) => {
+      const code = detectGemCode(gem)
+      const labelCode = (code && meta?.[code]?.labelCode) || code
+      let text = abbreviateGemText(formatGemText(gem)).replace(/^(\d+)(?=[A-Z])/, '$1 ')
+      if (code && labelCode && labelCode !== code) {
+        text = text.replace(new RegExp(`(?<![A-Za-z])${code}(?![A-Za-z])`), labelCode)
+      }
+      return { text, labelCode, sortKey: resolveGemSortKey(code, meta), index }
+    })
+
+  entries.sort((a, b) => {
+    const aHas = a.sortKey !== null
+    const bHas = b.sortKey !== null
+    if (aHas && bHas) return a.sortKey - b.sortKey || a.index - b.index
+    if (aHas) return -1
+    if (bHas) return 1
+    return a.labelCode.localeCompare(b.labelCode) || a.index - b.index
+  })
+  return entries.map((entry) => entry.text)
+}
+
+// ฟอนต์ 1 บรรทัดให้พอดี budget: ฟอนต์เต็มก่อน → บีบความกว้าง → ถึงขั้นต่ำแล้ว overflow=true
+function fitGt800SmallLine(text, budget) {
+  const base = GT800_S_LINE_FONT
+  const size = Math.floor(budget / (Math.max(1, text.length) * GT800_S_LINE_CHAR_W))
+  if (size >= base) return { font: [base, base], overflow: false }
+  if (size < GT800_S_LINE_MIN_W) return { font: [GT800_S_LINE_MIN_H, GT800_S_LINE_MIN_W], overflow: true }
+  const height = Math.max(GT800_S_LINE_MIN_H, Math.min(base, Math.round(size * GT800_S_LINE_HEIGHT_RATIO)))
+  return { font: [height, size], overflow: false }
+}
+
+function joinGemRows(texts, perRow) {
+  const rows = []
+  for (let i = 0; i < texts.length; i += perRow) {
+    rows.push(texts.slice(i, i + perRow).join(GT800_GEM_PAIR_SEPARATOR))
+  }
+  return rows
+}
+
+// จัดแถวพลอยหลังป้าย: เริ่ม 1 ต่อแถว (≥5 รายการ = 2 ต่อแถว) แล้วเพิ่มจำนวนต่อแถวจนฟอนต์ไม่เล็กเกินขั้นต่ำ
+function layoutGt800SmallGems(texts) {
+  if (texts.length === 0) return { rows: [], font: [GT800_S_GEM_FONT, GT800_S_GEM_FONT], lineHeight: GT800_S_GEM_FONT }
+
+  const budget = GT800_S_BACK_RIGHT - GT800_S_BACK_X
+  const stack = GT800_S_GEM_BOTTOM - GT800_S_GEM_TOP
+  const start = texts.length >= GT800_GEM_PAIR_THRESHOLD ? 2 : 1
+
+  let result = null
+  for (let perRow = start; perRow <= GT800_S_GEM_MAX_PER_ROW; perRow++) {
+    const rows = joinGemRows(texts, perRow)
+    const height = Math.min(GT800_S_GEM_FONT, Math.floor(stack / rows.length))
+    const width = Math.min(GT800_S_GEM_FONT, Math.floor(budget / (longestLength(rows) * GT800_S_GEM_CHAR_W)))
+    result = { rows, height, width }
+    if (height >= GT800_S_GEM_MIN_H && width >= GT800_S_GEM_MIN_W) break
+  }
+
+  const width = Math.max(GT800_S_GEM_ABSOLUTE_MIN_W, result.width)
+  const height = Math.max(GT800_S_GEM_MIN_H, result.height)
+  return { rows: result.rows, font: [height, width], lineHeight: height }
+}
+
+// ข้อความบรรทัด 2: {รหัสราคา}{สีทอง}{กะรัต}  {น้ำหนัก}g — ส่วนที่ไม่มีข้อมูลข้ามไป (เงิน/ไม่มีข้อมูลทอง = ไม่ต่อสี/กะรัต)
+export function buildGt800SmallLine2(formValue) {
+  const priceCode = formValue?.hidePrice ? '' : formatPriceCode(formValue?.salePrice)
+  const metal = `${formValue?.goldColorCode || ''}${formValue?.goldKarat || ''}`
+  const weight = formValue?.goldWeight ? `${formValue.goldWeight}g` : ''
+  return [`${priceCode}${metal}`, weight].filter(Boolean).join('  ')
+}
+
+export function layoutGt800Small(formValue) {
+  const code = resolveLabelCode(formValue)
+  const budget = GT800_S_FRONT_RIGHT - GT800_S_FRONT_X
+
+  let mold = formValue?.hideMold ? '' : String(formValue?.mold ?? '').trim()
+  const composeLine1 = () => (mold ? `${mold} - ${code}` : code)
+  let line1Fit = fitGt800SmallLine(composeLine1(), budget)
+  while (line1Fit.overflow && mold.length > 1) {
+    mold = mold.slice(0, -1)
+    line1Fit = fitGt800SmallLine(composeLine1(), budget)
+  }
+
+  const line2 = buildGt800SmallLine2(formValue)
+  const gem = layoutGt800SmallGems(sortGt800LabelGems(formValue?.gems, formValue?.gemLabelMeta))
+
+  return {
+    code,
+    line1: composeLine1(),
+    line1Font: line1Fit.font,
+    line2,
+    line2Font: fitGt800SmallLine(line2, budget).font,
+    barcodeEnd: estimateGt800BarcodeEnd(code, GT800_S_FRONT_X),
+    barcodeRightLimit: GT800_S_FRONT_RIGHT,
+    gemRows: gem.rows,
+    gemFont: gem.font,
+    gemLineHeight: gem.lineHeight,
+    gemX: GT800_S_BACK_X,
+    gemRightLimit: GT800_S_BACK_RIGHT
+  }
+}
+
+export function generateGt800ZPLSmall(formValue, dpiScale = 1, options = {}) {
+  const s = (n) => Math.round(n * dpiScale)
+  const layout = layoutGt800Small(formValue)
+
+  let zpl = gt800Header(s, options.rotate180, GT800_S_LABEL_HEIGHT, GT800_S_LABEL_WIDTH)
+
+  zpl += `^FO${s(GT800_S_FRONT_X)},${s(GT800_S_LINE1_Y)}^A0N,${s(layout.line1Font[0])},${s(layout.line1Font[1])}^FD${layout.line1}^FS`
+
+  if (layout.line2) {
+    zpl += `^FO${s(GT800_S_FRONT_X)},${s(GT800_S_LINE2_Y)}^A0N,${s(layout.line2Font[0])},${s(layout.line2Font[1])}^FD${layout.line2}^FS`
+  }
+
+  zpl += `^FO${s(GT800_S_FRONT_X)},${s(GT800_S_BARCODE_Y)}^BY${s(GT800_S_BARCODE_MODULE)},${GT800_S_BARCODE_RATIO},${s(GT800_S_BARCODE_HEIGHT)}^BCN,${s(GT800_S_BARCODE_HEIGHT)},N,N^FD${layout.code}^FS`
+
+  let y = GT800_S_GEM_TOP
+  layout.gemRows.forEach((row) => {
+    zpl += `^FO${s(layout.gemX)},${s(y)}^A0N,${s(layout.gemFont[0])},${s(layout.gemFont[1])}^FD${row}^FS`
+    y += layout.gemLineHeight
+  })
 
   zpl += '^XZ'
 

@@ -22,6 +22,7 @@
       v-model:barcodeType="barcodeType"
       v-model:remarkSymbol="remarkSymbol"
       v-model:hidePrice="hidePrice"
+      v-model:hideMold="hideMold"
       v-model:printUnitNo="printUnitNo"
       :selectedCount="selectedRows.length"
       :totalCount="rows.length"
@@ -39,11 +40,12 @@
 <script>
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { useStockRfidApiStore } from '@/stores/modules/api/stock/rfid-api.js'
+import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
 import { warning, error } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { buildBarcodeModel } from '@/services/helper/barcode/barcode-model.js'
-import { resolveLabelCode, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
+import { resolveLabelCode, buildGemLabelMeta, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
 import {
   MAX_COPIES_PER_ROW,
   MAX_LABELS_PER_RUN,
@@ -87,7 +89,8 @@ export default {
     const productStore = usrStockProductApiStore()
     const zebraPrinter = zebraPrinterApi()
     const rfidStore = useStockRfidApiStore()
-    return { productStore, zebraPrinter, rfidStore }
+    const masterStore = useMasterApiStore()
+    return { productStore, zebraPrinter, rfidStore, masterStore }
   },
 
   data() {
@@ -98,6 +101,7 @@ export default {
       barcodeType: 'original',
       remarkSymbol: REMARK_SYMBOL_NONE,
       hidePrice: false,
+      hideMold: false,
       printUnitNo: false,
       isPrinting: false,
       progress: { done: 0, total: 0 },
@@ -272,6 +276,7 @@ export default {
         tagPriceMultiplier: Number(row.tagPriceMultiplier) || 1,
         barcodeType: this.barcodeType,
         hidePrice: this.hidePrice,
+        hideMold: this.hideMold,
         remarkSymbol: showRemark ? this.remarkSymbol : '',
         print: normalizeCopies(row.printCount, MAX_COPIES_PER_ROW)
       }
@@ -323,6 +328,15 @@ export default {
       return { included, skipped, skippedKey: 'skippedNoLink' }
     },
 
+    // ลำดับ/รหัสย่อพลอยบนป้าย 50×14 มาจาก master gem (labelCode/labelSort) — API เก่าไม่ส่งมา ตัวสร้าง ZPL ใช้ลำดับสำรองเอง
+    async attachGemLabelMeta(entries) {
+      await this.masterStore.fetchGem()
+      const gemLabelMeta = buildGemLabelMeta(this.masterStore.gem)
+      entries.forEach((entry) => {
+        entry.form.gemLabelMeta = gemLabelMeta
+      })
+    },
+
     // ดึงชิ้นของล็อต (GetByStock) แล้วแตก form เป็น 1 ใบต่อชิ้น พร้อมเลขชิ้น — ดึงไม่ได้/ชิ้นไม่พอ ใบนั้นพิมพ์ไม่มีเลขชิ้น
     async attachUnitMarks(entries) {
       const results = await runWithConcurrency(entries, UNIT_CONCURRENCY, (entry) =>
@@ -352,6 +366,10 @@ export default {
       this.isPrinting = true
 
       const entries = rows.map((row) => ({ row, form: this.buildBaseForm(row) }))
+
+      if (this.barcodeType === 'small-50x14') {
+        await this.attachGemLabelMeta(entries)
+      }
 
       let prepared = { included: entries, skipped: [], skippedKey: '' }
       if (isCostLabelType(this.barcodeType) && !this.hidePrice) {
