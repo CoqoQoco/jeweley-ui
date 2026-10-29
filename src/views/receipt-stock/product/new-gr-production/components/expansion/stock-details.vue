@@ -1,6 +1,14 @@
 <!-- eslint-disable vue/no-mutating-props -->
 <template>
   <div class="p-2 filter-container-bg-focus">
+    <LotTopupPicker
+      class="mb-2"
+      :location="slotProps.data.location || 'MAIN'"
+      :isSilver="isSilverPlan"
+      :topUpStockNumber="slotProps.data.topUpStockNumber || ''"
+      @select="onSelectLot"
+    />
+
     <!-- Quantity and Price -->
     <div class="form-col-container">
       <div>
@@ -12,11 +20,12 @@
           class="form-control form-control-sm"
           :style="getBgColor(slotProps.data.isReceipt, slotProps.data.qty)"
           type="number"
-          step="any"
-          min="0"
+          step="1"
+          min="1"
           v-model="slotProps.data.qty"
           :required="isRequiredField(slotProps.data)"
         />
+        <small v-if="qtyWarning" class="text-danger">{{ qtyWarning }}</small>
       </div>
 
       <div>
@@ -123,13 +132,16 @@
 <script>
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import PriceInputGeneric from '@/components/generic/PriceInputGeneric.vue'
+import LotTopupPicker from '../../../components/lot-topup-picker.vue'
+import { validateReceiptQty } from '@/services/helper/receipt-lot/receipt-lot.js'
 
 export default {
   name: 'StockDetails',
 
   components: {
     DropdownGeneric,
-    PriceInputGeneric
+    PriceInputGeneric,
+    LotTopupPicker
   },
 
   props: {
@@ -145,6 +157,10 @@ export default {
       type: Boolean,
       required: true
     },
+    isSilverPlan: {
+      type: Boolean,
+      default: false
+    },
     locationOptions: {
       type: Array,
       default: () => []
@@ -159,7 +175,26 @@ export default {
     }
   },
 
-  emits: ['selectImage']
+  emits: ['selectImage'],
+
+  computed: {
+    qtyWarning() {
+      const error = validateReceiptQty({
+        isSilver: this.isSilverPlan,
+        qty: this.slotProps.data.qty
+      })
+      if (error === 'goldQty') return this.$t('view.receiptStock.product.receiptLot.goldQtyWarn')
+      if (error === 'silverQty') return this.$t('view.receiptStock.product.receiptLot.silverQtyWarn')
+      return ''
+    }
+  },
+
+  methods: {
+    onSelectLot(lot) {
+      // eslint-disable-next-line vue/no-mutating-props
+      this.slotProps.data.topUpStockNumber = lot ? lot.stockNumber : ''
+    }
+  }
 }
 </script>
 

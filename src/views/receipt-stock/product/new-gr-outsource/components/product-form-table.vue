@@ -32,6 +32,9 @@
           placeholder="รหัสสินค้า"
           :style="getFieldBg(data.productNumber)"
         />
+        <span v-if="data.topUpStockNumber" class="topup-badge">
+          {{ $t('view.receiptStock.product.receiptLot.topUpBadge', { stockNumber: data.topUpStockNumber }) }}
+        </span>
       </template>
 
       <!-- Product Name EN -->
@@ -142,6 +145,14 @@
         <div class="p-2">
           <div class="form-col-fix-2-container">
             <div class="filter-container-bg-focus p-2">
+              <LotTopupPicker
+                class="mb-2"
+                :location="slotProps.data.location || 'MAIN'"
+                :isSilver="isSilverRow(slotProps.data)"
+                :topUpStockNumber="slotProps.data.topUpStockNumber || ''"
+                @select="(lot) => onSelectLot(slotProps.data, lot)"
+              />
+
               <!-- Qty / Price / Size / Stud / Location / Remark -->
               <div class="form-col-container">
                 <div>
@@ -149,11 +160,14 @@
                   <input
                     class="form-control form-control-sm"
                     type="number"
-                    step="any"
-                    min="0"
+                    step="1"
+                    min="1"
                     v-model="slotProps.data.qty"
                     :style="getFieldBg(slotProps.data.qty)"
                   />
+                  <small v-if="qtyWarning(slotProps.data)" class="text-danger">
+                    {{ qtyWarning(slotProps.data) }}
+                  </small>
                 </div>
                 <div>
                   <span class="title-text">ราคาขาย <span class="text-danger">*</span></span>
@@ -275,6 +289,8 @@ import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import ProductImage from '../../new-gr-production/components/expansion/product-image.vue'
 import MaterialsSection from '../../new-gr-production/components/expansion/materials-section.vue'
+import LotTopupPicker from '../../components/lot-topup-picker.vue'
+import { isSilverMetal, validateReceiptQty } from '@/services/helper/receipt-lot/receipt-lot.js'
 
 export default {
   name: 'product-form-table',
@@ -283,7 +299,8 @@ export default {
     BaseDataTable,
     DropdownGeneric,
     ProductImage,
-    MaterialsSection
+    MaterialsSection,
+    LotTopupPicker
   },
 
   props: {
@@ -341,6 +358,42 @@ export default {
   ],
 
   methods: {
+    isSilverRow(row) {
+      return isSilverMetal(row.productionType)
+    },
+
+    qtyWarning(row) {
+      const error = validateReceiptQty({ isSilver: this.isSilverRow(row), qty: row.qty })
+      if (error === 'goldQty') return this.$t('view.receiptStock.product.receiptLot.goldQtyWarn')
+      if (error === 'silverQty') return this.$t('view.receiptStock.product.receiptLot.silverQtyWarn')
+      return ''
+    },
+
+    onSelectLot(row, lot) {
+      if (!lot) {
+        if (row.topUpStockNumber && row.preTopUp) {
+          Object.assign(row, row.preTopUp)
+        }
+        row.topUpStockNumber = ''
+        row.preTopUp = null
+        return
+      }
+
+      if (!row.topUpStockNumber) {
+        row.preTopUp = {
+          productNumber: row.productNumber,
+          productNameTH: row.productNameTH,
+          productNameEN: row.productNameEN,
+          productType: row.productType
+        }
+      }
+      row.topUpStockNumber = lot.stockNumber
+      row.productNumber = lot.productNumber || row.productNumber
+      row.productNameTH = lot.productNameTh || row.productNameTH
+      row.productNameEN = lot.productNameEn || row.productNameEN
+      row.productType = lot.productType || row.productType
+    },
+
     getFieldBg(value) {
       if (value === null || value === undefined || value === '') {
         return 'background-color: #dad4b5'
@@ -369,6 +422,17 @@ export default {
     border-bottom: 1px solid #f0f0f0;
     background: transparent !important;
   }
+}
+
+.topup-badge {
+  display: inline-block;
+  margin-top: var(--sp-xs);
+  padding: 2px var(--sp-sm);
+  border-radius: var(--radius-sm);
+  background-color: var(--base-warning);
+  color: var(--base-font-color);
+  font-size: var(--fs-sm);
+  font-weight: 700;
 }
 
 .table-footer {

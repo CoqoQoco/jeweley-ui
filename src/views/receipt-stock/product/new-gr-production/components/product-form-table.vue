@@ -43,6 +43,14 @@
       </div>
     </template>
 
+    <!-- Stock Number (+ top-up badge) -->
+    <template #stockNumberTemplate="{ data }">
+      <span>{{ data.stockNumber }}</span>
+      <span v-if="data.topUpStockNumber" class="topup-badge">
+        {{ $t('view.receiptStock.product.receiptLot.topUpBadge', { stockNumber: data.topUpStockNumber }) }}
+      </span>
+    </template>
+
     <!-- Product Number -->
     <template #productNumberTemplate="{ data }">
       <ProductNumberField
@@ -101,6 +109,7 @@
         :scrollHeight="scrollHeight"
         :materialColumns="materialColumns"
         :requiredStud="requiredStud"
+        :isSilverPlan="data?.type === 'Silver'"
         :getBgColor="getBgColor"
         :isRequiredField="isRequiredField"
         :breakdownData="data.breakDown || []"
@@ -366,6 +375,17 @@ export default {
       }
     }
   }
+}
+
+.topup-badge {
+  display: inline-block;
+  margin-left: var(--sp-xs);
+  padding: 2px var(--sp-sm);
+  border-radius: var(--radius-sm);
+  background-color: var(--base-warning);
+  color: var(--base-font-color);
+  font-size: var(--fs-sm);
+  font-weight: 700;
 }
 
 .image-column-cell {

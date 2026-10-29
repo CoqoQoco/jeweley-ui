@@ -9,6 +9,13 @@
       @page="handlePageChange"
       @sort="handleSortChange"
     >
+      <template #stockNumberTemplate="{ data }">
+        <span>{{ data.stockNumber }}</span>
+        <span v-if="data.isTopUp" class="topup-tag">
+          {{ $t('view.receiptStock.product.receiptLot.topUpTag') }}
+        </span>
+      </template>
+
       <template #footerGroup>
         <!-- eslint-disable-next-line no-restricted-imports -->
         <ColumnGroup type="footer">
@@ -154,4 +161,15 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-data-table';
+
+.topup-tag {
+  display: inline-block;
+  margin-left: var(--sp-xs);
+  padding: 2px var(--sp-sm);
+  border-radius: var(--radius-sm);
+  background-color: var(--base-warning);
+  color: var(--base-font-color);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+}
 </style>

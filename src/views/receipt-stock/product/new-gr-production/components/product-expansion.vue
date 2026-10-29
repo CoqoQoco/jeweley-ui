@@ -13,6 +13,7 @@
           :slotProps="slotProps"
           :masterStud="masterStud"
           :requiredStud="requiredStud"
+          :isSilverPlan="isSilverPlan"
           :getBgColor="getBgColor"
           :isRequiredField="isRequiredField"
           :locationOptions="locationOptions"
@@ -128,6 +129,10 @@ export default {
     requiredStud: {
       type: Boolean,
       required: true
+    },
+    isSilverPlan: {
+      type: Boolean,
+      default: false
     },
     getBgColor: {
       type: Function,

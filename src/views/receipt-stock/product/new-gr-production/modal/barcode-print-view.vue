@@ -32,7 +32,7 @@
         <div>
           <BaseDataTable
             scrollHeight="600px"
-            dataKey="stockNumber"
+            dataKey="receiptNumber"
             :items="stock"
             :columns="columns"
             :selectionMode="true"
@@ -124,6 +124,7 @@ const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.v
 import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
 import { error } from '@/services/alert/sweetAlerts.js'
 import { applyGoldTypeName } from '@/services/helper/barcode/gold-type-name.js'
+import { normalizeCopies } from '@/services/helper/barcode/print-batch.js'
 
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
@@ -221,6 +222,13 @@ export default {
           header: this.$t('view.receiptStock.product.grProduction.colProductNameTh'),
           sortable: false,
           minWidth: '150px'
+        },
+        {
+          field: 'qty',
+          header: this.$t('view.receiptStock.product.grProduction.colQty'),
+          sortable: false,
+          minWidth: '80px',
+          align: 'right'
         },
         {
           field: 'receiptNumber',
@@ -329,7 +337,8 @@ export default {
           salePrice: item.productPrice ?? null,
           isSilver: String(item.productionTypeSize || '').toUpperCase() === 'SILVER',
           barcodeType: this.selectedType,
-          hidePrice: this.hidePrice
+          hidePrice: this.hidePrice,
+          print: normalizeCopies(item.qty)
         }
 
         // Process materials if available

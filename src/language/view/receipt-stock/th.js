@@ -314,6 +314,29 @@ export default {
       barcodeTypeCostNoGold: 'แบบที่ 2',
       lotBadge: 'ล็อต {count} ชิ้น'
     },
+    receiptLot: {
+      searchLabel: 'ค้นหาเลขที่ผลิตเก่า',
+      searchPlaceholder: 'เลขที่ผลิตเก่า หรือเลขสต็อกใหม่',
+      notFound: 'ไม่พบล็อตเดิมในคลัง จะสร้างเลขใหม่',
+      foundCount: 'พบ {count} ล็อต',
+      lotStockNumber: 'เลขสต็อก',
+      lotOldNumber: 'เลขผลิตเก่า',
+      lotProduct: 'สินค้า',
+      lotLocation: 'คลัง',
+      lotQty: 'คงเหลือ {available} / ทั้งหมด {qty}',
+      statusSold: 'ขายหมด',
+      topUpBtn: 'เติมเข้าล็อตนี้',
+      newLotBtn: 'สร้างเลขใหม่',
+      topUpBadge: 'เติมเข้าล็อต {stockNumber}',
+      topUpTag: 'เติมล็อต',
+      reasonLocation: 'อยู่คนละคลัง ต้องสร้างเลขใหม่',
+      reasonMetal: 'ชนิดโลหะไม่ตรงกัน (ทอง/เงิน) ต้องสร้างเลขใหม่',
+      goldDuplicateWarn: 'เลขผลิตนี้มีในคลังแล้ว การรับจะเป็นการรับซ้ำ',
+      goldQtyWarn: 'ทอง 1 รหัส = 1 ชิ้น กรุณาเพิ่มรายการใหม่',
+      silverQtyWarn: 'เงินต้องระบุจำนวนเป็นจำนวนเต็ม ตั้งแต่ 1 ขึ้นไป',
+      qtyInvalidTitle: 'จำนวนไม่ถูกต้อง',
+      qtyRequired: 'กรุณากรอกจำนวนสินค้าให้ครบถ้วน'
+    },
     productionReceiptList: {
       title: 'รับสินค้างานผลิต',
       description: 'ตรวจสอบและรับสินค้าจากงานผลิตเข้าคลัง',
@@ -347,6 +370,7 @@ export default {
       productNumber: 'รหัสสินค้า',
       productName: 'ชื่อสินค้า',
       size: 'ขนาด',
+      qty: 'จำนวน',
       receiveOutsource: 'รับสินค้างานนอก'
     },
     reportGr: {

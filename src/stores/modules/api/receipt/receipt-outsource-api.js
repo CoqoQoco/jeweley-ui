@@ -78,6 +78,7 @@ export const useReceiptOutsourceApiStore = defineStore('receiptOutsource', {
           'เลขที่ PO': item.poNumber,
           ประเภทสินค้า: item.productTypeName,
           ขนาด: item.size,
+          จำนวน: item.qty,
           ราคา: item.productPrice ? formatDecimal(item.productPrice, 2) : '',
           จัดเก็บ: item.location,
           ผู้รับสินค้า: item.createBy,

@@ -9,6 +9,13 @@
       @page="handlePageChange"
       @sort="handleSortChange"
     >
+      <template #stockNumberTemplate="{ data }">
+        <span>{{ data.stockNumber }}</span>
+        <span v-if="data.isTopUp" class="topup-tag">
+          {{ $t('view.receiptStock.product.receiptLot.topUpTag') }}
+        </span>
+      </template>
+
       <template #imagePathTemplate="{ data }">
         <imagePreview
           :imageName="data.imagePath"
@@ -132,6 +139,14 @@ export default {
           minWidth: '100px'
         },
         {
+          field: 'qty',
+          header: this.$t('view.receiptStock.product.outsourceReceiptList.qty'),
+          sortable: false,
+          minWidth: '80px',
+          format: 'number',
+          align: 'right'
+        },
+        {
           field: 'productPrice',
           header: 'ราคา',
           sortable: true,
@@ -192,4 +207,15 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-data-table';
+
+.topup-tag {
+  display: inline-block;
+  margin-left: var(--sp-xs);
+  padding: 2px var(--sp-sm);
+  border-radius: var(--radius-sm);
+  background-color: var(--base-warning);
+  color: var(--base-font-color);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+}
 </style>

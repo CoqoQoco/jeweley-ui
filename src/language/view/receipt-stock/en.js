@@ -314,6 +314,29 @@ export default {
       barcodeTypeCostNoGold: 'Type 2',
       lotBadge: 'Lot of {count}'
     },
+    receiptLot: {
+      searchLabel: 'Search old production number',
+      searchPlaceholder: 'Old production number or new stock number',
+      notFound: 'No existing lot found. A new number will be created',
+      foundCount: '{count} lot(s) found',
+      lotStockNumber: 'Stock No.',
+      lotOldNumber: 'Old production No.',
+      lotProduct: 'Product',
+      lotLocation: 'Location',
+      lotQty: 'Available {available} / Total {qty}',
+      statusSold: 'Sold out',
+      topUpBtn: 'Add to this lot',
+      newLotBtn: 'Create new number',
+      topUpBadge: 'Adding to lot {stockNumber}',
+      topUpTag: 'Top-up',
+      reasonLocation: 'Different location. Please create a new number',
+      reasonMetal: 'Metal type mismatch (gold/silver). Please create a new number',
+      goldDuplicateWarn: 'This production number already exists in stock. Receiving will be a duplicate receipt',
+      goldQtyWarn: 'Gold: 1 code = 1 piece. Please add a new row',
+      silverQtyWarn: 'Silver quantity must be a whole number of 1 or more',
+      qtyInvalidTitle: 'Invalid quantity',
+      qtyRequired: 'Please enter the quantity'
+    },
     productionReceiptList: {
       title: 'Receive Production Goods',
       description: 'Verify and receive goods from production into stock',
@@ -347,6 +370,7 @@ export default {
       productNumber: 'Product Code',
       productName: 'Product Name',
       size: 'Size',
+      qty: 'Qty',
       receiveOutsource: 'Receive Outsource Goods'
     },
     reportGr: {

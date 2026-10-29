@@ -114,6 +114,7 @@ import modalBarcodePrint from './modal/barcode-print-view.vue'
 import modalSearchProductName from './modal/search-product-name-view.vue'
 import modalEditAllMaterials from './modal/edit-all-materials-view.vue'
 import modalAdjustBreakdown from './modal/adjust-breakdown-view.vue'
+import { validateReceiptQty } from '@/services/helper/receipt-lot/receipt-lot.js'
 import { formatGoldBarcodeText, isGoldOrSilverMaterial } from './gold-barcode-text.js'
 
 const interfaceBarcode = {
@@ -386,36 +387,43 @@ export default {
       let isValid = true
       const productNumbers = new Set()
       let duplicateProductNumbers = []
+      let qtyErrorKey = null
 
       for (const item of formValue) {
         const formItem = this.form.find((f) => f.stockReceiptNumber === item.stockReceiptNumber)
 
         if (formItem && !formItem.isReceipt) {
-          if (!formItem.productNumber) {
-            isValid = false
-          } else {
-            if (productNumbers.has(formItem.productNumber)) {
-              duplicateProductNumbers.push(formItem.productNumber)
+          const isTopUp = !!formItem.topUpStockNumber
+
+          if (!isTopUp) {
+            if (!formItem.productNumber) {
               isValid = false
-            } else {
-              productNumbers.add(formItem.productNumber)
+            } else if (!this.isSilverPlan) {
+              if (productNumbers.has(formItem.productNumber)) {
+                duplicateProductNumbers.push(formItem.productNumber)
+                isValid = false
+              } else {
+                productNumbers.add(formItem.productNumber)
+              }
+            }
+
+            if (!String(formItem.moldDesign ?? '').trim()) {
+              isValid = false
+            }
+
+            if (!formItem.productNameEN) {
+              isValid = false
+            }
+
+            if (!formItem.productNameTH) {
+              isValid = false
             }
           }
 
-          if (!String(formItem.moldDesign ?? '').trim()) {
+          const qtyError = validateReceiptQty({ isSilver: this.isSilverPlan, qty: formItem.qty })
+          if (qtyError) {
             isValid = false
-          }
-
-          if (!formItem.productNameEN) {
-            isValid = false
-          }
-
-          if (!formItem.productNameTH) {
-            isValid = false
-          }
-
-          if (formItem.qty === null || formItem.qty === undefined || formItem.qty === '') {
-            isValid = false
+            if (qtyError !== 'required') qtyErrorKey = qtyErrorKey || qtyError
           }
 
           if (formItem.price === null || formItem.price === undefined || formItem.price === '') {
@@ -425,7 +433,13 @@ export default {
       }
 
       if (!isValid) {
-        if (duplicateProductNumbers.length > 0) {
+        if (qtyErrorKey) {
+          const msgKey = qtyErrorKey === 'goldQty' ? 'goldQtyWarn' : 'silverQtyWarn'
+          swAlert.warning(
+            this.$t(`view.receiptStock.product.receiptLot.${msgKey}`),
+            this.$t('view.receiptStock.product.receiptLot.qtyInvalidTitle')
+          )
+        } else if (duplicateProductNumbers.length > 0) {
           swAlert.warning(
             this.$t('view.receiptStock.product.grProduction.dupProductNumber'),
             this.$t('view.receiptStock.product.grProduction.dupProductNumberDesc', { codes: duplicateProductNumbers.join(', ') }),
@@ -755,6 +769,8 @@ export default {
 
       const stocksWithMaterials = confirm.map((item) => ({
         ...item,
+        qty: Number(item.qty),
+        topUpStockNumber: item.topUpStockNumber || null,
         materials: (item.materials || []).map((m) => {
           const totalPrice =
             (Number(m.qty) || 0) * (Number(m.qtyPrice) || 0) +

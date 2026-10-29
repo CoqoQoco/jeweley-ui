@@ -83,6 +83,7 @@
 import { useReceiptOutsourceApiStore } from '@/stores/modules/api/receipt/receipt-outsource-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
+import { isSilverMetal, validateReceiptQty } from '@/services/helper/receipt-lot/receipt-lot.js'
 
 import outsourceHeader from './components/outsource-header-view.vue'
 import ProductFormTable from './components/product-form-table.vue'
@@ -201,7 +202,7 @@ export default {
         productType: null,
         productionType: null,
         productionTypeSize: null,
-        qty: null,
+        qty: 1,
         price: null,
         size: '',
         studEarring: null,
@@ -209,6 +210,8 @@ export default {
         imageName: null,
         imagePath: null,
         remark: '',
+        topUpStockNumber: '',
+        preTopUp: null,
         materials: []
       }
     },
@@ -229,15 +232,29 @@ export default {
       const duplicates = []
 
       for (const item of this.form) {
-        if (!item.productNumber || !item.productNameTH || !item.productNameEN) {
+        const isTopUp = !!item.topUpStockNumber
+        const isSilver = isSilverMetal(item.productionType)
+
+        if (!isTopUp && (!item.productNumber || !item.productNameTH || !item.productNameEN)) {
           swAlert.warning('กรุณากรอกรหัสสินค้า ชื่อสินค้า EN และชื่อสินค้า TH ให้ครบถ้วน', 'ข้อมูลไม่ครบถ้วน')
           return false
         }
 
-        if (item.qty === null || item.qty === undefined || item.qty === '') {
-          swAlert.warning('กรุณากรอกจำนวนสินค้าให้ครบถ้วน', 'ข้อมูลไม่ครบถ้วน')
+        const qtyError = validateReceiptQty({ isSilver, qty: item.qty })
+        if (qtyError === 'required') {
+          swAlert.warning(this.$t('view.receiptStock.product.receiptLot.qtyRequired'), 'ข้อมูลไม่ครบถ้วน')
           return false
         }
+        if (qtyError) {
+          const msgKey = qtyError === 'goldQty' ? 'goldQtyWarn' : 'silverQtyWarn'
+          swAlert.warning(
+            `${this.$t(`view.receiptStock.product.receiptLot.${msgKey}`)} --> ${item.productNumber}`,
+            this.$t('view.receiptStock.product.receiptLot.qtyInvalidTitle')
+          )
+          return false
+        }
+
+        if (isTopUp) continue
 
         if (item.price === null || item.price === undefined || item.price === '') {
           swAlert.warning('กรุณากรอกราคาสินค้าให้ครบถ้วน', 'ข้อมูลไม่ครบถ้วน')
@@ -254,10 +271,12 @@ export default {
           return false
         }
 
-        if (productNumbers.has(item.productNumber)) {
-          duplicates.push(item.productNumber)
-        } else {
-          productNumbers.add(item.productNumber)
+        if (!isSilver) {
+          if (productNumbers.has(item.productNumber)) {
+            duplicates.push(item.productNumber)
+          } else {
+            productNumbers.add(item.productNumber)
+          }
         }
       }
 
@@ -296,14 +315,15 @@ export default {
           productType: item.productType || null,
           productionType: item.productionType || null,
           productionTypeSize: item.productionTypeSize || null,
-          qty: item.qty,
-          price: item.price,
+          qty: Number(item.qty),
+          price: item.topUpStockNumber ? Number(item.price) || 0 : item.price,
           size: item.size || null,
           studEarring: item.studEarring || null,
           location: item.location || 'MAIN',
           imageName: item.imageName || null,
           imagePath: item.imagePath || null,
           remark: item.remark || null,
+          topUpStockNumber: item.topUpStockNumber || null,
           materials: item.materials || []
         }))
       }
