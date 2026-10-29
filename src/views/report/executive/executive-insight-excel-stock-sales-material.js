@@ -69,33 +69,31 @@ const findingColumns = (t) => [col(t(`${X}.colKind`), 'kind'), col(t(`${X}.colSe
 
 // ---- คลังสินค้า ----
 
-export function buildStockSheets(overview, { t, config, metal, metalLabel }) {
+export function buildStockSheets(overview, { t, config, metalLabel }) {
   const lead = (firstKey) => buildSnapshotLeadRows(overview, metalLabel, firstKey, t)
-  const ageRows = buildAgeRows(overview?.ageBuckets, t, metal)
-  const receiptRows = buildReceiptRows(overview?.receiptTypes, t, metal)
-  const categoryRows = buildCategoryRows(overview?.categories, t, metal)
-  const showQty = metal !== 'ALL'
+  const ageRows = buildAgeRows(overview?.ageBuckets, t)
+  const receiptRows = buildReceiptRows(overview?.receiptTypes, t)
+  const categoryRows = buildCategoryRows(overview?.categories, t)
 
   const costColumns = [col(t(`${STOCK}.colCount`), 'count'), col(t(`${STOCK}.colNoCost`), 'noCostCount'), col(t(`${STOCK}.colCostThb`), 'costThb')]
-  const qtyColumns = showQty ? [col(t(`${STOCK}.colQty`), 'qty')] : []
-  const mapCost = (row) => ({ count: count(row.count), noCostCount: count(row.noCostCount), costThb: money(row.costThb), ...(showQty ? { qty: fixed2(row.qtyShown) } : {}) })
+  const mapCost = (row) => ({ count: count(row.count), noCostCount: count(row.noCostCount), costThb: money(row.costThb) })
 
   return [
     { sheetName: t(`${SN}.stockFindings`), data: [...lead('kind'), ...buildSnapshotFindingsRows(overview, config, t)], columns: findingColumns(t) },
     {
       sheetName: t(`${SN}.stockAge`),
       data: [...lead('label'), ...ageRows.map((row) => ({ label: row.label, ...mapCost(row), noCostPercent: percent(row.noCostPercent) }))],
-      columns: [col(t(`${STOCK}.colAge`), 'label'), ...costColumns, col(t(`${STOCK}.colNoCostPercent`), 'noCostPercent'), ...qtyColumns]
+      columns: [col(t(`${STOCK}.colAge`), 'label'), ...costColumns, col(t(`${STOCK}.colNoCostPercent`), 'noCostPercent')]
     },
     {
       sheetName: t(`${SN}.stockReceipt`),
       data: [...lead('label'), ...receiptRows.map((row) => ({ label: row.label, ...mapCost(row), noCostPercent: percent(row.noCostPercent) }))],
-      columns: [col(t(`${STOCK}.colReceiptType`), 'label'), ...costColumns, col(t(`${STOCK}.colNoCostPercent`), 'noCostPercent'), ...qtyColumns]
+      columns: [col(t(`${STOCK}.colReceiptType`), 'label'), ...costColumns, col(t(`${STOCK}.colNoCostPercent`), 'noCostPercent')]
     },
     {
       sheetName: t(`${SN}.stockCategory`),
       data: [...lead('label'), ...categoryRows.map((row) => ({ label: row.label, ...mapCost(row), agedOver1yCount: count(row.agedOver1yCount) }))],
-      columns: [col(t(`${STOCK}.colCategory`), 'label'), ...costColumns, col(t(`${STOCK}.colAged1y`), 'agedOver1yCount'), ...qtyColumns]
+      columns: [col(t(`${STOCK}.colCategory`), 'label'), ...costColumns, col(t(`${STOCK}.colAged1y`), 'agedOver1yCount')]
     },
     {
       sheetName: t(`${SN}.stockSeries`),
@@ -208,7 +206,7 @@ export function buildMaterialSheets(overview, { t, config, kindLabel }) {
 // รวมทั้ง 3 หมวด: ข้อมูลที่ยังไม่มี (null/undefined) ข้ามหมวดนั้น — ลำดับ sheet: คลังสินค้า → ขายและเงิน → คลังวัตถุดิบ
 export function buildSnapshotInsightSheets(data, ctx) {
   const sheets = []
-  if (data?.stock) sheets.push(...buildStockSheets(data.stock, { t: ctx.t, config: ctx.stockConfig, metal: ctx.metal, metalLabel: ctx.metalLabel }))
+  if (data?.stock) sheets.push(...buildStockSheets(data.stock, { t: ctx.t, config: ctx.stockConfig, metalLabel: ctx.metalLabel }))
   if (data?.sales) sheets.push(...buildSalesSheets(data.sales, { t: ctx.t, config: ctx.salesConfig, metalLabel: ctx.metalLabel }))
   if (data?.material) sheets.push(...buildMaterialSheets(data.material, { t: ctx.t, config: ctx.materialConfig, kindLabel: ctx.materialKindLabel }))
   return sheets

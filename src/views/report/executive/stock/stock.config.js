@@ -1,6 +1,6 @@
 // stock.config.js — config ของแท็บ "คลังสินค้า" (executive) สำหรับ InsightPage — endpoint StockInsight/Overview (ยิงครั้งเดียว ป้อน findings/KPI/ทุกแท็บ)
 // โหมดแท็บ (opt-in): ⚠ ปัญหา / ◔ คาดการณ์ / ✓ วิธีแก้ + 6 แท็บข้อมูล แท็บละ 1-2 block · ข้อมูลเป็น snapshot ไม่มีช่วงเวลา (series ย้อนหลังคงที่ 12 เดือน)
-// metal ถูกเติมโดย store (metal-scope) ทุก request · ctx.filter.metal ใช้เฉพาะตัดสินว่าจะโชว์ "จำนวนตามหน่วย" (รวมทุกโลหะ = หน่วยต่างกัน → "—")
+// metal ถูกเติมโดย store (metal-scope) ทุก request · ตัวเลขจำนวนทั้งหมดเป็น "ชิ้น" (API คูณ qty แล้ว)
 // ข้อความ rules อยู่ที่ view.productionInsight.stockInsight.rules (ผ่าน config.i18nPrefix)
 import { markRaw } from 'vue'
 
@@ -23,24 +23,20 @@ const S = 'view.productionInsight.stockInsight'
 
 const overviewOf = (ctx) => ctx.data.Overview || {}
 const kpiOf = (ctx) => overviewOf(ctx).kpi || {}
-const metalOf = (ctx) => ctx.filter?.metal || 'ALL'
 const money = (row, t, raw) => (raw === null || raw === undefined ? '—' : `฿${new Intl.NumberFormat('th-TH', { maximumFractionDigits: 0 }).format(raw)}`)
-const qtyColumn = () => col.number('qtyShown', `${S}.colQty`, 'count', { tip: `${S}.colQtyTip`, minWidth: '110px' })
 
 const ageColumns = [
   col.text('label', `${S}.colAge`, { minWidth: '140px', strong: true }),
   col.days('count', `${S}.colCount`),
   col.days('noCostCount', `${S}.colNoCost`),
-  col.number('costThb', `${S}.colCostThb`, 'count', { display: money, minWidth: '130px' }),
-  qtyColumn()
+  col.number('costThb', `${S}.colCostThb`, 'count', { display: money, minWidth: '130px' })
 ]
 
 const receiptColumns = [
   col.text('label', `${S}.colReceiptType`, { minWidth: '160px', strong: true }),
   col.days('count', `${S}.colCount`),
   col.days('noCostCount', `${S}.colNoCost`),
-  col.number('costThb', `${S}.colCostThb`, 'count', { display: money, minWidth: '130px' }),
-  qtyColumn()
+  col.number('costThb', `${S}.colCostThb`, 'count', { display: money, minWidth: '130px' })
 ]
 
 const costReceiptColumns = [
@@ -56,8 +52,7 @@ const categoryColumns = [
   col.days('count', `${S}.colCount`),
   col.days('noCostCount', `${S}.colNoCost`),
   col.days('agedOver1yCount', `${S}.colAged1y`),
-  col.number('costThb', `${S}.colCostThb`, 'count', { display: money, minWidth: '130px' }),
-  qtyColumn()
+  col.number('costThb', `${S}.colCostThb`, 'count', { display: money, minWidth: '130px' })
 ]
 
 export const stockConfig = markRaw({
@@ -95,7 +90,11 @@ export const stockConfig = markRaw({
           icon: 'bi-box-seam',
           label: `${S}.kpi.inStock`,
           value: (ctx) => kpiOf(ctx).inStockCount,
-          sub: (ctx, t) => (kpiOf(ctx).inStockQty == null ? '' : t(`${S}.kpi.inStockSub`, { qty: new Intl.NumberFormat('th-TH').format(kpiOf(ctx).inStockQty) })),
+          sub: (ctx, t) => {
+            const k = kpiOf(ctx)
+            const fmt = (n) => new Intl.NumberFormat('th-TH').format(n || 0)
+            return k.inStockLotCount == null ? '' : t(`${S}.kpi.inStockSub`, { lots: fmt(k.inStockLotCount), reserved: fmt(k.reservedCount) })
+          },
           reportRef: 'stkCategory'
         },
         {
@@ -177,7 +176,7 @@ export const stockConfig = markRaw({
       stacked: true,
       height: 300,
       dataLabels: true,
-      rows: (ctx) => buildAgeRows(overviewOf(ctx).ageBuckets, (key, params) => ctx.t(key, params), metalOf(ctx)),
+      rows: (ctx) => buildAgeRows(overviewOf(ctx).ageBuckets, (key, params) => ctx.t(key, params)),
       category: (row) => row.label,
       series: [
         { label: `${S}.seriesWithCost`, value: (row) => row.withCostCount, color: 'token:green' },
@@ -192,7 +191,7 @@ export const stockConfig = markRaw({
       source: 'Overview',
       title: `${S}.ageTableTitle`,
       icon: 'bi-table',
-      sections: [{ rows: (ctx) => buildAgeRows(overviewOf(ctx).ageBuckets, (key, params) => ctx.t(key, params), metalOf(ctx)), columns: ageColumns, dataKey: 'key' }]
+      sections: [{ rows: (ctx) => buildAgeRows(overviewOf(ctx).ageBuckets, (key, params) => ctx.t(key, params)), columns: ageColumns, dataKey: 'key' }]
     },
 
     {
@@ -205,7 +204,7 @@ export const stockConfig = markRaw({
       height: 280,
       dataLabels: true,
       valueFormat: 'percent',
-      rows: (ctx) => buildAgeRows(overviewOf(ctx).ageBuckets, (key, params) => ctx.t(key, params), metalOf(ctx)),
+      rows: (ctx) => buildAgeRows(overviewOf(ctx).ageBuckets, (key, params) => ctx.t(key, params)),
       category: (row) => row.label,
       series: [{ label: `${S}.colNoCostPercent`, value: (row) => row.noCostPercent ?? 0, color: 'token:warning' }]
     },
@@ -217,7 +216,7 @@ export const stockConfig = markRaw({
       source: 'Overview',
       title: `${S}.costReceiptTitle`,
       icon: 'bi-table',
-      sections: [{ rows: (ctx) => buildReceiptRows(overviewOf(ctx).receiptTypes, (key, params) => ctx.t(key, params), metalOf(ctx)), columns: costReceiptColumns, dataKey: 'key' }]
+      sections: [{ rows: (ctx) => buildReceiptRows(overviewOf(ctx).receiptTypes, (key, params) => ctx.t(key, params)), columns: costReceiptColumns, dataKey: 'key' }]
     },
 
     { type: 'slot', id: 'stkCostLinks', tab: 'cost', component: markRaw(StockCostLinks) },
@@ -231,7 +230,7 @@ export const stockConfig = markRaw({
       icon: 'bi-pie-chart',
       height: 280,
       center: { label: `${S}.centerTotal` },
-      slices: (ctx) => buildReceiptRows(overviewOf(ctx).receiptTypes, (key, params) => ctx.t(key, params), metalOf(ctx)).map((row) => ({ label: row.label, value: row.count }))
+      slices: (ctx) => buildReceiptRows(overviewOf(ctx).receiptTypes, (key, params) => ctx.t(key, params)).map((row) => ({ label: row.label, value: row.count }))
     },
 
     {
@@ -241,7 +240,7 @@ export const stockConfig = markRaw({
       source: 'Overview',
       title: `${S}.receiptTitle`,
       icon: 'bi-table',
-      sections: [{ rows: (ctx) => buildReceiptRows(overviewOf(ctx).receiptTypes, (key, params) => ctx.t(key, params), metalOf(ctx)), columns: receiptColumns, dataKey: 'key' }]
+      sections: [{ rows: (ctx) => buildReceiptRows(overviewOf(ctx).receiptTypes, (key, params) => ctx.t(key, params)), columns: receiptColumns, dataKey: 'key' }]
     },
 
     {
@@ -253,7 +252,7 @@ export const stockConfig = markRaw({
       icon: 'bi-bar-chart',
       horizontal: true,
       dataLabels: true,
-      rows: (ctx) => buildCategoryRows(overviewOf(ctx).categories, (key, params) => ctx.t(key, params), metalOf(ctx)).slice(0, CATEGORY_CHART_LIMIT),
+      rows: (ctx) => buildCategoryRows(overviewOf(ctx).categories, (key, params) => ctx.t(key, params)).slice(0, CATEGORY_CHART_LIMIT),
       category: (row) => row.label,
       series: [{ label: `${S}.seriesCount`, value: (row) => row.count, color: 'token:green' }]
     },
@@ -265,7 +264,7 @@ export const stockConfig = markRaw({
       source: 'Overview',
       title: `${S}.categoryTableTitle`,
       icon: 'bi-table',
-      sections: [{ rows: (ctx) => buildCategoryRows(overviewOf(ctx).categories, (key, params) => ctx.t(key, params), metalOf(ctx)), columns: categoryColumns, dataKey: 'key' }]
+      sections: [{ rows: (ctx) => buildCategoryRows(overviewOf(ctx).categories, (key, params) => ctx.t(key, params)), columns: categoryColumns, dataKey: 'key' }]
     }
   ]
 })

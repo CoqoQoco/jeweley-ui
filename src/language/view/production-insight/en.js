@@ -925,7 +925,7 @@ export default {
     },
     kpi: {
       inStock: 'Pieces in stock',
-      inStockSub: 'Quantity {qty}',
+      inStockSub: 'From {lots} lots · {reserved} reserved pieces',
       noCost: 'Without cost',
       noCostSub: '{count} pieces',
       cost: 'Cost value',
@@ -960,8 +960,6 @@ export default {
     colNoCost: 'Without cost',
     colNoCostPercent: '% without cost',
     colCostThb: 'Cost value (THB)',
-    colQty: 'Quantity',
-    colQtyTip: 'Shown when a single metal (gold or silver) is selected — shows "—" for all metals because units differ',
     costChartTitle: '% without cost by stock age',
     costReceiptTitle: 'Cost by receipt type',
     costLinksTitle: 'Fix prices and costs',
@@ -1025,7 +1023,7 @@ export default {
     viewLabel: 'View',
     viewTitle: 'Go to the related screen',
     checks: {
-      NO_COST: 'In-stock items without cost',
+      NO_COST: 'In-stock lots without cost (counted as lots)',
       NEGATIVE_GOLD: 'Negative gold balance',
       INVOICE_NO_DUE: 'Invoices without a due date',
       SO_NO_DELIVERY_DATE: 'SOs without a delivery date',
@@ -1047,7 +1045,7 @@ export default {
       production: 'Production'
     },
     rules: {
-      DQ_NO_COST: '{count} of {total} in-stock items ({ratio}%) have no cost, so stock value and profit cannot be fully calculated',
+      DQ_NO_COST: '{count} of {total} in-stock lots ({ratio}%) have no cost, so stock value and profit cannot be fully calculated',
       DQ_NEGATIVE_GOLD: '{count} gold items in stock show a total negative balance of {negativeWeight} g because no receipt or opening balance has been recorded',
       DQ_INVOICE_NO_DUE: '{count} of {total} invoices ({ratio}%) have no due date, so receivable aging cannot be calculated',
       DQ_SO_NO_DELIVERY: '{count} of {total} SOs that are not yet invoiced ({ratio}%) have no delivery date',

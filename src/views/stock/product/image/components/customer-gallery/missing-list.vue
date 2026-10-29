@@ -140,6 +140,10 @@ export default {
         pieces: formatNumber(summary.missingPieceCount, 0)
       })
 
+      if (typeof summary.missingLotCount === 'number') {
+        text += ` ${this.$t('view.stock.productGallery.missingSummaryLots', { lots: formatNumber(summary.missingLotCount, 0) })}`
+      }
+
       if (this.isFilterActive && this.total !== summary.moldCount) {
         text += ` ${this.$t('view.stock.productGallery.missingSummaryFiltered', { count: formatNumber(this.total, 0) })}`
       }

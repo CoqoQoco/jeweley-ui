@@ -227,6 +227,7 @@ export function buildSummaryExcelRows(summary, labels = {}) {
     { label: labels.soOverdueNoInvoiceCount, value: salesOrders.overdueNoInvoiceCount || 0 },
     { label: labels.soNoDeliveryDateCount, value: salesOrders.noDeliveryDateCount || 0 },
     { label: labels.stockInStockCount, value: stock.inStockCount || 0 },
+    { label: labels.stockReservedCount, value: stock.reservedCount || 0 },
     { label: labels.stockNoCostCount, value: stock.noCostCount || 0 },
     { label: labels.stockCostThb, value: formatMoneyFull(stock.costThb) },
     { label: labels.stockAgedOver1yCount, value: stock.agedOver1yCount || 0 },
@@ -314,7 +315,7 @@ export function buildStockAgingExcelRows(ageBuckets, receiptTypes, bucketLabels 
     key: receiptType.receiptType || '',
     count: receiptType.count || 0,
     noCostCount: receiptType.noCostCount || 0,
-    costThb: ''
+    costThb: receiptType.costThbQty == null ? '' : formatMoneyFull(receiptType.costThbQty)
   }))
 
   return [...bucketRows, ...receiptRows]

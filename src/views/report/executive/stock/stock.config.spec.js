@@ -36,7 +36,7 @@ const overview = {
   asOf: '2026-10-21T09:00:00',
   status: 'warning',
   thresholds: { noCostWarnPercent: 20, noCostCriticalPercent: 40, aged5yWarnPercent: 30 },
-  kpi: { inStockCount: 1000, inStockQty: 1200, noCostCount: 300, noCostPercent: 30, costThb: 5000000, agedOver1yCount: 600, agedOver1yPercent: 60, agedOver5yCount: 100, agedOver5yPercent: 10 }
+  kpi: { inStockCount: 1000, inStockQty: 1000, inStockLotCount: 800, reservedCount: 5, noCostCount: 300, noCostPercent: 30, costThb: 5000000, agedOver1yCount: 600, agedOver1yPercent: 60, agedOver5yCount: 100, agedOver5yPercent: 10 }
 }
 const ctx = { data: { Overview: overview }, filter: { metal: 'ALL' }, t, loading: {}, state: {} }
 
@@ -116,7 +116,7 @@ describe('stock KPI cards and donut', () => {
     expect(cards.map((c) => c.value)).toEqual(['1,000', '30%', '฿5,000,000', '60%'])
     expect(cards[1].tone).toBe('warning')
     expect(cards[3].tone).toBe('green')
-    expect(cards[0].sub).toContain('1,200')
+    expect(cards[0].sub).toContain('800')
   })
 
   it('donut slices split with / without cost and sum to the in-stock count', () => {

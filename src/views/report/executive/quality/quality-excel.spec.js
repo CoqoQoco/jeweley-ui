@@ -26,10 +26,10 @@ const overview = {
 describe('quality excel', () => {
   it('lists available checks, then problem texts, then action texts', () => {
     const rows = buildQualityExcelRows(overview, th)
-    expect(rows[0]).toEqual({ check: 'สินค้าในคลังไม่มีต้นทุน', count: 23915, total: 29286, ratio: 81.66, status: 'วิกฤต', impact: 'มูลค่าสต็อกและกำไร', tab: 'คลังสินค้า' })
+    expect(rows[0]).toEqual({ check: 'ล็อตสินค้าในคลังที่ไม่มีต้นทุน (นับเป็นล็อต)', count: 23915, total: 29286, ratio: 81.66, status: 'วิกฤต', impact: 'มูลค่าสต็อกและกำไร', tab: 'คลังสินค้า' })
     const texts = rows.map((r) => r.check)
     expect(texts).not.toContain('งานค้างที่ช่างรอคิว')
-    expect(texts).toContain('สินค้าในคลัง 23,915 จาก 29,286 ชิ้น (81.7%) ยังไม่มีต้นทุน ทำให้มูลค่าสต็อกและกำไรคำนวณไม่ได้ครบ')
+    expect(texts).toContain('ล็อตสินค้าในคลัง 23,915 จาก 29,286 ล็อต (81.7%) ยังไม่มีต้นทุน ทำให้มูลค่าสต็อกและกำไรคำนวณไม่ได้ครบ')
     expect(texts.at(-1)).toBe('ตีราคาสินค้าที่ยังไม่มีต้นทุน (ผู้จัดการฝ่ายผลิต)')
     expect(texts.indexOf('ปัญหา')).toBeLessThan(texts.indexOf('วิธีแก้'))
   })
@@ -41,7 +41,7 @@ describe('quality excel', () => {
     sheet.columns.forEach((c) => expect(c.header).not.toMatch(/^view\./))
     const sheetEn = buildQualitySheet(overview, en)
     expect(sheetEn.sheetName).toBe('Data quality')
-    expect(sheetEn.data[0].check).toBe('In-stock items without cost')
+    expect(sheetEn.data[0].check).toBe('In-stock lots without cost (counted as lots)')
     expect(buildQualitySheet(null, th)).toBeNull()
   })
 })

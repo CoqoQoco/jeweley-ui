@@ -83,15 +83,15 @@ describe('buildSnapshotFindingsRows', () => {
 })
 
 describe('stock sheets', () => {
-  it('has five sheets in order; money 2 decimals, quantities 2 decimals; qty column only for a single metal', () => {
+  it('has five sheets in order; money 2 decimals, quantities 2 decimals; no qty column (counts are pieces)', () => {
     const sheets = buildStockSheets(stock, { t: th, config: stockConfig, metal: 'GOLD', metalLabel: 'ทอง' })
     expect(sheets.map((s) => s.sheetName)).toEqual(['คลังสินค้า-สรุปปัญหา', 'คลังสินค้า-อายุสต็อก', 'คลังสินค้า-ประเภทรับ', 'คลังสินค้า-หมวดสินค้า', 'คลังสินค้า-รายเดือน'])
     sheets.forEach((s) => expect(s.sheetName.length).toBeLessThanOrEqual(31))
     const age = sheets[1]
     expect(age.data[0].label).toContain('ทอง')
     const first = age.data.find((r) => r.label === 'น้อยกว่า 1 ปี')
-    expect(first).toMatchObject({ count: 40, noCostCount: 4, costThb: '2,000.00', qty: '41.00', noCostPercent: '10.00' })
-    expect(age.columns.map((c) => c.key)).toEqual(['label', 'count', 'noCostCount', 'costThb', 'noCostPercent', 'qty'])
+    expect(first).toMatchObject({ count: 40, noCostCount: 4, costThb: '2,000.00', noCostPercent: '10.00' })
+    expect(age.columns.map((c) => c.key)).toEqual(['label', 'count', 'noCostCount', 'costThb', 'noCostPercent'])
     expect(sheets[2].data.find((r) => r.label === '-')).toBeTruthy()
     expect(sheets[4].data.find((r) => r.month && r.month.startsWith('ก.ย.'))).toMatchObject({ month: 'ก.ย. 2026', endStockQty: '100.13' })
     const all = buildStockSheets(stock, { t: th, config: stockConfig, metal: 'ALL', metalLabel: 'รวม' })

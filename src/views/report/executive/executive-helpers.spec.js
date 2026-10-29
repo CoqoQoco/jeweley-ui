@@ -284,6 +284,7 @@ describe('executive-helpers', () => {
       soOverdueNoInvoiceCount: 'SO เลยกำหนดยังไม่ออกบิล',
       soNoDeliveryDateCount: 'SO ไม่มีวันส่งมอบ',
       stockInStockCount: 'สินค้าคงคลัง',
+      stockReservedCount: 'สินค้าจอง',
       stockNoCostCount: 'สินค้าไม่มีต้นทุน',
       stockCostThb: 'มูลค่าต้นทุนคงคลัง',
       stockAgedOver1yCount: 'สินค้าอายุเกิน 1 ปี',
@@ -318,7 +319,7 @@ describe('executive-helpers', () => {
 
       const rows = buildSummaryExcelRows(summary, labels)
 
-      expect(rows).toHaveLength(27)
+      expect(rows).toHaveLength(28)
       expect(rows[0]).toEqual({ label: 'ข้อมูล ณ', value: '28/09/2026' })
       expect(rows.find((r) => r.label === labels.unpaidThb).value).toBe('4,560,000.00')
       expect(rows.find((r) => r.label === labels.stockNoCostCount).value).toBe(850)

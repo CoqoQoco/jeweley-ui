@@ -228,7 +228,7 @@ export default {
         { field: 'productionType', header: this.$t('view.stock.product.dashboard.colGold'), sortable: false, minWidth: '90px' },
         { field: 'productionTypeSize', header: this.$t('view.stock.product.dashboard.colGoldSize'), sortable: false, minWidth: '90px' },
         { field: 'locationName', header: this.$t('view.stock.product.dashboard.colLocation'), sortable: false, minWidth: '110px' },
-        { field: 'productionDate', header: this.$t('view.stock.product.dashboard.colProductionDate'), sortable: false, minWidth: '110px', format: 'date' },
+        { field: 'ageDate', header: this.$t('view.stock.product.dashboard.colAgeDate'), sortable: false, minWidth: '110px', format: 'date' },
         { field: 'ageDays', header: this.$t('view.stock.product.dashboard.colAge'), sortable: false, minWidth: '120px' }
       ]
     }
@@ -304,7 +304,7 @@ export default {
         productionType: item.productionType,
         productionTypeSize: item.productionTypeSize,
         locationName: item.locationName,
-        productionDate: item.productionDate ? formatDate(item.productionDate) : '',
+        ageDate: item.ageDate || item.productionDate ? formatDate(item.ageDate || item.productionDate) : '',
         age: this.formatAge(item.ageDays)
       }))
 
@@ -319,7 +319,7 @@ export default {
           { header: this.$t('view.stock.product.dashboard.colGold'), key: 'productionType' },
           { header: this.$t('view.stock.product.dashboard.colGoldSize'), key: 'productionTypeSize' },
           { header: this.$t('view.stock.product.dashboard.colLocation'), key: 'locationName' },
-          { header: this.$t('view.stock.product.dashboard.colProductionDate'), key: 'productionDate' },
+          { header: this.$t('view.stock.product.dashboard.colAgeDate'), key: 'ageDate' },
           { header: this.$t('view.stock.product.dashboard.colAge'), key: 'age' }
         ]
       })

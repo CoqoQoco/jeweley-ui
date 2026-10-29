@@ -40,23 +40,22 @@ describe('stock helpers', () => {
     expect(items[0].code).toBe('FC_STK_COVER_MONTHS')
   })
 
-  it('age rows keep the bucket order, derive with-cost count and no-cost percent, and hide qty for all metals', () => {
+  it('age rows keep the bucket order, derive with-cost count and no-cost percent', () => {
     const buckets = [
       { key: 'gt5y', count: 10, noCostCount: 5, costThb: 100, qty: 12 },
       { key: 'lt1y', count: 40, noCostCount: 4, costThb: 900, qty: 41 },
       { key: 'y1to2', count: 0, noCostCount: 0, costThb: 0, qty: 0 }
     ]
-    const rows = buildAgeRows(buckets, t, 'GOLD')
+    const rows = buildAgeRows(buckets, t)
     expect(rows.map((r) => r.key)).toEqual(['lt1y', 'y1to2', 'gt5y'])
-    expect(rows[0]).toMatchObject({ count: 40, noCostCount: 4, withCostCount: 36, noCostPercent: 10, qtyShown: 41 })
+    expect(rows[0]).toMatchObject({ count: 40, noCostCount: 4, withCostCount: 36, noCostPercent: 10 })
     expect(rows[1].noCostPercent).toBeNull()
-    expect(buildAgeRows(buckets, t, 'ALL').every((r) => r.qtyShown === null)).toBe(true)
-    expect(buildAgeRows(null, t, 'ALL')).toEqual([])
+    expect(buildAgeRows(null, t)).toEqual([])
   })
 
   it('receipt rows label a null type with a dash and compute the no-cost share', () => {
-    const rows = buildReceiptRows([{ receiptType: 'PRODUCTION', count: 4, noCostCount: 1, qty: 4, costThb: 10 }, { receiptType: null, count: 2, noCostCount: 2, qty: 2, costThb: 0 }], t, 'SILVER')
-    expect(rows[0]).toMatchObject({ label: 'PRODUCTION', noCostPercent: 25, qtyShown: 4 })
+    const rows = buildReceiptRows([{ receiptType: 'PRODUCTION', count: 4, noCostCount: 1, qty: 4, costThb: 10 }, { receiptType: null, count: 2, noCostCount: 2, qty: 2, costThb: 0 }], t)
+    expect(rows[0]).toMatchObject({ label: 'PRODUCTION', noCostPercent: 25 })
     expect(rows[1].label).toBe('view.productionInsight.stockInsight.receiptUnknown')
     expect(new Set(rows.map((r) => r.key)).size).toBe(2)
   })

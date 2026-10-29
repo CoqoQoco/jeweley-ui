@@ -925,7 +925,7 @@ export default {
     },
     kpi: {
       inStock: 'ชิ้นพร้อมขาย',
-      inStockSub: 'จำนวนตามหน่วย {qty}',
+      inStockSub: 'จาก {lots} ล็อต · จอง {reserved} ชิ้น',
       noCost: 'ไม่มีต้นทุน',
       noCostSub: '{count} ชิ้น',
       cost: 'มูลค่าต้นทุน',
@@ -960,8 +960,6 @@ export default {
     colNoCost: 'ไม่มีต้นทุน',
     colNoCostPercent: '% ไม่มีต้นทุน',
     colCostThb: 'มูลค่าต้นทุน (บาท)',
-    colQty: 'จำนวนตามหน่วย',
-    colQtyTip: 'แสดงเมื่อเลือกโลหะเดียว (ทองหรือเงิน) — เลือกรวมทุกโลหะจะแสดง "—" เพราะหน่วยต่างกัน',
     costChartTitle: '% ไม่มีต้นทุนตามอายุสต็อก',
     costReceiptTitle: 'ต้นทุนแยกตามประเภทการรับ',
     costLinksTitle: 'ไปแก้ราคาและต้นทุน',
@@ -1025,7 +1023,7 @@ export default {
     viewLabel: 'ดู',
     viewTitle: 'ไปดูข้อมูลในจอที่เกี่ยวข้อง',
     checks: {
-      NO_COST: 'สินค้าในคลังไม่มีต้นทุน',
+      NO_COST: 'ล็อตสินค้าในคลังที่ไม่มีต้นทุน (นับเป็นล็อต)',
       NEGATIVE_GOLD: 'ทองในคลังติดลบ',
       INVOICE_NO_DUE: 'บิลไม่มีวันครบกำหนดชำระ',
       SO_NO_DELIVERY_DATE: 'SO ไม่มีวันส่งมอบ',
@@ -1047,7 +1045,7 @@ export default {
       production: 'ผลิต'
     },
     rules: {
-      DQ_NO_COST: 'สินค้าในคลัง {count} จาก {total} ชิ้น ({ratio}%) ยังไม่มีต้นทุน ทำให้มูลค่าสต็อกและกำไรคำนวณไม่ได้ครบ',
+      DQ_NO_COST: 'ล็อตสินค้าในคลัง {count} จาก {total} ล็อต ({ratio}%) ยังไม่มีต้นทุน ทำให้มูลค่าสต็อกและกำไรคำนวณไม่ได้ครบ',
       DQ_NEGATIVE_GOLD: 'ทองในคลัง {count} รายการ ยอดติดลบรวม {negativeWeight} g เพราะยังไม่มีรายการรับเข้า/ยกมา',
       DQ_INVOICE_NO_DUE: 'บิล {count} จาก {total} ใบ ({ratio}%) ไม่มีวันครบกำหนดชำระ ทำให้คำนวณอายุหนี้ไม่ได้',
       DQ_SO_NO_DELIVERY: 'SO ที่ยังไม่ออกบิล {count} จาก {total} ใบ ({ratio}%) ไม่มีวันส่งมอบ',

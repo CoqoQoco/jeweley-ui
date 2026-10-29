@@ -34,8 +34,8 @@ export function remapStockFindings(items) {
   })
 }
 
-// แถวอายุสต็อก: เรียงตาม AGE_BUCKET_KEYS (API ส่ง 4 แถวเสมอ) · qtyShown = null เมื่อรวมทุกโลหะ (หน่วยต่างกัน)
-export function buildAgeRows(ageBuckets, t, metal) {
+// แถวอายุสต็อก: เรียงตาม AGE_BUCKET_KEYS (API ส่ง 4 แถวเสมอ) · count/costThb เป็นชิ้น (API คูณจำนวนชิ้นแล้ว)
+export function buildAgeRows(ageBuckets, t) {
   const byKey = Object.fromEntries((ageBuckets || []).map((b) => [b.key, b]))
   return AGE_BUCKET_KEYS.filter((key) => byKey[key]).map((key) => {
     const b = byKey[key]
@@ -46,26 +46,24 @@ export function buildAgeRows(ageBuckets, t, metal) {
       noCostCount: b.noCostCount || 0,
       withCostCount: Math.max((b.count || 0) - (b.noCostCount || 0), 0),
       noCostPercent: percentOf(b.noCostCount || 0, b.count || 0),
-      costThb: b.costThb ?? 0,
-      qtyShown: metal === 'ALL' ? null : (b.qty ?? null)
+      costThb: b.costThb ?? 0
     }
   })
 }
 
-export function buildReceiptRows(receiptTypes, t, metal) {
+export function buildReceiptRows(receiptTypes, t) {
   return (receiptTypes || []).map((r, index) => ({
     key: `${r.receiptType ?? 'null'}-${index}`,
     label: r.receiptType || t(`${S}.receiptUnknown`),
     count: r.count || 0,
     noCostCount: r.noCostCount || 0,
     noCostPercent: percentOf(r.noCostCount || 0, r.count || 0),
-    costThb: r.costThb ?? 0,
-    qtyShown: metal === 'ALL' ? null : (r.qty ?? null)
+    costThb: r.costThb ?? 0
   }))
 }
 
 // หมวดสินค้า: เรียงตามจำนวนชิ้นมาก→น้อย · ชื่อว่าง = "ไม่ระบุ"
-export function buildCategoryRows(categories, t, metal) {
+export function buildCategoryRows(categories, t) {
   return (categories || [])
     .map((c) => ({
       key: c.category || '(none)',
@@ -73,8 +71,7 @@ export function buildCategoryRows(categories, t, metal) {
       count: c.count || 0,
       noCostCount: c.noCostCount || 0,
       agedOver1yCount: c.agedOver1yCount || 0,
-      costThb: c.costThb ?? 0,
-      qtyShown: metal === 'ALL' ? null : (c.qty ?? null)
+      costThb: c.costThb ?? 0
     }))
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'th'))
 }

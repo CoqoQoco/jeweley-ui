@@ -231,6 +231,7 @@ export default {
       soOverdueNoInvoiceCount: 'SO เลยกำหนดยังไม่ออกบิล',
       soNoDeliveryDateCount: 'SO ไม่มีวันส่งมอบ',
       stockInStockCount: 'สินค้าคงคลัง (ชิ้น)',
+      stockReservedCount: 'สินค้าจอง (ชิ้น)',
       stockNoCostCount: 'สินค้าไม่มีต้นทุน (ชิ้น)',
       stockCostThb: 'มูลค่าต้นทุนคงคลัง (บาท)',
       stockAgedOver1yCount: 'สินค้าอายุเกิน 1 ปี (ชิ้น)',

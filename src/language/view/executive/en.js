@@ -231,6 +231,7 @@ export default {
       soOverdueNoInvoiceCount: 'Overdue SO without invoice',
       soNoDeliveryDateCount: 'SO without delivery date',
       stockInStockCount: 'In-stock pieces',
+      stockReservedCount: 'Reserved pieces',
       stockNoCostCount: 'Pieces without cost',
       stockCostThb: 'Stock cost value (THB)',
       stockAgedOver1yCount: 'Pieces aged over 1 year',

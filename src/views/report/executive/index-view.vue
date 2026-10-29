@@ -145,7 +145,7 @@ const emptySummary = () => ({
     noDueDateCount: 0
   },
   salesOrders: { openCount: 0, noInvoiceCount: 0, noInvoiceThb: 0, overdueNoInvoiceCount: 0, noDeliveryDateCount: 0 },
-  stock: { inStockCount: 0, noCostCount: 0, costThb: 0, agedOver1yCount: 0 },
+  stock: { inStockCount: 0, reservedCount: 0, noCostCount: 0, costThb: 0, agedOver1yCount: 0 },
   goldLoss: []
 })
 
@@ -652,6 +652,7 @@ export default {
         soOverdueNoInvoiceCount: this.$t('view.executive.excel.summary.soOverdueNoInvoiceCount'),
         soNoDeliveryDateCount: this.$t('view.executive.excel.summary.soNoDeliveryDateCount'),
         stockInStockCount: this.$t('view.executive.excel.summary.stockInStockCount'),
+        stockReservedCount: this.$t('view.executive.excel.summary.stockReservedCount'),
         stockNoCostCount: this.$t('view.executive.excel.summary.stockNoCostCount'),
         stockCostThb: this.$t('view.executive.excel.summary.stockCostThb'),
         stockAgedOver1yCount: this.$t('view.executive.excel.summary.stockAgedOver1yCount'),

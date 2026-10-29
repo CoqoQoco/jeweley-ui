@@ -129,6 +129,6 @@ describe('quality i18n', () => {
 
   it('renders the Thai text with the formatted numbers', () => {
     const p = qualityConfig.filterFindings([{ code: 'DQ_NO_COST', params: { count: 23915, total: 29286, ratio: 81.66 } }])[0].params
-    expect(th.global.t('view.productionInsight.qualityInsight.rules.DQ_NO_COST', p)).toBe('สินค้าในคลัง 23,915 จาก 29,286 ชิ้น (81.7%) ยังไม่มีต้นทุน ทำให้มูลค่าสต็อกและกำไรคำนวณไม่ได้ครบ')
+    expect(th.global.t('view.productionInsight.qualityInsight.rules.DQ_NO_COST', p)).toBe('ล็อตสินค้าในคลัง 23,915 จาก 29,286 ล็อต (81.7%) ยังไม่มีต้นทุน ทำให้มูลค่าสต็อกและกำไรคำนวณไม่ได้ครบ')
   })
 })
