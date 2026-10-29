@@ -127,12 +127,13 @@ export const usrSaleOrderApiStore = defineStore('saleOrder', {
     },
 
     // สลับบรรทัดรอผลิต/รอแปลงที่ยืนยันแล้ว (isPlaceholder) ให้เป็นของจริง — จองสต็อกให้ คงบรรทัด/ราคาเดิม
-    async replaceConfirmedStock({ soNumber, saleOrderProductId, newStockNumber, qty }) {
+    async replaceConfirmedStock({ soNumber, saleOrderProductId, newStockNumber, qty, locationCode }) {
       const param = {
         soNumber,
         saleOrderProductId,
         newStockNumber,
-        ...(qty !== undefined && qty !== null ? { qty } : {})
+        ...(qty !== undefined && qty !== null ? { qty } : {}),
+        ...(locationCode ? { locationCode } : {})
       }
 
       return await api.jewelry.post('SaleOrder/ReplaceConfirmedStock', param, {

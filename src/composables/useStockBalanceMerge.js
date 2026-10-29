@@ -34,3 +34,21 @@ export async function mergeBalanceIntoItems(items, { balanceStore, locationStore
     }
   }
 }
+
+// ล็อตที่กระจายหลายคลัง -> { [normalizedStockNumber]: locations[] } (ล็อตคลังเดียวไม่อยู่ใน map) — ใช้กับ dropdown เลือกคลังตอนจอง SO
+export async function loadMultiLocationLots(stockNumbers, { balanceStore }) {
+  const numbers = [...new Set((stockNumbers || []).filter(Boolean))]
+  if (!numbers.length) return {}
+  let map = {}
+  try {
+    map = await balanceStore.fetchByStockNumbers(numbers, { skipLoading: true, skipError: true })
+  } catch {
+    // ดึงคลังไม่ได้ = ไม่แสดงตัวเลือกคลัง (server เลือกคลังให้เอง) ห้ามขวางการยืนยัน
+    return {}
+  }
+  const result = {}
+  for (const [key, lot] of Object.entries(map)) {
+    if ((lot.locationCount ?? 1) > 1 && lot.locations?.length > 1) result[key] = lot.locations
+  }
+  return result
+}

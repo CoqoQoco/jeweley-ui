@@ -40,6 +40,16 @@
             <span class="title-text">{{ $t('common.field.quantity') }}</span>
             <span>{{ copyItem.qty || 0 }}</span>
           </div>
+          <FormFieldGeneric v-if="locationRows.length" :label="$t('view.stock.product.locationPickLabel')">
+            <DropdownGeneric
+              v-model="locationCode"
+              :options="locationPickOptions"
+              optionLabel="label"
+              optionValue="value"
+              :showClear="true"
+              :placeholder="$t('view.stock.product.locationPickAuto')"
+            />
+          </FormFieldGeneric>
           <div class="replace-old-new">
             <span>{{ oldCode }}</span>
             <i class="bi bi-arrow-right mx-2"></i>
@@ -71,6 +81,8 @@ import { fetchStockProduct } from '@/services/utils/stock-scan.js'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import { getLocationRows, isMultiLocation } from '@/services/utils/stock-location.js'
 import { isSameStockNumber } from '@/services/helper/stock-number.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
@@ -82,7 +94,8 @@ export default {
     modal,
     InputTextGeneric,
     ButtonGeneric,
-    FormFieldGeneric
+    FormFieldGeneric,
+    DropdownGeneric
   },
 
   props: {
@@ -113,11 +126,23 @@ export default {
     return {
       stockNumber: '',
       previewData: null,
-      freshQtyAvailable: 0
+      freshQtyAvailable: 0,
+      locationCode: null
     }
   },
 
   computed: {
+    locationRows() {
+      return this.previewData && isMultiLocation(this.previewData) ? getLocationRows(this.previewData) : []
+    },
+
+    locationPickOptions() {
+      return this.locationRows.map((row) => ({
+        value: row.code,
+        label: this.$t('view.stock.product.locationPickOption', { code: row.code, available: row.available })
+      }))
+    },
+
     oldCode() {
       return this.copyItem.stockNumberOrigin || this.copyItem.stockNumber || '-'
     },
@@ -145,6 +170,7 @@ export default {
       this.stockNumber = this.initialStockNumber || ''
       this.previewData = null
       this.freshQtyAvailable = 0
+      this.locationCode = null
 
       if (this.stockNumber) {
         this.$nextTick(() => this.onSearch())
@@ -159,6 +185,7 @@ export default {
       }
 
       this.previewData = null
+      this.locationCode = null
 
       let result = await fetchStockProduct(this.productStore, { stockNumber: code })
       if (result.status === 'not-found') {
@@ -202,7 +229,8 @@ export default {
       this.$emit('confirm', {
         copyItem: this.copyItem,
         stockNumber: this.previewData.stockNumber,
-        stockNumberOrigin: this.previewData.stockNumberOrigin || this.previewData.stockNumber
+        stockNumberOrigin: this.previewData.stockNumberOrigin || this.previewData.stockNumber,
+        locationCode: this.locationRows.length ? this.locationCode || undefined : undefined
       })
     },
 

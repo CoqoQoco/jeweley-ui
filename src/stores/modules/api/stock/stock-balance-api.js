@@ -10,14 +10,18 @@ export const useStockBalanceApiStore = defineStore('stockBalance', {
     byLocation: []
   }),
   actions: {
-    async fetchByStockNumbers(stockNumbers) {
+    async fetchByStockNumbers(stockNumbers, { skipLoading = false, skipError = false } = {}) {
       if (!stockNumbers?.length) return {}
-      const res = await api.jewelry.post('StockBalance/ByStockNumbers', { stockNumbers })
+      const res = await api.jewelry.post(
+        'StockBalance/ByStockNumbers',
+        { stockNumbers },
+        skipLoading || skipError ? { skipLoading, skipError } : undefined
+      )
       const map = {}
       for (const row of res || []) {
         const key = normalizeStockNumber(row.stockNumber)
         if (!map[key]) {
-          map[key] = { rows: [], qtyOnHand: 0, qtyReserved: 0, qtyAvailable: 0 }
+          map[key] = { rows: [], qtyOnHand: 0, qtyReserved: 0, qtyAvailable: 0, locations: [], locationCount: 1 }
         }
         map[key].rows.push({
           locationCode: row.locationCode,
@@ -26,6 +30,10 @@ export const useStockBalanceApiStore = defineStore('stockBalance', {
           qtyReserved: row.qtyReserved ?? 0,
           qtyAvailable: row.qtyAvailable ?? 0
         })
+        if (Array.isArray(row.locations) && row.locations.length > map[key].locations.length) {
+          map[key].locations = row.locations
+        }
+        map[key].locationCount = Math.max(map[key].locationCount, row.locationCount ?? 1)
         map[key].qtyOnHand += row.qtyOnHand ?? 0
         map[key].qtyReserved += row.qtyReserved ?? 0
         map[key].qtyAvailable += row.qtyAvailable ?? 0

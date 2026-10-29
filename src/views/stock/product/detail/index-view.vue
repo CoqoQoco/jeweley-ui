@@ -119,7 +119,7 @@
             </div>
             <div class="detail-field">
               <span class="detail-label">{{ $t('view.stock.product.locationHeader') }}</span>
-              <span class="detail-value">{{ item.location || '—' }}</span>
+              <span class="detail-value"><LocationSummary :item="item" :breakdown="true" /></span>
             </div>
             <div v-if="item.convertedFrom" class="detail-field detail-field--full">
               <span class="detail-label">{{ $t('view.stock.convert.convertedFromLabel') }}</span>
@@ -258,6 +258,7 @@ import PageHeaderGeneric from '@/components/generic/PageHeaderGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
+import LocationSummary from '@/components/stock/location-summary.vue'
 import productShareDialog from '@/components/public/product-share-dialog.vue'
 
 import materialTable from '../components/material-table.vue'
@@ -282,6 +283,7 @@ export default {
   components: {
     PageHeaderGeneric,
     ButtonGeneric,
+    LocationSummary,
     SectionCardGeneric,
     imagePreview,
     materialTable,

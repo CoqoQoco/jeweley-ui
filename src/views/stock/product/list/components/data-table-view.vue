@@ -73,6 +73,10 @@
         <span>{{ formatDecimal(getPieceQtyAvailable(data), 2) }}</span>
       </template>
 
+      <template #locationTemplate="{ data }">
+        <LocationSummary :item="data" />
+      </template>
+
       <template #quickPriceTotalTemplate="{ data }">
         <span>{{ formatMoney2(data.quickPriceTotal) }}</span>
       </template>
@@ -113,6 +117,7 @@ import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import BarcodeButtonGeneric from '@/components/generic/BarcodeButtonGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import LocationSummary from '@/components/stock/location-summary.vue'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import { getPieceQty, getPieceQtyReserved, getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
@@ -146,6 +151,7 @@ export default {
     imagePreview,
     BarcodeButtonGeneric,
     ButtonGeneric,
+    LocationSummary,
     dataExpand,
     update
   },
@@ -261,7 +267,8 @@ export default {
           field: 'location',
           header: this.$t('view.stock.product.locationHeader'),
           sortable: true,
-          minWidth: '150px'
+          minWidth: '150px',
+          bodyTemplate: 'locationTemplate'
         },
         {
           field: 'qty',

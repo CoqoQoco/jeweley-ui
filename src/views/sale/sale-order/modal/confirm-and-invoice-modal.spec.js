@@ -37,6 +37,11 @@ vi.mock('@/stores/modules/api/sale/sale-order-deposit-store.js', () => ({
   usrSaleOrderDepositApiStore: vi.fn(() => ({ fetchList: mockDepositFetchList }))
 }))
 
+const mockFetchByStockNumbers = vi.fn().mockResolvedValue({})
+vi.mock('@/stores/modules/api/stock/stock-balance-api.js', () => ({
+  useStockBalanceApiStore: vi.fn(() => ({ fetchByStockNumbers: mockFetchByStockNumbers }))
+}))
+
 vi.mock('@/components/modal/modal-view.vue', () => ({
   default: {
     name: 'ModalView',
@@ -180,6 +185,40 @@ describe('ConfirmAndInvoiceModal — P4-3 line-aware invoicing (saleOrderProduct
 
     const items = mockFetchCreate.mock.calls[0][0].formValue.items
     expect(items[0].saleOrderProductId).toBe(99)
+  })
+
+  it('ล็อตหลายคลัง + เลือกคลัง → ส่ง locationCode ใน confirm payload / ไม่เลือก → ไม่มี field locationCode', async () => {
+    const item = (lineKey, stockNumber) => ({
+      id: null,
+      lineKey,
+      isConfirm: false,
+      isRemainProduct: true,
+      invoice: false,
+      stockNumber,
+      qty: 1,
+      appraisalPrice: 100,
+      discountPercent: 0
+    })
+    mockFetchByStockNumbers.mockResolvedValue({
+      M1: { locationCount: 2, locations: [{ code: 'A', qty: 3, available: 3 }, { code: 'B', qty: 2, available: 2 }] }
+    })
+    mockConfirmStockItems.mockClear()
+    mockFetchGet.mockResolvedValue({ stockConfirm: [] })
+
+    const wrapper = shallowMount(ConfirmAndInvoiceModal, {
+      global: { plugins: [createPinia()], mocks: { $t: (key, params) => (params ? `${key}:${JSON.stringify(params)}` : key) } },
+      props: { isShowModal: true, saleOrderData: sampleSaleOrder, stockItems: [item('lk-m', 'M1'), item('lk-s', 'S9')] }
+    })
+    await flushPromises()
+
+    wrapper.vm.locationPick = { 'lk-m': 'B' }
+    wrapper.vm.selectedItems = ['lk-m', 'lk-s']
+    await wrapper.vm.confirmAndCreateInvoice()
+
+    const sent = mockConfirmStockItems.mock.calls[0][0].stockItems
+    expect(sent.find((i) => i.stockNumber === 'M1').locationCode).toBe('B')
+    expect('locationCode' in sent.find((i) => i.stockNumber === 'S9')).toBe(false)
+    mockFetchByStockNumbers.mockResolvedValue({})
   })
 
   it('reload SO แล้วยังหา id ไม่เจอ (บาง lineKey ไม่ match) → ไม่ส่ง saleOrderProductId ให้ทุกบรรทัด + console.warn', async () => {

@@ -317,7 +317,7 @@
                   </template>
                 </Column>
 
-                <Column field="available" :header="$t('view.sale.saleOrder.qtyAvailableCol')" style="width: 110px">
+                <Column field="available" :header="$t('view.sale.saleOrder.qtyAvailableCol')" style="min-width: 180px">
                   <template #body="slotProps">
                     <div v-if="slotProps.data.isPlaceholder" class="text-center">—</div>
                     <div v-else class="text-center" :class="{ 'text-danger font-weight-bold': isRowShort(slotProps.data) }">
@@ -325,6 +325,16 @@
                       <small v-if="isRowShort(slotProps.data)" class="d-block text-danger">
                         {{ $t('view.sale.saleOrder.qtyShortage', { k: rowShortage(slotProps.data) }) }}
                       </small>
+                      <DropdownGeneric
+                        v-if="lotLocationRows(slotProps.data).length"
+                        v-model="locationPick[slotProps.data.lineKey]"
+                        class="mt-1"
+                        :options="locationPickOptions(slotProps.data)"
+                        optionLabel="label"
+                        optionValue="value"
+                        :showClear="true"
+                        :placeholder="$t('view.stock.product.locationPickAuto')"
+                      />
                     </div>
                   </template>
                 </Column>
@@ -741,6 +751,9 @@ import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store
 import { useSaleChannelApiStore } from '@/stores/modules/api/sale/sale-channel-store.js'
 import { usrSaleOrderDepositApiStore } from '@/stores/modules/api/sale/sale-order-deposit-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
+import { useStockBalanceApiStore } from '@/stores/modules/api/stock/stock-balance-api.js'
+import { loadMultiLocationLots } from '@/composables/useStockBalanceMerge.js'
+import { withLocationCode } from '@/services/utils/stock-location.js'
 import { warning, error, success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { getPaymentApiName } from '@/constants/payment-methods.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
@@ -813,6 +826,9 @@ export default {
       saleChannelCode: null,
       saleChannelList: [],
       availabilityMap: {},
+      balanceStore: useStockBalanceApiStore(),
+      lotLocationMap: {},
+      locationPick: {},
       isSubmitting: false
     }
   },
@@ -1055,6 +1071,7 @@ export default {
 
       if (stockNumbers.length === 0) {
         this.availabilityMap = {}
+        this.lotLocationMap = {}
         return
       }
 
@@ -1064,6 +1081,19 @@ export default {
         map[normalizeStockNumber(row.stockNumber)] = row.qtyAvailable
       })
       this.availabilityMap = map
+      this.lotLocationMap = await loadMultiLocationLots(stockNumbers, { balanceStore: this.balanceStore })
+    },
+
+    lotLocationRows(item) {
+      if (item.isPlaceholder || item.isConfirm) return []
+      return this.lotLocationMap[normalizeStockNumber(item.stockNumber)] || []
+    },
+
+    locationPickOptions(item) {
+      return this.lotLocationRows(item).map((row) => ({
+        value: row.code,
+        label: this.$t('view.stock.product.locationPickOption', { code: row.code, available: row.available })
+      }))
     },
 
     rowAvailable(item) {
@@ -1382,18 +1412,23 @@ export default {
       if (unconfirmedItems.length > 0) {
         const confirmPayload = {
           soNumber: this.saleOrderData.number || this.saleOrderData.soNumber,
-          stockItems: unconfirmedItems.map((item) => ({
-            id: item.id,
-            lineKey: item.lineKey,
-            stockNumber: item.stockNumber,
-            productNumber: item.productNumber,
-            qty: item.qty,
-            appraisalPrice: item.appraisalPrice,
-            discount: item.discountPercent,
-            isConfirm: true,
-            isPlaceholder: !!item.isPlaceholder,
-            confirmedAt: new Date().toISOString()
-          }))
+          stockItems: unconfirmedItems.map((item) =>
+            withLocationCode(
+              {
+                id: item.id,
+                lineKey: item.lineKey,
+                stockNumber: item.stockNumber,
+                productNumber: item.productNumber,
+                qty: item.qty,
+                appraisalPrice: item.appraisalPrice,
+                discount: item.discountPercent,
+                isConfirm: true,
+                isPlaceholder: !!item.isPlaceholder,
+                confirmedAt: new Date().toISOString()
+              },
+              this.lotLocationRows(item).length ? this.locationPick[item.lineKey] : null
+            )
+          )
         }
 
         const confirmRes = await this.saleOrderStore.confirmStockItems(confirmPayload)
@@ -1525,6 +1560,8 @@ export default {
       this.dkInvoiceNumber = null
       this.saleChannelCode = null
       this.availabilityMap = {}
+      this.lotLocationMap = {}
+      this.locationPick = {}
 
       this.$emit('close-modal')
     }

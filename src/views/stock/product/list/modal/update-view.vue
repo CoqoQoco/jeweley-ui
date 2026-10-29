@@ -172,9 +172,11 @@
                     :options="locationOptions"
                     optionLabel="label"
                     optionValue="value"
-                    :showClear="true"
+                    :showClear="!isMultiLocationLot"
+                    :disabled="isMultiLocationLot"
                     :placeholder="$t('view.stock.product.selectStorageLocation')"
                   />
+                  <small v-if="isMultiLocationLot" class="qty-readonly-hint">{{ $t('view.stock.product.locationEditHint') }}</small>
                 </FormFieldGeneric>
               </div>
             </SectionCardGeneric>
@@ -349,6 +351,7 @@ import { stockProductImageApiStor } from '@/stores/modules/api/stock/image-api.j
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { useStockLocationApiStore } from '@/stores/modules/api/stock/stock-location-api.js'
+import { isMultiLocation } from '@/services/utils/stock-location.js'
 
 export default {
   components: {
@@ -403,6 +406,9 @@ export default {
     },
     masterProductType() {
       return this.masterStore.productType
+    },
+    isMultiLocationLot() {
+      return isMultiLocation(this.stock)
     },
     locationOptions() {
       const options = this.stockLocationStore.all

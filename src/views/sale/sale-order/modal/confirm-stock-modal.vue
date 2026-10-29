@@ -301,6 +301,20 @@
                   </template>
                 </Column>
 
+                <Column v-if="hasMultiLocationRows" :header="$t('view.stock.product.locationPickLabel')" style="width: 220px">
+                  <template #body="slotProps">
+                    <DropdownGeneric
+                      v-if="lotLocationRows(slotProps.data).length"
+                      v-model="locationPick[slotProps.data.lineKey]"
+                      :options="locationPickOptions(slotProps.data)"
+                      optionLabel="label"
+                      optionValue="value"
+                      :showClear="true"
+                      :placeholder="$t('view.stock.product.locationPickAuto')"
+                    />
+                  </template>
+                </Column>
+
                 <Column
                   :header="$t('view.sale.saleOrder.totalPrice') + ' (' + (saleOrderData.currencyUnit || 'THB') + ')'"
                   style="width: 140px"
@@ -395,9 +409,13 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
+import { useStockBalanceApiStore } from '@/stores/modules/api/stock/stock-balance-api.js'
+import { loadMultiLocationLots } from '@/composables/useStockBalanceMerge.js'
+import { withLocationCode } from '@/services/utils/stock-location.js'
 import { success, warning, confirmSubmit } from '@/services/alert/sweetAlerts.js'
 import { convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
@@ -416,6 +434,7 @@ export default {
     Column,
     CheckboxGeneric,
     ButtonGeneric,
+    DropdownGeneric,
     imagePreview
   },
 
@@ -447,11 +466,18 @@ export default {
       type: 'STOCK-PRODUCT',
       productStore: usrStockProductApiStore(),
       availabilityMap: {},
+      balanceStore: useStockBalanceApiStore(),
+      lotLocationMap: {},
+      locationPick: {},
       isSubmitting: false
     }
   },
 
   computed: {
+    hasMultiLocationRows() {
+      return this.filteredStockItems.some((item) => this.lotLocationRows(item).length > 0)
+    },
+
     canViewMargin() {
       return hasMarginAccess()
     },
@@ -551,6 +577,7 @@ export default {
 
       if (stockNumbers.length === 0) {
         this.availabilityMap = {}
+        this.lotLocationMap = {}
         return
       }
 
@@ -560,6 +587,19 @@ export default {
         map[normalizeStockNumber(row.stockNumber)] = row.qtyAvailable
       })
       this.availabilityMap = map
+      this.lotLocationMap = await loadMultiLocationLots(stockNumbers, { balanceStore: this.balanceStore })
+    },
+
+    lotLocationRows(item) {
+      if (item.isPlaceholder || item.isConfirm) return []
+      return this.lotLocationMap[normalizeStockNumber(item.stockNumber)] || []
+    },
+
+    locationPickOptions(item) {
+      return this.lotLocationRows(item).map((row) => ({
+        value: row.code,
+        label: this.$t('view.stock.product.locationPickOption', { code: row.code, available: row.available })
+      }))
     },
 
     rowAvailable(item) {
@@ -782,18 +822,23 @@ export default {
         // Prepare data for API
         const confirmData = {
           soNumber: this.saleOrderData.number,
-          stockItems: selectedStockItems.map((item) => ({
-            id: item.id,
-            lineKey: item.lineKey,
-            stockNumber: item.stockNumber,
-            productNumber: item.productNumber,
-            qty: item.qty,
-            appraisalPrice: item.appraisalPrice,
-            discount: item.discountPercent,
-            isConfirm: true,
-            isPlaceholder: !!item.isPlaceholder,
-            confirmedAt: new Date().toISOString()
-          }))
+          stockItems: selectedStockItems.map((item) =>
+            withLocationCode(
+              {
+                id: item.id,
+                lineKey: item.lineKey,
+                stockNumber: item.stockNumber,
+                productNumber: item.productNumber,
+                qty: item.qty,
+                appraisalPrice: item.appraisalPrice,
+                discount: item.discountPercent,
+                isConfirm: true,
+                isPlaceholder: !!item.isPlaceholder,
+                confirmedAt: new Date().toISOString()
+              },
+              this.lotLocationRows(item).length ? this.locationPick[item.lineKey] : null
+            )
+          )
         }
 
         // Call API to confirm items
@@ -820,6 +865,8 @@ export default {
     closeModal() {
       this.selectedItems = []
       this.availabilityMap = {}
+      this.lotLocationMap = {}
+      this.locationPick = {}
       this.$emit('close-modal')
     }
   }

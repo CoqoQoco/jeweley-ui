@@ -26,6 +26,10 @@
         </div>
       </template>
 
+      <template #locationTemplate="{ data }">
+        <LocationSummary :item="data" />
+      </template>
+
       <template #woTextTemplate="{ data }">
         <div>
           {{ getWoText(data) }}
@@ -54,6 +58,7 @@
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import LocationSummary from '@/components/stock/location-summary.vue'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 import { formatDecimal } from '@/services/utils/decimal.js'
 import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
@@ -69,7 +74,8 @@ export default {
   components: {
     BaseDataTable,
     imagePreview,
-    ButtonGeneric
+    ButtonGeneric,
+    LocationSummary
   },
 
   setup() {
@@ -94,7 +100,7 @@ export default {
     columns() {
       return [
         { field: 'image', header: '', minWidth: '50px', sortable: false, align: 'center' },
-        { field: 'location', header: this.$t('view.stock.product.locationHeader'), sortable: true, minWidth: '150px' },
+        { field: 'location', header: this.$t('view.stock.product.locationHeader'), sortable: true, minWidth: '150px', bodyTemplate: 'locationTemplate' },
         { field: 'stockNumber', header: this.$t('view.stock.product.stockNumberNew'), sortable: true, minWidth: '150px' },
         { field: 'stockNumberOrigin', header: this.$t('view.stock.product.stockNumberOld'), sortable: true, minWidth: '150px' },
         { field: 'productNumber', header: this.$t('view.stock.product.productNumber'), sortable: true, minWidth: '150px' },

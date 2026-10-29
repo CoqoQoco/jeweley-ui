@@ -26,7 +26,7 @@
       <div class="stock-card-meta">
         <span v-if="item.location" class="meta-item">
           <i class="bi bi-geo-alt"></i>
-          {{ item.location }}
+          <LocationSummary :item="item" />
         </span>
         <span class="meta-item">
           <i class="bi bi-box-seam"></i>
@@ -45,11 +45,12 @@ import { formatDecimal } from '@/services/utils/decimal.js'
 import { getPieceQty, getPieceQtyReserved, getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 
 import ImagePreview from '@/components/prime-vue/ImagePreview.vue'
+import LocationSummary from '@/components/stock/location-summary.vue'
 
 export default {
   name: 'StockCard',
 
-  components: { ImagePreview },
+  components: { ImagePreview, LocationSummary },
 
   props: {
     item: {

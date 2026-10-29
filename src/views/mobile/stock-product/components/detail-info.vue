@@ -99,7 +99,7 @@
         </div>
         <div class="info-row">
           <span class="info-label">{{ $t('view.stock.product.locationHeader') }}</span>
-          <span class="info-value">{{ item.location || '-' }}</span>
+          <span class="info-value"><LocationSummary :item="item" :breakdown="true" empty="-" /></span>
         </div>
         <div class="info-row">
           <span class="info-label">{{ $t('common.field.price') }}</span>
@@ -145,6 +145,7 @@
 </template>
 
 <script>
+import LocationSummary from '@/components/stock/location-summary.vue'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { useStockProductGalleryApiStore } from '@/stores/modules/api/stock/product-gallery-api.js'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
@@ -158,7 +159,7 @@ import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 export default {
   name: 'DetailInfo',
 
-  components: { ImagePreview, ButtonGeneric },
+  components: { ImagePreview, ButtonGeneric, LocationSummary },
 
   setup() {
     const masterStore = useMasterApiStore()

@@ -1985,12 +1985,13 @@ export default {
       this.replaceConfirmedInitialStockNumber = ''
     },
 
-    async onReplaceConfirmedStockConfirm({ copyItem, stockNumber, stockNumberOrigin }) {
+    async onReplaceConfirmedStockConfirm({ copyItem, stockNumber, stockNumberOrigin, locationCode }) {
       const res = await this.saleOrderStore.replaceConfirmedStock({
         soNumber: this.formSaleOrder.number,
         saleOrderProductId: copyItem.id,
         newStockNumber: stockNumber,
-        qty: copyItem.qty
+        qty: copyItem.qty,
+        locationCode
       })
 
       this.onCloseReplaceConfirmedModal()

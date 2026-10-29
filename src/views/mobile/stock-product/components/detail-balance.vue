@@ -13,6 +13,16 @@
             <span>{{ $t('view.stock.product.qtyAvailable') }}: {{ formatDecimal(pieceQtyAvailable, 2) }}</span>
           </div>
         </div>
+        <div v-if="lotLocations.length > 1" class="balance-list mobile-mt-2">
+          <div v-for="loc in lotLocations" :key="loc.code" class="balance-row">
+            <div class="balance-location">{{ loc.name ? `${loc.code} — ${loc.name}` : loc.code }}</div>
+            <div class="balance-values">
+              <span>{{ $t('view.stock.product.qtyOnHand') }}: {{ formatDecimal(loc.qty, 2) }}</span>
+              <span>{{ $t('view.stock.product.qtyReserved') }}: {{ formatDecimal(loc.reserved, 2) }}</span>
+              <span>{{ $t('view.stock.product.qtyAvailable') }}: {{ formatDecimal(loc.available, 2) }}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -52,6 +62,7 @@
 <script>
 import { formatDecimal } from '@/services/utils/decimal.js'
 import { getPieceQty, getPieceQtyReserved, getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
+import { getLocationRows } from '@/services/utils/stock-location.js'
 
 export default {
   name: 'DetailBalance',
@@ -72,6 +83,9 @@ export default {
     },
     pieceQtyAvailable() {
       return getPieceQtyAvailable(this.item)
+    },
+    lotLocations() {
+      return getLocationRows(this.item)
     },
     rows() {
       return this.item?.slocBalances || []

@@ -37,6 +37,11 @@ export const useStockMoveLocationApiStore = defineStore('stockMoveLocationApi', 
       })
     },
 
+    // payload จาก buildMoveUnitsPayload (stock-location.js) -> { message, movedCount, lots: [{ stockNumber, moved, primaryLocation }] }
+    async moveUnits(payload) {
+      return await api.jewelry.post('StockMovement/MoveUnits', payload)
+    },
+
     async fetchMovementSearch({ take = 10, skip = 0, sort = [], formValue = {} } = {}) {
       const res = await api.jewelry.post('StockMovement/Search', {
         take,
