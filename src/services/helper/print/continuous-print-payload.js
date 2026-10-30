@@ -12,8 +12,8 @@ const BILL_FLAG_KEYS = [
   'showPriceBeforeDiscount', 'showPriceIncludingVat',
   'showGoldWeight', 'showStoneWeight', 'showDiamondWeight', 'showDiamondGrade',
   'showQty', 'showUnitPrice', 'showAmount', 'showRemark', 'showSoNumber',
-  'showSubtotal', 'showVat', 'showTotal', 'showAmountText',
-  'unitPriceMode', 'unitVatPercent', 'summaryVatPercent'
+  'showSubtotal', 'showVat', 'showTotal', 'showAmountText', 'showTotalQty',
+  'unitPriceMode', 'productCodeMode', 'unitVatPercent', 'summaryVatPercent'
 ]
 
 async function buildVatModel({ invoiceData, invoiceItems, printData, invoiceNo, invoiceDate }) {
@@ -78,6 +78,7 @@ async function buildBillModel({ invoiceData, invoiceItems, printData, invoiceNo,
     },
     customerTaxId: invoiceData.customerTaxId || '',
     soNumbers: collectSoNumbers(invoiceData, invoiceItems),
+    customRemark: String(printData.customRemark || '').trim(),
     items: (invoiceItems || []).map(i => {
       const mats = Array.isArray(i.materials) ? i.materials : []
       const goldWeight = mats.filter(m => m.type === 'Gold').reduce((s, m) => s + (Number(m.weight) || 0), 0)
@@ -89,6 +90,7 @@ async function buildBillModel({ invoiceData, invoiceItems, printData, invoiceNo,
       return {
         stockNumber: i.stockNumberOrigin || i.stockNumber || '',
         productNumber: i.productNumber || '',
+        mold: i.mold || '',
         productNameEN: i.productNameEN || i.description || i.productNumber || '',
         qty: Number(i.qty) || 0,
         appraisalPrice: Number(i.appraisalPrice) || 0,
@@ -115,6 +117,8 @@ async function buildBillModel({ invoiceData, invoiceItems, printData, invoiceNo,
   const model = buildBillPrintModel(billInvoice, layoutPayload, { printerName: printData.printerName ?? null, showDecimals: printData.showDecimals })
   const logPayload = {
     unitPriceMode: printData.unitPriceMode,
+    productCodeMode: printData.productCodeMode,
+    customRemark: String(printData.customRemark || '').trim(),
     unitVatPercent: printData.unitVatPercent,
     summaryVatPercent: printData.summaryVatPercent,
     flags: Object.fromEntries(Object.entries(printData).filter(([k]) => k.startsWith('show'))),

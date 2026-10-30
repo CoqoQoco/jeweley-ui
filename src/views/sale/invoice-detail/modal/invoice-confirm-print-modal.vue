@@ -322,6 +322,15 @@
                     :label="$t('view.sale.invoiceDetail.billColumnProductNumber')"
                     @update:modelValue="onBillFlagChange"
                   />
+                  <RadioGroupGeneric
+                    v-if="billElementFlags.showProductNumber"
+                    v-model="billElementFlags.productCodeMode"
+                    :options="productCodeModeOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    inline
+                    @update:modelValue="onBillFlagChange"
+                  />
                   <CheckboxGeneric
                     v-model="billElementFlags.showPriceBeforeDiscount"
                     :label="$t('view.sale.invoiceDetail.billElemPriceBeforeDiscount')"
@@ -399,6 +408,16 @@
                     :label="$t('view.sale.invoiceDetail.billElemSoNumber')"
                     @update:modelValue="onBillFlagChange"
                   />
+                  <CheckboxGeneric
+                    v-model="billElementFlags.showTotalQty"
+                    :label="$t('view.sale.invoiceDetail.billElemTotalQty')"
+                    @update:modelValue="onBillFlagChange"
+                  />
+                </div>
+                <div class="mt-2">
+                  <label class="form-label">{{ $t('view.sale.invoiceDetail.billCustomRemarkLabel') }}</label>
+                  <InputTextGeneric v-model="customRemark" :maxlength="60" />
+                  <small class="form-text text-muted">{{ (customRemark || '').length }}/60</small>
                 </div>
               </div>
 
@@ -577,6 +596,7 @@ export default {
     return {
       invoiceStore: useInvoiceApiStore(),
       printLogs: [],
+      customRemark: '',
       showHistory: false,
       originalData: {
         invoiceNumber: '',
@@ -630,6 +650,8 @@ export default {
         showVat: true,
         showTotal: true,
         showAmountText: true,
+        showTotalQty: true,
+        productCodeMode: 'product',
         // Unit price mode
         unitPriceMode: 'tag',
         unitVatPercent: 7,
@@ -670,6 +692,13 @@ export default {
       ]
     },
 
+    productCodeModeOptions() {
+      return [
+        { value: 'product', label: this.$t('view.sale.invoiceDetail.billProductCodeModeProduct') },
+        { value: 'mold', label: this.$t('view.sale.invoiceDetail.billProductCodeModeMold') }
+      ]
+    },
+
     printerHealthUrl() {
       return `${PRINT_BRIDGE_BASE_URL}/health`
     },
@@ -688,6 +717,7 @@ export default {
         billOffsetX: this.billOffset.x,
         billOffsetY: this.billOffset.y,
         billFlags: { ...this.billElementFlags },
+        customRemark: this.customRemark,
         showDecimals: this.printData.showDecimals,
         selectedPrinter: this.selectedPrinter,
         invoiceNumber: this.printData.invoiceNumber,
@@ -784,6 +814,8 @@ export default {
             showVat: boolFlag('showVat'),
             showTotal: boolFlag('showTotal'),
             showAmountText: boolFlag('showAmountText'),
+            showTotalQty: boolFlag('showTotalQty'),
+            productCodeMode: parsed.productCodeMode === 'mold' ? 'mold' : 'product',
             unitPriceMode: parsed.unitPriceMode || 'tag',
             unitVatPercent: parsed.unitVatPercent !== undefined ? Number(parsed.unitVatPercent) : 7,
             summaryVatPercent: parsed.summaryVatPercent !== undefined ? Number(parsed.summaryVatPercent) : 7
@@ -853,6 +885,23 @@ export default {
       } else {
         this.printLogs = []
       }
+      this.prefillCustomRemark()
+    },
+
+    prefillCustomRemark() {
+      this.customRemark = ''
+      const latest = [...this.printLogs]
+        .filter((log) => log.paperType === 'bill')
+        .sort((a, b) => String(b.printedAt || '').localeCompare(String(a.printedAt || '')))
+        .map((log) => {
+          try {
+            return JSON.parse(log.data || '{}').customRemark
+          } catch {
+            return ''
+          }
+        })
+        .find(Boolean)
+      if (latest) this.customRemark = String(latest).slice(0, 60)
     },
 
     getPaperTypeLabel(paperType) {
@@ -962,6 +1011,7 @@ export default {
         continuousOffset: { ...this.continuousOffset },
         billOffset: { ...this.billOffset },
         printerName: this.selectedPrinter,
+        customRemark: (this.customRemark || '').trim(),
         ...this.billElementFlags
       }
     },

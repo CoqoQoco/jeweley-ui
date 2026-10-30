@@ -331,6 +331,19 @@
             </div>
           </div>
 
+          <div v-if="form.showProductNumber" class="form-row">
+            <label class="form-label-col">{{ $t('view.sale.invoiceDetail.billProductCodeMode') }}</label>
+            <div class="form-input-col">
+              <RadioGroupGeneric
+                v-model="form.productCodeMode"
+                :options="productCodeModeOptions"
+                optionLabel="label"
+                optionValue="value"
+                inline
+              />
+            </div>
+          </div>
+
           <div class="form-row">
             <label class="form-label-col">แสดงคอลัมน์ "ราคาทุน"</label>
             <div class="form-input-col">
@@ -439,6 +452,13 @@
             </div>
           </div>
 
+          <div class="form-row">
+            <label class="form-label-col">{{ $t('view.sale.invoiceDetail.billElemTotalQty') }}</label>
+            <div class="form-input-col">
+              <CheckboxGeneric v-model="form.showTotalQty" />
+            </div>
+          </div>
+
           <!-- VAT/price mode -->
           <div class="toggle-group-title mt-3 mb-1">รูปแบบ VAT / ราคา</div>
 
@@ -488,6 +508,18 @@
                 <InputTextGeneric v-model="form.subtotal.x" type="number" step="0.01" />
                 <span class="xy-tag">Y</span>
                 <InputTextGeneric v-model="form.subtotal.y" type="number" step="0.01" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label-col">{{ $t('view.sale.invoiceDetail.billElemTotalQty') }}</label>
+            <div class="form-input-col">
+              <div class="xy-pair">
+                <span class="xy-tag">X</span>
+                <InputTextGeneric v-model="form.totalQty.x" type="number" step="0.01" />
+                <span class="xy-tag">Y</span>
+                <InputTextGeneric v-model="form.totalQty.y" type="number" step="0.01" />
               </div>
             </div>
           </div>
@@ -692,6 +724,7 @@ const DEFAULT_LAYOUT = {
   stockSecondLineDy: 0.13,
   pageNumber: { x: 7.5, y: 2.4 },
   subtotal: { x: 6.5, y: 7.6 },
+  totalQty: { x: 3.95, y: 7.6 },
   vat: { x: 6.5, y: 7.98 },
   total: { x: 6.5, y: 8.3 },
   amountText: { x: 1.0, y: 8.3 },
@@ -736,6 +769,8 @@ const DEFAULT_LAYOUT = {
   showVat: true,
   showTotal: true,
   showAmountText: true,
+  showTotalQty: true,
+  productCodeMode: 'product',
   // Unit price mode and VAT percents
   unitPriceMode: 'tag',
   unitVatPercent: 7,
@@ -765,6 +800,13 @@ export default {
   },
 
   computed: {
+    productCodeModeOptions() {
+      return [
+        { value: 'product', label: this.$t('view.sale.invoiceDetail.billProductCodeModeProduct') },
+        { value: 'mold', label: this.$t('view.sale.invoiceDetail.billProductCodeModeMold') }
+      ]
+    },
+
     unitPriceModeOptions() {
       return [
         { value: 'tag', label: 'ราคาป้าย' },
@@ -788,7 +830,7 @@ export default {
     const saved = await getBillLayout()
     if (saved) {
       this.form = { ...deepClone(DEFAULT_LAYOUT), ...saved }
-      const nested = ['invoiceNo', 'date', 'customerName', 'customerTaxId', 'customerAddress', 'itemsStart', 'subtotal', 'vat', 'total', 'amountText', 'pageNumber']
+      const nested = ['invoiceNo', 'date', 'customerName', 'customerTaxId', 'customerAddress', 'itemsStart', 'subtotal', 'totalQty', 'vat', 'total', 'amountText', 'pageNumber']
       nested.forEach(key => {
         if (saved[key]) this.form[key] = { ...DEFAULT_LAYOUT[key], ...saved[key] }
       })
@@ -827,7 +869,7 @@ export default {
         'unitVatPercent', 'summaryVatPercent', 'customerAddressMaxChars'
       ]
       numFields.forEach(k => { if (result[k] !== undefined) result[k] = Number(result[k]) })
-      const xyFields = ['invoiceNo', 'date', 'customerName', 'customerTaxId', 'customerAddress', 'itemsStart', 'subtotal', 'vat', 'total', 'amountText', 'pageNumber']
+      const xyFields = ['invoiceNo', 'date', 'customerName', 'customerTaxId', 'customerAddress', 'itemsStart', 'subtotal', 'totalQty', 'vat', 'total', 'amountText', 'pageNumber']
       xyFields.forEach(k => {
         if (result[k]) { result[k].x = Number(result[k].x); result[k].y = Number(result[k].y) }
       })

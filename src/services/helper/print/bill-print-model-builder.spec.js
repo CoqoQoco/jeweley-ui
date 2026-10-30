@@ -81,3 +81,72 @@ describe('buildBillPrintModel - SO number', () => {
     expect(model.pages[0].some((p) => p.text.includes('SO No.'))).toBe(false)
   })
 })
+
+describe('buildBillPrintModel - total qty', () => {
+  function totalQtyPrims(page, y = 7.6) {
+    return page.filter((p) => p.align === 'right' && Math.abs(p.y - y) < 0.0001 && Math.abs(p.x - 3.75) < 0.0001 && p.fontSize === 12)
+  }
+
+  it('prints the summed qty on the last page only', () => {
+    const invoice = makeInvoice([], 30)
+    invoice.items[0].qty = 3
+    const model = buildBillPrintModel(invoice, LAYOUT)
+    expect(totalQtyPrims(model.pages[0])).toHaveLength(0)
+    const prims = totalQtyPrims(model.pages[1])
+    expect(prims).toHaveLength(1)
+    expect(prims[0].text).toBe('32')
+  })
+
+  it('honours totalQty position and showTotalQty=false', () => {
+    const pos = buildBillPrintModel(makeInvoice([], 2), { ...LAYOUT, totalQty: { x: 4, y: 9 } })
+    expect(pos.pages[0].some((p) => p.text === '2' && p.x === 4 && p.y === 9)).toBe(true)
+    const off = buildBillPrintModel(makeInvoice([], 2), { ...LAYOUT, showTotalQty: false })
+    expect(totalQtyPrims(off.pages[0])).toHaveLength(0)
+  })
+})
+
+describe('buildBillPrintModel - product code mode', () => {
+  const codeOf = (model) => model.pages[0].find((p) => p.x === 1.1 && p.y === 3.1)?.text
+
+  it('prints productNumber by default', () => {
+    const invoice = makeInvoice([], 1)
+    invoice.items[0].mold = 'M0'
+    expect(codeOf(buildBillPrintModel(invoice, LAYOUT))).toBe('P0')
+  })
+
+  it('prints mold in mold mode and falls back to productNumber', () => {
+    const invoice = makeInvoice([], 1)
+    invoice.items[0].mold = 'M0'
+    expect(codeOf(buildBillPrintModel(invoice, { ...LAYOUT, productCodeMode: 'mold' }))).toBe('M0')
+    invoice.items[0].mold = ''
+    expect(codeOf(buildBillPrintModel(invoice, { ...LAYOUT, productCodeMode: 'mold' }))).toBe('P0')
+  })
+})
+
+describe('buildBillPrintModel - custom remark', () => {
+  const remarkOf = (model) => model.pages[0].find((p) => p.x === 2.0 && Math.abs(p.y - (8.3 - 0.17)) < 0.0001)?.text
+
+  function inv(customRemark, stems = []) {
+    const invoice = makeInvoice([], stems.length || 1)
+    invoice.customRemark = customRemark
+    stems.forEach((s, i) => { invoice.items[i].earringStemSize = s })
+    return invoice
+  }
+
+  it('prints custom remark alone as plain text', () => {
+    expect(remarkOf(buildBillPrintModel(inv('รวม stud 10 ชิ้น'), LAYOUT))).toBe('รวม stud 10 ชิ้น')
+  })
+
+  it('joins custom remark and unique stem sizes', () => {
+    expect(remarkOf(buildBillPrintModel(inv('note', ['10', '12', '10']), LAYOUT))).toBe('note, 10, 12')
+  })
+
+  it('prints custom remark but not stems when showRemark=false', () => {
+    expect(remarkOf(buildBillPrintModel(inv('note', ['10']), { ...LAYOUT, showRemark: false }))).toBe('note')
+    expect(remarkOf(buildBillPrintModel(inv('', ['10']), { ...LAYOUT, showRemark: false }))).toBeUndefined()
+  })
+
+  it('prints nothing when both are empty', () => {
+    expect(remarkOf(buildBillPrintModel(inv(''), LAYOUT))).toBeUndefined()
+  })
+})

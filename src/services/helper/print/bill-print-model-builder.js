@@ -111,6 +111,8 @@ function resolveLayout(layout) {
     itemFontSize: Number(L.itemFontSize ?? 10) || 10,
     xSubtotal: Number(L.subtotal?.x ?? 6.5) || 0,
     ySubtotal: Number(L.subtotal?.y ?? 7.6) || 0,
+    xTotalQty: Number(L.totalQty?.x ?? L.itemQtyX ?? 3.75) || 0,
+    yTotalQty: Number(L.totalQty?.y ?? L.subtotal?.y ?? 7.6) || 0,
     xVat: Number(L.vat?.x ?? 6.5) || 0,
     yVat: Number(L.vat?.y ?? 7.98) || 0,
     xTotal: Number(L.total?.x ?? 6.5) || 0,
@@ -137,6 +139,7 @@ function resolveLayout(layout) {
 
     // Unit price mode: 'tag' | 'addVat' | 'subVat'
     unitPriceMode: L.unitPriceMode ?? 'tag',
+    productCodeMode: L.productCodeMode === 'mold' ? 'mold' : 'product',
     unitVatPercent: Number(L.unitVatPercent ?? 7) || 7,
     summaryVatPercent: Number(L.summaryVatPercent ?? 7) || 7,
 
@@ -171,6 +174,7 @@ function resolveLayout(layout) {
     showVat: flag(L, 'showVat'),
     showTotal: flag(L, 'showTotal'),
     showAmountText: flag(L, 'showAmountText'),
+    showTotalQty: flag(L, 'showTotalQty'),
 
     offsetXInch: (Number(L.offsetX ?? 0) || 0) * MM_TO_INCH,
     offsetYInch: (Number(L.offsetY ?? 0) || 0) * MM_TO_INCH,
@@ -274,7 +278,10 @@ export function buildBillPrintModel(invoice, layout, options = {}) {
       if (L.showItemNo) left(String(itemNo), L.xItemNo, y, ifs)
       if (L.showDescription) left(item.productNameEN || '', L.xItemDesc, y, ifs)
       if (L.showStockNumber) left(item.stockNumber || '', L.xStockNumber, y, ifs)
-      if (L.showProductNumber) left(item.productNumber || '', L.xProductNumber, y, ifs)
+      if (L.showProductNumber) {
+        const code = L.productCodeMode === 'mold' ? (item.mold || item.productNumber || '') : (item.productNumber || '')
+        left(code, L.xProductNumber, y, ifs)
+      }
 
       // priceBeforeDiscount column = appraisalPrice (cost price, unchanged)
       if (L.showPriceBeforeDiscount) {
@@ -315,19 +322,20 @@ export function buildBillPrintModel(invoice, layout, options = {}) {
 
     // --- Footer (last page only) ---
     if (currentPage === totalPages - 1) {
+      if (L.showTotalQty) {
+        const totalQty = items.reduce((s, it) => s + (Number(it.qty) || 0), 0)
+        right(n0(totalQty), L.xTotalQty, L.yTotalQty, hfs)
+      }
       if (L.showSubtotal) right(money(subtotalSum), L.xSubtotal, L.ySubtotal, hfs)
       right(money(vatAmount), L.xVat, L.yVat, hfs)
       if (L.showTotal) right(money(grandTotal), L.xTotal, L.yTotal, hfs)
 
-      if (L.showRemark) {
-        const remarkValues = items
-          .map(item => item.earringStemSize)
-          .filter(v => v && String(v).trim() !== '')
-        const uniqueRemarks = [...new Set(remarkValues.map(v => String(v).trim()))]
-        const remarkText = uniqueRemarks.join(', ')
-        if (remarkText) {
-          left(remarkText, L.xRemark, L.yRemark, ifs)
-        }
+      const stemSizes = L.showRemark
+        ? items.map(item => item.earringStemSize).filter(v => v && String(v).trim() !== '').map(v => String(v).trim())
+        : []
+      const remarkText = [String(invoice.customRemark || '').trim(), ...new Set(stemSizes)].filter(Boolean).join(', ')
+      if (remarkText) {
+        left(remarkText, L.xRemark, L.yRemark, ifs)
       }
 
       if (L.showAmountText) {
