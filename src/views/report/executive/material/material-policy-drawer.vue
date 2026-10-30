@@ -29,7 +29,7 @@
 <script>
 import { useMaterialInsightApiStore } from '@/stores/modules/api/material/material-insight-api.js'
 import { success, info } from '@/services/alert/sweetAlerts.js'
-import { POLICY_FIELDS, createPolicyForm, validatePolicyForm, buildPolicySaveBody, hasPolicyChanges } from './material-helpers.js'
+import { policyFieldsFor, createPolicyForm, validatePolicyForm, buildPolicySaveBody, hasPolicyChanges } from './material-helpers.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import DrawerGeneric from '@/components/generic/DrawerGeneric.vue'
@@ -56,9 +56,14 @@ export default {
 
   data() {
     return {
-      fields: POLICY_FIELDS,
       form: createPolicyForm(null),
       errors: {}
+    }
+  },
+
+  computed: {
+    fields() {
+      return policyFieldsFor(this.kind)
     }
   },
 
@@ -82,9 +87,9 @@ export default {
     },
 
     async onSave() {
-      this.errors = validatePolicyForm(this.form)
+      this.errors = validatePolicyForm(this.form, this.fields)
       if (Object.keys(this.errors).length) return
-      const body = buildPolicySaveBody(this.kind, this.form, this.policy)
+      const body = buildPolicySaveBody(this.kind, this.form, this.policy, this.fields)
       if (!hasPolicyChanges(body)) {
         info(this.$t('view.productionInsight.materialInsight.drawer.noChange'))
         return

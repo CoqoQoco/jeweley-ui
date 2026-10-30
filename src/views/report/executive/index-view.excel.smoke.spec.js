@@ -58,18 +58,18 @@ describe('Executive Excel export includes the stock / sales / material insight s
     const bodyOf = (path) => postMock.mock.calls.filter((c) => c[0] === path).map((c) => c[1])
     expect(bodyOf('StockInsight/Overview')).toEqual([{ months: 12, metal: 'SILVER' }])
     expect(bodyOf('SalesInsight/Overview')).toEqual([{ months: 12, metal: 'SILVER' }])
-    expect(bodyOf('MaterialInsight/Overview')).toEqual([{ kind: 'GOLD', months: 12 }])
+    expect(bodyOf('MaterialInsight/Overview')).toEqual([{ kind: 'GOLD', months: 12 }, { kind: 'GEM', months: 12 }])
     expect(bodyOf('ExecutiveReport/DataQuality')).toEqual([{ metal: 'SILVER' }])
 
     expect(exportMock).toHaveBeenCalledTimes(1)
     const sheets = exportMock.mock.calls[0][0]
     const names = sheets.map((s) => s.sheetName)
-    // sheet เดิมยังอยู่ครบ (สรุป ... + 7 sheet insight เดิม) และ sheet ใหม่ 12 ตัวต่อท้าย
+    // sheet เดิมยังอยู่ครบ (สรุป ... + 7 sheet insight เดิม) และ sheet ใหม่ 16 ตัวต่อท้าย (วัตถุดิบทอง 3 + พลอย 4)
     expect(names.slice(0, 3)).toEqual(['view.executive.excel.sheetSummary', 'view.executive.excel.sheetStalePlans', 'view.executive.excel.sheetReceivables'])
     expect(names).toContain('view.executive.excel.insight.sheetMaterials')
     expect(names.at(-1)).toBe('view.executive.excel.snapshot.quality')
-    expect(names.slice(-13, -1)).toEqual(
-      ['stockFindings', 'stockAge', 'stockReceipt', 'stockCategory', 'stockSeries', 'salesFindings', 'salesAging', 'salesTopCustomers', 'salesSeries', 'materialFindings', 'materialItems', 'materialSeries'].map(
+    expect(names.slice(-17, -1)).toEqual(
+      ['stockFindings', 'stockAge', 'stockReceipt', 'stockCategory', 'stockSeries', 'salesFindings', 'salesAging', 'salesTopCustomers', 'salesSeries', 'materialFindings', 'materialItems', 'materialSeries', 'materialGemFindings', 'materialGemItems', 'materialGemSeries', 'materialGemValue'].map(
         (key) => `view.executive.excel.snapshot.${key}`
       )
     )
@@ -89,6 +89,6 @@ describe('Executive Excel export includes the stock / sales / material insight s
     expect(exportMock).toHaveBeenCalledTimes(1)
     const names = exportMock.mock.calls[0][0].map((s) => s.sheetName)
     expect(names).not.toContain('view.executive.excel.snapshot.quality')
-    expect(names.at(-1)).toBe('view.executive.excel.snapshot.materialSeries')
+    expect(names.at(-1)).toBe('view.executive.excel.snapshot.materialGemValue')
   })
 })

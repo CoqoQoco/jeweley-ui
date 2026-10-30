@@ -1,5 +1,5 @@
 <!--
-  material-insight-view — แท็บ "คลังวัตถุดิบ" ของหน้า executive: ตัวสลับชนิดวัตถุดิบ (ทอง/โลหะ · พลอย = เร็วๆ นี้) + InsightPage + materialConfig ของชนิดนั้น (MaterialInsight/Overview)
+  material-insight-view — แท็บ "คลังวัตถุดิบ" ของหน้า executive: ตัวสลับชนิดวัตถุดิบ (ทอง/โลหะ · พลอย) + InsightPage + materialConfig ของชนิดนั้น (MaterialInsight/Overview)
   แต่ละชนิดมีแท็บ ⚠◔✓ และแท็บข้อมูลของตัวเอง (key=kind → เปลี่ยนชนิดแล้ว mount ใหม่/ยิงใหม่) · ไม่ผูก metal scope ของทั้งหน้า
   URL: sub= และ kind= (default ทอง ไม่เขียน) — รับค่าตั้งต้นจาก initialSub/initialKind (parent อ่านจาก query ตอนเข้าหน้าด้วย tab=material เท่านั้น) แล้ว $router.replace ตอนเปลี่ยน
   ปุ่มแก้ไขขั้นต่ำ/ตั้งค่าเกณฑ์ แสดงเฉพาะผู้มีสิทธิ์ material:manage-min (filter.canManage) · refreshToken เปลี่ยน → ยิง Overview ซ้ำ
@@ -60,7 +60,7 @@ export default {
     kindOptions() {
       return [
         { value: 'GOLD', label: this.$t('view.productionInsight.materialInsight.kind.GOLD') },
-        { value: 'GEM', label: this.$t('view.productionInsight.materialInsight.kind.GEM'), disabled: true, title: this.$t('view.productionInsight.materialInsight.kind.comingSoon') }
+        { value: 'GEM', label: this.$t('view.productionInsight.materialInsight.kind.GEM') }
       ]
     }
   },

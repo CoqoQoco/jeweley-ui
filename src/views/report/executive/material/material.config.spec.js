@@ -14,6 +14,7 @@ import { buildDonutChart } from '@/components/insight/page/blocks/donut-block-he
 import { collectBlockIds, findDuplicates, flattenBlocks, buildInitialState, isNodeVisible } from '@/components/insight/page/insight-page-helpers.js'
 import { validateTabConfig, findTabForReportRef, blocksForTab, hasTabs, isSourceTabGated } from '@/components/insight/page/insight-tabs-helpers.js'
 import { materialGoldConfig, getMaterialConfig } from './material.config.js'
+import { materialGemConfig } from './material-gem.config.js'
 
 const makeI18n = (locale, lang, exec) => createI18n({ legacy: false, locale, messages: { [locale]: { view: { productionInsight: lang, executive: exec, common: {} } } } })
 const th = makeI18n('th', productionInsightTh, executiveTh)
@@ -92,7 +93,8 @@ describe('material config structure', () => {
   it('stays out of Vue reactivity and the kind map falls back to gold', () => {
     expect(isReactive(reactive({ config: materialGoldConfig }).config)).toBe(false)
     expect(getMaterialConfig('GOLD')).toBe(materialGoldConfig)
-    expect(getMaterialConfig('GEM')).toBe(materialGoldConfig)
+    expect(getMaterialConfig('GEM')).toBe(materialGemConfig)
+    expect(getMaterialConfig('SILVER')).toBe(materialGoldConfig)
   })
 })
 

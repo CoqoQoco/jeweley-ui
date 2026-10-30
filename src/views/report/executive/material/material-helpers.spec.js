@@ -61,9 +61,12 @@ describe('request / URL helpers', () => {
 
   it('kind query: default (gold) is omitted, unknown falls back to gold', () => {
     expect(parseKindQuery('gold')).toBe('GOLD')
-    expect(parseKindQuery('GEM')).toBe('GOLD')
+    expect(parseKindQuery('GEM')).toBe('GEM')
+    expect(parseKindQuery('gem')).toBe('GEM')
+    expect(parseKindQuery('silver')).toBe('GOLD')
     expect(parseKindQuery(undefined)).toBe('GOLD')
     expect(kindToQuery('GOLD')).toEqual({})
+    expect(kindToQuery('GEM')).toEqual({ kind: 'gem' })
   })
 })
 

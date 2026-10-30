@@ -167,21 +167,54 @@ describe('Material tab (InsightPage + materialGoldConfig) smoke', { timeout: 300
     expect(wrapper.html()).toContain('view.productionInsight.ownerRole.planner')
   })
 
-  it('kind switch: gold is selected, gems are disabled with a coming-soon title; kind= is never written for gold', async () => {
+  it('kind switch: gold is selected, gems are enabled; kind= is never written for gold', async () => {
     const { wrapper } = mountView()
     await settle()
     const buttons = wrapper.findAll('.material-insight-view > .toggle-group [role="tab"]')
     expect(buttons.map((b) => b.text())).toEqual(['view.productionInsight.materialInsight.kind.GOLD', 'view.productionInsight.materialInsight.kind.GEM'])
     expect(buttons[0].attributes('aria-selected')).toBe('true')
-    expect(buttons[1].attributes('disabled')).toBeDefined()
-    expect(buttons[1].attributes('title')).toBe('view.productionInsight.materialInsight.kind.comingSoon')
-    await buttons[1].trigger('click')
-    expect(postMock.mock.calls).toHaveLength(1)
-    expect(wrapper.emitted('update:kind')).toBeUndefined()
+    expect(buttons[1].attributes('disabled')).toBeUndefined()
     page(wrapper).vm.selectSub('items')
     await settle()
     expect(lastQuery).toMatchObject({ tab: 'material', other: '1', sub: 'items' })
     expect(lastQuery).not.toHaveProperty('kind')
+  })
+
+  it('gem kind: switching requests {kind: GEM}, writes kind=gem, lands on the gem problems tab and every data tab renders without warnings', async () => {
+    const gemOverview = {
+      asOf: '2026-10-30T09:00:00',
+      kind: 'GEM',
+      unit: 'mixed',
+      units: ['pcs'],
+      policy: { deadStockDays: 90, floorQty: 0, source: 'default' },
+      kpi: { mixedUnits: true, itemCount: 2, zeroCount: 0, belowMinCount: 0, nearMinCount: 0, deadCount: 0, negativeCount: 0, totalValue: 1000, byUnit: [{ unit: 'pcs', totalOnHand: 10, totalOnProcess: 0 }, { unit: 'ct', totalOnHand: 2.5, totalOnProcess: 0 }] },
+      items: [item({ itemKey: 'G1', label: 'พลอย 1', unit: 'pcs', value: 1000, onProcessValue: 0, groupName: 'ทับทิม' })],
+      groups: [{ code: 'RB', name: 'ทับทิม', itemCount: 1, value: 1000, byUnit: [{ unit: 'pcs', totalOnHand: 10, totalOnProcess: 0 }] }],
+      series: [],
+      seriesByUnit: [{ unit: 'pcs', points: [{ month: '2026-10-01', inflow: 1, consumed: 2, returned: 0, other: 0, endStock: 10 }] }],
+      valueSeries: [{ month: '2026-10-01', inflowValue: 1, consumedValue: 2, returnedValue: 0, endStockValue: 1000 }],
+      problems: [{ code: 'MAT_DEAD_STOCK', severity: 'warning', params: { count: 2, days: 90, byUnit: [{ unit: 'ct', total: 2 }, { unit: 'pcs', total: 7 }] }, reportRef: 'matItems' }],
+      forecasts: [],
+      actions: []
+    }
+    postMock.mockImplementation(async (path, body) => (path === 'MaterialInsight/Overview' ? (body.kind === 'GEM' ? gemOverview : overview) : {}))
+    const { wrapper, replace } = mountView()
+    await settle()
+    await wrapper.findAll('.material-insight-view > .toggle-group [role="tab"]')[1].trigger('click')
+    await settle()
+    expect(callsTo('MaterialInsight/Overview').map((c) => c[1])).toEqual([{ kind: 'GOLD', months: 12 }, { kind: 'GEM', months: 12 }])
+    expect(replace).toHaveBeenCalled()
+    expect(lastQuery).toMatchObject({ tab: 'material', kind: 'gem' })
+    expect(wrapper.emitted('update:kind')[0]).toEqual(['GEM'])
+    expect(wrapper.html()).toContain('rulesGem.MAT_DEAD_STOCK:')
+    expect(wrapper.html()).toContain('"totalOnHand":"7 view.productionInsight.materialInsight.unit.pcs')
+    for (const [tab, ids] of [['overview', ['matKpi', 'matShare']], ['groups', ['matGroups', 'matGroupTable']], ['trend', ['matTrendPcs', 'matTrend']], ['items', ['matItems']]]) {
+      page(wrapper).vm.selectSub(tab)
+      await settle()
+      ids.forEach((id) => expect(anchor(wrapper, id), `${tab}:${id}`).toBe(true))
+    }
+    expect(anchor(wrapper, 'matTrendCt')).toBe(false)
+    expect(warnings.filter((w) => /Maximum recursive updates|reactive object/.test(w))).toEqual([])
   })
 
   it('data tabs mount on first open without extra requests; donut / bar / trend render without recursive-update or reactive warnings', async () => {

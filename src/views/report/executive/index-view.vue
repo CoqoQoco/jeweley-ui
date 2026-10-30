@@ -88,6 +88,7 @@ import { buildQualitySheet } from './quality/quality-excel.js'
 import { stockConfig } from './stock/stock.config.js'
 import { salesConfig } from './sales/sales.config.js'
 import { materialGoldConfig } from './material/material.config.js'
+import { materialGemConfig } from './material/material-gem.config.js'
 import { STOCK_INSIGHT_ENDPOINT, buildOverviewParams as buildStockOverviewParams } from './stock/stock-helpers.js'
 import { SALES_INSIGHT_ENDPOINT, buildOverviewParams as buildSalesOverviewParams } from './sales/sales-helpers.js'
 import { MATERIAL_ENDPOINT, buildOverviewParams as buildMaterialOverviewParams } from './material/material-helpers.js'
@@ -446,15 +447,17 @@ export default {
     // ข้อมูล insight ของแท็บคลังสินค้า / ขายและเงิน / คลังวัตถุดิบ (snapshot ไม่มีช่วงเวลา) — ยิงพร้อมกันตอนกดปุ่ม เหมือนที่แท็บเรียก (body ตรงกับ view ของแต่ละแท็บ)
     async fetchSnapshotInsightData() {
       const store = this.productionInsightStore
-      const [stock, sales, material, quality] = await Promise.all([
+      const [stock, sales, material, materialGem, quality] = await Promise.all([
         store.post(STOCK_INSIGHT_ENDPOINT, buildStockOverviewParams()),
         store.post(SALES_INSIGHT_ENDPOINT, buildSalesOverviewParams()),
         // คลังวัตถุดิบไม่ผูก metal scope → postRaw (ไม่เติม metal)
         store.postRaw(MATERIAL_ENDPOINT, buildMaterialOverviewParams('GOLD')),
+        // พลอยเป็นส่วนเสริม: ล้มแล้วเงียบ (null) ข้าม sheet พลอย
+        api.jewelry.post(MATERIAL_ENDPOINT, buildMaterialOverviewParams('GEM'), { skipError: true, skipLoading: true }).catch(() => null),
         // คุณภาพข้อมูลเป็นส่วนเสริม: ล้มแล้วเงียบ (null) ข้าม sheet นี้ — เหมือน Digest
         api.jewelry.post(DATA_QUALITY_ENDPOINT, this.metalScopeStore.scoped(buildQualityOverviewParams()), { skipError: true, skipLoading: true }).catch(() => null)
       ])
-      return { stock, sales, material, quality }
+      return { stock, sales, material, materialGem, quality }
     },
 
     buildSnapshotExportSheets(data) {
@@ -465,7 +468,9 @@ export default {
         stockConfig,
         salesConfig,
         materialConfig: materialGoldConfig,
-        materialKindLabel: this.$t('view.productionInsight.materialInsight.kind.GOLD')
+        materialKindLabel: this.$t('view.productionInsight.materialInsight.kind.GOLD'),
+        materialGemConfig,
+        materialGemKindLabel: this.$t('view.productionInsight.materialInsight.kind.GEM')
       })
     },
 

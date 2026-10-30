@@ -27,7 +27,7 @@
         </dl>
         <p class="material-min-modal__formula">{{ $t('view.productionInsight.materialInsight.modal.formula', formula) }}</p>
 
-        <FormFieldGeneric :label="$t('view.productionInsight.materialInsight.modal.minQty')" :required="true" :error="errorText('minQty')">
+        <FormFieldGeneric :label="$t('view.productionInsight.materialInsight.modal.minQty', { unit })" :required="true" :error="errorText('minQty')">
           <InputTextGeneric v-model="form.minQty" type="number" min="0" step="any" />
         </FormFieldGeneric>
         <FormFieldGeneric :label="$t('view.productionInsight.materialInsight.modal.leadTimeDays')" :error="errorText('leadTimeDays')">
@@ -53,6 +53,7 @@ import { defineAsyncComponent } from 'vue'
 import { useMaterialInsightApiStore } from '@/stores/modules/api/material/material-insight-api.js'
 import { success } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { qtyUnitLabelKey } from '@/components/insight/insight-helpers.js'
 import { createMinForm, validateMinForm, buildMinSaveBody, buildMinDeleteBody, describeAutoMin, formatGram } from './material-helpers.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
@@ -94,7 +95,7 @@ export default {
     },
 
     unit() {
-      return this.kind === 'GOLD' ? 'g' : ''
+      return this.kind === 'GOLD' ? 'g' : this.$t(qtyUnitLabelKey(this.item?.unit))
     },
 
     hasOverride() {
@@ -102,7 +103,7 @@ export default {
     },
 
     formula() {
-      return describeAutoMin(this.item, this.policy)
+      return { ...describeAutoMin(this.item, this.policy), unit: this.unit }
     }
   },
 

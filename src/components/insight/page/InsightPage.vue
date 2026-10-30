@@ -6,7 +6,7 @@
   config:
     titleKey          — i18n key ของหัวข้อ
     findings          — { source } ชื่อ source ที่ response มี status/problems/forecasts/actions
-    filterFindings(items, filter, state) — (optional) กรอง problems/forecasts/actions ก่อนแสดง (client-side)
+    filterFindings(items, filter, state, response) — (optional) กรอง problems/forecasts/actions ก่อนแสดง (client-side)
     tabs / tabFor(ref, params, ctx) / floating — โหมดแท็บ (opt-in): tabFor คืน { tab, reveal?, anchor? } หรือ null เพื่อเลือกแท็บจาก params ของ finding/การ์ด KPI (เช่น workerType/deptKey) · floating = block ที่ mount เสมอนอกแท็บ
     helpParams(filter) — params เสริมของข้อความคำอธิบาย (view.productionInsight.help.<CODE>)
     masters           — ['fetchGem', 'fetchGemShape'] ชื่อ action ของ master-store ที่ต้องโหลดก่อนใช้ (cache-aware) → ctx.masters (state ของ master store)
@@ -119,7 +119,7 @@ export default {
     findings() {
       const res = this.responses[this.config.findings?.source] || {}
       // config.filterFindings(items, filter, state) (optional) — กรอง finding/action ฝั่งหน้าจอ (เช่น ตาม lens ของหมวด gold)
-      const pick = (items) => (this.config.filterFindings ? this.config.filterFindings(items || [], this.filter, this.state) : items || [])
+      const pick = (items) => (this.config.filterFindings ? this.config.filterFindings(items || [], this.filter, this.state, res) : items || [])
       return { status: res.status || '', problems: pick(res.problems), forecasts: pick(res.forecasts), actions: pick(res.actions) }
     },
 

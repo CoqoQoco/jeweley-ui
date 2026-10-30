@@ -3,10 +3,10 @@
 // ข้อความ finding/action ผ่าน i18n ชุดเดียวกับแท็บ (config.i18nPrefix + config.filterFindings เช่น remap FC_STK_COVER_* / FC_SAL_COLLECTION_NONE) — ไม่เขียนซ้ำ
 // ห้าม import Vue/Pinia/i18n: ทุกฟังก์ชันรับ `t` มาจาก caller · ตัวเลขตามธรรมเนียม sheet เดิม: น้ำหนัก/ปริมาณ = toFixed(2), เงิน = formatMoneyFull, จำนวนนับ = number, null = ''
 import { formatDate } from '@/services/utils/dayjs.js'
-import { resolveFindingParams, formatThaiMonthYear } from '@/components/insight/insight-helpers.js'
+import { resolveFindingParams, formatThaiMonthYear, formatQtyList } from '@/components/insight/insight-helpers.js'
 import { buildAgeRows, buildReceiptRows, buildCategoryRows } from './stock/stock-helpers.js'
 import { AGING_KEYS, buildTopCustomerRows } from './sales/sales-helpers.js'
-import { buildItemRows } from './material/material-helpers.js'
+import { buildItemRows, qtyUnitLabelKey } from './material/material-helpers.js'
 import { formatMoneyFull } from './executive-helpers.js'
 
 const X = 'view.executive.excel.insight'
@@ -28,14 +28,17 @@ export function renderSnapshotText(t, prefix, code, params) {
     params,
     (key) => t(`view.executive.department.${key}`),
     (workerType) => t(`view.productionInsight.gold.workerType.${workerType}`),
-    (metal) => t(`view.productionInsight.gold.metalLabel.${metal}`)
+    (metal) => t(`view.productionInsight.gold.metalLabel.${metal}`),
+    undefined,
+    undefined,
+    (entries) => formatQtyList(entries, (key) => t(key))
   )
   return t(`${prefix}.${code}`, resolved)
 }
 
 // problems / forecasts / actions ของ 1 หมวดในแผ่นเดียว (คอลัมน์ ประเภท/ระดับ/ข้อความ/ผู้รับผิดชอบ) — config.filterFindings (ถ้ามี) ทำงานก่อนแปลข้อความ เหมือนบนจอ
 export function buildSnapshotFindingsRows(overview, config, t) {
-  const pick = (items) => (config.filterFindings ? config.filterFindings(items || []) : items || [])
+  const pick = (items) => (config.filterFindings ? config.filterFindings(items || [], undefined, undefined, overview) : items || [])
   const kindLabel = (kind) => t(`${X}.kind.${kind}`)
   const rows = []
   const push = (kind, finding) =>
@@ -203,11 +206,95 @@ export function buildMaterialSheets(overview, { t, config, kindLabel }) {
   ]
 }
 
-// รวมทั้ง 3 หมวด: ข้อมูลที่ยังไม่มี (null/undefined) ข้ามหมวดนั้น — ลำดับ sheet: คลังสินค้า → ขายและเงิน → คลังวัตถุดิบ
+// ---- คลังวัตถุดิบ (พลอย: หลายหน่วย เม็ด/กะรัต + มูลค่า THB) ----
+
+const qtyCell = (value, unit) => (value != null ? (unit === 'pcs' ? String(Math.round(Number(value))) : Number(value).toFixed(2)) : '')
+
+export function buildMaterialGemSheets(overview, { t, config, kindLabel }) {
+  const lead = (firstKey) => buildSnapshotLeadRows(overview, kindLabel, firstKey, t)
+  const unitLabel = (unit) => t(qtyUnitLabelKey(unit))
+  const itemRows = buildItemRows(overview?.items, 'all', t).map((row) => ({
+    code: row.code,
+    type: row.groupName || '',
+    unit: unitLabel(row.unit),
+    onHand: qtyCell(row.onHand, row.unit),
+    onProcess: qtyCell(row.onProcess, row.unit),
+    value: money(row.value),
+    avgMonthlyUsage: qtyCell(row.avgMonthlyUsage, row.unit),
+    coverDays: row.coverDays != null ? Number(Number(row.coverDays).toFixed(1)) : '',
+    autoMin: qtyCell(row.autoMin, row.unit),
+    effectiveMin: qtyCell(row.effectiveMin, row.unit),
+    minSource: row.minSourceText,
+    status: row.statusText,
+    lastMove: row.neverConsumed || !row.lastMovementDate ? t(`${MATERIAL}.neverMoved`) : formatDate(row.lastMovementDate)
+  }))
+  const seriesRows = (overview?.seriesByUnit || []).flatMap((entry) =>
+    (entry.points || []).map((p) => ({
+      unit: unitLabel(entry.unit),
+      month: monthLabel(p.month),
+      inflow: qtyCell(p.inflow, entry.unit),
+      consumed: qtyCell(p.consumed, entry.unit),
+      returned: qtyCell(p.returned, entry.unit),
+      other: qtyCell(p.other, entry.unit),
+      endStock: qtyCell(p.endStock, entry.unit)
+    }))
+  )
+  const valueRows = (overview?.valueSeries || []).map((p) => ({ month: monthLabel(p.month), inflowValue: money(p.inflowValue), consumedValue: money(p.consumedValue), returnedValue: money(p.returnedValue), endStockValue: money(p.endStockValue) }))
+
+  return [
+    { sheetName: t(`${SN}.materialGemFindings`), data: [...lead('kind'), ...buildSnapshotFindingsRows(overview, config, t)], columns: findingColumns(t) },
+    {
+      sheetName: t(`${SN}.materialGemItems`),
+      data: [...lead('code'), ...itemRows],
+      columns: [
+        col(t(`${SN}.colMaterialCode`), 'code'),
+        col(t(`${MATERIAL}.gem.colType`), 'type'),
+        col(t(`${SN}.colUnit`), 'unit'),
+        col(t(`${MATERIAL}.gem.colOnHand`), 'onHand'),
+        col(t(`${MATERIAL}.gem.colOnProcess`), 'onProcess'),
+        col(t(`${MATERIAL}.gem.colValue`), 'value'),
+        col(t(`${MATERIAL}.gem.colAvgMonthly`), 'avgMonthlyUsage'),
+        col(t(`${MATERIAL}.colCoverDays`), 'coverDays'),
+        col(t(`${MATERIAL}.gem.colAutoMin`), 'autoMin'),
+        col(t(`${MATERIAL}.gem.colEffectiveMin`), 'effectiveMin'),
+        col(t(`${SN}.colMinSource`), 'minSource'),
+        col(t(`${MATERIAL}.colStatus`), 'status'),
+        col(t(`${MATERIAL}.colLastMove`), 'lastMove')
+      ]
+    },
+    {
+      sheetName: t(`${SN}.materialGemSeries`),
+      data: [...lead('unit'), ...seriesRows],
+      columns: [
+        col(t(`${SN}.colUnit`), 'unit'),
+        col(t(`${SN}.colMonth`), 'month'),
+        col(t(`${MATERIAL}.seriesInflow`), 'inflow'),
+        col(t(`${MATERIAL}.seriesConsumed`), 'consumed'),
+        col(t(`${MATERIAL}.seriesReturned`), 'returned'),
+        col(t(`${MATERIAL}.seriesOther`), 'other'),
+        col(t(`${MATERIAL}.seriesEndStock`), 'endStock')
+      ]
+    },
+    {
+      sheetName: t(`${SN}.materialGemValue`),
+      data: [...lead('month'), ...valueRows],
+      columns: [
+        col(t(`${SN}.colMonth`), 'month'),
+        col(t(`${MATERIAL}.seriesInflow`), 'inflowValue'),
+        col(t(`${MATERIAL}.seriesConsumed`), 'consumedValue'),
+        col(t(`${MATERIAL}.seriesReturned`), 'returnedValue'),
+        col(t(`${MATERIAL}.seriesEndStock`), 'endStockValue')
+      ]
+    }
+  ]
+}
+
+// รวมทั้ง 3 หมวด (วัตถุดิบมีทอง + พลอยแยกกัน): ข้อมูลที่ยังไม่มี (null/undefined) ข้ามหมวดนั้น — ลำดับ sheet: คลังสินค้า → ขายและเงิน → คลังวัตถุดิบ
 export function buildSnapshotInsightSheets(data, ctx) {
   const sheets = []
   if (data?.stock) sheets.push(...buildStockSheets(data.stock, { t: ctx.t, config: ctx.stockConfig, metalLabel: ctx.metalLabel }))
   if (data?.sales) sheets.push(...buildSalesSheets(data.sales, { t: ctx.t, config: ctx.salesConfig, metalLabel: ctx.metalLabel }))
   if (data?.material) sheets.push(...buildMaterialSheets(data.material, { t: ctx.t, config: ctx.materialConfig, kindLabel: ctx.materialKindLabel }))
+  if (data?.materialGem) sheets.push(...buildMaterialGemSheets(data.materialGem, { t: ctx.t, config: ctx.materialGemConfig, kindLabel: ctx.materialGemKindLabel }))
   return sheets
 }

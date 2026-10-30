@@ -1,12 +1,12 @@
 // material-helpers.js — pure logic ของแท็บ "คลังวัตถุดิบ" (MaterialInsight) — ห้าม import Vue/i18n
-// ปัจจุบันรองรับ kind GOLD (หน่วย g) · GEM (พลอย) จะเพิ่มภายหลังเป็น config แยก
-import { formatThaiMonthYear } from '@/components/insight/insight-helpers.js'
+// รองรับ kind GOLD (หน่วย g) และ GEM (พลอย — หลายหน่วย เม็ด/กะรัต + มูลค่า THB) · ฟังก์ชัน *Gem*/ByUnit ท้ายไฟล์ใช้เฉพาะ config พลอย
+import { formatThaiMonthYear, formatQty, formatQtyList, qtyUnitLabelKey } from '@/components/insight/insight-helpers.js'
 import { resolvePresetRange } from '@/services/utils/range-presets.js'
 import { isoOrNull } from '@/components/insight/page/insight-page-helpers.js'
 
 export const MATERIAL_ENDPOINT = 'MaterialInsight/Overview'
 export const MATERIAL_MONTHS = 12
-export const MATERIAL_KINDS = ['GOLD']
+export const MATERIAL_KINDS = ['GOLD', 'GEM']
 export const DEFAULT_MATERIAL_KIND = 'GOLD'
 
 const S = 'view.productionInsight.materialInsight'
@@ -271,9 +271,14 @@ export function createPolicyForm(policy) {
   return Object.fromEntries(POLICY_FIELDS.map((f) => [f.key, policy?.[f.key] ?? '']))
 }
 
-export function validatePolicyForm(form) {
+// พลอยไม่มี "ขั้นต่ำพื้น" (floorQty คงเป็น 0 ตามนโยบาย API) → ไม่แสดง/ไม่ส่งช่องนี้
+export function policyFieldsFor(kind) {
+  return kind === 'GEM' ? POLICY_FIELDS.filter((f) => f.key !== 'floorQty') : POLICY_FIELDS
+}
+
+export function validatePolicyForm(form, fields = POLICY_FIELDS) {
   const errors = {}
-  POLICY_FIELDS.forEach((field) => {
+  fields.forEach((field) => {
     const n = toNumberOrNull(form[field.key])
     if (n === null || Number.isNaN(n) || n < field.min || n > field.max || (field.integer && !Number.isInteger(n))) errors[field.key] = field.key
   })
@@ -281,9 +286,9 @@ export function validatePolicyForm(form) {
 }
 
 // ส่งเฉพาะ field ที่ค่าต่างจาก policy ปัจจุบัน (null = คงเดิมที่ฝั่ง API จึงไม่ต้องส่ง field อื่น)
-export function buildPolicySaveBody(kind, form, current) {
+export function buildPolicySaveBody(kind, form, current, fields = POLICY_FIELDS) {
   const body = { kind }
-  POLICY_FIELDS.forEach((field) => {
+  fields.forEach((field) => {
     const next = toNumberOrNull(form[field.key])
     if (next !== null && !Number.isNaN(next) && next !== Number(current?.[field.key])) body[field.key] = next
   })
@@ -292,4 +297,90 @@ export function buildPolicySaveBody(kind, form, current) {
 
 export function hasPolicyChanges(body) {
   return Object.keys(body).some((key) => key !== 'kind')
+}
+
+// ---- พลอย (GEM): หลายหน่วย + มูลค่า THB ----
+// ห้ามบวกเม็ดกับกะรัต → ทุกยอดรวมอ่านจาก byUnit · ทองไม่มี byUnit → fallback เป็นก้อนเดียวหน่วย g (ฟังก์ชันใช้ร่วมได้)
+
+export { formatQty, qtyUnitLabelKey }
+
+export function formatQtyUnit(value, unit, t) {
+  return `${formatQty(value, unit)} ${t(qtyUnitLabelKey(unit))}`
+}
+
+export function formatMoney(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return '—'
+  return `฿${new Intl.NumberFormat('th-TH', { maximumFractionDigits: 0 }).format(Number(value))}`
+}
+
+// รายการต่อหน่วยของ KPI: [{ unit, ...ฟิลด์ของ byUnit }] · ไม่มี byUnit = หน่วยเดียว g จากยอดรวมเดิม
+export function kpiUnitEntries(kpi) {
+  if (Array.isArray(kpi?.byUnit) && kpi.byUnit.length) return kpi.byUnit
+  return [{ unit: kpi?.unit || 'g', itemCount: kpi?.itemCount || 0, totalOnHand: kpi?.totalOnHand || 0, totalOnProcess: kpi?.totalOnProcess || 0, totalAvailable: kpi?.totalAvailable || 0, deadOnHand: kpi?.deadOnHand || 0, negativeWeight: kpi?.negativeWeight || 0 }]
+}
+
+// ข้อความ "X เม็ด · Y กะรัต" ของฟิลด์ใน byUnit (abs = ค่าสัมบูรณ์ เช่น ยอดติดลบ)
+export function formatUnitField(entries, field, t, abs = false) {
+  const list = (entries || []).map((e) => ({ unit: e.unit, total: abs ? Math.abs(Number(e[field]) || 0) : Number(e[field]) || 0 }))
+  return formatQtyList(list, t)
+}
+
+// แถวกลุ่มตามประเภทพลอย — เรียงตามมูลค่า · ปริมาณเป็นข้อความต่อหน่วย (กลุ่มหน่วยเดียวที่ไม่มี byUnit ใช้ unit + onHand)
+export function buildGemGroupRows(groups, t) {
+  return (groups || [])
+    .map((g) => {
+      const entries = Array.isArray(g.byUnit) && g.byUnit.length ? g.byUnit : g.unit ? [{ unit: g.unit, totalOnHand: g.onHand, totalOnProcess: g.onProcess }] : []
+      return {
+        key: g.code,
+        code: g.code,
+        label: g.name || g.code,
+        itemCount: g.itemCount || 0,
+        value: Number(g.value) || 0,
+        onHandText: entries.length ? formatUnitField(entries, 'totalOnHand', t) : '—',
+        onProcessText: entries.length ? formatUnitField(entries, 'totalOnProcess', t) : '—',
+        negativeCount: g.negativeCount || 0
+      }
+    })
+    .sort((a, b) => b.value - a.value || a.label.localeCompare(b.label, 'th'))
+}
+
+export function buildGemGroupBarRows(groups, t) {
+  return buildGemGroupRows(groups, t).filter((g) => g.value > 0)
+}
+
+export function buildGemGroupSlices(groups, t) {
+  return buildGemGroupBarRows(groups, t).map((g) => ({ label: g.label, value: g.value }))
+}
+
+// แถวรายการพลอย — ฟิลด์เดิมของ buildItemRows + ป้ายหน่วย/ไม่มีราคา
+export function buildGemItemRows(items, filter, t) {
+  return buildItemRows(items, filter, t).map((row) => ({
+    ...row,
+    unitText: t(qtyUnitLabelKey(row.unit)),
+    noPrice: (row.onHand > 0 || row.onProcess > 0) && !(Number(row.value) > 0) && !(Number(row.onProcessValue) > 0)
+  }))
+}
+
+// จุดของกราฟเคลื่อนไหวต่อหน่วย (seriesByUnit)
+export function seriesPointsForUnit(overview, unit) {
+  return overview?.seriesByUnit?.find((s) => s.unit === unit)?.points || []
+}
+
+export function hasUnit(overview, unit) {
+  return (overview?.units || []).includes(unit)
+}
+
+// MAT_* ของพลอย: ทำให้ params ยอดรวมอยู่ในรูป qtyByUnit [{unit,total}] (ตัวแปลข้อความอยู่ที่ resolveFindingParams)
+// หลายหน่วย = byUnit ที่ API ส่งมา · หน่วยเดียว = key เดิม (totalWeight/totalOnHand/totalOnProcess) + หน่วยเดียวของ response (overview.units)
+const TOTAL_KEYS = ['totalWeight', 'totalOnHand', 'totalOnProcess']
+
+export function remapGemFindings(items, filter, state, overview) {
+  return remapMaterialFindings(items).map((item) => {
+    const params = item?.params
+    if (!params) return item
+    if (Array.isArray(params.byUnit)) return { ...item, params: { ...params, qtyByUnit: params.byUnit } }
+    const key = TOTAL_KEYS.find((k) => typeof params[k] === 'number')
+    const unit = overview?.units?.length === 1 ? overview.units[0] : null
+    return key && unit ? { ...item, params: { ...params, qtyByUnit: [{ unit, total: params[key] }] } } : item
+  })
 }

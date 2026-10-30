@@ -108,7 +108,7 @@
 </template>
 
 <script>
-import { resolveStatusIcon, resolveFindingParams, resolveHelpKey, buildFindingKey, formatUnitLabel } from './insight-helpers.js'
+import { resolveStatusIcon, resolveFindingParams, resolveHelpKey, buildFindingKey, formatUnitLabel, formatQtyList } from './insight-helpers.js'
 import { buildSubTabOptions } from './page/insight-tabs-helpers.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
@@ -248,7 +248,8 @@ export default {
         this.translateWorkerType,
         this.translateMetal,
         this.resolveMaxWorkerNames(code),
-        this.translateBreakdownBy
+        this.translateBreakdownBy,
+        (entries) => formatQtyList(entries, (key) => this.$t(key))
       )
     },
 

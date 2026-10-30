@@ -8,6 +8,7 @@ import * as col from '@/components/insight/page/columns.js'
 import MaterialItemsToolbar from './material-items-toolbar.vue'
 import MaterialMinModal from './material-min-modal.vue'
 import MaterialPolicyDrawer from './material-policy-drawer.vue'
+import { materialGemConfig } from './material-gem.config.js'
 import {
   MATERIAL_ENDPOINT,
   GOLD_STAGE_ENDPOINT,
@@ -348,8 +349,8 @@ export const materialGoldConfig = markRaw({
   ]
 })
 
-// kind → config (GEM จะเพิ่มภายหลัง)
-export const MATERIAL_CONFIGS = { GOLD: materialGoldConfig }
+// kind → config (GEM = material-gem.config.js)
+export const MATERIAL_CONFIGS = { GOLD: materialGoldConfig, GEM: materialGemConfig }
 
 export function getMaterialConfig(kind) {
   return MATERIAL_CONFIGS[kind] || materialGoldConfig

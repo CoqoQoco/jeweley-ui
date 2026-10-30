@@ -161,6 +161,8 @@ const COUNT_SUFFIX = 'Count'
 // ปริมาณ/ชิ้นตามหน่วย (endStockQty) ทศนิยมไม่เกิน 2 · ยอดขายออกเฉลี่ยต่อเดือน (avgMonthlyOutflow) ไม่เกิน 1 ตำแหน่ง
 const QUANTITY_SUFFIX_DIGITS = { Qty: 2, Outflow: 1 }
 
+const MATERIAL_TOTAL_KEYS = ['totalWeight', 'totalOnHand', 'totalOnProcess']
+
 function applyNumericSuffixFormatting(resolved) {
   Object.keys(resolved).forEach((key) => {
     const value = resolved[key]
@@ -211,10 +213,20 @@ export function resolveFindingParams(
   translateWorkerType,
   translateMetal,
   maxWorkerNames = DEFAULT_MAX_WORKER_NAMES,
-  translateBreakdownBy
+  translateBreakdownBy,
+  formatQtyByUnit
 ) {
   if (!params) return {}
   const resolved = { ...params }
+  // qtyByUnit [{unit,total}] (MAT_* ของพลอย หลายหน่วย) → ข้อความ "X เม็ด · Y กะรัต" ใส่ลงทุก key ยอดรวมของคลังวัตถุดิบ (rule ใช้แค่ key ของตัวเอง)
+  if (Array.isArray(resolved.qtyByUnit) && typeof formatQtyByUnit === 'function') {
+    const text = formatQtyByUnit(resolved.qtyByUnit)
+    MATERIAL_TOTAL_KEYS.forEach((key) => {
+      resolved[key] = text
+    })
+    delete resolved.qtyByUnit
+    delete resolved.byUnit
+  }
   if (resolved.deptKey !== undefined && typeof translateDept === 'function') {
     resolved.deptKey = translateDept(resolved.deptKey)
   }
@@ -333,4 +345,27 @@ const HELP_KEY_CODES = new Set([
 
 export function resolveHelpKey(code) {
   return HELP_KEY_CODES.has(code) ? `view.productionInsight.help.${code}` : ''
+}
+
+// ---- ปริมาณวัตถุดิบหลายหน่วย (ทอง g · พลอย เม็ด/กะรัต) ----
+export const QTY_UNITS = ['pcs', 'ct', 'g']
+export const QTY_UNIT_LABEL_KEY = 'view.productionInsight.materialInsight.unit'
+
+export function qtyUnitLabelKey(unit) {
+  return `${QTY_UNIT_LABEL_KEY}.${QTY_UNITS.includes(unit) ? unit : 'g'}`
+}
+
+// เม็ด = จำนวนเต็ม · กะรัต/กรัม ทศนิยมไม่เกิน 2 · ว่าง = '—'
+export function formatQty(value, unit) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return '—'
+  return new Intl.NumberFormat('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: unit === 'pcs' ? 0 : 2 }).format(Number(value))
+}
+
+// "1,200,000 เม็ด · 123,374 กะรัต" — เรียงเม็ด → กะรัต → กรัม · ตัดหน่วยที่เป็น 0 ทิ้ง (ทั้งหมดเป็น 0 = "0 <หน่วยแรก>") · translate = (key) => ข้อความ
+export function formatQtyList(entries, translate) {
+  const list = [...(entries || [])].sort((a, b) => QTY_UNITS.indexOf(a.unit) - QTY_UNITS.indexOf(b.unit))
+  const shown = list.filter((e) => Number(e.total) !== 0)
+  const picked = shown.length ? shown : list.slice(0, 1)
+  if (!picked.length) return '0'
+  return picked.map((e) => `${formatQty(e.total, e.unit)} ${translate(qtyUnitLabelKey(e.unit))}`).join(' · ')
 }
