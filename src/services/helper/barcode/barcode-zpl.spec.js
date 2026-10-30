@@ -1156,3 +1156,66 @@ describe('ป้าย 50×14 มม. (GT800)', () => {
     })
   })
 })
+
+describe('GT800 — ย่อชื่อ/เรียงพลอยจาก master (nameEn)', () => {
+  const master = [
+    { code: 'DIA', nameEn: 'Diamond', labelCode: 'DI', labelSort: 1 },
+    { code: 'DS', nameEn: 'Single Cut Diamond', labelCode: 'DI', labelSort: 1 },
+    { code: 'YD', nameEn: 'Yellow Diamond', labelCode: 'DI', labelSort: 1 },
+    { code: 'RU', nameEn: 'Songea Ruby', labelCode: 'RU', labelSort: 2 },
+    { code: 'TS', nameEn: 'TSAVOLITE', labelCode: null, labelSort: null },
+    { code: 'ST', nameEn: 'BLACK STAR', labelCode: null, labelSort: null },
+    { code: 'XX', nameEn: 'Mix Stone', labelCode: null, labelSort: null },
+    { code: 'NOP', nameEn: 'พลอยนพเก้า', labelCode: null, labelSort: null },
+    { code: 'AQ', nameEn: 'Aquamarine', labelCode: null, labelSort: null }
+  ]
+  const meta = buildGemLabelMeta(master)
+
+  it('ย่อตามชื่อ master', () => {
+    expect(abbreviateGemText('1Yellow Diamond 0.5 ct.', meta)).toBe('1DI 0.5ct')
+    expect(abbreviateGemText(formatGemText('3Single Cut Diamond0.1 ct.'), meta)).toBe('3DI 0.1ct')
+    expect(abbreviateGemText(formatGemText('1Songea Ruby0.74 ct., OV-5.5X4.5'), meta)).toBe('1RU 0.74ct OV-5.5X 4.5')
+    expect(abbreviateGemText('2TSAVOLITE 0.3 ct.', meta)).toBe('2TS 0.3ct')
+    expect(abbreviateGemText('1black  star 0.3 ct.', meta)).toBe('1ST 0.3ct')
+    expect(abbreviateGemText('1Mix Stone 1 ct.', meta)).toBe('1XX 1ct')
+  })
+
+  it('ชื่อไทย/ไม่รู้จักไม่ถูกแตะ และไม่ตัดกลางคำ', () => {
+    expect(abbreviateGemText('1พลอยนพเก้า 1 ct.', meta)).toBe('1พลอยนพเก้า 1ct')
+    expect(abbreviateGemText('2Rubyx 0.1 ct.', meta)).toBe('2Rubyx 0.1ct')
+  })
+
+  it('master ไม่มีชื่อ (ไม่มี nameEn) -> ใช้ตารางสำรองเหมือนเดิม', () => {
+    const noNames = buildGemLabelMeta([{ code: 'DI', labelCode: 'DI', labelSort: 1 }])
+    expect(abbreviateGemText('1Diamond 0.5 ct.', noNames)).toBe('1DI 0.5ct')
+    expect(abbreviateGemText('1Diamond 0.5 ct.')).toBe('1DI 0.5ct')
+  })
+
+  it('detectGemCode ใช้ code ของ master', () => {
+    expect(detectGemCode('1Yellow Diamond 0.5 ct.', meta)).toBe('YD')
+    expect(detectGemCode('1Songea Ruby 0.5 ct.', meta)).toBe('RU')
+  })
+
+  it('GT800 แนวนอน: เรียงพลอยตาม labelSort และใช้รหัส master', () => {
+    const form = {
+      stockNumber: 'RG-001',
+      gems: ['1Songea Ruby 0.5 ct.', '1Aquamarine 0.2 ct.', '1Yellow Diamond 0.5 ct.'],
+      gemLabelMeta: meta
+    }
+    expect(layoutGt800(form, 'original').formattedGems).toEqual(['1DI 0.5ct', '1RU 0.5ct', '1AQ 0.2ct'])
+    expect(layoutGt800(form, 'vertical').formattedGems).toEqual(['1DI 0.5ct', '1RU 0.5ct', '1AQ 0.2ct'])
+    expect(generateGt800ZPL(form)).toContain('^FD1DI 0.5ct^FS')
+  })
+
+  it('ไม่มี meta -> ผลเหมือนเดิม (ไม่เรียง ใช้ตารางสำรอง)', () => {
+    const form = { stockNumber: 'RG-001', gems: ['1Ruby 0.5 ct.', '1Diamond 0.5 ct.'] }
+    expect(layoutGt800(form, 'original').formattedGems).toEqual(['1RU 0.5ct', '1DI 0.5ct'])
+    expect(layoutGt800({ ...form, gemLabelMeta: {} }, 'original').formattedGems).toEqual(['1RU 0.5ct', '1DI 0.5ct'])
+  })
+
+  it('legacy ZPL ไม่เปลี่ยนแม้มี gemLabelMeta', () => {
+    const form = { stockNumber: 'RG-001', gold: '18K', gems: ['1Ruby 0.5 ct.', '1Diamond 0.5 ct.'] }
+    expect(generateLegacyZPL({ ...form, gemLabelMeta: meta })).toBe(generateLegacyZPL(form))
+    expect(generateLegacyZPLVertical({ ...form, gemLabelMeta: meta })).toBe(generateLegacyZPLVertical(form))
+  })
+})

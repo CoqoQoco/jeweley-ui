@@ -46,13 +46,17 @@
 import JsBarcode from 'jsbarcode'
 import QRCode from 'qrcode'
 
-import { formatGemText, formatLabelPrice, normalizeGt800Size } from '@/services/helper/barcode/barcode-zpl.js'
+import { formatGemText, formatGt800Gems, formatLabelPrice, normalizeGt800Size } from '@/services/helper/barcode/barcode-zpl.js'
 import { PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
 
 export default {
   name: 'BarcodeTag',
 
   props: {
+    gemLabelMeta: {
+      type: Object,
+      default: null
+    },
     type: {
       type: String,
       default: 'gem'
@@ -175,6 +179,7 @@ export default {
 
     displayGems() {
       if (!this.isGt800) return this.gems
+      if (this.gemLabelMeta) return formatGt800Gems(this.gems, this.gemLabelMeta)
       return (this.gems || []).map(formatGemText)
     }
   },

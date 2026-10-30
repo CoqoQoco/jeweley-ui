@@ -7,6 +7,7 @@
     :stockNumber="labelCode"
     :gold="barcode.gold"
     :gems="previewGems"
+    :gemLabelMeta="effectiveGemLabelMeta"
     :size="barcode.size"
     :goldType="barcode.goldType"
     :salePrice="barcode.salePrice"
@@ -28,6 +29,7 @@
     :price="price"
     :hidePrice="hidePrice"
     :gems="barcode.gems"
+    :gemLabelMeta="effectiveGemLabelMeta"
     :madeIn="barcode.madeIn"
     :profile="profile"
   />
@@ -37,6 +39,7 @@
 import { defineAsyncComponent } from 'vue'
 
 import { resolveLabelCode, layoutGt800, getRemarkPreviewChar } from '@/services/helper/barcode/barcode-zpl.js'
+import { loadGemLabelMeta } from '@/services/helper/barcode/gem-label-meta.js'
 import { getBarcodeProfile, PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
 
 const barcodeDemo = defineAsyncComponent(() =>
@@ -97,14 +100,22 @@ export default {
     }
   },
 
+  data() {
+    return { loadedGemLabelMeta: null }
+  },
+
   computed: {
+    effectiveGemLabelMeta() {
+      return this.gemLabelMeta || this.loadedGemLabelMeta
+    },
+
     // ค่าชุดเดียวกับที่ส่งไปพิมพ์ป้าย 50×14 (layoutGt800Small อ่านจากชุดนี้)
     smallFormValue() {
       return {
         ...this.barcode,
         hidePrice: this.hidePrice,
         hideMold: this.hideMold,
-        gemLabelMeta: this.gemLabelMeta
+        gemLabelMeta: this.effectiveGemLabelMeta
       }
     },
 
@@ -121,7 +132,10 @@ export default {
     // สัญลักษณ์หมายเหตุ: แท็บ original + GT800 เท่านั้น ตำแหน่งใช้ layout เดียวกับ ZPL จริง
     remarkLayout() {
       if (this.selectedType !== 'original' || this.profile !== PRINTER_PROFILES.GT800) return null
-      return layoutGt800({ ...this.barcode, remarkSymbol: this.remarkSymbol }, 'original').remark
+      return layoutGt800(
+        { ...this.barcode, remarkSymbol: this.remarkSymbol, gemLabelMeta: this.effectiveGemLabelMeta },
+        'original'
+      ).remark
     },
 
     remarkChar() {
@@ -141,6 +155,11 @@ export default {
     showProductName() {
       return this.selectedType === 'original-qr' || (this.selectedType === 'original' && this.profile === PRINTER_PROFILES.GT800)
     }
+  },
+
+  async created() {
+    if (this.gemLabelMeta || this.profile !== PRINTER_PROFILES.GT800) return
+    this.loadedGemLabelMeta = await loadGemLabelMeta()
   }
 }
 </script>

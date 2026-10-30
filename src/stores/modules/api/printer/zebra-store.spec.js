@@ -20,7 +20,13 @@ vi.mock('@/services/api/printer-config-service.js', () => ({
   fetchPrinterList: vi.fn()
 }))
 
+vi.mock('@/services/helper/barcode/gem-label-meta.js', () => ({
+  loadGemLabelMeta: vi.fn()
+}))
+
 import api from '@/axios/axios-helper.js'
+import { loadGemLabelMeta } from '@/services/helper/barcode/gem-label-meta.js'
+import { buildGemLabelMeta } from '@/services/helper/barcode/barcode-zpl.js'
 import { printZpl, getPrinterState } from '@/services/api/print-bridge-service.js'
 import { fetchPrinterList } from '@/services/api/printer-config-service.js'
 import {
@@ -42,6 +48,7 @@ describe('zebraPrinterApi — เลือก template ตาม profile + ส�
     printZpl.mockReset()
     getPrinterState.mockReset()
     fetchPrinterList.mockReset()
+    loadGemLabelMeta.mockReset()
     setCopyDelayMs(0)
   })
 
@@ -436,6 +443,66 @@ describe('zebraPrinterApi — เลือก template ตาม profile + ส�
 
       expect(res.profile).toBe('legacy')
       expect(fetchPrinterList).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('gemLabelMeta จาก master — ป้าย GT800 ย่อชื่อ/เรียงพลอยตาม master', () => {
+    const meta = buildGemLabelMeta([
+      { code: 'DIA', nameEn: 'Diamond', labelCode: 'DI', labelSort: 2 },
+      { code: 'RU', nameEn: 'Songea Ruby', labelCode: 'RU', labelSort: 1 }
+    ])
+    const form = () => ({
+      stockNumber: 'RG-001',
+      barcodeType: 'original',
+      gems: ['1Diamond 0.1 ct.', '1Songea Ruby 0.5 ct.'],
+      print: 1
+    })
+
+    beforeEach(() => {
+      setBarcodePrinterName('GT800 RAW')
+      printZpl.mockResolvedValue({ success: true })
+    })
+
+    it('GT800: fetchZebraPrint เติม meta แล้วพลอยเรียง RU ก่อน DI', async () => {
+      setBarcodeProfile(PRINTER_PROFILES.GT800)
+      loadGemLabelMeta.mockResolvedValue(meta)
+
+      await zebraPrinterApi().fetchZebraPrint({ formValue: form() })
+
+      const zpl = printZpl.mock.calls[0][0].zpl
+      expect(zpl.indexOf('1RU 0.5ct')).toBeGreaterThan(-1)
+      expect(zpl.indexOf('1RU 0.5ct')).toBeLessThan(zpl.indexOf('1DI 0.1ct'))
+    })
+
+    it('GT800: fetchZebraPrints (batch) เติม meta ให้ทุกฟอร์ม', async () => {
+      setBarcodeProfile(PRINTER_PROFILES.GT800)
+      loadGemLabelMeta.mockResolvedValue(meta)
+
+      const forms = [form(), form()]
+      await zebraPrinterApi().fetchZebraPrints({ formValue: forms })
+
+      expect(loadGemLabelMeta).toHaveBeenCalledTimes(1)
+      expect(forms.every((f) => f.gemLabelMeta === meta)).toBe(true)
+    })
+
+    it('โหลด master ไม่ได้ (null) -> พิมพ์ต่อด้วยตารางสำรอง ไม่เรียง', async () => {
+      setBarcodeProfile(PRINTER_PROFILES.GT800)
+      loadGemLabelMeta.mockResolvedValue(null)
+
+      const res = await zebraPrinterApi().fetchZebraPrint({ formValue: form() })
+
+      expect(res.status).toBe('success')
+      const zpl = printZpl.mock.calls[0][0].zpl
+      expect(zpl.indexOf('1DI 0.1ct')).toBeLessThan(zpl.indexOf('1RU 0.5ct'))
+    })
+
+    it('legacy: ไม่โหลด master', async () => {
+      setBarcodeProfile(PRINTER_PROFILES.LEGACY)
+      api.zebraPrinter.printZPL.mockResolvedValue({ status: 'success' })
+
+      await zebraPrinterApi().fetchZebraPrint({ formValue: form() })
+
+      expect(loadGemLabelMeta).not.toHaveBeenCalled()
     })
   })
 })

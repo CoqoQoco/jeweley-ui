@@ -346,20 +346,40 @@ const GT800_GEM_CODES = [
   .sort((a, b) => b[0].length - a[0].length)
   .map(([name, code]) => ({ re: new RegExp(`(?<![A-Za-z])${name.replace(/ /g, '\\s+')}(?![A-Za-z])`, 'gi'), code }))
 
-// GT800 เท่านั้น — ย่อชื่อพลอยเป็นรหัส master + ย่อ "ct.," เป็น "ct" ไม่แตะเกรด (VS1, G,VS1, VVS2, SI1 ฯลฯ)
-export function abbreviateGemText(text) {
-  if (!text) return text || ''
-  let result = text
-  GT800_GEM_CODES.forEach(({ re, code }) => {
-    result = result.replace(re, code)
-  })
-  result = result.replace(/(\d)\s*ct\.?,?\s*/gi, (match, digit, offset, str) =>
+// ตารางชื่อจาก master (สร้างโดย buildGemLabelMeta) — ไม่มี = ใช้ตาราง hardcode
+function getMasterNameIndex(meta) {
+  const index = meta?.__names
+  return index && index.re ? index : null
+}
+
+function normalizeGemName(name) {
+  return String(name ?? '').toLowerCase().replace(/\s+/g, ' ').trim()
+}
+
+function shortenCt(text) {
+  return text.replace(/(\d)\s*ct\.?,?\s*/gi, (match, digit, offset, str) =>
     `${digit}ct${offset + match.length < str.length ? ' ' : ''}`
   )
+}
+
+// GT800 เท่านั้น — ย่อชื่อพลอยเป็นรหัส (master ถ้ามี meta, ไม่งั้นตาราง hardcode) + ย่อ "ct.," เป็น "ct" ไม่แตะเกรด (VS1, G,VS1, VVS2, SI1 ฯลฯ)
+export function abbreviateGemText(text, meta) {
+  if (!text) return text || ''
+  let result = text
+  const index = getMasterNameIndex(meta)
+  if (index) {
+    result = result.replace(index.re, (matched) => index.map.get(normalizeGemName(matched))?.label || matched)
+  } else {
+    GT800_GEM_CODES.forEach(({ re, code }) => {
+      result = result.replace(re, code)
+    })
+  }
+  result = shortenCt(result)
   return result.replace(/\s{2,}/g, ' ').trim()
 }
 
-function formatGt800Gems(gems) {
+export function formatGt800Gems(gems, meta) {
+  if (hasGemMeta(meta)) return buildSortedGemEntries(gems, meta).map((entry) => entry.rawText)
   return (Array.isArray(gems) ? gems : [])
     .filter(Boolean)
     .map((gem) => abbreviateGemText(formatGemText(gem)))
@@ -380,8 +400,8 @@ function estimateGt800BarcodeEnd(code, startX) {
   return startX + (code.length + GT800_BARCODE_CHAR_EXTRA) * GT800_BARCODE_CHAR_WIDTH + GT800_BARCODE_END_PAD
 }
 
-function chooseGemLevel({ gems, checkLines }) {
-  const formattedGems = formatGt800Gems(gems)
+function chooseGemLevel({ gems, checkLines, meta }) {
+  const formattedGems = formatGt800Gems(gems, meta)
 
   const hasManyGemLines = formattedGems.length >= GT800_ROOMY_LINE_COUNT_THRESHOLD
   const linesFitLength =
@@ -484,7 +504,7 @@ export function layoutGt800(formValue, template) {
   if (template === 'original') {
     const salePriceText = formValue?.hidePrice ? '' : formatLabelPrice(formValue?.salePrice)
     const codeLine = [code, salePriceText].filter(Boolean).join(' - ')
-    const { level, formattedGems } = chooseGemLevel({ gems, checkLines: [codeLine] })
+    const { level, formattedGems } = chooseGemLevel({ gems, checkLines: [codeLine], meta: formValue?.gemLabelMeta })
 
     const productNameEn = formValue?.productNameEn || ''
     const nameFont = computeGt800NameFont(productNameEn)
@@ -528,7 +548,7 @@ export function layoutGt800(formValue, template) {
   const priceText = hasPrice ? formatLabelPrice(formValue.price) : ''
   const codeLine = [formValue?.productNumber, priceText].filter(Boolean).join(' - ')
 
-  const formattedGems = formatGt800Gems(gems)
+  const formattedGems = formatGt800Gems(gems, formValue?.gemLabelMeta)
   const gemRows = buildGt800GemRows(formattedGems)
   const gem = computeGt800GemFont(gemRows.length, longestLength(gemRows), GT800_GEM_X)
   const productNameEn = formValue?.productNameEn || ''
@@ -763,28 +783,58 @@ export function formatPriceCode(value) {
 }
 
 // map master gem → { CODE: { labelCode, labelSort } } — labelSort ไม่มีใน response (API เก่า) = undefined, null = ไม่กำหนดลำดับ
+// เพิ่ม index ชื่ออังกฤษ (nameEn) → { code, label } ไว้ใน property ไม่ enumerable (__names) ใช้ย่อข้อความพลอยอิสระ
 export function buildGemLabelMeta(masterGems) {
   const meta = {}
+  const names = new Map()
   ;(Array.isArray(masterGems) ? masterGems : []).forEach((gem) => {
     const code = String(gem?.code ?? '').trim().toUpperCase()
     if (!code) return
+    const labelCode = gem.labelCode ? String(gem.labelCode).trim().toUpperCase() : null
     meta[code] = {
-      labelCode: gem.labelCode ? String(gem.labelCode).trim().toUpperCase() : null,
+      labelCode,
       labelSort: 'labelSort' in gem ? gem.labelSort : undefined
     }
+    const key = normalizeGemName(gem.nameEn)
+    if (!key || !/^[\x20-\x7E]+$/.test(key) || names.has(key)) return
+    const candidate = labelCode || code
+    names.set(key, { code, label: /^[A-Z0-9]+$/.test(candidate) ? candidate : null })
   })
+  const pattern = [...names.keys()]
+    .sort((x, y) => y.length - x.length)
+    .map((key) => key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s+'))
+    .join('|')
+  const re = pattern ? new RegExp(`(?<![A-Za-z])(?:${pattern})(?![A-Za-z])`, 'gi') : null
+  Object.defineProperty(meta, '__names', { value: { map: names, re }, enumerable: false })
   return meta
 }
 
+function hasGemMeta(meta) {
+  return !!meta && (Object.keys(meta).length > 0 || !!getMasterNameIndex(meta))
+}
+
+// จับชื่อพลอยแรกสุดในข้อความด้วยตาราง master → { code, label } หรือ null
+function matchMasterGem(text, index) {
+  index.re.lastIndex = 0
+  const found = index.re.exec(text)
+  return found ? index.map.get(normalizeGemName(found[0])) || null : null
+}
+
 // รหัส master (DI/RU/…) ของข้อความพลอย — ชื่อเต็มที่ปรากฏก่อนสุดชนะ ไม่เจอชื่อค่อยหารหัสย่อนำหน้า (ข้อความที่ย่อมาแล้ว)
-export function detectGemCode(text) {
+export function detectGemCode(text, meta) {
   const source = String(text ?? '')
-  let best = null
-  GT800_GEM_CODES.forEach(({ re, code }) => {
-    const index = source.search(re)
-    if (index >= 0 && (best === null || index < best.index)) best = { index, code }
-  })
-  if (best) return best.code
+  const index = getMasterNameIndex(meta)
+  if (index) {
+    const matched = matchMasterGem(source, index)
+    if (matched) return matched.code
+  } else {
+    let best = null
+    GT800_GEM_CODES.forEach(({ re, code }) => {
+      const at = source.search(re)
+      if (at >= 0 && (best === null || at < best.index)) best = { index: at, code }
+    })
+    if (best) return best.code
+  }
   const abbreviated = source.match(/^\s*\d*\s*([A-Z]{2})(?![A-Za-z])/)
   return abbreviated ? abbreviated[1] : ''
 }
@@ -798,29 +848,42 @@ function resolveGemSortKey(code, meta) {
   return fallbackIndex >= 0 ? fallbackIndex : null
 }
 
-// เรียงพลอย: labelSort น้อย→มาก, ไม่มี labelSort ต่อท้ายเรียงตามรหัสบนป้าย (ตัวอักษร) · ข้อความย่อด้วย labelCode (ไม่มีใช้ code)
-export function sortGt800LabelGems(gems, meta = {}) {
+// ย่อ + เรียงพลอย: labelSort น้อย→มาก, ไม่มี labelSort ต่อท้ายเรียงตามรหัสบนป้าย (ตัวอักษร) · rawText = ไม่แทรกช่องว่างหลังจำนวน
+function buildSortedGemEntries(gems, meta) {
+  const index = getMasterNameIndex(meta)
   const entries = (Array.isArray(gems) ? gems : [])
     .filter(Boolean)
-    .map((gem, index) => {
-      const code = detectGemCode(gem)
-      const labelCode = (code && meta?.[code]?.labelCode) || code
-      let text = abbreviateGemText(formatGemText(gem)).replace(/^(\d+)(?=[A-Z])/, '$1 ')
-      if (code && labelCode && labelCode !== code) {
-        text = text.replace(new RegExp(`(?<![A-Za-z])${code}(?![A-Za-z])`), labelCode)
+    .map((gem, position) => {
+      let rawText = abbreviateGemText(formatGemText(gem), meta)
+      let code
+      let labelCode
+      if (index) {
+        const matched = matchMasterGem(String(gem), index)
+        code = matched ? matched.code : detectGemCode(gem, meta)
+        labelCode = matched?.label || code
+      } else {
+        code = detectGemCode(gem, meta)
+        labelCode = (code && meta?.[code]?.labelCode) || code
+        if (code && labelCode && labelCode !== code) {
+          rawText = rawText.replace(new RegExp(`(?<![A-Za-z])${code}(?![A-Za-z])`), labelCode)
+        }
       }
-      return { text, labelCode, sortKey: resolveGemSortKey(code, meta), index }
+      return { rawText, labelCode, sortKey: resolveGemSortKey(code, meta), position }
     })
 
   entries.sort((a, b) => {
     const aHas = a.sortKey !== null
     const bHas = b.sortKey !== null
-    if (aHas && bHas) return a.sortKey - b.sortKey || a.index - b.index
+    if (aHas && bHas) return a.sortKey - b.sortKey || a.position - b.position
     if (aHas) return -1
     if (bHas) return 1
-    return a.labelCode.localeCompare(b.labelCode) || a.index - b.index
+    return a.labelCode.localeCompare(b.labelCode) || a.position - b.position
   })
-  return entries.map((entry) => entry.text)
+  return entries
+}
+
+export function sortGt800LabelGems(gems, meta = {}) {
+  return buildSortedGemEntries(gems, meta).map((entry) => entry.rawText.replace(/^(\d+)(?=[A-Z])/, '$1 '))
 }
 
 // ฟอนต์ 1 บรรทัดให้พอดี budget: ฟอนต์เต็มก่อน → บีบความกว้าง → ถึงขั้นต่ำแล้ว overflow=true

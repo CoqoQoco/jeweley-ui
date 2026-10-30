@@ -15,6 +15,7 @@ import {
   generateGt800ZPLQr,
   generateGt800ZPLSmall
 } from '@/services/helper/barcode/barcode-zpl.js'
+import { loadGemLabelMeta } from '@/services/helper/barcode/gem-label-meta.js'
 import { expandIndexesByCopies, collectFailedFormIndexes } from '@/services/helper/barcode/print-batch.js'
 
 const SMALL_LABEL_TYPE = 'small-50x14'
@@ -46,6 +47,18 @@ function checkQrLabelGuard(forms, profile) {
   }
 
   return null
+}
+
+// ป้าย GT800 ย่อชื่อพลอย/เรียงลำดับจาก master — เติม gemLabelMeta ให้ทุกฟอร์มที่ยังไม่มี (โหลดไม่ได้ = ใช้ตารางสำรอง)
+async function attachGemLabelMeta(forms, profile) {
+  if (profile === PRINTER_PROFILES.LEGACY) return
+  const pending = forms.filter((form) => form && !form.gemLabelMeta)
+  if (pending.length === 0) return
+  const meta = await loadGemLabelMeta()
+  if (!meta) return
+  pending.forEach((form) => {
+    form.gemLabelMeta = meta
+  })
 }
 
 export const zebraPrinterApi = defineStore('zebraPrinter', {
@@ -149,6 +162,8 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
       const qrGuardResult = checkQrLabelGuard([formValue], config.profile)
       if (qrGuardResult) return qrGuardResult
 
+      await attachGemLabelMeta([formValue], config.profile)
+
       const printCount = formValue.print || 1
       const zpl = this.buildZpl(formValue, config.profile, config.dpiScale, config.rotate180)
 
@@ -208,6 +223,8 @@ export const zebraPrinterApi = defineStore('zebraPrinter', {
 
       const qrGuardResult = checkQrLabelGuard(formValue, config.profile)
       if (qrGuardResult) return qrGuardResult
+
+      await attachGemLabelMeta(formValue, config.profile)
 
       const formZpls = formValue.map((form) => this.buildZpl(form, config.profile, config.dpiScale, config.rotate180))
       const sourceIndexes = expandIndexesByCopies(formValue)
