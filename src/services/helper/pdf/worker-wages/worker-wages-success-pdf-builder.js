@@ -219,7 +219,7 @@ export class WorkerWagesSuccessPdfBuilder {
 
     return Object.values(map).map((entry) => ({
       ...entry,
-      netWeight: entry.totalWeightLoss - entry.returnWeight,
+      netWeight: entry.totalWeightLoss + entry.returnWeight,
       netAmount: entry.totalMoneyLoss + entry.returnAmount
     }))
   }
@@ -275,6 +275,12 @@ export class WorkerWagesSuccessPdfBuilder {
             vLineColor: () => '#cccccc',
             fillColor: (rowIndex) => rowIndex === 0 ? '#921313' : null
           }
+        },
+        {
+          text: 'เครื่องหมาย + = ช่างได้ · − = ช่างถูกหัก (น้ำหนักและเงินใช้เครื่องหมายเดียวกัน)',
+          fontSize: 7.5,
+          color: '#777777',
+          margin: [0, 2, 0, 0]
         }
       ]
     }

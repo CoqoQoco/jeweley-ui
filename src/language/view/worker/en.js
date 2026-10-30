@@ -89,6 +89,7 @@ export default {
     printGoldTypePlaceholder: 'All',
     colInclude: 'Include',
     typeSummaryTitle: 'Summary by Gold Type',
+    signNote: '+ = credited to worker · − = deducted (weight and amount use the same sign)',
     colGoldType: 'Gold Type',
     colWeightLoss: 'Loss wt (g)',
     colMoneyLoss: 'Loss (amt)',

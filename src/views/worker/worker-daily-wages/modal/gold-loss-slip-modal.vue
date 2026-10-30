@@ -189,6 +189,7 @@
               </span>
             </template>
           </BaseDataTable>
+          <p class="sign-note">{{ $t('view.worker.goldLossSlipModal.signNote') }}</p>
         </div>
 
         <div class="section-card mb-3">
@@ -443,7 +444,7 @@ export default {
 
       return Object.values(map).map((entry) => ({
         ...entry,
-        netWeight: entry.totalWeightLoss - entry.returnWeight,
+        netWeight: entry.totalWeightLoss + entry.returnWeight,
         netAmount: entry.totalMoneyLoss + entry.returnAmount
       }))
     }
@@ -719,6 +720,13 @@ export default {
   font-size: var(--fs-sm);
   color: var(--base-font-color);
   font-weight: 500;
+}
+
+.sign-note {
+  margin: var(--sp-sm) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--base-font-color);
+  opacity: 0.65;
 }
 
 .summary-row {

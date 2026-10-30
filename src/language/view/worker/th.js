@@ -89,6 +89,7 @@ export default {
     printGoldTypePlaceholder: 'ทั้งหมด',
     colInclude: 'รวม',
     typeSummaryTitle: 'สรุปแยกตามประเภททอง',
+    signNote: 'เครื่องหมาย + = ช่างได้ · − = ช่างถูกหัก (น้ำหนักและเงินใช้เครื่องหมายเดียวกัน)',
     colGoldType: 'ประเภททอง',
     colWeightLoss: 'น.น. loss (g)',
     colMoneyLoss: 'loss (เงิน)',
