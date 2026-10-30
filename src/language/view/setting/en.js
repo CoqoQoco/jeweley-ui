@@ -97,6 +97,9 @@ export default {
       legacyReadyDetail: 'Zebra Print Service is running and ready to print',
       legacyServiceErrorDetail: 'Please keep Zebra Print Service running on this computer before printing'
     },
+    materialSectionTitle: 'Material (Gem) Label Printer',
+    materialSectionDescription: 'Label printer for the gem stock page (Honeywell PC42t), printed through DK Print Bridge',
+    materialPrinterLabel: 'Material label printer name',
     testSectionTitle: 'Print Test Label',
     testSectionDescription: 'Print a test label through the same real path used on the stock page',
     test: {

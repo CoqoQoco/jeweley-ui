@@ -78,7 +78,7 @@ import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import { usrStockGemApiStore } from '@/stores/modules/api/stock/gem-api.js'
 import { gemBarcodeService } from '@/services/barcode/gem-barcode.js'
 import { gemBarcodePdfService } from '@/services/helper/pdf/gem-barcode/gem-barcode-pdf-integration.js'
-import { success, warning } from '@/services/alert/sweetAlerts.js'
+import { success, warning, error } from '@/services/alert/sweetAlerts.js'
 
 const isShowModal = {
   isPrice: false,
@@ -401,20 +401,15 @@ export default {
     },
 
     async onConfirmPrint(copies) {
-      if (copies === 1) {
-        // พิมพ์ 1 ใบ
-        const result = await gemBarcodeService.printBarcode(this.barcodePreviewData)
-        if (result.success) {
-          success(this.$t('view.stock.gem.printSuccess'))
-          this.closeBarcodePreview()
-        }
-      } else {
-        // พิมพ์หลายใบ
-        const result = await gemBarcodeService.printBarcodes([this.barcodePreviewData], copies)
-        if (result.success) {
-          success(result.message)
-          this.closeBarcodePreview()
-        }
+      const result = await gemBarcodeService
+        .printBarcodes([this.barcodePreviewData], copies)
+        .catch((err) => {
+          error(err.message)
+          return null
+        })
+      if (result?.success) {
+        success(copies === 1 ? this.$t('view.stock.gem.printSuccess') : result.message)
+        this.closeBarcodePreview()
       }
     },
 

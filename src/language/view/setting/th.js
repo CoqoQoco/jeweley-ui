@@ -97,6 +97,9 @@ export default {
       legacyReadyDetail: 'โปรแกรม Zebra Print Service กำลังทำงานอยู่ พร้อมพิมพ์ครับ',
       legacyServiceErrorDetail: 'เปิดโปรแกรม Zebra Print Service ที่เครื่องนี้ค้างไว้ก่อนพิมพ์ครับ'
     },
+    materialSectionTitle: 'เครื่องพิมพ์ฉลากวัตถุดิบ (พลอย)',
+    materialSectionDescription: 'เครื่องพิมพ์ฉลากวัตถุดิบหน้าคลังพลอย (Honeywell PC42t) พิมพ์ผ่าน DK Print Bridge',
+    materialPrinterLabel: 'ชื่อเครื่องพิมพ์ฉลากวัตถุดิบ',
     testSectionTitle: 'พิมพ์ฉลากทดสอบ',
     testSectionDescription: 'พิมพ์ฉลากทดสอบผ่านเส้นทางจริงที่ใช้พิมพ์ในหน้าคลังสินค้า',
     test: {

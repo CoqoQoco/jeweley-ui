@@ -6,6 +6,48 @@
       :isShowBtnClose="false"
     />
 
+    <!-- ส่วนเครื่องพิมพ์ฉลากวัตถุดิบ (พลอย) -->
+    <SectionCardGeneric
+      class="mt-4"
+      :title="$t('view.setting.barcodePrinter.materialSectionTitle')"
+      :description="$t('view.setting.barcodePrinter.materialSectionDescription')"
+      icon="bi-gem"
+      headerStyle="filled"
+    >
+      <div class="form-row">
+        <FormFieldGeneric :label="$t('view.setting.barcodePrinter.materialPrinterLabel')">
+          <div class="printer-select-row">
+            <AutoCompleteGeneric
+              :modelValue="form.materialPrinterName"
+              :staticOptions="materialPrinterOptions"
+              :useStaticList="true"
+              optionLabel="label"
+              :placeholder="$t('common.printer.selectPlaceholder')"
+              :forceSelection="false"
+              :dropdown="true"
+              class="printer-ac"
+              @update:modelValue="onMaterialPrinterChange"
+            />
+            <ButtonGeneric
+              variant="outline"
+              icon="bi-arrow-clockwise"
+              :label="$t('common.printer.reload')"
+              @click="loadMaterialPrinters"
+            />
+            <ButtonGeneric
+              variant="outline"
+              icon="bi-x-lg"
+              :title="$t('common.printer.clear')"
+              @click="form.materialPrinterName = ''"
+            />
+          </div>
+          <small v-if="materialPrinterOptions.length === 0" class="field-hint">
+            {{ $t('common.printer.manualHint') }}
+          </small>
+        </FormFieldGeneric>
+      </div>
+    </SectionCardGeneric>
+
     <!-- ส่วน ก: ตั้งค่า -->
     <SectionCardGeneric
       class="mt-4"
@@ -176,8 +218,10 @@
 // External dependencies
 import { defineAsyncComponent } from 'vue'
 import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
-import { PRINT_BRIDGE_BASE_URL } from '@/services/api/printer-config-service.js'
+import { PRINT_BRIDGE_BASE_URL, getPrinterList } from '@/services/api/printer-config-service.js'
 import {
+  getMaterialLabelPrinterName,
+  setMaterialLabelPrinterName,
   getBarcodePrinterName,
   setBarcodePrinterName,
   getBarcodeDpi,
@@ -229,11 +273,13 @@ export default {
       form: {
         profile: getBarcodeProfile(),
         printerName: getBarcodePrinterName(),
+        materialPrinterName: getMaterialLabelPrinterName(),
         dpi: getBarcodeDpi(),
         copyDelayMs: getCopyDelayMs(),
         rotate180: getBarcodeRotate180()
       },
       printerOptions: [],
+      materialPrinterOptions: [],
       bridgeCheck: { status: 'no-printer', printerName: '', printers: [], detail: null },
       testForm: {
         stockNumber: 'TEST-0001',
@@ -335,9 +381,18 @@ export default {
 
   mounted() {
     this.checkBridgeStatus()
+    this.loadMaterialPrinters()
   },
 
   methods: {
+    async loadMaterialPrinters() {
+      this.materialPrinterOptions = await getPrinterList()
+    },
+
+    onMaterialPrinterChange(value) {
+      this.form.materialPrinterName = typeof value === 'object' && value !== null ? value.name : value
+    },
+
     async checkBridgeStatus() {
       this.bridgeCheck = await this.zebraPrinter.fetchBarcodePrinterStatus(this.form.profile)
       this.printerOptions = this.bridgeCheck.printers || []
@@ -362,6 +417,7 @@ export default {
     async onSave() {
       setBarcodeProfile(this.form.profile)
       setBarcodePrinterName(this.form.printerName)
+      setMaterialLabelPrinterName(this.form.materialPrinterName)
       setBarcodeDpi(this.form.dpi)
       setCopyDelayMs(this.form.copyDelayMs)
       setBarcodeRotate180(this.form.rotate180)
@@ -373,6 +429,7 @@ export default {
       this.form = {
         profile: PRINTER_PROFILES.LEGACY,
         printerName: '',
+        materialPrinterName: '',
         dpi: DEFAULT_BARCODE_DPI,
         copyDelayMs: DEFAULT_COPY_DELAY_MS,
         rotate180: false

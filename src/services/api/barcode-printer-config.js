@@ -28,6 +28,20 @@ export function setBarcodePrinterName(name) {
   }
 }
 
+export const MATERIAL_LABEL_PRINTER_STORAGE_KEY = 'print-bridge-printer-material-label'
+
+export function getMaterialLabelPrinterName() {
+  return storage.getItem(MATERIAL_LABEL_PRINTER_STORAGE_KEY, '') || ''
+}
+
+export function setMaterialLabelPrinterName(name) {
+  if (name) {
+    storage.setItem(MATERIAL_LABEL_PRINTER_STORAGE_KEY, name)
+  } else {
+    storage.removeItem(MATERIAL_LABEL_PRINTER_STORAGE_KEY)
+  }
+}
+
 export function getBarcodeDpi() {
   const raw = Number(storage.getItem(BARCODE_DPI_STORAGE_KEY, DEFAULT_BARCODE_DPI))
   return VALID_DPI.includes(raw) ? raw : DEFAULT_BARCODE_DPI

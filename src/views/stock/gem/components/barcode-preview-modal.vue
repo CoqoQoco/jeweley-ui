@@ -41,7 +41,7 @@
                   <div
                     class="status-light"
                     :class="{
-                      'status-red': printerStatus === 'error',
+                      'status-red': printerStatus === 'error' || printerStatus === 'notConfigured',
                       'status-green': printerStatus === 'success',
                       'status-yellow': printerStatus === 'unknown'
                     }"
@@ -50,13 +50,21 @@
                   <span
                     class="status-text"
                     :class="{
-                      'text-red': printerStatus === 'error',
+                      'text-red': printerStatus === 'error' || printerStatus === 'notConfigured',
                       'text-green': printerStatus === 'success',
                       'text-yellow': printerStatus === 'unknown'
                     }"
                   >
                     {{ getPrinterStatusText(printerStatus) }}
                   </span>
+                  <a
+                    v-if="printerStatus === 'notConfigured'"
+                    class="settings-link ml-2"
+                    href="#"
+                    @click.prevent="goToPrinterSettings"
+                  >
+                    {{ $t('view.stock.gem.printerSettingsLink') }}
+                  </a>
                 </div>
               </div>
             </div>
@@ -127,7 +135,7 @@ export default {
   data() {
     return {
       copies: 1,
-      printerStatus: 'unknown' // 'unknown', 'success', 'error'
+      printerStatus: 'unknown' // 'unknown', 'success', 'error', 'notConfigured'
     }
   },
 
@@ -155,6 +163,8 @@ export default {
 
       if (result.success && result.connected) {
         this.printerStatus = 'success'
+      } else if (result.notConfigured) {
+        this.printerStatus = 'notConfigured'
       } else {
         this.printerStatus = 'error'
       }
@@ -164,9 +174,14 @@ export default {
       const statusMap = {
         unknown: this.$t('view.stock.gem.printerChecking'),
         success: this.$t('view.stock.gem.printerReady'),
-        error: this.$t('view.stock.gem.printerError')
+        error: this.$t('view.stock.gem.printerError'),
+        notConfigured: this.$t('view.stock.gem.printerNotConfigured')
       }
       return statusMap[status] || statusMap.unknown
+    },
+
+    goToPrinterSettings() {
+      this.$router.push('/setting/barcode-printer')
     },
 
     validateCopies() {
@@ -230,6 +245,12 @@ export default {
 .status-yellow {
   background-color: var(--base-warning);
   box-shadow: 0 0 5px var(--base-warning);
+}
+
+.settings-link {
+  color: var(--base-green);
+  font-size: var(--fs-sm);
+  text-decoration: underline;
 }
 
 .status-text {

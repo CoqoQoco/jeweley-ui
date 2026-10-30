@@ -1,4 +1,25 @@
-import { printService } from './PrintService.js'
+import { printRaw, getPrinterState, checkBridgeHealth } from '@/services/api/print-bridge-service.js'
+import { getMaterialLabelPrinterName } from '@/services/api/barcode-printer-config.js'
+
+// bridge ส่งข้อความเป็น ASCII และฟอนต์ EPL ไม่มีอักษรไทย — ตัดอักขระนอก ASCII ทิ้งก่อนส่งพิมพ์
+export function sanitizeLabelText(text) {
+  if (text === null || text === undefined) return ''
+  return String(text)
+    .replace(/[^ -~]/g, ' ')
+    .replace(/\(\s*\)/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/\s+([)\]])/g, '$1')
+    .trim()
+}
+
+// Code128 เข้ารหัสอักษรไทยไม่ได้ — ตัดทิ้งและเก็บเฉพาะ ASCII ที่พิมพ์ได้ ไม่เว้นวรรค
+export function sanitizeBarcodeValue(value) {
+  if (value === null || value === undefined) return ''
+  return String(value).replace(/[^!-~]/g, '')
+}
+
+export const MATERIAL_PRINTER_NOT_CONFIGURED_MESSAGE =
+  'ยังไม่ได้ตั้งค่าเครื่องพิมพ์ฉลากวัตถุดิบ กรุณาไปตั้งค่าที่หน้าตั้งค่าเครื่องพิมพ์บาร์โค้ดก่อนพิมพ์ครับ'
 
 /**
  * GemBarcodeService - Service for generating and printing jewelry barcode labels
@@ -40,7 +61,11 @@ class GemBarcodeService {
    * @returns {string} - EPL command string
    */
   generateEPL(data) {
-    const { stockCode, barcode, description, date, goldType } = data
+    const stockCode = sanitizeLabelText(data.stockCode)
+    const barcode = sanitizeBarcodeValue(data.barcode)
+    const description = sanitizeLabelText(data.description)
+    const date = sanitizeLabelText(data.date)
+    const goldType = sanitizeLabelText(data.goldType)
 
     // EPL Template for 4cm x 3cm sticker (Honeywell PC42t - 203 DPI)
     // Label size: 319 x 240 dots
@@ -169,71 +194,28 @@ P1
   }
 
   /**
+   * Send commands to the configured material label printer via DK Print Bridge
+   * @param {Array<string>} commands - EPL/ZPL command strings (one per label)
+   */
+  async sendToBridge(commands) {
+    const printerName = getMaterialLabelPrinterName()
+    if (!printerName) {
+      throw new Error(MATERIAL_PRINTER_NOT_CONFIGURED_MESSAGE)
+    }
+    await printRaw({ printerName, text: commands.join('\n') + '\n' })
+  }
+
+  /**
    * Print single barcode
    * @param {Object} data - Barcode data
-   * @param {string} printerName - Optional printer name
-   * @returns {Promise<void>}
+   * @returns {Promise<Object>}
    */
-  async printBarcode(data, printerName = null) {
-    try {
-      console.log('[GemBarcodeService] ========== PRINT BARCODE START ==========')
-      console.log('[GemBarcodeService] Barcode data:', JSON.stringify(data, null, 2))
-
-      // Validate data
-      console.log('[GemBarcodeService] Validating barcode data...')
-      this.validateBarcodeData(data)
-      console.log('[GemBarcodeService] ✓ Validation passed')
-
-      // Generate command (EPL or ZPL)
-      console.log('[GemBarcodeService] Generating', this.printerLanguage, 'command...')
-      const command = this.generateCommand(data)
-      console.log('[GemBarcodeService] ✓', this.printerLanguage, 'command generated')
-      console.log('[GemBarcodeService] Command length:', command.length, 'characters')
-      console.log('[GemBarcodeService] Command preview:', command.substring(0, 150))
-
-      // Connect to QZ Tray if not connected
-      if (!printService.isConnected()) {
-        console.log('[GemBarcodeService] QZ Tray not connected, connecting...')
-        await printService.connect()
-      } else {
-        console.log('[GemBarcodeService] QZ Tray already connected')
-      }
-
-      // Auto-detect printer/device if not specified
-      if (printService.useUSB) {
-        if (!printService.usbDevice) {
-          console.log('[GemBarcodeService] No USB device selected, auto-detecting...')
-          await printService.detectHoneywellUSB()
-        } else {
-          console.log('[GemBarcodeService] Using USB device:', printService.usbDevice)
-        }
-      } else {
-        if (!printerName && !printService.selectedPrinter) {
-          console.log('[GemBarcodeService] No printer selected, auto-detecting...')
-          await printService.detectHoneywellPrinter()
-        } else {
-          console.log('[GemBarcodeService] Using printer:', printerName || printService.selectedPrinter)
-        }
-      }
-
-      // Print
-      console.log('[GemBarcodeService] Sending to printer...')
-      await printService.print(command, printerName)
-
-      console.log('[GemBarcodeService] ✓ Print completed successfully')
-      console.log('[GemBarcodeService] ========== PRINT BARCODE END ==========')
-
-      return {
-        success: true,
-        message: 'พิมพ์บาร์โค้ดสำเร็จ'
-      }
-    } catch (error) {
-      console.error('[GemBarcodeService] ========== PRINT BARCODE FAILED ==========')
-      console.error('[GemBarcodeService] ✗ Error printing barcode:', error)
-      console.error('[GemBarcodeService] Error message:', error.message)
-      console.error('[GemBarcodeService] Error stack:', error.stack)
-      console.error('[GemBarcodeService] ================================================')
-      throw error
+  async printBarcode(data) {
+    this.validateBarcodeData(data)
+    await this.sendToBridge([this.generateCommand(data)])
+    return {
+      success: true,
+      message: 'พิมพ์บาร์โค้ดสำเร็จ'
     }
   }
 
@@ -241,82 +223,26 @@ P1
    * Print multiple barcodes
    * @param {Array<Object>} dataArray - Array of barcode data
    * @param {number} copiesPerItem - Number of copies per item
-   * @param {string} printerName - Optional printer name
    * @returns {Promise<Object>} - Print results
    */
-  async printBarcodes(dataArray, copiesPerItem = 1, printerName = null) {
-    try {
-      console.log('[GemBarcodeService] ========== BATCH PRINT START ==========')
-      console.log('[GemBarcodeService] Items to print:', dataArray.length)
-      console.log('[GemBarcodeService] Copies per item:', copiesPerItem)
-      console.log('[GemBarcodeService] Total labels:', dataArray.length * copiesPerItem)
+  async printBarcodes(dataArray, copiesPerItem = 1) {
+    dataArray.forEach((data) => this.validateBarcodeData(data))
 
-      // Validate all data
-      console.log('[GemBarcodeService] Validating all barcode data...')
-      dataArray.forEach((data, index) => {
-        console.log(`[GemBarcodeService] Validating item ${index + 1}:`, data.barcode)
-        this.validateBarcodeData(data)
-      })
-      console.log('[GemBarcodeService] ✓ All validations passed')
-
-      // Connect to QZ Tray if not connected
-      if (!printService.isConnected()) {
-        console.log('[GemBarcodeService] QZ Tray not connected, connecting...')
-        await printService.connect()
+    const commands = []
+    dataArray.forEach((data) => {
+      for (let i = 0; i < copiesPerItem; i++) {
+        commands.push(this.generateCommand(data))
       }
+    })
 
-      // Auto-detect printer/device if not specified
-      if (printService.useUSB) {
-        if (!printService.usbDevice) {
-          console.log('[GemBarcodeService] No USB device selected, auto-detecting...')
-          await printService.detectHoneywellUSB()
-        }
-      } else {
-        if (!printerName && !printService.selectedPrinter) {
-          console.log('[GemBarcodeService] No printer selected, auto-detecting...')
-          await printService.detectHoneywellPrinter()
-        }
-      }
+    await this.sendToBridge(commands)
 
-      // Generate commands for all items with copies
-      console.log('[GemBarcodeService] Generating', this.printerLanguage, 'commands...')
-      const commands = []
-      dataArray.forEach((data, index) => {
-        console.log(`[GemBarcodeService] Generating ${copiesPerItem} copies for item ${index + 1}`)
-        for (let i = 0; i < copiesPerItem; i++) {
-          commands.push(this.generateCommand(data))
-        }
-      })
-      console.log('[GemBarcodeService] ✓ Generated', commands.length, this.printerLanguage, 'commands')
-
-      // Print batch
-      console.log('[GemBarcodeService] Starting batch print...')
-      const results = await printService.printBatch(commands, printerName)
-
-      // Count successes and failures
-      const successCount = results.filter((r) => r.success).length
-      const failCount = results.filter((r) => !r.success).length
-
-      console.log('[GemBarcodeService] ========== BATCH PRINT RESULTS ==========')
-      console.log('[GemBarcodeService] Total:', results.length)
-      console.log('[GemBarcodeService] Success:', successCount)
-      console.log('[GemBarcodeService] Failed:', failCount)
-      console.log('[GemBarcodeService] ============================================')
-
-      return {
-        success: failCount === 0,
-        total: results.length,
-        successCount,
-        failCount,
-        details: results,
-        message: `พิมพ์สำเร็จ ${successCount} จาก ${results.length} รายการ`
-      }
-    } catch (error) {
-      console.error('[GemBarcodeService] ========== BATCH PRINT FAILED ==========')
-      console.error('[GemBarcodeService] ✗ Error printing barcodes:', error)
-      console.error('[GemBarcodeService] Error message:', error.message)
-      console.error('[GemBarcodeService] =============================================')
-      throw error
+    return {
+      success: true,
+      total: commands.length,
+      successCount: commands.length,
+      failCount: 0,
+      message: `พิมพ์สำเร็จ ${commands.length} จาก ${commands.length} รายการ`
     }
   }
 
@@ -385,53 +311,31 @@ P1
   }
 
   /**
-   * Test printer connection
-   * @returns {Promise<Object>} - Test result
+   * Check bridge + configured material label printer
+   * @returns {Promise<Object>} - { success, connected, notConfigured?, printerName?, message }
    */
   async testPrinter() {
-    try {
-      console.log('[GemBarcodeService] ========== PRINTER TEST START ==========')
-
-      if (!printService.isConnected()) {
-        console.log('[GemBarcodeService] Connecting to QZ Tray...')
-        await printService.connect()
-      }
-
-      console.log('[GemBarcodeService] Getting printer list...')
-      const printers = await printService.getPrinters()
-
-      console.log('[GemBarcodeService] Detecting Honeywell printer...')
-      const honeywellPrinter = await printService.detectHoneywellPrinter()
-
-      const qzVersion = await printService.getVersion()
-
-      console.log('[GemBarcodeService] ========== PRINTER TEST RESULTS ==========')
-      console.log('[GemBarcodeService] QZ Tray version:', qzVersion)
-      console.log('[GemBarcodeService] Available printers:', printers)
-      console.log('[GemBarcodeService] Selected printer:', honeywellPrinter)
-      console.log('[GemBarcodeService] ✓ Test completed successfully')
-      console.log('[GemBarcodeService] ============================================')
-
-      return {
-        success: true,
-        connected: true,
-        qzVersion: qzVersion,
-        printers: printers,
-        selectedPrinter: honeywellPrinter,
-        message: 'เชื่อมต่อเครื่องพิมพ์สำเร็จ'
-      }
-    } catch (error) {
-      console.error('[GemBarcodeService] ========== PRINTER TEST FAILED ==========')
-      console.error('[GemBarcodeService] ✗ Error:', error.message)
-      console.error('[GemBarcodeService] ==========================================')
-
+    const printerName = getMaterialLabelPrinterName()
+    if (!printerName) {
       return {
         success: false,
         connected: false,
-        error: error.message,
-        message: 'ไม่สามารถเชื่อมต่อเครื่องพิมพ์ได้'
+        notConfigured: true,
+        message: MATERIAL_PRINTER_NOT_CONFIGURED_MESSAGE
       }
     }
+
+    const bridgeOk = await checkBridgeHealth()
+    if (!bridgeOk) {
+      return { success: false, connected: false, printerName, message: 'ไม่สามารถเชื่อมต่อ DK Print Bridge ได้' }
+    }
+
+    const state = await getPrinterState(printerName)
+    if (state && (state.offline || state.paused || state.error)) {
+      return { success: false, connected: true, printerName, message: 'เครื่องพิมพ์ไม่พร้อมใช้งาน' }
+    }
+
+    return { success: true, connected: true, printerName, message: 'เชื่อมต่อเครื่องพิมพ์สำเร็จ' }
   }
 
   /**
