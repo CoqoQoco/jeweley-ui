@@ -46,6 +46,14 @@
             >
               <i class="bi bi-qr-code mr-1"></i> {{ $t('view.stock.product.tabOriginalQr') }}
             </button>
+            <button
+              :class="['tab-btn', selectedType === 'small-50x14' ? 'tab-btn-active' : '']"
+              :disabled="isLegacyProfile"
+              :title="isLegacyProfile ? $t('view.stock.product.qrGt800Only') : ''"
+              @click="selectedType = 'small-50x14'"
+            >
+              <i class="bi bi-tags mr-1"></i> {{ $t('view.stock.product.tabSmall50x14') }}
+            </button>
           </div>
         </div>
 
@@ -80,6 +88,8 @@
               :hidePrice="hidePrice"
               :qrUrl="selectedType === 'original-qr' ? publicUrl : ''"
               :remarkSymbol="showRemarkSelect ? remarkSymbol : ''"
+              :hideMold="hideMold"
+              :gemLabelMeta="gemLabelMeta"
             />
           </div>
         </div>
@@ -96,6 +106,10 @@
 
         <div class="pl-4 pr-4 pt-2">
           <CheckboxGeneric v-model="hidePrice" :label="$t('common.label.hidePrice')" />
+        </div>
+
+        <div v-if="selectedType === 'small-50x14'" class="pl-4 pr-4 pt-2">
+          <CheckboxGeneric v-model="hideMold" :label="$t('view.stock.printBarcode.hideMold')" />
         </div>
 
         <div v-if="showRemarkSelect" class="pl-4 pr-4 pt-2 remark-select">
@@ -231,7 +245,8 @@ import { getPieceQty } from '@/services/utils/stock-piece-qty.js'
 import { error, success } from '@/services/alert/sweetAlerts.js'
 import { getBarcodeProfile, PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
 import { buildPublicUrl } from '@/config/public-site-config.js'
-import { layoutGt800, REMARK_SYMBOLS, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
+import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
+import { layoutGt800, buildGemLabelMeta, REMARK_SYMBOLS, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
@@ -255,7 +270,8 @@ export default {
   setup() {
     const zebraPrinter = zebraPrinterApi()
     const productStore = usrStockProductApiStore()
-    return { zebraPrinter, productStore }
+    const masterStore = useMasterApiStore()
+    return { zebraPrinter, productStore, masterStore }
   },
 
   props: {
@@ -319,12 +335,18 @@ export default {
         if (this.selectedType === 'original-qr') {
           this.loadPublicLink()
         }
+        if (this.selectedType === 'small-50x14') {
+          this.loadGemLabelMeta()
+        }
       },
       immediate: true
     },
     selectedType(val) {
       if (val === 'original-qr') {
         this.loadPublicLink()
+      }
+      if (val === 'small-50x14') {
+        this.loadGemLabelMeta()
       }
     }
   },
@@ -396,7 +418,7 @@ export default {
 
     // โหลดต้นทุนเสร็จแล้วแต่ไม่มีข้อมูล + แท็บราคา (ไม่ใช่ original/original-qr) → เตือนว่าจะพิมพ์โดยไม่มีราคา
     showCostMissingWarning() {
-      return !this.hidePrice && this.costLoaded && !this.hasCostData && this.selectedType !== 'original' && this.selectedType !== 'original-qr'
+      return !this.hidePrice && this.costLoaded && !this.hasCostData && this.selectedType !== 'original' && this.selectedType !== 'original-qr' && this.selectedType !== 'small-50x14'
     },
 
     // เครื่องพิมพ์เดิม (legacy) พิมพ์ป้าย QR ไม่ได้
@@ -477,6 +499,8 @@ export default {
       remarkSymbol: REMARK_SYMBOL_NONE,
       labelTopLine: 'name',
       hidePrice: false,
+      hideMold: false,
+      gemLabelMeta: null,
       isPrinting: false,
       progress: { done: 0, total: 0 }
     }
@@ -495,6 +519,8 @@ export default {
       this.remarkSymbol = REMARK_SYMBOL_NONE
       this.labelTopLine = 'name'
       this.hidePrice = false
+      this.hideMold = false
+      this.gemLabelMeta = null
       this.isPrinting = false
       this.progress = { done: 0, total: 0 }
     },
@@ -549,13 +575,29 @@ export default {
       }
     },
 
+    // โหลดรหัส/ลำดับพลอยจาก master สำหรับป้ายเล็ก — ล้มเหลวได้ (generator มีลำดับ fallback เอง)
+    async loadGemLabelMeta() {
+      if (this.gemLabelMeta) return
+      try {
+        await this.masterStore.fetchGem()
+        this.gemLabelMeta = buildGemLabelMeta(this.masterStore.gem)
+      } catch {
+        this.gemLabelMeta = null
+      }
+    },
+
     async onPrintBarcode() {
+      if (this.selectedType === 'small-50x14') {
+        await this.loadGemLabelMeta()
+      }
       const zplData = {
         ...this.labelBarcode,
         price: this.previewPrice,
         barcodeType: this.selectedType,
         publicUrl: this.publicUrl,
         hidePrice: this.hidePrice,
+        hideMold: this.hideMold,
+        gemLabelMeta: this.gemLabelMeta,
         remarkSymbol: this.showRemarkSelect ? this.remarkSymbol : ''
       }
       const total = Number(this.barcode.print) || 1

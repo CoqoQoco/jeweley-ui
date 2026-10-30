@@ -1,6 +1,7 @@
 <template>
+  <barcodeSmallDemo v-if="selectedType === 'small-50x14'" :formValue="smallFormValue" />
   <barcodeDemo
-    v-if="selectedType === 'original' || selectedType === 'original-qr'"
+    v-else-if="selectedType === 'original' || selectedType === 'original-qr'"
     :type="type"
     :madeIn="barcode.madeIn"
     :stockNumber="labelCode"
@@ -44,13 +45,17 @@ const barcodeDemo = defineAsyncComponent(() =>
 const barcodeVerticalDemo = defineAsyncComponent(() =>
   import('@/components/custom/barcode-demo/barcode-vertical-demo-view.vue')
 )
+const barcodeSmallDemo = defineAsyncComponent(() =>
+  import('@/components/custom/barcode-demo/barcode-small-demo-view.vue')
+)
 
 export default {
   name: 'BarcodePreview',
 
   components: {
     barcodeDemo,
-    barcodeVerticalDemo
+    barcodeVerticalDemo,
+    barcodeSmallDemo
   },
 
   props: {
@@ -81,10 +86,28 @@ export default {
     remarkSymbol: {
       type: String,
       default: ''
+    },
+    hideMold: {
+      type: Boolean,
+      default: false
+    },
+    gemLabelMeta: {
+      type: Object,
+      default: null
     }
   },
 
   computed: {
+    // ค่าชุดเดียวกับที่ส่งไปพิมพ์ป้าย 50×14 (layoutGt800Small อ่านจากชุดนี้)
+    smallFormValue() {
+      return {
+        ...this.barcode,
+        hidePrice: this.hidePrice,
+        hideMold: this.hideMold,
+        gemLabelMeta: this.gemLabelMeta
+      }
+    },
+
     // ตัวอย่างต้องแสดงเลขเดียวกับที่จะพิมพ์จริง (เลขที่ผลิตเก่าก่อน ไม่งั้นเลขใหม่)
     labelCode() {
       return resolveLabelCode(this.barcode)
