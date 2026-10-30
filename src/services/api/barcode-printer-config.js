@@ -42,6 +42,22 @@ export function setMaterialLabelPrinterName(name) {
   }
 }
 
+export const MATERIAL_LABEL_MODE_STORAGE_KEY = 'print-bridge-material-label-mode'
+export const MATERIAL_LABEL_MODES = { QUEUE: 'queue', LOCAL: 'local' }
+
+// ค่าเริ่มต้น = queue (ส่งเข้าคิวเครื่องพิมพ์กลาง) — ร้านมีเครื่องพิมพ์ป้ายเครื่องเดียว; local = พิมพ์ผ่าน bridge เครื่องนี้ตรงๆ
+export function getMaterialLabelPrintMode() {
+  const raw = storage.getItem(MATERIAL_LABEL_MODE_STORAGE_KEY, MATERIAL_LABEL_MODES.QUEUE)
+  return raw === MATERIAL_LABEL_MODES.LOCAL ? MATERIAL_LABEL_MODES.LOCAL : MATERIAL_LABEL_MODES.QUEUE
+}
+
+export function setMaterialLabelPrintMode(mode) {
+  storage.setItem(
+    MATERIAL_LABEL_MODE_STORAGE_KEY,
+    mode === MATERIAL_LABEL_MODES.LOCAL ? MATERIAL_LABEL_MODES.LOCAL : MATERIAL_LABEL_MODES.QUEUE
+  )
+}
+
 export function getBarcodeDpi() {
   const raw = Number(storage.getItem(BARCODE_DPI_STORAGE_KEY, DEFAULT_BARCODE_DPI))
   return VALID_DPI.includes(raw) ? raw : DEFAULT_BARCODE_DPI

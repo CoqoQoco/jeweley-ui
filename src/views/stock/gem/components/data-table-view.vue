@@ -20,20 +20,19 @@
           <button class="btn btn-sm btn-green mr-2" :title="$t('view.stock.gem.adjustPrice')" @click="onShowPrice(rowData)">
             <span class="bi bi-cash-coin"></span>
           </button>
-          <!-- <button
+          <button
             class="btn btn-sm btn-green mr-2"
             :title="$t('view.stock.gem.printLabel')"
             @click="onPrintBarcode(rowData)"
           >
             <i class="bi bi-upc-scan"></i>
-          </button> -->
-
+          </button>
           <button
             class="btn btn-sm btn-green"
             :title="$t('view.stock.gem.printLabelPDF')"
             @click="onPrintBarcodePDF(rowData)"
           >
-            <i class="bi bi-upc-scan"></i>
+            <i class="bi bi-file-earmark-pdf"></i>
           </button>
         </div>
       </template>
@@ -78,6 +77,8 @@ import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import { usrStockGemApiStore } from '@/stores/modules/api/stock/gem-api.js'
 import { gemBarcodeService } from '@/services/barcode/gem-barcode.js'
 import { gemBarcodePdfService } from '@/services/helper/pdf/gem-barcode/gem-barcode-pdf-integration.js'
+import { useLabelPrintJobApiStore } from '@/stores/modules/api/print/label-print-job-store.js'
+import { getMaterialLabelPrintMode, MATERIAL_LABEL_MODES } from '@/services/api/barcode-printer-config.js'
 import { success, warning, error } from '@/services/alert/sweetAlerts.js'
 
 const isShowModal = {
@@ -100,7 +101,8 @@ export default {
 
   setup() {
     const stockGemSearchStore = usrStockGemApiStore()
-    return { stockGemSearchStore }
+    const labelPrintJobStore = useLabelPrintJobApiStore()
+    return { stockGemSearchStore, labelPrintJobStore }
   },
 
   props: {
@@ -401,6 +403,10 @@ export default {
     },
 
     async onConfirmPrint(copies) {
+      if (getMaterialLabelPrintMode() === MATERIAL_LABEL_MODES.QUEUE) {
+        await this.enqueueLabel(copies)
+        return
+      }
       const result = await gemBarcodeService
         .printBarcodes([this.barcodePreviewData], copies)
         .catch((err) => {
@@ -410,6 +416,23 @@ export default {
       if (result?.success) {
         success(copies === 1 ? this.$t('view.stock.gem.printSuccess') : result.message)
         this.closeBarcodePreview()
+      }
+    },
+
+    async enqueueLabel(copies) {
+      const res = await this.labelPrintJobStore
+        .fetchEnqueue({
+          labelType: 'GEM',
+          referenceCode: this.barcodePreviewData.barcode,
+          payload: JSON.stringify(this.barcodePreviewData),
+          copies
+        })
+        .catch(() => null)
+      if (res?.id) {
+        success(this.$t('view.stock.gem.queueEnqueued'))
+        this.closeBarcodePreview()
+      } else {
+        error(this.$t('view.stock.gem.queueEnqueueFailed'))
       }
     },
 

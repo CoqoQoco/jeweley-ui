@@ -27,6 +27,7 @@ import graphLang from './view/graph/th.js'
 import downloadsLang from './view/downloads/th.js'
 import reportLang from './view/report/th.js'
 import printStationLang from './view/print-station/th.js'
+import labelStationLang from './view/label-station/th.js'
 import publicLang from './view/public/th.js'
 import executiveLang from './view/executive/th.js'
 import productionInsightLang from './view/production-insight/th.js'
@@ -80,6 +81,7 @@ export default {
     executive: { ...executiveLang },
     productionInsight: { ...productionInsightLang },
     printStation: { ...printStationLang },
+    labelStation: { ...labelStationLang },
     mold: { ...moldLang },
     worker: { ...workerLang },
     productionCost: { ...productionCostLang },

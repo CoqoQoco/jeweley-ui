@@ -5,6 +5,8 @@ const stockGem = () => import('@/views/stock/gem/IndexView.vue')
 const stockGemTransection = () => import('@/views/receipt-stock/gem/transaction/index-view.vue')
 const stockGemTransactionOnProcess = () => import('@/views/receipt-stock/gem/transaction-on-process/index-view.vue')
 
+const labelStation = () => import('@/views/label-station/index-view.vue')
+
 const stockGemInbound = () => import('@/views/receipt-stock/gem/inbound/IndexView.vue')
 const stockGemOutbound = () => import('@/views/receipt-stock/gem/outbound/IndexView.vue')
 
@@ -64,6 +66,23 @@ const routes = [
             en: 'Transection',
             th: 'รายการเคลื่อนไหวพลอย'
           },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_GEM_VIEW]
+        }
+      },
+
+      // label station (คิวพิมพ์ป้ายวัตถุดิบ)
+      {
+        path: '/label-station',
+        name: 'label-station',
+        component: labelStation,
+        menuId: 'LABEL-STATION',
+        meta: {
+          Displayname: {
+            en: 'Label Station',
+            th: 'เครื่องพิมพ์ป้ายวัตถุดิบ'
+          },
+          classIcon: 'bi bi-upc-scan',
           minorShow: true,
           permissions: [PERMISSIONS.STOCK_GEM_VIEW]
         }

@@ -194,6 +194,32 @@ P1
   }
 
   /**
+   * Build one command per copy per item (no validation of printer — pure)
+   * @param {Array<Object>} dataArray - Array of barcode data
+   * @param {number} copies - Number of copies per item
+   * @returns {Array<string>} - EPL/ZPL command strings
+   */
+  buildCommands(dataArray, copies = 1) {
+    dataArray.forEach((data) => this.validateBarcodeData(data))
+    const commands = []
+    dataArray.forEach((data) => {
+      for (let i = 0; i < copies; i++) {
+        commands.push(this.generateCommand(data))
+      }
+    })
+    return commands
+  }
+
+  /**
+   * Send commands to a given printer via DK Print Bridge
+   * @param {string} printerName - Printer name registered with the bridge
+   * @param {Array<string>} commands - EPL/ZPL command strings (one per label)
+   */
+  async sendCommands(printerName, commands) {
+    await printRaw({ printerName, text: commands.join('\n') + '\n' })
+  }
+
+  /**
    * Send commands to the configured material label printer via DK Print Bridge
    * @param {Array<string>} commands - EPL/ZPL command strings (one per label)
    */
@@ -202,7 +228,7 @@ P1
     if (!printerName) {
       throw new Error(MATERIAL_PRINTER_NOT_CONFIGURED_MESSAGE)
     }
-    await printRaw({ printerName, text: commands.join('\n') + '\n' })
+    await this.sendCommands(printerName, commands)
   }
 
   /**
@@ -226,14 +252,7 @@ P1
    * @returns {Promise<Object>} - Print results
    */
   async printBarcodes(dataArray, copiesPerItem = 1) {
-    dataArray.forEach((data) => this.validateBarcodeData(data))
-
-    const commands = []
-    dataArray.forEach((data) => {
-      for (let i = 0; i < copiesPerItem; i++) {
-        commands.push(this.generateCommand(data))
-      }
-    })
+    const commands = this.buildCommands(dataArray, copiesPerItem)
 
     await this.sendToBridge(commands)
 

@@ -30,12 +30,14 @@
         <div class="pl-4 pr-4 pt-2 pb-2">
           <div class="title-text">
             <span class="bi bi-exclamation-circle mr-1"></span>
-            <span>{{ $t('view.stock.gem.printerWarning') }}</span>
+            <span>{{
+              isQueueMode ? $t('view.stock.gem.queueModeHint') : $t('view.stock.gem.printerWarning')
+            }}</span>
           </div>
 
           <div class="d-flex justify-content-between items-center">
             <!-- Printer Status -->
-            <div class="vertical-center-container">
+            <div v-if="!isQueueMode" class="vertical-center-container">
               <div class="printer-status-indicator">
                 <div class="status-container">
                   <div
@@ -68,6 +70,7 @@
                 </div>
               </div>
             </div>
+            <div v-else></div>
 
             <!-- Print Action -->
             <div class="vertical-center-container">
@@ -86,7 +89,7 @@
               </div>
               <button
                 class="btn btn-sm btn-main"
-                :disabled="printerStatus !== 'success'"
+                :disabled="!isQueueMode && printerStatus !== 'success'"
                 @click="onConfirmPrint"
               >
                 <span class="bi bi-printer mr-1"></span>
@@ -108,6 +111,7 @@ const gemBarcodeDemo = defineAsyncComponent(() =>
 )
 
 import { gemBarcodeService } from '@/services/barcode/gem-barcode.js'
+import { getMaterialLabelPrintMode, MATERIAL_LABEL_MODES } from '@/services/api/barcode-printer-config.js'
 
 export default {
   components: {
@@ -135,7 +139,14 @@ export default {
   data() {
     return {
       copies: 1,
+      printMode: getMaterialLabelPrintMode(),
       printerStatus: 'unknown' // 'unknown', 'success', 'error', 'notConfigured'
+    }
+  },
+
+  computed: {
+    isQueueMode() {
+      return this.printMode === MATERIAL_LABEL_MODES.QUEUE
     }
   },
 
@@ -143,8 +154,9 @@ export default {
     isShow(val) {
       if (val) {
         this.copies = 1
-        // Check printer status when modal opens
-        setTimeout(() => this.checkPrinter(), 1000)
+        this.printMode = getMaterialLabelPrintMode()
+        // Check printer status when modal opens (local mode only — queue mode prints at the central station)
+        if (!this.isQueueMode) setTimeout(() => this.checkPrinter(), 1000)
       } else {
         this.printerStatus = 'unknown'
       }

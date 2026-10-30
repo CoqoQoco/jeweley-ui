@@ -80,6 +80,28 @@ describe('generateEPL', () => {
   })
 })
 
+describe('buildCommands / sendCommands (station reuse)', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    vi.clearAllMocks()
+  })
+
+  it('buildCommands สร้างตามจำนวนสำเนา และตัดอักษรไทย', () => {
+    const cmds = gemBarcodeService.buildCommands([{ ...data, description: 'Ruby(ซองเจีย)' }], 3)
+    expect(cmds).toHaveLength(3)
+    expect(cmds[0]).toContain('A10,120,0,2,1,1,N,"Ruby"')
+  })
+
+  it('buildCommands ข้อมูลไม่ครบ → throw', () => {
+    expect(() => gemBarcodeService.buildCommands([{ ...data, barcode: '' }], 1)).toThrow()
+  })
+
+  it('sendCommands ส่ง printRaw ไปเครื่องที่ระบุ โดยไม่อ่านค่าจาก localStorage', async () => {
+    await gemBarcodeService.sendCommands('Central Printer', ['A', 'B'])
+    expect(printRaw).toHaveBeenCalledWith({ printerName: 'Central Printer', text: 'A\nB\n' })
+  })
+})
+
 describe('print path (DK Print Bridge)', () => {
   beforeEach(() => {
     localStorage.clear()

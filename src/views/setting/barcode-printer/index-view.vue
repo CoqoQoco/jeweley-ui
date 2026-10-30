@@ -15,6 +15,24 @@
       headerStyle="filled"
     >
       <div class="form-row">
+        <FormFieldGeneric :label="$t('view.setting.barcodePrinter.materialModeLabel')">
+          <RadioGroupGeneric
+            v-model="form.materialMode"
+            :options="materialModeOptions"
+            optionLabel="label"
+            optionValue="value"
+          />
+          <small class="field-hint">
+            {{
+              isMaterialLocalMode
+                ? $t('view.setting.barcodePrinter.materialModeLocalHint')
+                : $t('view.setting.barcodePrinter.materialModeQueueHint')
+            }}
+          </small>
+        </FormFieldGeneric>
+      </div>
+
+      <div v-if="isMaterialLocalMode" class="form-row">
         <FormFieldGeneric :label="$t('view.setting.barcodePrinter.materialPrinterLabel')">
           <div class="printer-select-row">
             <AutoCompleteGeneric
@@ -222,6 +240,9 @@ import { PRINT_BRIDGE_BASE_URL, getPrinterList } from '@/services/api/printer-co
 import {
   getMaterialLabelPrinterName,
   setMaterialLabelPrinterName,
+  getMaterialLabelPrintMode,
+  setMaterialLabelPrintMode,
+  MATERIAL_LABEL_MODES,
   getBarcodePrinterName,
   setBarcodePrinterName,
   getBarcodeDpi,
@@ -274,6 +295,7 @@ export default {
         profile: getBarcodeProfile(),
         printerName: getBarcodePrinterName(),
         materialPrinterName: getMaterialLabelPrinterName(),
+        materialMode: getMaterialLabelPrintMode(),
         dpi: getBarcodeDpi(),
         copyDelayMs: getCopyDelayMs(),
         rotate180: getBarcodeRotate180()
@@ -294,6 +316,17 @@ export default {
         { value: PRINTER_PROFILES.LEGACY, label: this.$t('view.setting.barcodePrinter.profileLegacyLabel') },
         { value: PRINTER_PROFILES.GT800, label: this.$t('view.setting.barcodePrinter.profileGt800Label') }
       ]
+    },
+
+    materialModeOptions() {
+      return [
+        { value: MATERIAL_LABEL_MODES.QUEUE, label: this.$t('view.setting.barcodePrinter.materialModeQueue') },
+        { value: MATERIAL_LABEL_MODES.LOCAL, label: this.$t('view.setting.barcodePrinter.materialModeLocal') }
+      ]
+    },
+
+    isMaterialLocalMode() {
+      return this.form.materialMode === MATERIAL_LABEL_MODES.LOCAL
     },
 
     isLegacyProfile() {
@@ -418,6 +451,7 @@ export default {
       setBarcodeProfile(this.form.profile)
       setBarcodePrinterName(this.form.printerName)
       setMaterialLabelPrinterName(this.form.materialPrinterName)
+      setMaterialLabelPrintMode(this.form.materialMode)
       setBarcodeDpi(this.form.dpi)
       setCopyDelayMs(this.form.copyDelayMs)
       setBarcodeRotate180(this.form.rotate180)
@@ -430,6 +464,7 @@ export default {
         profile: PRINTER_PROFILES.LEGACY,
         printerName: '',
         materialPrinterName: '',
+        materialMode: MATERIAL_LABEL_MODES.QUEUE,
         dpi: DEFAULT_BARCODE_DPI,
         copyDelayMs: DEFAULT_COPY_DELAY_MS,
         rotate180: false
