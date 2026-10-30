@@ -87,6 +87,9 @@ export const PERMISSIONS = {
   // Setting
   SETTING_PRINT_LAYOUT: 'setting:print-layout',
 
+  // Label Station (เครื่องพิมพ์ป้ายวัตถุดิบ) — role LabelStation + Dev เท่านั้น
+  LABEL_STATION_VIEW: 'label-station:view',
+
   // ========== Mobile-Specific Features ==========
   // Mobile Dashboard (ทุกคนเข้าได้)
   MOBILE_DASHBOARD: 'mobile:dashboard',
@@ -168,6 +171,7 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.TICKET_MANAGE,
     PERMISSIONS.ANNOUNCEMENT_MANAGE,
     PERMISSIONS.SETTING_PRINT_LAYOUT,
+    PERMISSIONS.LABEL_STATION_VIEW,
 
     // Mobile Features (Dev มีสิทธิ์ทั้งหมด)
     PERMISSIONS.MOBILE_DASHBOARD,
@@ -228,6 +232,8 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.MOBILE_NOTIFICATIONS,
     PERMISSIONS.MOBILE_SALE
   ],
+
+  LabelStation: [PERMISSIONS.LABEL_STATION_VIEW],
 
   StockOperator: [
     PERMISSIONS.STOCK_PRODUCT,
