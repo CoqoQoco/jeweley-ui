@@ -131,6 +131,10 @@
             headerStyle="legend"
             class="mb-3"
           >
+            <div v-if="ticket.devAnalysis" class="dev-analysis-block">
+              <span class="detail-label">{{ $t('view.ticket.field.devAnalysis') }}:</span>
+              <div class="description-box">{{ ticket.devAnalysis }}</div>
+            </div>
             <TicketThread
               variant="timeline"
               :entries="analysisComments"
@@ -366,6 +370,10 @@ export default {
 .detail-value {
   color: var(--base-sub-color);
   font-size: var(--fs-base);
+}
+
+.dev-analysis-block {
+  margin-bottom: var(--sp-lg);
 }
 
 .description-box {

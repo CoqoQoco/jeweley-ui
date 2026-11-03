@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest'
 
 import {
   isSilverMetal,
+  hasSilverMaterial,
+  resolveProductionType,
   validateReceiptQty,
   evaluateTopUp,
   pickDefaultLot
@@ -70,5 +72,26 @@ describe('pickDefaultLot', () => {
   it('gold always defaults to new', () => {
     const goldLot = { locationCode: 'MAIN', productionType: 'Yellow Gold' }
     expect(pickDefaultLot({ lots: [goldLot], rowLocation: 'MAIN', rowIsSilver: false })).toBeNull()
+  })
+})
+
+describe('hasSilverMaterial / resolveProductionType', () => {
+  it('detects a Silver material', () => {
+    expect(hasSilverMaterial([{ type: 'Silver' }])).toBe(true)
+    expect(hasSilverMaterial([{ type: 'Diamond' }])).toBe(false)
+    expect(hasSilverMaterial(undefined)).toBe(false)
+  })
+
+  it('defaults empty productionType to SV when a Silver material exists', () => {
+    expect(resolveProductionType({ productionType: null, materials: [{ type: 'Silver' }] })).toBe('SV')
+    expect(resolveProductionType({ productionType: '', materials: [{ type: 'Silver' }] })).toBe('SV')
+  })
+
+  it('keeps a gold color the user already chose', () => {
+    expect(resolveProductionType({ productionType: 'YG', materials: [{ type: 'Silver' }] })).toBe('YG')
+  })
+
+  it('leaves empty productionType when no Silver material', () => {
+    expect(resolveProductionType({ productionType: null, materials: [] })).toBe(null)
   })
 })

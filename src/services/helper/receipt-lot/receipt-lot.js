@@ -6,6 +6,19 @@ export function isSilverMetal(value) {
   return t === 'SV' || t === 'SILVER' || t.startsWith('SIL')
 }
 
+export const SILVER_PRODUCTION_TYPE = 'SV'
+
+export function hasSilverMaterial(materials) {
+  return Array.isArray(materials) && materials.some((m) => String(m?.type ?? '').trim().toUpperCase() === 'SILVER')
+}
+
+// สีทองที่ใช้ตัดสินงานเงิน — ว่างแต่มีวัสดุ Silver -> SV; ถ้าผู้ใช้เลือกสีทองไว้แล้วไม่ทับ
+export function resolveProductionType(row) {
+  const current = row?.productionType
+  if (String(current ?? '').trim()) return current
+  return hasSilverMaterial(row?.materials) ? SILVER_PRODUCTION_TYPE : current
+}
+
 function normalizeLocation(value) {
   return String(value ?? '').trim().toUpperCase()
 }

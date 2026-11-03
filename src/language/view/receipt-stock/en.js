@@ -332,7 +332,7 @@ export default {
       reasonLocation: 'Different location. Please create a new number',
       reasonMetal: 'Metal type mismatch (gold/silver). Please create a new number',
       goldDuplicateWarn: 'This production number already exists in stock. Receiving will be a duplicate receipt',
-      goldQtyWarn: 'Gold: 1 code = 1 piece. Please add a new row',
+      goldQtyWarn: 'Gold: 1 code = 1 piece. Please add a new row (for silver items, set gold color = Silver)',
       silverQtyWarn: 'Silver quantity must be a whole number of 1 or more',
       qtyInvalidTitle: 'Invalid quantity',
       qtyRequired: 'Please enter the quantity'

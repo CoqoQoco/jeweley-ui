@@ -290,7 +290,7 @@ import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import ProductImage from '../../new-gr-production/components/expansion/product-image.vue'
 import MaterialsSection from '../../new-gr-production/components/expansion/materials-section.vue'
 import LotTopupPicker from '../../components/lot-topup-picker.vue'
-import { isSilverMetal, validateReceiptQty } from '@/services/helper/receipt-lot/receipt-lot.js'
+import { isSilverMetal, resolveProductionType, validateReceiptQty } from '@/services/helper/receipt-lot/receipt-lot.js'
 
 export default {
   name: 'product-form-table',
@@ -359,7 +359,7 @@ export default {
 
   methods: {
     isSilverRow(row) {
-      return isSilverMetal(row.productionType)
+      return isSilverMetal(resolveProductionType(row))
     },
 
     qtyWarning(row) {

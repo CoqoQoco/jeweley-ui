@@ -83,7 +83,7 @@
 import { useReceiptOutsourceApiStore } from '@/stores/modules/api/receipt/receipt-outsource-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
-import { isSilverMetal, validateReceiptQty } from '@/services/helper/receipt-lot/receipt-lot.js'
+import { isSilverMetal, resolveProductionType, validateReceiptQty } from '@/services/helper/receipt-lot/receipt-lot.js'
 
 import outsourceHeader from './components/outsource-header-view.vue'
 import ProductFormTable from './components/product-form-table.vue'
@@ -235,6 +235,7 @@ export default {
 
       for (const item of this.form) {
         const isTopUp = !!item.topUpStockNumber
+        item.productionType = resolveProductionType(item)
         const isSilver = isSilverMetal(item.productionType)
 
         if (!isTopUp && (!item.productNumber || !item.productNameTH || !item.productNameEN)) {
