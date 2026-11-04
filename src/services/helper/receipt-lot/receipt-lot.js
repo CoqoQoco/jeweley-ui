@@ -6,6 +6,11 @@ export function isSilverMetal(value) {
   return t === 'SV' || t === 'SILVER' || t.startsWith('SIL')
 }
 
+// ชนิดของใบผลิตจาก GetPlan อยู่ในฟิลด์ gold (ไม่ใช่ type)
+export function isSilverPlanData(plan) {
+  return isSilverMetal(plan?.gold)
+}
+
 export const SILVER_PRODUCTION_TYPE = 'SV'
 
 export function hasSilverMaterial(materials) {

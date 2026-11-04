@@ -114,7 +114,7 @@ import modalBarcodePrint from './modal/barcode-print-view.vue'
 import modalSearchProductName from './modal/search-product-name-view.vue'
 import modalEditAllMaterials from './modal/edit-all-materials-view.vue'
 import modalAdjustBreakdown from './modal/adjust-breakdown-view.vue'
-import { validateReceiptQty } from '@/services/helper/receipt-lot/receipt-lot.js'
+import { isSilverPlanData, validateReceiptQty } from '@/services/helper/receipt-lot/receipt-lot.js'
 import { formatGoldBarcodeText, isGoldOrSilverMaterial } from './gold-barcode-text.js'
 
 const interfaceBarcode = {
@@ -157,7 +157,7 @@ export default {
 
   computed: {
     isSilverPlan() {
-      return this.data?.type === 'Silver'
+      return isSilverPlanData(this.data)
     },
     masterGold() {
       return this.masterStore.gold
@@ -872,9 +872,7 @@ export default {
       this.formBarcode.goldType = this.data.goldSize
       this.formBarcode.mold = this.data.mold
 
-      console.log(this.data.type)
-      this.formBarcode.type = this.data.type === 'Silver' ? 'silver' : 'gem'
-      console.log(this.formBarcode.type)
+      this.formBarcode.type = this.isSilverPlan ? 'silver' : 'gem'
 
       this.updateFormBarcodeAll()
     },

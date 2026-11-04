@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 
 import {
   isSilverMetal,
+  isSilverPlanData,
   hasSilverMaterial,
   resolveProductionType,
   validateReceiptQty,
@@ -16,6 +17,19 @@ describe('isSilverMetal', () => {
     expect(isSilverMetal('sil')).toBe(true)
     expect(isSilverMetal('White Gold')).toBe(false)
     expect(isSilverMetal(null)).toBe(false)
+  })
+})
+
+describe('isSilverPlanData', () => {
+  it('reads plan.gold only', () => {
+    expect(isSilverPlanData({ gold: 'Silver' })).toBe(true)
+    expect(isSilverPlanData({ gold: 'SILVER' })).toBe(true)
+    expect(isSilverPlanData({ gold: 'SV' })).toBe(true)
+    expect(isSilverPlanData({ gold: 'Yellow Gold' })).toBe(false)
+    expect(isSilverPlanData({ gold: null })).toBe(false)
+    expect(isSilverPlanData(null)).toBe(false)
+    expect(isSilverPlanData(undefined)).toBe(false)
+    expect(isSilverPlanData({ type: 'Silver' })).toBe(false)
   })
 })
 

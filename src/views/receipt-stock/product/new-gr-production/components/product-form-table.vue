@@ -109,7 +109,7 @@
         :scrollHeight="scrollHeight"
         :materialColumns="materialColumns"
         :requiredStud="requiredStud"
-        :isSilverPlan="data?.type === 'Silver'"
+        :isSilverPlan="isSilverPlan"
         :getBgColor="getBgColor"
         :isRequiredField="isRequiredField"
         :breakdownData="data.breakDown || []"
@@ -147,6 +147,7 @@ import MoldDesignField from './fields/mold-design-field.vue'
 import ProductNameField from './fields/product-name-field.vue'
 import ProductExpansion from './product-expansion.vue'
 import TableFooter from './table-footer.vue'
+import { isSilverPlanData } from '@/services/helper/receipt-lot/receipt-lot.js'
 
 const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 
@@ -252,6 +253,12 @@ export default {
     'submit',
     'adjustBreakdown'
   ],
+
+  computed: {
+    isSilverPlan() {
+      return isSilverPlanData(this.data)
+    }
+  },
 
   methods: {
     onFieldUpdate(row, field, value) {
