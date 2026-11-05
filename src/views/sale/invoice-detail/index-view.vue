@@ -302,6 +302,7 @@ import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { error, success, warning } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { generatePhotoSheetPdf } from '@/services/helper/pdf/photo-sheet/photo-sheet-pdf-integration.js'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
 import { invoiceSummaryPdfService } from '@/services/helper/pdf/invoice-summary/invoice-summary-integration.js'
 import { invoiceExcelService } from '@/services/helper/excel/invoice/invoice-excel-integration.js'
@@ -487,6 +488,13 @@ export default {
           disabled: !this.canPrintCertificate,
           hint: this.canPrintCertificate ? '' : this.$t('view.sale.invoiceDetail.certificateNeedPaid'),
           command: this.printCertificate
+        },
+        {
+          key: 'photo-sheet',
+          icon: 'bi-images',
+          label: this.$t('view.sale.invoiceDetail.printPhotoSheet'),
+          disabled: !this.invoiceItems.length,
+          command: this.printPhotoSheet
         },
         {
           key: 'summary-pdf',
@@ -1290,6 +1298,10 @@ export default {
         divisor: this.invoiceData.currencyRate || 1,
         productTypeLabels
       }
+    },
+    async printPhotoSheet() {
+      await generatePhotoSheetPdf({ docNo: this.invoiceData.invoiceNumber, items: this.invoiceItems })
+      success(this.$t('view.sale.invoiceDetail.success.photoSheet'))
     },
     async printSummary() {
       const productTypeLabels = await this.loadProductTypeLabels()

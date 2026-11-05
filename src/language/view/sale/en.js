@@ -37,6 +37,7 @@ export const invoice = {
 }
 
 export const invoiceDetail = {
+  printPhotoSheet: 'Print Photos Only',
   title: 'Invoice Detail',
   addVersion: 'Add Version',
   printInvoice: 'Print Invoice',
@@ -252,6 +253,7 @@ export const invoiceDetail = {
     cannotDelete: 'Cannot delete'
   },
   success: {
+    photoSheet: 'Photo-only PDF created successfully',
     recordPayment: 'Payment recorded successfully',
     exportExcel: 'Export Excel successful',
     deliveryNotePDF: 'Delivery Note PDF created successfully',
@@ -300,6 +302,7 @@ export const invoiceDetail = {
 }
 
 export const quotation = {
+  photoSheetBtn: 'Print Photos Only',
   title: 'Quotation',
   pageDescription: 'Search and select items for quotation',
   searchTitle: 'Search Quotations',
@@ -357,6 +360,7 @@ export const quotation = {
     exportBreakdownExcelTitle: 'Error'
   },
   success: {
+    photoSheet: 'Photo-only PDF created successfully',
     exportExcel: 'Excel exported successfully',
     exportBreakdownPriceExcel: 'Break Down Price Excel exported successfully',
     exportBreakdownExcel: 'Breakdown Excel exported successfully',
@@ -451,6 +455,7 @@ export const quotationList = {
 }
 
 export const saleOrder = {
+  photoSheetBtn: 'Print Photos Only',
   title: 'Sale Order',
   pageDescription: 'Create sale orders from quotations and manage sales and delivery information',
   searchTitle: 'Search Quotation',
@@ -650,6 +655,7 @@ export const saleOrder = {
     cannotReserve: 'Cannot create reservation'
   },
   success: {
+    photoSheet: 'Photo-only PDF created successfully',
     createInvoicePdf: 'Invoice PDF created successfully',
     editMaster: 'Master customer updated successfully',
     editDocument: 'Customer in sale order updated successfully',

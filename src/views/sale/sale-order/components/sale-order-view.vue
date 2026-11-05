@@ -509,6 +509,15 @@
           <button
             class="btn btn-sm btn-outline-main"
             type="button"
+            @click="exportPhotoSheet"
+            :disabled="stockItems.length === 0 && copyItems.length === 0"
+          >
+            <i class="bi bi-images mr-1"></i>
+            {{ $t('view.sale.saleOrder.photoSheetBtn') }}
+          </button>
+          <button
+            class="btn btn-sm btn-outline-main"
+            type="button"
             @click="exportInternalPDF"
             :disabled="(stockItems.length === 0 && copyItems.length === 0) || isExportingInternalPDF"
           >
@@ -691,6 +700,7 @@ import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import { hasMarginAccess } from '@/services/permission/margin-access.js'
 
 import { SaleOrderPdfBuilder } from '@/services/helper/pdf/sale-order/sale-order-pdf-builder.js'
+import { generatePhotoSheetPdf } from '@/services/helper/pdf/photo-sheet/photo-sheet-pdf-integration.js'
 import { SaleOrderExcelBuilder } from '@/services/helper/excel/sale-order/sale-order-excel-builder.js'
 import { SaleSummaryExcelBuilder } from '@/services/helper/excel/sale-summary/sale-summary-excel-builder.js'
 import { buildProductTypeLabelMap } from '@/services/helper/sale-summary/sale-summary-data.js'
@@ -2394,6 +2404,12 @@ export default {
       await builder.downloadExcel()
       this.isExportingSummaryExcel = false
       success(this.$t('view.sale.saleOrder.success.exportSummaryExcel'))
+    },
+
+    async exportPhotoSheet() {
+      const copyLines = this.copyItems.filter((item) => (Number(item.qty) || 0) > 0)
+      await generatePhotoSheetPdf({ docNo: this.formSaleOrder.number, items: [...this.stockItems, ...copyLines] })
+      success(this.$t('view.sale.saleOrder.success.photoSheet'))
     },
 
     // T6: ฉบับภายใน — เอกสารเดียวกับที่ลูกค้าเห็น บวกคอลัมน์ "สถานะของ" ต่อบรรทัด (มีของ/ต้องผลิต/รอแปลง)

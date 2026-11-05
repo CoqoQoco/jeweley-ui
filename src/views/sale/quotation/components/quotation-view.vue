@@ -342,6 +342,15 @@
               <button
                 class="btn btn-sm btn-green"
                 type="button"
+                :disabled="!customer.quotationItems || customer.quotationItems.length === 0"
+                @click="printPhotoSheet()"
+              >
+                <i class="bi bi-images mr-1"></i>
+                <span>{{ $t('view.sale.quotation.photoSheetBtn') }}</span>
+              </button>
+              <button
+                class="btn btn-sm btn-green"
+                type="button"
                 :disabled="!canViewMargin || !customer.quotationItems || customer.quotationItems.length === 0"
                 :title="canViewMargin ? '' : $t('view.sale.quotation.noMarginAccessTooltip')"
                 @click="printCostCheck()"
@@ -503,6 +512,7 @@ import { generateInvoicePdf } from '@/services/helper/pdf/quotation/quotation-pd
 import { generateBreakdownPdf } from '@/services/helper/pdf/quotation/breakdown-pdf-integration.js'
 import { generateBreakdownPricePdf } from '@/services/helper/pdf/quotation/breakdown-price-pdf-integration.js'
 import { generateCostCheckPdf } from '@/services/helper/pdf/quotation/cost-check-pdf-integration.js'
+import { generatePhotoSheetPdf } from '@/services/helper/pdf/photo-sheet/photo-sheet-pdf-integration.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
@@ -1041,6 +1051,11 @@ export default {
         profitPercent: this.customer.profitPercent ?? 15,
         goldLossPercent: this.customer.goldLossPercent
       })
+    },
+
+    async printPhotoSheet() {
+      await generatePhotoSheetPdf({ docNo: this.customer.invoiceNumber, items: this.customer.quotationItems })
+      success(this.$t('view.sale.quotation.success.photoSheet'))
     },
 
     printCostCheck() {

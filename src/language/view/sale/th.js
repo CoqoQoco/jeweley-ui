@@ -37,6 +37,7 @@ export const invoice = {
 }
 
 export const invoiceDetail = {
+  printPhotoSheet: 'พิมพ์รูปอย่างเดียว',
   title: 'รายละเอียด Invoice',
   addVersion: 'เพิ่ม Version',
   printInvoice: 'พิมพ์ใบแจ้งหนี้',
@@ -252,6 +253,7 @@ export const invoiceDetail = {
     cannotDelete: 'ไม่สามารถลบได้'
   },
   success: {
+    photoSheet: 'สร้าง PDF รูปอย่างเดียวสำเร็จ',
     recordPayment: 'บันทึกการเก็บเงินสำเร็จ',
     exportExcel: 'Export Excel สำเร็จ',
     deliveryNotePDF: 'สร้าง Delivery Note PDF สำเร็จ',
@@ -300,6 +302,7 @@ export const invoiceDetail = {
 }
 
 export const quotation = {
+  photoSheetBtn: 'พิมพ์รูปอย่างเดียว',
   title: 'ใบเสนอราคา',
   pageDescription: 'ค้นหาและเลือกสินค้า ออกใบเสนอราคา',
   searchTitle: 'ค้นหาใบเสนอราคา',
@@ -357,6 +360,7 @@ export const quotation = {
     exportBreakdownExcelTitle: 'เกิดข้อผิดพลาด'
   },
   success: {
+    photoSheet: 'สร้าง PDF รูปอย่างเดียวสำเร็จ',
     exportExcel: 'Export Excel สำเร็จ',
     exportBreakdownPriceExcel: 'Export Break Down Price Excel สำเร็จ',
     exportBreakdownExcel: 'Export Breakdown Excel สำเร็จ',
@@ -451,6 +455,7 @@ export const quotationList = {
 }
 
 export const saleOrder = {
+  photoSheetBtn: 'พิมพ์รูปอย่างเดียว',
   title: 'ใบสั่งขาย',
   pageDescription: 'สร้างใบสั่งขายจากใบเสนอราคา พร้อมจัดการข้อมูลการขายและการส่งมอบ',
   searchTitle: 'ค้นหาใบเสนอราคา',
@@ -650,6 +655,7 @@ export const saleOrder = {
     cannotReserve: 'ไม่สามารถสร้างการจองได้'
   },
   success: {
+    photoSheet: 'สร้าง PDF รูปอย่างเดียวสำเร็จ',
     createInvoicePdf: 'สร้าง Invoice PDF สำเร็จ',
     editMaster: 'แก้ไขข้อมูลลูกค้าหลักสำเร็จ',
     editDocument: 'แก้ไขข้อมูลลูกค้าในใบขายสำเร็จ',
