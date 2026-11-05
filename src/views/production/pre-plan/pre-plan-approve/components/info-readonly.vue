@@ -64,6 +64,10 @@
               <span class="info-label">จำนวน:</span>
               <span>{{ item.productQty || '-' }} {{ item.productQtyUnit || '' }}</span>
             </div>
+            <div class="info-row">
+              <span class="info-label">ไซส์แหวน:</span>
+              <span>{{ item.ringSize || '-' }}</span>
+            </div>
             <div class="info-row align-items-start">
               <span class="info-label">วัสดุ:</span>
               <div class="flex-grow-1">

@@ -158,6 +158,7 @@ export default {
           productQty: it.productQty || null,
           productQtyUnit: it.productQtyUnit || null,
           productDetail: it.productDetail || null,
+          ringSize: it.ringSize || null,
           materials: (it.materials || []).map((m) => ({
             ...m,
             id: m.id || Date.now() + Math.random(),
@@ -224,6 +225,7 @@ export default {
           productQty: it.productQty,
           productQtyUnit: it.productQtyUnit,
           productDetail: it.productDetail,
+          ringSize: it.ringSize || null,
           productImagePath: it.productImageBlobPath || null,
           materials: (it.materials || []).map((m) => ({
             gold: toCode(m.gold),

@@ -61,44 +61,12 @@
         />
       </template>
 
-      <template #gemQtyTemplate="{ data }">
-        <input v-model="data.gemQty" type="number" class="form-control form-control-sm" @input="emitUpdate" />
-      </template>
-
-      <template #gemUnitTemplate="{ data }">
-        <input v-model="data.gemUnit" class="form-control form-control-sm" @input="emitUpdate" />
-      </template>
-
       <template #gemSizeTemplate="{ data }">
         <input v-model="data.gemSize" class="form-control form-control-sm" @input="emitUpdate" />
       </template>
 
-      <template #gemWeightTemplate="{ data }">
-        <input v-model="data.gemWeight" type="number" class="form-control form-control-sm" @input="emitUpdate" />
-      </template>
-
-      <template #gemWeightUnitTemplate="{ data }">
-        <input v-model="data.gemWeightUnit" class="form-control form-control-sm" @input="emitUpdate" />
-      </template>
-
-      <template #diamondQtyTemplate="{ data }">
-        <input v-model="data.diamondQty" type="number" class="form-control form-control-sm" @input="emitUpdate" />
-      </template>
-
-      <template #diamondUnitTemplate="{ data }">
-        <input v-model="data.diamondUnit" class="form-control form-control-sm" @input="emitUpdate" />
-      </template>
-
       <template #diamondSizeTemplate="{ data }">
         <input v-model="data.diamondSize" class="form-control form-control-sm" @input="emitUpdate" />
-      </template>
-
-      <template #diamondWeightTemplate="{ data }">
-        <input v-model="data.diamondWeight" type="number" class="form-control form-control-sm" @input="emitUpdate" />
-      </template>
-
-      <template #diamondWeightUnitTemplate="{ data }">
-        <input v-model="data.diamondWeightUnit" class="form-control form-control-sm" @input="emitUpdate" />
       </template>
 
       <template #diamondQualityTemplate="{ data }">
@@ -170,16 +138,8 @@ export default {
         { field: 'goldQty', header: 'จำนวนทอง/เงิน', minWidth: '120px', sortable: false },
         { field: 'gem', header: 'ประเภทพลอย', minWidth: '150px', sortable: false },
         { field: 'gemShape', header: 'รูปร่างพลอย', minWidth: '130px', sortable: false },
-        { field: 'gemQty', header: 'จำนวนพลอย', minWidth: '110px', sortable: false },
-        { field: 'gemUnit', header: 'หน่วยพลอย', minWidth: '100px', sortable: false },
         { field: 'gemSize', header: 'ขนาดพลอย', minWidth: '110px', sortable: false },
-        { field: 'gemWeight', header: 'น้ำหนักพลอย', minWidth: '120px', sortable: false },
-        { field: 'gemWeightUnit', header: 'หน่วยน้ำหนัก', minWidth: '110px', sortable: false },
-        { field: 'diamondQty', header: 'จำนวนเพชร', minWidth: '110px', sortable: false },
-        { field: 'diamondUnit', header: 'หน่วยเพชร', minWidth: '100px', sortable: false },
         { field: 'diamondSize', header: 'ขนาดเพชร', minWidth: '110px', sortable: false },
-        { field: 'diamondWeight', header: 'น้ำหนักเพชร', minWidth: '120px', sortable: false },
-        { field: 'diamondWeightUnit', header: 'หน่วยน้ำหนัก', minWidth: '110px', sortable: false },
         { field: 'diamondQuality', header: 'คุณภาพเพชร', minWidth: '120px', sortable: false },
       ],
     }

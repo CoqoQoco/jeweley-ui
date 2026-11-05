@@ -357,6 +357,7 @@ export default {
         productQty: it.productQty || null,
         productQtyUnit: it.productQtyUnit || null,
         productDetail: it.productDetail || null,
+        ringSize: it.ringSize || null,
         materials: (it.materials || []).map((m) => ({
           ...m,
           gold: findByCode(ms.golds, m.gold),

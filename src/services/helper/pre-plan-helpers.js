@@ -14,6 +14,7 @@ export function createEmptyItem() {
     productQty: null,
     productQtyUnit: null,
     productDetail: null,
+    ringSize: null,
     materials: [],
   }
 }

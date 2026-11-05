@@ -287,7 +287,8 @@ export class PrePlanOrderFormPdfBuilder {
 
     const productDetailCell = {
       margin: [6, 4, 6, 4],
-      text: detailText,
+      text: `${detailText}
+ไซส์แหวน: ${item.ringSize || '-'}`,
       fontSize: 13,
       bold: true,
     }

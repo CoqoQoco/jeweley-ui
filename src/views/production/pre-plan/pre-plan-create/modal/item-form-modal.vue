@@ -63,7 +63,7 @@
 
         <div class="card p-3 mt-3">
           <pageTitle title="ข้อมูลสินค้า" :isShowBtnClose="false" class="mb-3" />
-          <div class="form-row three-col mb-2">
+          <div class="form-row four-col mb-2">
             <div class="form-field">
               <span class="title-text">ประเภทสินค้า</span>
               <DropdownGeneric
@@ -93,6 +93,10 @@
                 v-model="form.productQtyUnit"
                 placeholder="เช่น ชิ้น, ด้าม"
               />
+            </div>
+            <div class="form-field">
+              <span class="title-text">ไซส์แหวน</span>
+              <input class="form-control" v-model="form.ringSize" placeholder="เช่น 52" />
             </div>
           </div>
 
@@ -394,17 +398,25 @@ export default {
     gap: 16px;
   }
 
+  &.four-col {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 16px;
+  }
+
   @media (max-width: 1024px) {
     &.two-col {
       grid-template-columns: 1fr;
     }
-    &.three-col {
+    &.three-col,
+    &.four-col {
       grid-template-columns: 1fr 1fr;
     }
   }
 
   @media (max-width: 600px) {
-    &.three-col {
+    &.three-col,
+    &.four-col {
       grid-template-columns: 1fr;
     }
   }
