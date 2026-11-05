@@ -3,8 +3,8 @@ import { buildPhotoCaption, chunkRows, toPhotoSheetItems, PhotoSheetPdfBuilder }
 
 describe('photo-sheet-pdf-builder', () => {
   it('caption = ลำดับ) แล้วต่อรหัสแม่พิมพ์', () => {
-    expect(buildPhotoCaption(8, 'NF742M559')).toBe('8)NF742M559')
-    expect(buildPhotoCaption(1, '')).toBe('1)')
+    expect(buildPhotoCaption(8, 'NF742M559')).toBe('8) NF742M559')
+    expect(buildPhotoCaption(1, '')).toBe('1) ')
   })
 
   it('chunkRows แบ่งแถวละ 4', () => {
@@ -37,6 +37,6 @@ describe('photo-sheet-pdf-builder', () => {
     expect(row.columns).toHaveLength(4)
     expect(row.columns[0].stack[0].image).toBeDefined()
     expect(row.columns[1].stack[0].canvas).toBeDefined()
-    expect(row.columns[1].stack[1].text).toBe('2)BB')
+    expect(row.columns[1].stack[1].text).toBe('2) BB')
   })
 })

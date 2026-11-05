@@ -11,7 +11,7 @@ const CELL_WIDTH = (PAGE_WIDTH_A4 - PAGE_MARGIN * 2 - COLUMN_GAP * (PHOTO_SHEET_
 const IMAGE_BOX = Math.floor(CELL_WIDTH)
 
 export function buildPhotoCaption(seq, moldCode) {
-  return `${seq})${moldCode || ''}`
+  return `${seq}) ${moldCode || ''}`
 }
 
 export function chunkRows(list, size = PHOTO_SHEET_COLS) {
