@@ -22,6 +22,7 @@ export default {
   retryBtn: 'ลองใหม่',
   noPrinterSelected: 'ยังไม่ได้เลือกเครื่องพิมพ์ กรุณาเลือกเครื่องพิมพ์ก่อนครับ',
   printFailedGeneric: 'พิมพ์ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง',
+  updateBridgeRequired: 'DK Print Bridge ที่เครื่องนี้เป็นเวอร์ชันเก่า พิมพ์ป้ายไม่ได้ กรุณาอัปเดต DK Print Bridge เป็นเวอร์ชันล่าสุดครับ',
   invalidPayload: 'ข้อมูลป้ายไม่ถูกต้อง พิมพ์ไม่ได้',
   emptyQueueMsg: 'ยังไม่มีงานพิมพ์ป้ายวันนี้',
   deleteBtn: 'ลบ',

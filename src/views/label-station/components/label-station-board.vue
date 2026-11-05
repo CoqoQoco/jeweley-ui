@@ -138,8 +138,7 @@
 
 <script>
 import { useLabelPrintJobApiStore } from '@/stores/modules/api/print/label-print-job-store.js'
-import { getPrinters, checkBridgeHealth } from '@/services/api/print-bridge-service.js'
-import { gemBarcodeService } from '@/services/barcode/gem-barcode.js'
+import { getPrinters, checkBridgeHealth, printLabel } from '@/services/api/print-bridge-service.js'
 import { getMaterialLabelPrinterName } from '@/services/api/barcode-printer-config.js'
 import { storage } from '@/services/storage.js'
 import { formatOnlyTime, formatISOString } from '@/services/utils/dayjs.js'
@@ -400,7 +399,7 @@ export default {
       return this.parsePayload(job)?.description || '-'
     },
 
-    // sendCommands เป็น fetch ตรง ไม่ผ่าน axios — ต้อง catch เอง (จุดที่ได้รับอนุญาตให้ try-catch)
+    // printLabel เป็น fetch ตรง ไม่ผ่าน axios — ต้อง catch เอง (จุดที่ได้รับอนุญาตให้ try-catch)
     async executePrint(job) {
       const data = this.parsePayload(job)
       if (!data) {
@@ -410,8 +409,7 @@ export default {
         return { success: false, errorMessage: this.$t('view.labelStation.noPrinterSelected') }
       }
       try {
-        const commands = gemBarcodeService.buildCommands([data], job.copies || 1)
-        await gemBarcodeService.sendCommands(this.selectedPrinter, commands)
+        await printLabel({ ...data, printerName: this.selectedPrinter, copies: job.copies || 1 })
         return { success: true, errorMessage: null }
       } catch (err) {
         return { success: false, errorMessage: err?.message || this.$t('view.labelStation.printFailedGeneric') }

@@ -16,5 +16,17 @@ export default {
   confirmRegenerateTitle: 'ยืนยันการออกคีย์ใหม่',
   confirmRegenerateMsg: 'คีย์เดิมจะใช้ไม่ได้ทันที เครื่องกลางที่ใช้อยู่ต้องใส่คีย์ใหม่ก่อนจึงจะพิมพ์ต่อได้',
   generateSuccessMsg: 'ออกคีย์สำเร็จ',
-  howToMsg: 'เปิดลิงก์ด้านล่างที่คอมกลางที่ต่อเครื่องพิมพ์ป้าย แล้ววางคีย์ในช่องใส่คีย์ (ครั้งเดียวต่อเครื่อง)'
+  howToMsg: 'เปิดลิงก์ด้านล่างที่คอมกลางที่ต่อเครื่องพิมพ์ป้าย แล้ววางคีย์ในช่องใส่คีย์ (ครั้งเดียวต่อเครื่อง)',
+  sectionSetup: 'ขั้นตอนตั้งค่าเครื่องกลาง',
+  setupStep1Title: 'ติดตั้ง DK Print Bridge เวอร์ชัน 2.2 ขึ้นไป บนเครื่องกลาง',
+  setupStep1Detail: 'ดาวน์โหลดจากหน้า ดาวน์โหลดโปรแกรม (/downloads) แล้วแตก zip จากนั้นดับเบิลคลิก ติดตั้ง.bat และรอข้อความสำเร็จ',
+  setupStep1Check: 'ตรวจสอบ: เปิด https://localhost:9443/config บนเครื่องกลาง ต้องเห็น version 2.2',
+  setupStep2Title: 'สร้างคิวเครื่องพิมพ์แบบ RAW สำหรับเครื่อง Honeywell PC42t',
+  setupStep2Detail: "Windows > Devices and Printers > Add a printer > The printer that I want isn't listed > Add a local printer > Use an existing port เลือกพอร์ต USB ของเครื่อง (USB00x Virtual printer port for USB) > Manufacturer เลือก Generic > เลือก Generic / Text Only > ตั้งชื่อว่า PC42T RAW",
+  setupStep2Note: "หมายเหตุ: ห้ามเลือกคิวไดรเวอร์ Honeywell ที่ลงท้ายด้วย '- DP' เพราะเครื่องรับภาพดิบผ่านคิว RAW เท่านั้น",
+  setupStep3Title: 'ตั้งค่าหน้า /label-station บนเครื่องกลาง',
+  setupStep3Detail: "เปิดหน้า /label-station ใส่คีย์เครื่องจากหน้านี้ (ครั้งเดียว) แล้วเลือกเครื่องพิมพ์ 'PC42T RAW' และติ๊ก พิมพ์อัตโนมัติ",
+  setupStep4Title: 'ทดสอบพิมพ์',
+  setupStep4Detail: 'ที่หน้าคลังวัตถุดิบ (พลอย) สั่งพิมพ์ป้าย 1 ใบเข้าคิว แล้วดูว่าป้ายออกจากเครื่องกลางครบ: รหัส วันที่ บาร์โค้ด รายละเอียด ทอง ราคา',
+  setupTroubleshoot: "ถ้าสถานะขึ้น 'พิมพ์แล้ว' แต่ป้ายไม่ออก ให้เช็คว่าเลือกคิว RAW ถูกตัว และเครื่องพิมพ์อยู่ในโหมด Fingerprint"
 }

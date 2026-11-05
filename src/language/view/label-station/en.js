@@ -22,6 +22,7 @@ export default {
   retryBtn: 'Retry',
   noPrinterSelected: 'No printer selected. Please select a printer first.',
   printFailedGeneric: 'Print failed. Please try again.',
+  updateBridgeRequired: 'DK Print Bridge on this computer is outdated and cannot print labels. Please update DK Print Bridge to the latest version.',
   invalidPayload: 'Invalid label data. Cannot print.',
   emptyQueueMsg: 'No label print jobs today',
   deleteBtn: 'Delete',

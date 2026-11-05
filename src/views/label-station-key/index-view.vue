@@ -66,6 +66,26 @@
         <a :href="stationUrl" target="_blank" rel="noopener">{{ stationUrl }}</a>
       </div>
     </SectionCardGeneric>
+
+    <SectionCardGeneric
+      class="mt-4"
+      :title="$t('view.labelStationKey.sectionSetup')"
+      icon="bi-list-ol"
+      headerStyle="filled"
+    >
+      <ol class="setup-steps">
+        <li v-for="n in 4" :key="n" class="setup-step">
+          <div class="setup-step-title">{{ $t(`view.labelStationKey.setupStep${n}Title`) }}</div>
+          <div class="setup-step-detail">{{ $t(`view.labelStationKey.setupStep${n}Detail`) }}</div>
+          <div v-if="n === 1" class="setup-step-detail">{{ $t('view.labelStationKey.setupStep1Check') }}</div>
+          <div v-if="n === 2" class="setup-step-note">{{ $t('view.labelStationKey.setupStep2Note') }}</div>
+        </li>
+      </ol>
+      <p class="setup-troubleshoot">
+        <i class="bi bi-exclamation-circle"></i>
+        {{ $t('view.labelStationKey.setupTroubleshoot') }}
+      </p>
+    </SectionCardGeneric>
   </div>
 </template>
 
@@ -192,6 +212,35 @@ export default {
 .howto-text {
   margin: 0 0 var(--sp-sm);
   color: var(--base-font-color);
+}
+
+.setup-steps {
+  margin: 0;
+  padding-left: var(--sp-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-lg);
+  color: var(--base-font-color);
+}
+
+.setup-step-title {
+  font-weight: 600;
+}
+
+.setup-step-detail,
+.setup-step-note {
+  margin-top: var(--sp-xs);
+  font-size: var(--fs-sm);
+}
+
+.setup-step-note {
+  font-weight: 600;
+}
+
+.setup-troubleshoot {
+  margin: var(--sp-lg) 0 0;
+  color: var(--base-font-color);
+  font-size: var(--fs-sm);
 }
 
 .howto-link {

@@ -16,5 +16,17 @@ export default {
   confirmRegenerateTitle: 'Confirm issuing a new key',
   confirmRegenerateMsg: 'The current key stops working immediately. The central computer must enter the new key before it can print again',
   generateSuccessMsg: 'Key issued successfully',
-  howToMsg: 'Open the link below on the central computer connected to the label printer and paste the key into the key field (once per device)'
+  howToMsg: 'Open the link below on the central computer connected to the label printer and paste the key into the key field (once per device)',
+  sectionSetup: 'Central machine setup steps',
+  setupStep1Title: 'Install DK Print Bridge version 2.2 or later on the central machine',
+  setupStep1Detail: 'Download it from the Downloads page (/downloads), extract the zip, double-click ติดตั้ง.bat and wait for the success message',
+  setupStep1Check: 'Check: open https://localhost:9443/config on the central machine. It must show version 2.2',
+  setupStep2Title: 'Create a RAW printer queue for the Honeywell PC42t',
+  setupStep2Detail: "Windows > Devices and Printers > Add a printer > The printer that I want isn't listed > Add a local printer > Use an existing port and pick the printer's USB port (USB00x Virtual printer port for USB) > Manufacturer: Generic > Generic / Text Only > name it PC42T RAW",
+  setupStep2Note: "Note: do not pick the Honeywell driver queue ending in '- DP'. The printer only accepts raw images through a RAW queue",
+  setupStep3Title: 'Set up the /label-station page on the central machine',
+  setupStep3Detail: "Open /label-station, enter the device key from this page (once), choose the printer 'PC42T RAW' and tick Auto print",
+  setupStep4Title: 'Test print',
+  setupStep4Detail: 'On the material stock page (gems), send 1 label to the queue and check that the central machine prints it completely: code, date, barcode, details, gold, price',
+  setupTroubleshoot: "If the status shows 'Printed' but no label comes out, check that the correct RAW queue is selected and the printer is in Fingerprint mode"
 }

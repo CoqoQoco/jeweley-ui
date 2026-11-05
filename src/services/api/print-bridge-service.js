@@ -1,3 +1,5 @@
+import { i18n } from '@/plugins/i18n/config.js'
+
 const BRIDGE_BASE = import.meta.env.VITE_PRINT_BRIDGE_URL || 'https://localhost:9443'
 
 export async function printVat(payload) {
@@ -71,6 +73,23 @@ export async function printImage(payload) {
     body: JSON.stringify(payload)
   })
   const data = await res.json().catch(() => ({}))
+  if (!res.ok || data.success === false) {
+    throw new Error(data.error || `Print failed (HTTP ${res.status})`)
+  }
+  return data
+}
+
+// ป้ายวัตถุดิบ — bridge วาดป้ายเองแล้วพิมพ์ (Honeywell PC42t / Fingerprint) bridge เก่าไม่มี route นี้ (ตอบ 404)
+export async function printLabel(payload) {
+  const res = await fetch(`${BRIDGE_BASE}/print/label`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  const data = await res.json().catch(() => ({}))
+  if (res.status === 404) {
+    throw new Error(i18n.global.t('view.labelStation.updateBridgeRequired'))
+  }
   if (!res.ok || data.success === false) {
     throw new Error(data.error || `Print failed (HTTP ${res.status})`)
   }

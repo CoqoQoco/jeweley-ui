@@ -371,6 +371,19 @@ export default {
       this.updateGem = { ...data }
       this.isShow.update = true
     },
+    // ข้อมูลป้าย (ใช้ร่วมกันทั้ง preview/คิว/PDF) — ราคา: unit Q ใช้ priceQty นอกนั้นใช้ price
+    buildLabelData(rowData) {
+      const price = rowData.unit === 'Q' ? rowData.priceQty : rowData.price
+      return {
+        stockCode: `*${rowData.code}*`,
+        barcode: rowData.code,
+        description:
+          `${rowData.groupName || ''} ${rowData.shape || ''} ${rowData.size || ''} ${rowData.grade || ''}`.trim() || 'N/A',
+        date: formatDate(new Date()),
+        goldType: rowData.grade || 'N/A',
+        price: `[${rowData.unit}] ${price ? Number(price).toFixed(2) : '0.00'}`
+      }
+    },
     onPrintBarcode(rowData) {
 
       // ตรวจสอบข้อมูลที่จำเป็น
@@ -383,14 +396,7 @@ export default {
       this.currentRowData = rowData
 
       // เตรียมข้อมูลสำหรับแสดง preview
-      this.barcodePreviewData = {
-        stockCode: `*${rowData.code}*`,
-        barcode: rowData.code,
-        description:
-          `${rowData.groupName || ''} ${rowData.shape || ''} ${rowData.size || ''}`.trim() || 'N/A',
-        date: formatDate(new Date()),
-        goldType: rowData.grade || 'N/A'
-      }
+      this.barcodePreviewData = this.buildLabelData(rowData)
 
       // เปิด modal preview
       this.isShow.barcodePreview = true
@@ -442,22 +448,8 @@ export default {
         return
       }
 
-      let price = rowData.unit === 'Q' ? rowData.priceQty : rowData.price
-      const displayPrice = `[${rowData.unit}] ${price ? Number(price).toFixed(2) : '0.00'}`
-
-      // เตรียมข้อมูลสำหรับ PDF
-      const barcodeData = {
-        stockCode: `*${rowData.code}*`,
-        barcode: rowData.code,
-        description:
-          `${rowData.groupName || ''} ${rowData.shape || ''} ${rowData.size || ''} ${rowData.grade || ''}`.trim() || 'N/A',
-        date: formatDate(new Date()),
-        goldType: rowData.grade || 'N/A',
-        price: displayPrice
-      }
-
       // สร้างและดาวน์โหลด PDF
-      const result = await gemBarcodePdfService.generateGemBarcodePDF(barcodeData, {
+      const result = await gemBarcodePdfService.generateGemBarcodePDF(this.buildLabelData(rowData), {
         print: false,
         open: true
       })
