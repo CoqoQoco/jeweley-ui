@@ -1,6 +1,7 @@
 // PhotoSheetPdfBuilder — ใบรูปอย่างเดียว (SO / Quotation / Invoice): เลขเอกสารหัวกระดาษ + รูปสินค้า 4 ใบต่อแถว + caption "{ลำดับ}){รหัสแม่พิมพ์}"
 
 import { initPdfMake } from '@/services/utils/pdf-make'
+import { normalizeDocNo } from '@/services/helper/pdf/photo-sheet/photo-sheet-doc-no.js'
 
 const FONT = 'THSarabunNew'
 export const PHOTO_SHEET_COLS = 4
@@ -34,7 +35,7 @@ export function toPhotoSheetItems(items) {
 
 export class PhotoSheetPdfBuilder {
   constructor({ docNo, items }) {
-    this.docNo = docNo || ''
+    this.docNo = normalizeDocNo(docNo)
     this.items = Array.isArray(items) ? items : []
   }
 

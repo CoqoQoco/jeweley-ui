@@ -492,6 +492,12 @@
       @closeModal="isShow.goldCalculator = false"
       @select="onGoldCalculated"
     />
+
+    <PhotoSheetDocNoModal
+      v-model="showPhotoSheetModal"
+      :defaultDocNo="customer.invoiceNumber"
+      @confirm="onPhotoSheetConfirm"
+    />
   </div>
 </template>
 
@@ -513,6 +519,7 @@ import { generateBreakdownPdf } from '@/services/helper/pdf/quotation/breakdown-
 import { generateBreakdownPricePdf } from '@/services/helper/pdf/quotation/breakdown-price-pdf-integration.js'
 import { generateCostCheckPdf } from '@/services/helper/pdf/quotation/cost-check-pdf-integration.js'
 import { generatePhotoSheetPdf } from '@/services/helper/pdf/photo-sheet/photo-sheet-pdf-integration.js'
+import PhotoSheetDocNoModal from '@/components/modal/photo-sheet-doc-no-modal.vue'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.js'
 import { usrQuotationApiStore } from '@/stores/modules/api/sale/quotation-store.js'
@@ -574,6 +581,7 @@ export default {
   name: 'QuotationView',
 
   components: {
+    PhotoSheetDocNoModal,
     CalendarGeneric,
     InputTextGeneric,
     SectionCardGeneric,
@@ -814,6 +822,7 @@ export default {
 
   data() {
     return {
+      showPhotoSheetModal: false,
       customer: {
         ...interfaceForm
       },
@@ -1053,8 +1062,12 @@ export default {
       })
     },
 
-    async printPhotoSheet() {
-      await generatePhotoSheetPdf({ docNo: this.customer.invoiceNumber, items: this.customer.quotationItems })
+    printPhotoSheet() {
+      this.showPhotoSheetModal = true
+    },
+
+    async onPhotoSheetConfirm(docNo) {
+      await generatePhotoSheetPdf({ docNo, items: this.customer.quotationItems })
       success(this.$t('view.sale.quotation.success.photoSheet'))
     },
 

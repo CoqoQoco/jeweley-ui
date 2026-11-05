@@ -2217,6 +2217,14 @@ export const exportShipment = {
   }
 }
 
+export const photoSheetDialog = {
+  title: 'Specify Header Document No.',
+  docNoLabel: 'Header document no.',
+  hint: 'This change applies to this PDF only. The document itself is not modified.',
+  confirm: 'Create PDF',
+  cancel: 'Cancel'
+}
+
 export default {
   invoice,
   invoiceDetail,
@@ -2238,5 +2246,6 @@ export default {
   billingNote,
   pipelineDashboard,
   materialSale,
-  exportShipment
+  exportShipment,
+  photoSheetDialog
 }

@@ -2210,6 +2210,14 @@ export const exportShipment = {
   }
 }
 
+export const photoSheetDialog = {
+  title: 'ระบุเลขที่หัวกระดาษ',
+  docNoLabel: 'เลขที่หัวกระดาษ',
+  hint: 'การแก้ไขนี้มีผลเฉพาะ PDF ฉบับนี้ ข้อมูลในเอกสารจะไม่เปลี่ยนแปลง',
+  confirm: 'สร้าง PDF',
+  cancel: 'ยกเลิก'
+}
+
 export default {
   invoice,
   invoiceDetail,
@@ -2231,5 +2239,6 @@ export default {
   billingNote,
   pipelineDashboard,
   materialSale,
-  exportShipment
+  exportShipment,
+  photoSheetDialog
 }

@@ -669,6 +669,12 @@
     @closeModal="onCloseReplaceConfirmedModal"
     @confirm="onReplaceConfirmedStockConfirm"
   />
+
+  <PhotoSheetDocNoModal
+    v-model="showPhotoSheetModal"
+    :defaultDocNo="formSaleOrder.number"
+    @confirm="onPhotoSheetConfirm"
+  />
 </template>
 
 <script>
@@ -701,6 +707,7 @@ import { hasMarginAccess } from '@/services/permission/margin-access.js'
 
 import { SaleOrderPdfBuilder } from '@/services/helper/pdf/sale-order/sale-order-pdf-builder.js'
 import { generatePhotoSheetPdf } from '@/services/helper/pdf/photo-sheet/photo-sheet-pdf-integration.js'
+import PhotoSheetDocNoModal from '@/components/modal/photo-sheet-doc-no-modal.vue'
 import { SaleOrderExcelBuilder } from '@/services/helper/excel/sale-order/sale-order-excel-builder.js'
 import { SaleSummaryExcelBuilder } from '@/services/helper/excel/sale-summary/sale-summary-excel-builder.js'
 import { buildProductTypeLabelMap } from '@/services/helper/sale-summary/sale-summary-data.js'
@@ -746,6 +753,7 @@ export default {
   name: 'SaleOrderView',
 
   components: {
+    PhotoSheetDocNoModal,
     CalendarGeneric,
     DropdownGeneric,
     AutoCompleteGeneric,
@@ -804,6 +812,7 @@ export default {
 
   data() {
     return {
+      showPhotoSheetModal: false,
       CURRENCY_UNITS,
       isSONumberLocked: false,
       isOnDraft: false,
@@ -2406,9 +2415,13 @@ export default {
       success(this.$t('view.sale.saleOrder.success.exportSummaryExcel'))
     },
 
-    async exportPhotoSheet() {
+    exportPhotoSheet() {
+      this.showPhotoSheetModal = true
+    },
+
+    async onPhotoSheetConfirm(docNo) {
       const copyLines = this.copyItems.filter((item) => (Number(item.qty) || 0) > 0)
-      await generatePhotoSheetPdf({ docNo: this.formSaleOrder.number, items: [...this.stockItems, ...copyLines] })
+      await generatePhotoSheetPdf({ docNo, items: [...this.stockItems, ...copyLines] })
       success(this.$t('view.sale.saleOrder.success.photoSheet'))
     },
 

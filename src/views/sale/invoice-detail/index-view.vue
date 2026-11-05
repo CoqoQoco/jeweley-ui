@@ -273,6 +273,12 @@
         @close="showSaleTeamModal = false"
         @saved="handleSaleTeamSaved"
       />
+
+      <PhotoSheetDocNoModal
+        v-model="showPhotoSheetModal"
+        :defaultDocNo="invoiceData.invoiceNumber"
+        @confirm="onPhotoSheetConfirm"
+      />
     </div>
   </div>
 </template>
@@ -303,6 +309,7 @@ import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { error, success, warning } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { generatePhotoSheetPdf } from '@/services/helper/pdf/photo-sheet/photo-sheet-pdf-integration.js'
+import PhotoSheetDocNoModal from '@/components/modal/photo-sheet-doc-no-modal.vue'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
 import { invoiceSummaryPdfService } from '@/services/helper/pdf/invoice-summary/invoice-summary-integration.js'
 import { invoiceExcelService } from '@/services/helper/excel/invoice/invoice-excel-integration.js'
@@ -337,6 +344,7 @@ export default {
     PaymentRecordModal,
     DeleteInvoiceReasonModal,
     SaleTeamEditModal,
+    PhotoSheetDocNoModal,
     InvoiceInfoCard,
     InvoiceItemsTable,
     MaterialInvoiceItemsTable,
@@ -349,6 +357,7 @@ export default {
 
   data() {
     return {
+      showPhotoSheetModal: false,
       invoiceData: null,
       invoiceItems: [],
       loadError: null,
@@ -1299,8 +1308,11 @@ export default {
         productTypeLabels
       }
     },
-    async printPhotoSheet() {
-      await generatePhotoSheetPdf({ docNo: this.invoiceData.invoiceNumber, items: this.invoiceItems })
+    printPhotoSheet() {
+      this.showPhotoSheetModal = true
+    },
+    async onPhotoSheetConfirm(docNo) {
+      await generatePhotoSheetPdf({ docNo, items: this.invoiceItems })
       success(this.$t('view.sale.invoiceDetail.success.photoSheet'))
     },
     async printSummary() {
