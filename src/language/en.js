@@ -28,6 +28,7 @@ import downloadsLang from './view/downloads/en.js'
 import reportLang from './view/report/en.js'
 import printStationLang from './view/print-station/en.js'
 import labelStationLang from './view/label-station/en.js'
+import labelStationKeyLang from './view/label-station-key/en.js'
 import publicLang from './view/public/en.js'
 import executiveLang from './view/executive/en.js'
 import productionInsightLang from './view/production-insight/en.js'
@@ -82,6 +83,7 @@ export default {
     productionInsight: { ...productionInsightLang },
     printStation: { ...printStationLang },
     labelStation: { ...labelStationLang },
+    labelStationKey: { ...labelStationKeyLang },
     mold: { ...moldLang },
     worker: { ...workerLang },
     productionCost: { ...productionCostLang },

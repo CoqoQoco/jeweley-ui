@@ -1,0 +1,20 @@
+export default {
+  pageTitle: 'Label Station Key',
+  pageDescription: 'Key that lets the central computer open the material label printer page without logging in',
+  sectionKey: 'Device key',
+  sectionHowTo: 'How to use',
+  keyLabel: 'Current key',
+  showBtn: 'Show',
+  hideBtn: 'Hide',
+  createDate: 'Issued on',
+  createBy: 'Issued by',
+  noKeyMsg: 'No key yet. Click Generate key to get started',
+  generateBtn: 'Generate key',
+  regenerateBtn: 'Issue new key',
+  copiedMsg: 'Key copied',
+  confirmGenerateTitle: 'Confirm key generation',
+  confirmRegenerateTitle: 'Confirm issuing a new key',
+  confirmRegenerateMsg: 'The current key stops working immediately. The central computer must enter the new key before it can print again',
+  generateSuccessMsg: 'Key issued successfully',
+  howToMsg: 'Open the link below on the central computer connected to the label printer and paste the key into the key field (once per device)'
+}

@@ -9,6 +9,15 @@ const routes = [
     meta: {
       publicPage: true
     }
+  },
+  // เครื่องพิมพ์ป้ายวัตถุดิบ (คอมกลาง) — ไม่ใช้ login ใช้คีย์เครื่อง (X-Device-Key) ที่เก็บใน localStorage แทน
+  {
+    path: '/label-station',
+    name: 'label-station',
+    component: () => import('@/views/label-station/index-view.vue'),
+    meta: {
+      publicPage: true
+    }
   }
 ]
 

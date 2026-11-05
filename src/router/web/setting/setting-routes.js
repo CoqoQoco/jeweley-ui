@@ -139,6 +139,19 @@ const routes = [
           permissions: [PERMISSIONS.USER_DEV, PERMISSIONS.SETTING_PRINT_LAYOUT]
         }
       },
+      {
+        path: '/label-station-key',
+        name: 'label-station-key',
+        component: () => import('@/views/label-station-key/index-view.vue'),
+        meta: {
+          Displayname: {
+            en: 'Label Station Key',
+            th: 'คีย์เครื่องพิมพ์ป้ายวัตถุดิบ'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.USER_DEV]
+        }
+      }
     ]
   }
 ]

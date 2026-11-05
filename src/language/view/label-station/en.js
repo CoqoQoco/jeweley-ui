@@ -34,5 +34,11 @@ export default {
   dateRange: 'Date range',
   colPrintedDate: 'Printed Date',
   emptyHistoryMsg: 'No label print history matches your search',
-  historyBtn: 'Print History'
+  historyBtn: 'Print History',
+  changeKeyBtn: 'Change key',
+  keyFormTitle: 'Enter label station key',
+  keyFormDesc: 'Enter the key issued by the administrator (once per device). This device will remember it and does not need to log in',
+  keyInputLabel: 'Device key',
+  keyInputPlaceholder: 'Paste the key from the administrator',
+  keyRejectedMsg: 'The key is invalid or has been changed. Please enter the new key'
 }

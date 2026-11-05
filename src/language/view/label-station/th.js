@@ -34,5 +34,11 @@ export default {
   dateRange: 'ช่วงวันที่',
   colPrintedDate: 'วันที่พิมพ์',
   emptyHistoryMsg: 'ไม่พบประวัติการพิมพ์ป้ายตามเงื่อนไขที่ค้นหา',
-  historyBtn: 'ประวัติการพิมพ์'
+  historyBtn: 'ประวัติการพิมพ์',
+  changeKeyBtn: 'เปลี่ยนคีย์',
+  keyFormTitle: 'ใส่คีย์เครื่องพิมพ์ป้าย',
+  keyFormDesc: 'ใส่คีย์ที่ผู้ดูแลระบบออกให้ (ทำครั้งเดียวต่อเครื่อง) เครื่องนี้จะจำไว้และไม่ต้อง login',
+  keyInputLabel: 'คีย์เครื่อง',
+  keyInputPlaceholder: 'วางคีย์ที่ได้รับจากผู้ดูแลระบบ',
+  keyRejectedMsg: 'คีย์ไม่ถูกต้องหรือถูกเปลี่ยน กรุณาใส่คีย์ใหม่ครับ'
 }
