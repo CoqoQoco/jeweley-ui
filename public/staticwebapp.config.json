@@ -1,7 +1,7 @@
 {
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/images/*.{png,jpg,gif,ico,svg}", "/css/*", "/js/*", "/assets/*", "/clear-cache*"]
+    "exclude": ["/images/*.{png,jpg,gif,ico,svg}", "/css/*", "/js/*", "/assets/*", "/clear-cache*", "/version.json"]
   },
   "routes": [
     {
@@ -10,6 +10,12 @@
       "headers": {
         "Clear-Site-Data": "\"cache\", \"storage\"",
         "cache-control": "no-cache, no-store, must-revalidate"
+      }
+    },
+    {
+      "route": "/version.json",
+      "headers": {
+        "cache-control": "no-store"
       }
     },
     {

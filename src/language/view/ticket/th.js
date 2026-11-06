@@ -44,6 +44,16 @@ export default {
     cancelled: 'ยกเลิก'
   },
 
+  deploy: {
+    title: 'สถานะ Deploy',
+    none: 'ยังไม่ deploy',
+    pending: 'รอ deploy',
+    deployed: 'deploy แล้ว',
+    deployDate: 'วัน deploy',
+    commitUi: 'Commit UI',
+    commitApi: 'Commit API'
+  },
+
   placeholder: {
     type: 'เลือกประเภท',
     topic: 'เลือกเมนูที่เกี่ยวข้อง',

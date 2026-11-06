@@ -44,6 +44,25 @@
               </div>
             </div>
 
+            <div class="detail-grid mt-3">
+              <div class="detail-row">
+                <span class="detail-label">{{ $t('view.ticket.deploy.title') }}:</span>
+                <span><ticketDeployBadge :deployStatus="ticket.deployStatus" /></span>
+              </div>
+              <div v-if="ticket.deployDate" class="detail-row">
+                <span class="detail-label">{{ $t('view.ticket.deploy.deployDate') }}:</span>
+                <span class="detail-value">{{ formatDate(ticket.deployDate) }}</span>
+              </div>
+              <div v-if="ticket.commitUi" class="detail-row">
+                <span class="detail-label">{{ $t('view.ticket.deploy.commitUi') }}:</span>
+                <span class="detail-value">{{ ticket.commitUi }}</span>
+              </div>
+              <div v-if="ticket.commitApi" class="detail-row">
+                <span class="detail-label">{{ $t('view.ticket.deploy.commitApi') }}:</span>
+                <span class="detail-value">{{ ticket.commitApi }}</span>
+              </div>
+            </div>
+
             <div class="mt-3">
               <span class="detail-label">{{ $t('view.ticket.field.title') }}:</span>
               <div class="detail-value mt-1">{{ ticket.title }}</div>
@@ -188,6 +207,7 @@ import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import ImagePreview from '@/components/prime-vue/ImagePreview.vue'
 import TicketThread from '../components/ticket-thread.vue'
 import ticketTypeBadge from '../components/ticket-type-badge.vue'
+import ticketDeployBadge from '../components/ticket-deploy-badge.vue'
 
 export default {
   name: 'TicketManageDetailView',
@@ -200,7 +220,8 @@ export default {
     DropdownGeneric,
     ImagePreview,
     TicketThread,
-    ticketTypeBadge
+    ticketTypeBadge,
+    ticketDeployBadge
   },
 
   setup() {

@@ -6,6 +6,8 @@ import vue from '@vitejs/plugin-vue'
 
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 
+import { formatBuildVersion, versionJsonPlugin } from './vite-plugins/version-json.js'
+
 function removeConsolePlugin(removeConsole = true) {
   return {
     name: 'remove-console',
@@ -22,6 +24,7 @@ function removeConsolePlugin(removeConsole = true) {
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
+  const appVersion = formatBuildVersion()
   const removeConsole = false // true >> colse console.log
 
   return {
@@ -30,7 +33,8 @@ export default defineConfig(() => {
       VueI18nPlugin({
         runtimeOnly: false
       }),
-      removeConsolePlugin(removeConsole)
+      removeConsolePlugin(removeConsole),
+      versionJsonPlugin(appVersion)
     ],
     resolve: {
       alias: {

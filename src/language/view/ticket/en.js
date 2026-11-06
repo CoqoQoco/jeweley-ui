@@ -44,6 +44,16 @@ export default {
     cancelled: 'Cancelled'
   },
 
+  deploy: {
+    title: 'Deploy status',
+    none: 'Not deployed',
+    pending: 'Pending deploy',
+    deployed: 'Deployed',
+    deployDate: 'Deploy date',
+    commitUi: 'Commit UI',
+    commitApi: 'Commit API'
+  },
+
   placeholder: {
     type: 'Select type',
     topic: 'Select related menu',

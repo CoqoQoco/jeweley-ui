@@ -1,6 +1,14 @@
 import { defineStore } from 'pinia'
 import api from '@/axios/axios-helper.js'
 
+const mapDeployFields = (t) => ({
+  ...t,
+  deployStatus: t.deployStatus || 'none',
+  deployDate: t.deployDate || null,
+  commitUi: t.commitUi || null,
+  commitApi: t.commitApi || null
+})
+
 export const useTicketStore = defineStore('ticket', {
   state: () => ({
     dataList: [],
@@ -21,11 +29,17 @@ export const useTicketStore = defineStore('ticket', {
     },
 
     async searchTickets(params) {
-      return await api.jewelry.post('Ticket/SearchTicket', params)
+      const res = await api.jewelry.post('Ticket/SearchTicket', params)
+      if (res?.data) res.data = res.data.map(mapDeployFields)
+      return res
     },
 
     async updateStatus(ticketId, status) {
       return await api.jewelry.post('Ticket/UpdateStatus', { ticketId, status })
+    },
+
+    async updateCommit({ ticketId, deployStatus, commitUi, commitApi }) {
+      return await api.jewelry.post('Ticket/UpdateCommit', { ticketId, deployStatus, commitUi, commitApi })
     },
 
     async updateDev(ticketId, devAnalysis, devResponse) {

@@ -4,5 +4,10 @@
     "invoice-money.spec.js",
     "ticket-my-list.spec.js"
   ],
-  "excluded": {}
+  "excluded": {
+    "ticket-deploy-badge.spec.js": {
+      "reason": "ไม่กระทบเงิน/สต็อก เป็นเครื่องมือภายในทีมพัฒนา",
+      "reviewBy": "2027-02-06"
+    }
+  }
 }

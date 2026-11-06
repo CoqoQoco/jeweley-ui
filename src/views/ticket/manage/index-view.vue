@@ -71,6 +71,10 @@
           <ticketStatusBadge :statusId="data.statusId" :fallback="data.statusNameTh" />
         </template>
 
+        <template #deployTemplate="{ data }">
+          <ticketDeployBadge :deployStatus="data.deployStatus" />
+        </template>
+
         <template #actionTemplate="{ data }">
           <ButtonGeneric
             variant="green"
@@ -132,6 +136,7 @@ import analysisModal from './modal/analysis-modal.vue'
 import ticketDashboard from './components/ticket-dashboard.vue'
 import ticketStatusBadge from '../components/ticket-status-badge.vue'
 import ticketTypeBadge from '../components/ticket-type-badge.vue'
+import ticketDeployBadge from '../components/ticket-deploy-badge.vue'
 
 export default {
   name: 'TicketManageIndexView',
@@ -146,7 +151,8 @@ export default {
     analysisModal,
     ticketDashboard,
     ticketStatusBadge,
-    ticketTypeBadge
+    ticketTypeBadge,
+    ticketDeployBadge
   },
 
   mixins: [dataTablePaging],
@@ -197,6 +203,7 @@ export default {
         { field: 'title', header: this.$t('view.ticket.field.title'), minWidth: '200px' },
         { field: 'createBy', header: this.$t('view.ticket.field.createBy'), minWidth: '120px' },
         { field: 'status', header: this.$t('view.ticket.field.status'), minWidth: '120px', sortable: false },
+        { field: 'deploy', header: this.$t('view.ticket.deploy.title'), minWidth: '130px', sortable: false },
         { field: 'updateDate', header: this.$t('view.ticket.field.updateDate'), minWidth: '140px', format: 'datetime' },
         { field: 'latestAnalysis', header: this.$t('view.ticket.field.latestAnalysis'), minWidth: '200px', sortable: false },
         { field: 'createDate', header: this.$t('view.ticket.field.createDate'), minWidth: '120px', format: 'datetime' }
