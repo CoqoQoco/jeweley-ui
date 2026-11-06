@@ -489,6 +489,7 @@ export const saleOrder = {
   stockNumberNew: 'เลขที่ผลิต (ใหม่)',
   stockNumberOld: 'เลขที่ผลิต (เก่า)',
   salePriceTHB: 'ราคาขาย (THB)',
+  goldSilverGms: 'Gold/Silver (gms)',
   convertedRate: 'แปลงเรท',
   adjustedTotal: 'ยอดรวมหลังปรับ',
   beforeVatTotal: 'ยอดรวมก่อน VAT',

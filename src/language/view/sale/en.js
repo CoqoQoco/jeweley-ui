@@ -489,6 +489,7 @@ export const saleOrder = {
   stockNumberNew: 'Stock No. (New)',
   stockNumberOld: 'Stock No. (Old)',
   salePriceTHB: 'Sale Price (THB)',
+  goldSilverGms: 'Gold/Silver (gms)',
   convertedRate: 'Conv. Rate',
   adjustedTotal: 'Adjusted Total',
   beforeVatTotal: 'Total Before VAT',

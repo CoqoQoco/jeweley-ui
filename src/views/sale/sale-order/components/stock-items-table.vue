@@ -64,7 +64,7 @@
             <Column :header="$t('view.sale.saleOrder.productCode')" :frozen="!!frozenCols['productNumber']" :alignFrozen="frozenCols['productNumber'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.saleStatus')" :frozen="!!frozenCols['isConfirm']" :alignFrozen="frozenCols['isConfirm'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.description')" :frozen="!!frozenCols['description']" :alignFrozen="frozenCols['description'] || undefined" />
-            <Column header="Gold (gms)" :frozen="!!frozenCols['gold']" :alignFrozen="frozenCols['gold'] || undefined" />
+            <Column :header="$t('view.sale.saleOrder.goldSilverGms')" :frozen="!!frozenCols['gold']" :alignFrozen="frozenCols['gold'] || undefined" />
             <Column header="Diamond (cts)" :frozen="!!frozenCols['diamond']" :alignFrozen="frozenCols['diamond'] || undefined" />
             <Column header="Stone (cts)" :frozen="!!frozenCols['gem']" :alignFrozen="frozenCols['gem'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.salePriceTHB')" :frozen="!!frozenCols['priceOrigin']" :alignFrozen="frozenCols['priceOrigin'] || undefined" />
@@ -377,11 +377,11 @@
           <template #body="slotProps">
             <div v-if="slotProps.data.materials">
               <div
-                v-for="(item, idx) in slotProps.data.materials.filter((m) => m.type === 'Gold')"
+                v-for="(item, idx) in getMetalMaterials(slotProps.data.materials)"
                 :key="idx"
                 class="material-cell"
               >
-                <div class="material-typecode-gold">
+                <div :class="item.type === 'Silver' ? 'material-typecode-silver' : 'material-typecode-gold'">
                   {{ item.typeCode || '' }}
                 </div>
                 <div class="material-weight">
@@ -940,6 +940,7 @@ import { formatDecimal, formatMoney } from '@/services/utils/decimal.js'
 import { convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
 import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 import { isPlaceholderItem } from '@/services/utils/copy-item.js'
+import { getMetalMaterials, sumMetalWeight } from '@/services/utils/metal-weight.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
@@ -1093,7 +1094,7 @@ export default {
         { field: 'productNumber', label: this.$t('view.sale.saleOrder.productCode') },
         { field: 'isConfirm', label: this.$t('view.sale.saleOrder.saleStatus') },
         { field: 'description', label: this.$t('view.sale.saleOrder.description') },
-        { field: 'gold', label: 'Gold (gms)' },
+        { field: 'gold', label: this.$t('view.sale.saleOrder.goldSilverGms') },
         { field: 'diamond', label: 'Diamond (cts)' },
         { field: 'gem', label: 'Stone (cts)' },
         { field: 'priceOrigin', label: this.$t('view.sale.saleOrder.salePriceTHB') },
@@ -1385,17 +1386,11 @@ export default {
         .toFixed(2)
     },
 
+    getMetalMaterials,
+
     getGoldWeight(items) {
       return items
-        .reduce((sum, item) => {
-          if (!item.materials) return sum
-          return (
-            sum +
-            item.materials
-              .filter((m) => m.type === 'Gold')
-              .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
-          )
-        }, 0)
+        .reduce((sum, item) => sum + sumMetalWeight(item.materials), 0)
         .toFixed(2)
     },
 
@@ -1599,7 +1594,8 @@ export default {
   vertical-align: top;
 }
 
-.material-typecode-gold {
+.material-typecode-gold,
+.material-typecode-silver {
   flex: 5;
   text-align: center;
   margin-right: 0.5rem;
@@ -1608,6 +1604,10 @@ export default {
   white-space: normal;
   overflow-wrap: anywhere;
   vertical-align: top;
+}
+
+.material-typecode-silver {
+  color: var(--status-closed);
 }
 
 .material-weight {
