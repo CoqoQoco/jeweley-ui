@@ -165,6 +165,7 @@ export default {
             gold: findByCode(ms.golds, m.gold),
             gem: findByCode(ms.gems, m.gem),
             gemShape: findByCode(ms.gemShapes, m.gemShape),
+            ringSize: m.ringSize || null,
           })),
         }))
       }
@@ -230,6 +231,7 @@ export default {
           materials: (it.materials || []).map((m) => ({
             gold: toCode(m.gold),
             goldQty: m.goldQty,
+            ringSize: m.ringSize || null,
             gem: toCode(m.gem),
             gemShape: toCode(m.gemShape),
             gemQty: m.gemQty,

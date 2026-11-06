@@ -145,6 +145,7 @@ export class PrePlanOrderFormPdfBuilder {
       { text: 'Diamond Size', style: 'tableHeader' },
       { text: 'Gold', style: 'tableHeader' },
       { text: 'Gold Qty', style: 'tableHeader' },
+      { text: 'ไซส์', style: 'tableHeader' },
     ]
     const rows = [headerRow]
 
@@ -162,6 +163,7 @@ export class PrePlanOrderFormPdfBuilder {
         m.diamondSize || '-',
         codeOf(m.gold),
         m.goldQty != null ? String(m.goldQty) : '-',
+        m.ringSize || '-',
       ])
     }
 
@@ -197,12 +199,12 @@ export class PrePlanOrderFormPdfBuilder {
           { text: 'สรุปการใช้ทอง: ', bold: true },
           { text: this.buildGoldUsageSummary(item.materials || []), bold: true },
         ],
-        colSpan: 6,
+        colSpan: 7,
         fillColor: '#f9f9f9',
         fontSize: 15,
         margin: [3, 4, 3, 4],
       },
-      {}, {}, {}, {}, {},
+      {}, {}, {}, {}, {}, {},
     ]
     materialRows.push(goldSummaryRow)
     const qtyText = `จำนวนที่สั่ง: ${item.productQty || '-'} ${item.productQtyUnit || ''}`
@@ -287,8 +289,7 @@ export class PrePlanOrderFormPdfBuilder {
 
     const productDetailCell = {
       margin: [6, 4, 6, 4],
-      text: `${detailText}
-ไซส์แหวน: ${item.ringSize || '-'}`,
+      text: item.ringSize ? `${detailText}\nไซส์แหวน: ${item.ringSize}` : detailText,
       fontSize: 13,
       bold: true,
     }
@@ -299,7 +300,7 @@ export class PrePlanOrderFormPdfBuilder {
         {
           table: {
             headerRows: 1,
-            widths: [40, 50, '*', 60, 40, 40],
+            widths: [40, 50, '*', 60, 40, 40, 36],
             body: materialRows,
             dontBreakRows: true,
           },

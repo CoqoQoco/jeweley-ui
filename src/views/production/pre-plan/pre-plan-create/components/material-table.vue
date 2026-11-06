@@ -37,6 +37,10 @@
         />
       </template>
 
+      <template #ringSizeTemplate="{ data }">
+        <input v-model="data.ringSize" maxlength="50" class="form-control form-control-sm" @input="emitUpdate" />
+      </template>
+
       <template #gemTemplate="{ data }">
         <DropdownGeneric
           v-model="data.gem"
@@ -100,6 +104,7 @@ function createEmptyMaterial() {
     id: materialIdCounter++,
     gold: null,
     goldQty: null,
+    ringSize: null,
     gem: null,
     gemShape: null,
     gemQty: null,
@@ -136,6 +141,7 @@ export default {
         { field: 'action', header: '', minWidth: '60px', sortable: false, align: 'center' },
         { field: 'gold', header: 'สีของทอง/เงิน', minWidth: '150px', sortable: false },
         { field: 'goldQty', header: 'จำนวนทอง/เงิน', minWidth: '120px', sortable: false },
+        { field: 'ringSize', header: 'ไซส์แหวน', minWidth: '110px', sortable: false },
         { field: 'gem', header: 'ประเภทพลอย', minWidth: '150px', sortable: false },
         { field: 'gemShape', header: 'รูปร่างพลอย', minWidth: '130px', sortable: false },
         { field: 'gemSize', header: 'ขนาดพลอย', minWidth: '110px', sortable: false },

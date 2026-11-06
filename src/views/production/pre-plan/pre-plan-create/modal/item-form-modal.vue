@@ -63,7 +63,7 @@
 
         <div class="card p-3 mt-3">
           <pageTitle title="ข้อมูลสินค้า" :isShowBtnClose="false" class="mb-3" />
-          <div class="form-row four-col mb-2">
+          <div class="form-row three-col mb-2">
             <div class="form-field">
               <span class="title-text">ประเภทสินค้า</span>
               <DropdownGeneric
@@ -93,10 +93,6 @@
                 v-model="form.productQtyUnit"
                 placeholder="เช่น ชิ้น, ด้าม"
               />
-            </div>
-            <div class="form-field">
-              <span class="title-text">ไซส์แหวน</span>
-              <input class="form-control" v-model="form.ringSize" placeholder="เช่น 52" />
             </div>
           </div>
 
@@ -303,6 +299,7 @@ export default {
           id: Date.now() + i,
           gold: null,
           goldQty: null,
+          ringSize: null,
           gem: g.gemCode ? { description: g.gemCode } : null,
           gemShape: g.gemShapeCode ? { description: g.gemShapeCode } : null,
           gemQty: g.qty || null,

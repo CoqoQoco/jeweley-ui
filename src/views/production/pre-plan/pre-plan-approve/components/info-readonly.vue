@@ -64,7 +64,7 @@
               <span class="info-label">จำนวน:</span>
               <span>{{ item.productQty || '-' }} {{ item.productQtyUnit || '' }}</span>
             </div>
-            <div class="info-row">
+            <div v-if="item.ringSize" class="info-row">
               <span class="info-label">ไซส์แหวน:</span>
               <span>{{ item.ringSize || '-' }}</span>
             </div>
@@ -121,7 +121,8 @@ export default {
       const parts = []
       const goldName = this.descOf(m.gold)
       if (goldName || m.goldQty) {
-        const seg = ['ทอง:', goldName, m.goldQty != null ? `× ${m.goldQty}` : '']
+        const seg = ['ทอง:', goldName, m.goldQty != null ? `× ${m.goldQty}` : '',
+          m.ringSize ? `ไซส์ ${m.ringSize}` : '']
           .filter(Boolean).join(' ')
         parts.push(seg)
       }

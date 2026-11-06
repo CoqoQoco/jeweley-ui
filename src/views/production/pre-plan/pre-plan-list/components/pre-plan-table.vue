@@ -428,7 +428,7 @@ export default {
     getLinkedProgressClass,
     formatMaterialBrief(m) {
       const parts = []
-      if (m.gold) parts.push(`${this.$t('view.production.prePlan.goldLabel')} ${this.getDesc(this.masterStore.golds, m.gold)} × ${m.goldQty || ''}`)
+      if (m.gold) parts.push(`${this.$t('view.production.prePlan.goldLabel')} ${this.getDesc(this.masterStore.golds, m.gold)} × ${m.goldQty || ''}${m.ringSize ? ` ไซส์ ${m.ringSize}` : ''}`)
       if (m.gem) parts.push(`${this.$t('view.production.prePlan.gemLabel')} ${this.getDesc(this.masterStore.gems, m.gem)} ${m.gemQty || ''}`)
       return parts.join(' · ') || '(ไม่ระบุ)'
     },
