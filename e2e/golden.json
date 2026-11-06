@@ -1,0 +1,8 @@
+{
+  "golden": [
+    "app-shell.spec.js",
+    "invoice-money.spec.js",
+    "ticket-my-list.spec.js"
+  ],
+  "excluded": {}
+}
