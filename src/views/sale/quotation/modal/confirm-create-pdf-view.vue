@@ -64,7 +64,7 @@ import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
-const SHOW_DECIMALS_STORAGE_KEY = 'quotation-print-show-decimals'
+const SHOW_DECIMALS_STORAGE_KEY = 'quotation-print-show-decimals-v2'
 
 export default {
   name: 'ConfirmCreatePdfView',

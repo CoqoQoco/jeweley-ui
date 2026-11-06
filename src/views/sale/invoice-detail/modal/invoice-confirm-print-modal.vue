@@ -940,7 +940,7 @@ export default {
         invoiceDate: this.invoiceData.invoiceDate || ''
       }
 
-      const savedShowDecimals = storage.getItem('invoice-print-show-decimals')
+      const savedShowDecimals = storage.getItem('invoice-print-show-decimals-v2')
       const showDecimals = savedShowDecimals !== null
         ? savedShowDecimals === 'true'
         : true
@@ -966,7 +966,7 @@ export default {
     },
 
     onShowDecimalsChange(val) {
-      storage.setItem('invoice-print-show-decimals', String(val))
+      storage.setItem('invoice-print-show-decimals-v2', String(val))
     },
 
     formatDate(date) {

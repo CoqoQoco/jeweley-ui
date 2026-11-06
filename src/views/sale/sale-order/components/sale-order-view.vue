@@ -1204,14 +1204,14 @@ export default {
   },
 
   mounted() {
-    const saved = storage.getItem('sale-order-print-show-decimals')
+    const saved = storage.getItem('sale-order-print-show-decimals-v2')
     this.pdfShowDecimals = saved !== null ? saved === 'true' : true
     this.loadSaleUserOptions()
   },
 
   methods: {
     onPdfShowDecimalsChange(val) {
-      storage.setItem('sale-order-print-show-decimals', String(val))
+      storage.setItem('sale-order-print-show-decimals-v2', String(val))
     },
 
     // โหลดรายชื่อพนักงานที่มี role Sale ไว้ให้เลือกในช่องผู้ขาย/ผู้ช่วยขาย (พิมพ์ชื่อเองก็ได้ ไม่บังคับเลือกจากลิสต์)

@@ -1476,7 +1476,7 @@ export default {
         email: this.customer.email || '',
         phone: this.customer.tel || ''
       }
-      const savedShowDecimals = storage.getItem('quotation-print-show-decimals')
+      const savedShowDecimals = storage.getItem('quotation-print-show-decimals-v2')
       const showDecimals = savedShowDecimals !== null
         ? savedShowDecimals === 'true'
         : true

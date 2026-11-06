@@ -447,7 +447,7 @@ export class SaleOrderPdfBuilder {
         { text: '', style: 'summaryLabelColored', alignment: 'right' },
         { text: '', style: 'summaryLabelColored', alignment: 'right' },
         { text: this.formatWeight(sumGold), style: 'summaryLabelColored', alignment: 'right' },
-        { text: this.formatWeight(sumDiamond), style: 'summaryLabelColored', alignment: 'right' },
+        { text: this.formatWeight(sumDiamond, 3), style: 'summaryLabelColored', alignment: 'right' },
         { text: this.formatWeight(sumGem), style: 'summaryLabelColored', alignment: 'right' },
         { text: sumQty, style: 'summaryLabelColored', alignment: 'right' },
         { text: '', style: 'summaryLabelColored', alignment: 'right' },
@@ -486,7 +486,7 @@ export class SaleOrderPdfBuilder {
           {},
           {},
           { text: this.formatWeight(sumGoldAll), style: 'grandTotalLabel', alignment: 'right' },
-          { text: this.formatWeight(sumDiamondAll), style: 'grandTotalLabel', alignment: 'right' },
+          { text: this.formatWeight(sumDiamondAll, 3), style: 'grandTotalLabel', alignment: 'right' },
           { text: this.formatWeight(sumGemAll), style: 'grandTotalLabel', alignment: 'right' },
           { text: sumQtyAll, style: 'grandTotalLabel', alignment: 'right' },
           {},
@@ -798,7 +798,7 @@ export class SaleOrderPdfBuilder {
           margin: [0, 0, 0, 0]
         },
         {
-          text: m.weight ? Number(m.weight).toFixed(2) : Number(0).toFixed(2),
+          text: (m.weight ? Number(m.weight) : 0).toFixed(type === 'Diamond' ? 3 : 2),
           alignment: 'right',
           fontSize: 7,
           margin: [0, 0, 0, 0]
@@ -1003,11 +1003,11 @@ export class SaleOrderPdfBuilder {
     return formatMoney(num, { showDecimals: this.showDecimals, locale: 'th-TH' })
   }
 
-  // น้ำหนักรวม — บังคับ 2 ตำแหน่งเสมอ ไม่ขึ้นกับ showDecimals (ให้ตรงกับแถวสินค้าที่ใช้ toFixed(2))
-  formatWeight(num) {
+  // น้ำหนักรวม — บังคับตามจำนวนตำแหน่งที่ระบุเสมอ (ทอง/พลอย 2, เพชร 3) ไม่ขึ้นกับ showDecimals
+  formatWeight(num, decimals = 2) {
     const value = Number(num)
-    if (isNaN(value)) return '0.00'
-    return formatMoney(value, { showDecimals: true, locale: 'th-TH' })
+    if (isNaN(value)) return (0).toFixed(decimals)
+    return value.toLocaleString('th-TH', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
   }
 
   getDocDefinition() {
