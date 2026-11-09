@@ -32,11 +32,34 @@ describe('photo-sheet-pdf-builder', () => {
       ]
     })
     const def = builder.getDocDefinition()
-    expect(def.content[0].text).toBe('ZE028')
-    const row = def.content[1]
+    const row = def.content[0]
     expect(row.columns).toHaveLength(4)
     expect(row.columns[0].stack[0].image).toBeDefined()
     expect(row.columns[1].stack[0].canvas).toBeDefined()
     expect(row.columns[1].stack[1].text).toBe('2) BB')
+  })
+
+  it('เลขเอกสารอยู่ใน header กึ่งกลางทุกหน้า ไม่อยู่ใน content', () => {
+    const def = new PhotoSheetPdfBuilder({ docNo: 'ZE028', items: [{ seq: 1, moldCode: 'AA' }] }).getDocDefinition()
+    for (const page of [1, 2]) {
+      const h = def.header(page)
+      expect(h.text).toBe('ZE028')
+      expect(h.alignment).toBe('center')
+      expect(h.fontSize).toBe(22)
+      expect(h.bold).toBe(true)
+    }
+    expect(def.content.some((c) => c.text === 'ZE028')).toBe(false)
+    expect(def.content).toHaveLength(1)
+  })
+
+  it('margin บนเว้นที่ให้ header, ซ้าย/ขวา/ล่างคงเดิม', () => {
+    const def = new PhotoSheetPdfBuilder({ docNo: 'ZE028', items: [] }).getDocDefinition()
+    expect(def.pageMargins).toEqual([30, 60, 30, 30])
+  })
+
+  it('docNo ว่าง -> header ว่างไม่พัง', () => {
+    const def = new PhotoSheetPdfBuilder({ docNo: '', items: [] }).getDocDefinition()
+    expect(def.header(1).text).toBe('')
+    expect(def.content).toEqual([])
   })
 })

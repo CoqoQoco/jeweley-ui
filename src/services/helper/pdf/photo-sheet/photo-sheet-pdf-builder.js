@@ -1,4 +1,4 @@
-// PhotoSheetPdfBuilder — ใบรูปอย่างเดียว (SO / Quotation / Invoice): เลขเอกสารหัวกระดาษ + รูปสินค้า 4 ใบต่อแถว + caption "{ลำดับ}){รหัสแม่พิมพ์}"
+// PhotoSheetPdfBuilder — ใบรูปอย่างเดียว (SO / Quotation / Invoice): เลขเอกสารกึ่งกลางหัวกระดาษทุกหน้า + รูปสินค้า 4 ใบต่อแถว + caption "{ลำดับ}){รหัสแม่พิมพ์}"
 
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { normalizeDocNo } from '@/services/helper/pdf/photo-sheet/photo-sheet-doc-no.js'
@@ -6,6 +6,8 @@ import { normalizeDocNo } from '@/services/helper/pdf/photo-sheet/photo-sheet-do
 const FONT = 'THSarabunNew'
 export const PHOTO_SHEET_COLS = 4
 const PAGE_MARGIN = 30
+const PAGE_MARGIN_TOP = 60
+const HEADER_TOP = 20
 const COLUMN_GAP = 10
 const PAGE_WIDTH_A4 = 595.28
 const CELL_WIDTH = (PAGE_WIDTH_A4 - PAGE_MARGIN * 2 - COLUMN_GAP * (PHOTO_SHEET_COLS - 1)) / PHOTO_SHEET_COLS
@@ -65,12 +67,17 @@ export class PhotoSheetPdfBuilder {
     })
   }
 
+  buildHeader() {
+    return { text: this.docNo, fontSize: 22, bold: true, alignment: 'center', margin: [PAGE_MARGIN, HEADER_TOP, PAGE_MARGIN, 0] }
+  }
+
   getDocDefinition() {
     return {
       pageSize: 'A4',
-      pageMargins: [PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN],
+      pageMargins: [PAGE_MARGIN, PAGE_MARGIN_TOP, PAGE_MARGIN, PAGE_MARGIN],
       defaultStyle: { font: FONT, fontSize: 12 },
-      content: [{ text: this.docNo, fontSize: 22, bold: true, margin: [0, 0, 0, 12] }, ...this.buildRows()]
+      header: () => this.buildHeader(),
+      content: this.buildRows()
     }
   }
 
