@@ -312,7 +312,7 @@ const routes = [
   ...notificationRoutes,
 
   // ----- Graph (dev) -----
-  ...graphRoutes,
+  ...(import.meta.env.DEV ? graphRoutes : []),
 
   // ----- Downloads -----
   ...downloadsRoutes,
