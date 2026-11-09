@@ -35,3 +35,6 @@ coverage
 # Playwright
 test-results/
 playwright-report/
+
+graphify-out/
+public/graph-*.html
