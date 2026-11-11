@@ -22,8 +22,8 @@
           <Column :header="$t('view.sale.quotation.stockNumber')" />
           <Column :header="$t('view.sale.quotation.productCode')" />
           <Column :header="$t('view.sale.quotation.descriptionCol')" />
-          <Column :header="$t('view.sale.quotation.goldWeight')" />
-          <Column :header="$t('view.sale.quotation.diamondWeight')" />
+          <Column :header="materialMode === 'silver' ? columnHeaders.metal : $t('view.sale.quotation.goldWeight')" />
+          <Column :header="materialMode === 'silver' ? columnHeaders.second : $t('view.sale.quotation.diamondWeight')" />
           <Column :header="$t('view.sale.quotation.stoneWeight')" />
           <Column :header="$t('view.sale.quotation.salePriceTHB')" />
           <Column :header="$t('view.sale.quotation.appraisalPriceTHB')" />
@@ -183,12 +183,12 @@
         <template #body="slotProps">
           <div v-if="slotProps.data.materials">
             <div
-              v-for="(item, idx) in slotProps.data.materials.filter((m) => m.type === 'Gold')"
+              v-for="(item, idx) in slotProps.data.materials.filter((m) => materialKind(m) === 'metal')"
               :key="idx"
               class="material-cell"
             >
               <div class="material-typecode-gold">
-                {{ item.typeCode }}
+                {{ materialLabel(item) }}
               </div>
               <div class="material-weight">
                 {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
@@ -203,13 +203,13 @@
           <div v-if="slotProps.data.materials">
             <div
               v-for="(item, idx) in slotProps.data.materials.filter(
-                (m) => m.type === 'Diamond'
+                (m) => materialKind(m) === 'second'
               )"
               :key="idx"
               class="material-cell"
             >
               <div class="material-typecode">
-                {{ `${item.qty ? `(${item.qty})` : ''} ${item.typeCode}` }}
+                {{ `${item.qty ? `(${item.qty})` : ''} ${materialLabel(item)}` }}
               </div>
               <div class="material-weight">
                 {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
@@ -223,12 +223,12 @@
         <template #body="slotProps">
           <div v-if="slotProps.data.materials">
             <div
-              v-for="(item, idx) in slotProps.data.materials.filter((m) => m.type === 'Gem')"
+              v-for="(item, idx) in slotProps.data.materials.filter((m) => materialKind(m) === 'gem')"
               :key="idx"
               class="material-cell"
             >
               <div class="material-typecode">
-                {{ `${item.qty ? `(${item.qty})` : ''} ${item.typeCode}` }}
+                {{ `${item.qty ? `(${item.qty})` : ''} ${materialLabel(item)}` }}
               </div>
               <div class="material-weight">
                 {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
@@ -614,6 +614,7 @@ import { formatDocCurrency } from '@/services/utils/decimal.js'
 import { convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 import { hasMarginAccess } from '@/services/permission/margin-access.js'
+import { classifyMaterial, getColumnHeaders, getDocMaterialMode, getMaterialLabel } from '@/services/helper/sale-material-columns.js'
 
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 
@@ -678,6 +679,12 @@ export default {
   },
 
   computed: {
+    materialMode() {
+      return getDocMaterialMode(this.customer.quotationItems)
+    },
+    columnHeaders() {
+      return getColumnHeaders(this.materialMode)
+    },
     activeRowItems() {
       return this.customer.quotationItems
     },
@@ -687,6 +694,12 @@ export default {
   },
 
   methods: {
+    materialKind(m) {
+      return classifyMaterial(m, this.materialMode)
+    },
+    materialLabel(m) {
+      return getMaterialLabel(m)
+    },
     convertedUnitPrice,
     lineAmount,
     formatPrice(price) {

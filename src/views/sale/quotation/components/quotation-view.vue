@@ -545,6 +545,7 @@ import dayjs from 'dayjs'
 
 import ExcelExportConfirmModal from '@/components/modal/excel-export-confirm-modal.vue'
 import GoldCalculatorModal from '@/components/modal/gold-calculator-modal.vue'
+import { classifyMaterial, getDocMaterialMode } from '@/services/helper/sale-material-columns.js'
 
 const interfaceForm = {
   discount: 0,
@@ -618,6 +619,9 @@ export default {
   },
 
   computed: {
+    materialMode() {
+      return getDocMaterialMode(this.customer.quotationItems)
+    },
     form() {
       return this.modelForm || {}
     },
@@ -644,7 +648,7 @@ export default {
       this.customer.quotationItems.forEach((item) => {
         if (item.materials) {
           item.materials
-            .filter((m) => m.type === 'Gold')
+            .filter((m) => this.materialKind(m) === 'metal')
             .forEach((m) => {
               sum += Number(m.weight) || 0
             })
@@ -657,7 +661,7 @@ export default {
       this.customer.quotationItems.forEach((item) => {
         if (item.materials) {
           item.materials
-            .filter((m) => m.type === 'Diamond')
+            .filter((m) => this.materialKind(m) === 'second')
             .forEach((m) => {
               sum += Number(m.weight) || 0
             })
@@ -670,7 +674,7 @@ export default {
       this.customer.quotationItems.forEach((item) => {
         if (item.materials) {
           item.materials
-            .filter((m) => m.type === 'Gem')
+            .filter((m) => this.materialKind(m) === 'gem')
             .forEach((m) => {
               sum += Number(m.weight) || 0
             })
@@ -736,9 +740,10 @@ export default {
       this.customer.quotationItems.forEach((item) => {
         if (item.materials) {
           item.materials.forEach((m) => {
-            if (m.type === 'Gold') gold += Number(m.weight) || 0
-            if (m.type === 'Diamond') diamond += Number(m.weight) || 0
-            if (m.type === 'Gem') gem += Number(m.weight) || 0
+            const kind = this.materialKind(m)
+            if (kind === 'metal') gold += Number(m.weight) || 0
+            if (kind === 'second') diamond += Number(m.weight) || 0
+            if (kind === 'gem') gem += Number(m.weight) || 0
           })
         }
       })
@@ -844,6 +849,9 @@ export default {
   },
 
   methods: {
+    materialKind(m) {
+      return classifyMaterial(m, this.materialMode)
+    },
     async generateQuotationNumber() {
       const res = await this.quotationStore.fetchGenerateNumber()
       if (res) {

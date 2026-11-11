@@ -7,6 +7,12 @@ import { PDF_FONT, PDF_COLORS } from '@/services/helper/pdf/shared/pdf-theme.js'
 import { buildDocumentHeader } from '@/services/helper/pdf/shared/pdf-sections.js'
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
 import { COMPANY_INFO, loadCompanyInfo } from '@/config/company-info.js'
+import {
+  classifyMaterial,
+  getColumnHeaders,
+  getDocMaterialMode,
+  getMaterialLabel
+} from '@/services/helper/sale-material-columns.js'
 
 export class InvoicePdfBuilder {
   constructor(
@@ -61,6 +67,15 @@ export class InvoicePdfBuilder {
     this.grandTotalRaw = totals.grandTotalRaw
     this.grandTotalRounded = totals.grandTotalRounded
     this.roundingAdjustment = totals.roundingAdjustment
+  }
+
+  get materialMode() {
+    if (this._materialMode === undefined) this._materialMode = getDocMaterialMode(this.data)
+    return this._materialMode
+  }
+
+  get columnHeaders() {
+    return getColumnHeaders(this.materialMode)
   }
 
   // เมธอดใหม่สำหรับเตรียมข้อมูล PDF ซึ่งจะโหลดโลโก้ก่อน
@@ -232,8 +247,8 @@ export class InvoicePdfBuilder {
             this.setTableHeader(''),
             this.setTableHeader('Style/Product'),
             this.setTableHeader('Description'),
-            this.setTableHeader('Gold (gms)'),
-            this.setTableHeader('Diamond (cts)'),
+            this.setTableHeader(this.columnHeaders.metal),
+            this.setTableHeader(this.columnHeaders.second),
             this.setTableHeader('Gem (cts)'),
             this.setTableHeader('Qty'),
             this.setTableHeader('Price (' + this.currencyUnit + ')'),
@@ -331,8 +346,8 @@ export class InvoicePdfBuilder {
       this.setTableHeader(''),
       this.setTableHeader('Style/Product'),
       this.setTableHeader('Description'),
-      this.setTableHeader('Gold (gms)'),
-      this.setTableHeader('Diamond (cts)'),
+      this.setTableHeader(this.columnHeaders.metal),
+      this.setTableHeader(this.columnHeaders.second),
       this.setTableHeader('Gem (cts)'),
       this.setTableHeader('Qty'),
       this.setTableHeader('Price (' + this.currencyUnit + ')'),
@@ -348,22 +363,23 @@ export class InvoicePdfBuilder {
     items.forEach((item, index) => {
       const actualIndex = pageNum * this.itemsPerPage + index
       // Gold, Diamond, Gem columns (format like UI)
+      const mode = this.materialMode
       function buildMaterialTable(materials, type) {
         if (!materials || !Array.isArray(materials)) return ''
         const rows = materials
-          .filter((m) => m.type === type)
+          .filter((m) => classifyMaterial(m, mode) === type)
           .map((m) => [
             {
               text:
-                type === 'Gold'
-                  ? m.typeCode || ''
-                  : (m.qty ? '(' + m.qty + ') ' : '') + (m.typeCode || ''),
+                type === 'metal'
+                  ? getMaterialLabel(m)
+                  : (m.qty ? '(' + m.qty + ') ' : '') + getMaterialLabel(m),
               alignment: 'left',
               fontSize: 7,
               margin: [0, 0, 0, 0]
             },
             {
-              text: (m.weight ? Number(m.weight) : 0).toFixed(type === 'Diamond' ? 3 : 2),
+              text: (m.weight ? Number(m.weight) : 0).toFixed(type === 'second' ? 3 : 2),
               alignment: 'right',
               fontSize: 7,
               margin: [0, 0, 0, 0]
@@ -404,9 +420,10 @@ export class InvoicePdfBuilder {
         gemWeight = 0
       if (item.materials && Array.isArray(item.materials)) {
         item.materials.forEach((m) => {
-          if (m.type === 'Gold') goldWeight += Number(m.weight) || 0
-          if (m.type === 'Diamond') diamondWeight += Number(m.weight) || 0
-          if (m.type === 'Gem') gemWeight += Number(m.weight) || 0
+          const kind = classifyMaterial(m, this.materialMode)
+          if (kind === 'metal') goldWeight += Number(m.weight) || 0
+          if (kind === 'second') diamondWeight += Number(m.weight) || 0
+          if (kind === 'gem') gemWeight += Number(m.weight) || 0
         })
       }
       sumGold += goldWeight
@@ -427,9 +444,9 @@ export class InvoicePdfBuilder {
           : this.setTableCell(''),
         this.setTableCell(formatItemStyleCode(item)),
         this.setTableCell(this.getDescription(item)),
-        buildMaterialTable(item.materials, 'Gold'),
-        buildMaterialTable(item.materials, 'Diamond'),
-        buildMaterialTable(item.materials, 'Gem'),
+        buildMaterialTable(item.materials, 'metal'),
+        buildMaterialTable(item.materials, 'second'),
+        buildMaterialTable(item.materials, 'gem'),
         this.setTableCellRight(qty ? qty.toString() : '0'),
         this.setTableCellRight(this.formatPrice(Number(price))),
         this.setTableCellRight(this.roundNoDecimal(amount))
@@ -467,9 +484,10 @@ export class InvoicePdfBuilder {
 
         if (item.materials && Array.isArray(item.materials)) {
           item.materials.forEach((m) => {
-            if (m.type === 'Gold') sumGoldAll += Number(m.weight) || 0
-            if (m.type === 'Diamond') sumDiamondAll += Number(m.weight) || 0
-            if (m.type === 'Gem') sumGemAll += Number(m.weight) || 0
+            const kind = classifyMaterial(m, this.materialMode)
+            if (kind === 'metal') sumGoldAll += Number(m.weight) || 0
+            if (kind === 'second') sumDiamondAll += Number(m.weight) || 0
+            if (kind === 'gem') sumGemAll += Number(m.weight) || 0
           })
         }
       })
@@ -639,9 +657,10 @@ export class InvoicePdfBuilder {
       this.data.forEach((item) => {
         if (item.materials) {
           item.materials.forEach((m) => {
-            if (m.type === 'Gold') gold += Number(m.weight) || 0
-            if (m.type === 'Diamond') diamond += Number(m.weight) || 0
-            if (m.type === 'Gem') gem += Number(m.weight) || 0
+            const kind = classifyMaterial(m, this.materialMode)
+            if (kind === 'metal') gold += Number(m.weight) || 0
+            if (kind === 'second') diamond += Number(m.weight) || 0
+            if (kind === 'gem') gem += Number(m.weight) || 0
           })
         }
       })

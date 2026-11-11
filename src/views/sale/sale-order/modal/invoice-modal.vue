@@ -219,12 +219,12 @@
                   <template #body="slotProps">
                     <div v-if="slotProps.data.materials">
                       <div
-                        v-for="(item, idx) in slotProps.data.materials.filter((m) => m.type === 'Gold')"
+                        v-for="(item, idx) in slotProps.data.materials.filter((m) => materialKind(m) === 'metal')"
                         :key="idx"
                         class="material-cell"
                       >
                         <div class="material-typecode-gold">
-                          {{ item.typeCode }}
+                          {{ materialLabel(item) }}
                         </div>
                         <div class="material-weight">
                           {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
@@ -239,13 +239,13 @@
                     <div v-if="slotProps.data.materials">
                       <div
                         v-for="(item, idx) in slotProps.data.materials.filter(
-                          (m) => m.type === 'Diamond'
+                          (m) => materialKind(m) === 'second'
                         )"
                         :key="idx"
                         class="material-cell"
                       >
                         <div class="material-typecode">
-                          {{ `${item.qty ? `(${item.qty})` : ''} ${item.typeCode}` }}
+                          {{ `${item.qty ? `(${item.qty})` : ''} ${materialLabel(item)}` }}
                         </div>
                         <div class="material-weight">
                           {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
@@ -259,12 +259,12 @@
                   <template #body="slotProps">
                     <div v-if="slotProps.data.materials">
                       <div
-                        v-for="(item, idx) in slotProps.data.materials.filter((m) => m.type === 'Gem')"
+                        v-for="(item, idx) in slotProps.data.materials.filter((m) => materialKind(m) === 'gem')"
                         :key="idx"
                         class="material-cell"
                       >
                         <div class="material-typecode">
-                          {{ `${item.qty ? `(${item.qty})` : ''} ${item.typeCode}` }}
+                          {{ `${item.qty ? `(${item.qty})` : ''} ${materialLabel(item)}` }}
                         </div>
                         <div class="material-weight">
                           {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
@@ -784,6 +784,7 @@ import { getPaymentApiName } from '@/constants/payment-methods.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
 import { isPlaceholderItem } from '@/services/utils/copy-item.js'
 import { hasMarginAccess } from '@/services/permission/margin-access.js'
+import { classifyMaterial, getDocMaterialMode, getMaterialLabel } from '@/services/helper/sale-material-columns.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -845,6 +846,9 @@ export default {
   },
 
   computed: {
+    materialMode() {
+      return getDocMaterialMode(this.stockItems)
+    },
     canViewMargin() {
       return hasMarginAccess()
     },
@@ -1003,6 +1007,12 @@ export default {
   },
 
   methods: {
+    materialKind(m) {
+      return classifyMaterial(m, this.materialMode)
+    },
+    materialLabel(m) {
+      return getMaterialLabel(m)
+    },
     isPlaceholderItem,
 
     async loadInitialData() {
@@ -1197,7 +1207,7 @@ export default {
           return (
             sum +
             item.materials
-              .filter((m) => m.type === 'Gold')
+              .filter((m) => this.materialKind(m) === 'metal')
               .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
           )
         }, 0)
@@ -1214,7 +1224,7 @@ export default {
           return (
             sum +
             item.materials
-              .filter((m) => m.type === 'Diamond')
+              .filter((m) => this.materialKind(m) === 'second')
               .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
           )
         }, 0)
@@ -1231,7 +1241,7 @@ export default {
           return (
             sum +
             item.materials
-              .filter((m) => m.type === 'Gem')
+              .filter((m) => this.materialKind(m) === 'gem')
               .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
           )
         }, 0)

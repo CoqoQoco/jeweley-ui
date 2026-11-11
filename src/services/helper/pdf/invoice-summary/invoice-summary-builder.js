@@ -14,6 +14,7 @@ import {
   buildMaterialTable
 } from '../shared/pdf-cells.js'
 import { paginate } from '../shared/pdf-sections.js'
+import { getColumnHeaders, getDocMaterialMode } from '@/services/helper/sale-material-columns.js'
 import {
   buildSeekHeader,
   buildStatusBand,
@@ -115,6 +116,8 @@ export class InvoiceSummaryPdfBuilder {
    */
   getItemsTableContent(pageItems, pageNum) {
     const body = []
+    const mode = getDocMaterialMode(this.data)
+    const headers = getColumnHeaders(mode)
 
     // Header row — light style, no fill color
     body.push([
@@ -122,8 +125,8 @@ export class InvoiceSummaryPdfBuilder {
       { text: '', bold: true, fontSize: 7, color: PDF_COLORS.darkGray, alignment: 'center', margin: [2, 4, 2, 4] },
       { text: 'Style/Product', bold: true, fontSize: 7, color: PDF_COLORS.darkGray, alignment: 'center', margin: [2, 4, 2, 4] },
       { text: 'Description', bold: true, fontSize: 7, color: PDF_COLORS.darkGray, alignment: 'center', margin: [2, 4, 2, 4] },
-      { text: 'Gold (gms)', bold: true, fontSize: 7, color: PDF_COLORS.darkGray, alignment: 'center', margin: [2, 4, 2, 4] },
-      { text: 'Diamond (cts)', bold: true, fontSize: 7, color: PDF_COLORS.darkGray, alignment: 'center', margin: [2, 4, 2, 4] },
+      { text: headers.metal, bold: true, fontSize: 7, color: PDF_COLORS.darkGray, alignment: 'center', margin: [2, 4, 2, 4] },
+      { text: headers.second, bold: true, fontSize: 7, color: PDF_COLORS.darkGray, alignment: 'center', margin: [2, 4, 2, 4] },
       { text: 'Gem (cts)', bold: true, fontSize: 7, color: PDF_COLORS.darkGray, alignment: 'center', margin: [2, 4, 2, 4] },
       { text: 'Qty', bold: true, fontSize: 7, color: PDF_COLORS.darkGray, alignment: 'center', margin: [2, 4, 2, 4] },
       { text: 'Price (' + this.currencyUnit + ')', bold: true, fontSize: 7, color: PDF_COLORS.darkGray, alignment: 'center', margin: [2, 4, 2, 4] },
@@ -148,9 +151,9 @@ export class InvoiceSummaryPdfBuilder {
           : setTableCell(''),
         setTableCell(formatItemStyleCode(item)),
         setTableCell(item.description || item.productNumber || ''),
-        buildMaterialTable(item.materials, 'Gold'),
-        buildMaterialTable(item.materials, 'Diamond'),
-        buildMaterialTable(item.materials, 'Gem'),
+        buildMaterialTable(item.materials, 'metal', mode),
+        buildMaterialTable(item.materials, 'second', mode),
+        buildMaterialTable(item.materials, 'gem', mode),
         setTableCellRight(formatQtyText(qty)),
         setTableCellRight(formatPrice(Number(convertedPrice))),
         setTableCellRight(this._fmt(amount))

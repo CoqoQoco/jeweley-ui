@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import { classifyMaterial } from '@/services/helper/sale-material-columns.js'
 
 import { getVatLayout } from '@/services/helper/print/vat-layout-store.js'
 import { buildVatPrintModel } from '@/services/helper/print/vat-print-model-builder.js'
@@ -81,8 +82,8 @@ async function buildBillModel({ invoiceData, invoiceItems, printData, invoiceNo,
     customRemark: String(printData.customRemark || '').trim(),
     items: (invoiceItems || []).map(i => {
       const mats = Array.isArray(i.materials) ? i.materials : []
-      const goldWeight = mats.filter(m => m.type === 'Gold').reduce((s, m) => s + (Number(m.weight) || 0), 0)
-      const stoneWeight = mats.filter(m => m.type === 'Gem').reduce((s, m) => s + (Number(m.weight) || 0), 0)
+      const goldWeight = mats.filter(m => classifyMaterial(m) === 'metal').reduce((s, m) => s + (Number(m.weight) || 0), 0)
+      const stoneWeight = mats.filter(m => classifyMaterial(m) === 'gem').reduce((s, m) => s + (Number(m.weight) || 0), 0)
       const diamondWeight = mats.filter(m => m.type === 'Diamond').reduce((s, m) => s + (Number(m.weight) || 0), 0)
       const diamondGrade = [...new Set(
         mats.filter(m => m.type === 'Diamond').map(m => m.typeCode).filter(Boolean)

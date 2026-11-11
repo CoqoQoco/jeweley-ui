@@ -1,20 +1,21 @@
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
+import { classifyMaterial, getDocMaterialMode, getMaterialLabel } from '@/services/helper/sale-material-columns.js'
 
 export const MATERIALS_SHEET_NAME = 'Materials'
 
-const MATERIAL_TYPES = ['Gold', 'Diamond', 'Gem']
 const WEIGHT_FMT = '#,##0.000'
 const QTY_FMT = '#,##0'
 
 // รวม material ชนิดเดียวกันของสินค้า 1 ชิ้น — น้ำหนัก/qty บวกรวม, code ตัดซ้ำเรียงตามที่พบ; ไม่มีชนิดนั้น → null
-function aggregateType(materials, type) {
-  const list = materials.filter((m) => m && m.type === type)
+function aggregateType(materials, kind, mode) {
+  const list = materials.filter((m) => m && classifyMaterial(m, mode) === kind)
   if (!list.length) return { code: null, qty: null, weight: null }
   const codes = []
   let weight = 0
   let qty = 0
   list.forEach((m) => {
-    if (m.typeCode && !codes.includes(m.typeCode)) codes.push(m.typeCode)
+    const label = m.type === 'Gold' || m.type === 'Diamond' ? m.typeCode : getMaterialLabel(m)
+    if (label && !codes.includes(label)) codes.push(label)
     weight += Number(m.weight) || 0
     const q = m.qty == null || m.qty === '' ? NaN : Number(m.qty)
     if (Number.isFinite(q)) qty += q
@@ -26,13 +27,14 @@ function aggregateType(materials, type) {
 // no = ลำดับรายการ (เริ่ม 1) ตรงกับคอลัมน์ No. ของ sheet แรก; รายการที่ไม่มี material ที่รู้จักถูกข้าม
 export function buildMaterialRows(items) {
   const rows = []
+  const mode = getDocMaterialMode(items)
   ;(items || []).forEach((item, index) => {
     if (!item || !Array.isArray(item.materials)) return
-    const known = item.materials.filter((m) => m && MATERIAL_TYPES.includes(m.type))
+    const known = item.materials.filter((m) => m && classifyMaterial(m, mode) !== 'other')
     if (!known.length) return
-    const gold = aggregateType(known, 'Gold')
-    const diamond = aggregateType(known, 'Diamond')
-    const gem = aggregateType(known, 'Gem')
+    const gold = aggregateType(known, 'metal', mode)
+    const diamond = aggregateType(known, 'second', mode)
+    const gem = aggregateType(known, 'gem', mode)
     rows.push({
       no: index + 1,
       style: formatItemStyleCode(item),
@@ -54,6 +56,7 @@ export function buildMaterialRows(items) {
 export function writeMaterialsSheet(workbook, items, options = {}) {
   const headerColor = options.headerColor || 'FF921313'
   const rows = buildMaterialRows(items)
+  const silver = getDocMaterialMode(items) === 'silver'
   const worksheet = workbook.addWorksheet(MATERIALS_SHEET_NAME)
   const thinBorder = {
     top: { style: 'thin' },
@@ -66,11 +69,11 @@ export function writeMaterialsSheet(workbook, items, options = {}) {
     'No.',
     'Style/Product',
     'Description',
-    'Gold Code',
-    'Gold (gms)',
-    'Diamond Code',
-    'Diamond Qty',
-    'Diamond (cts)',
+    silver ? 'Silver Code' : 'Gold Code',
+    silver ? 'Silver (gms)' : 'Gold (gms)',
+    silver ? 'CZ Code' : 'Diamond Code',
+    silver ? 'CZ Qty' : 'Diamond Qty',
+    silver ? 'CZ (cts)' : 'Diamond (cts)',
     'Gem Code',
     'Gem Qty',
     'Gem (cts)'

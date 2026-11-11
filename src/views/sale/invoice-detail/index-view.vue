@@ -328,6 +328,7 @@ import { ensureLineKey } from '@/services/utils/line-key.js'
 import { isMaterialInvoice } from '@/constants/invoice-types.js'
 import { toMaterialInvoiceItems } from '@/services/helper/invoice/material-invoice-items.js'
 import MaterialInvoiceItemsTable from './components/material-invoice-items-table.vue'
+import { classifyMaterial, getDocMaterialMode } from '@/services/helper/sale-material-columns.js'
 
 export default {
   name: 'InvoiceDetailView',
@@ -939,13 +940,14 @@ export default {
     getGoldWeight(items) {
       if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
 
+      const mode = getDocMaterialMode(items)
       return items
         .reduce((sum, item) => {
           if (!item.materials) return sum
           return (
             sum +
             item.materials
-              .filter((m) => m.type === 'Gold')
+              .filter((m) => classifyMaterial(m, mode) === 'metal')
               .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
           )
         }, 0)
@@ -955,13 +957,14 @@ export default {
     getDiamondWeight(items) {
       if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
 
+      const mode = getDocMaterialMode(items)
       return items
         .reduce((sum, item) => {
           if (!item.materials) return sum
           return (
             sum +
             item.materials
-              .filter((m) => m.type === 'Diamond')
+              .filter((m) => classifyMaterial(m, mode) === 'second')
               .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
           )
         }, 0)
@@ -971,13 +974,14 @@ export default {
     getGemWeight(items) {
       if (!items || !Array.isArray(items) || items.length === 0) return '0.00'
 
+      const mode = getDocMaterialMode(items)
       return items
         .reduce((sum, item) => {
           if (!item.materials) return sum
           return (
             sum +
             item.materials
-              .filter((m) => m.type === 'Gem')
+              .filter((m) => classifyMaterial(m, mode) === 'gem')
               .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
           )
         }, 0)

@@ -1,3 +1,5 @@
+import { classifyMaterial, isSilverItem } from '@/services/helper/sale-material-columns.js'
+
 // เตรียมข้อมูลใบรับประกันสินค้า (Guarantee Card) จากรายการสินค้าใน Invoice
 // silver lot: 1 บรรทัด qty N → พิมพ์ N การ์ด (1 การ์ด = 1 ชิ้นเสมอ), ทองยัง qty 1 = 1 การ์ด
 
@@ -6,14 +8,13 @@ function insertSpaceBeforeParen(name) {
   return name.replace(/([^\s])\(/g, '$1 (')
 }
 
-function sumWeight(materials, type) {
+function sumWeight(materials) {
   return materials
-    .filter((m) => m.type === type)
     .reduce((sum, m) => sum + (Number(m.weight) || 0), 0)
 }
 
 function buildGemRows(materials) {
-  const gemMaterials = materials.filter((m) => m.type === 'Gem')
+  const gemMaterials = materials.filter((m) => m.type === 'Gem' && classifyMaterial(m) === 'gem')
   const groups = new Map()
 
   gemMaterials.forEach((m) => {
@@ -35,11 +36,11 @@ export function buildGuaranteeCardsFromItems(items) {
   return items.flatMap((item) => {
     const materials = Array.isArray(item.materials) ? item.materials : []
 
-    const goldMaterials = materials.filter((m) => m.type === 'Gold')
-    const goldWeight = goldMaterials.length ? sumWeight(materials, 'Gold').toFixed(2) : ''
+    const goldMaterials = materials.filter((m) => classifyMaterial(m) === 'metal')
+    const goldWeight = goldMaterials.length ? sumWeight(goldMaterials).toFixed(2) : ''
 
     const diamondMaterials = materials.filter((m) => m.type === 'Diamond')
-    const diamondWeight = diamondMaterials.length ? sumWeight(materials, 'Diamond').toFixed(2) : ''
+    const diamondWeight = diamondMaterials.length ? sumWeight(diamondMaterials).toFixed(2) : ''
     const firstDiamond = diamondMaterials[0]
     const diamondQuality = firstDiamond && firstDiamond.typeCode ? `${firstDiamond.typeCode} Color` : ''
 
@@ -49,6 +50,7 @@ export function buildGuaranteeCardsFromItems(items) {
       code: item.mold || item.productNumber || '',
       goodsSpecify: item.productNameEn || item.description || '',
       goldWeight,
+      isSilver: isSilverItem(item),
       gemRows: buildGemRows(materials),
       diamondWeight,
       diamondQuality,

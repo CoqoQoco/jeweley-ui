@@ -724,6 +724,7 @@ import PickCopyLineModal from '../modal/pick-copy-line-modal.vue'
 import ReplaceConfirmedStockModal from '../modal/replace-confirmed-stock-modal.vue'
 import sourcePickerModal from '@/views/stock/convert/components/source-picker-modal.vue'
 import DepositSection from './deposit-section.vue'
+import { classifyMaterial, getDocMaterialMode } from '@/services/helper/sale-material-columns.js'
 
 const SALE_ROLE_ID = 6 // tbm_user_role: 6 = Sale
 
@@ -2891,13 +2892,14 @@ export default {
     },
 
     getGoldWeight(items) {
+      const mode = getDocMaterialMode(items)
       return items
         .reduce((sum, item) => {
           if (!item.materials) return sum
           return (
             sum +
             item.materials
-              .filter((m) => m.type === 'Gold')
+              .filter((m) => classifyMaterial(m, mode) === 'metal')
               .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
           )
         }, 0)
@@ -2905,13 +2907,14 @@ export default {
     },
 
     getDiamondWeight(items) {
+      const mode = getDocMaterialMode(items)
       return items
         .reduce((sum, item) => {
           if (!item.materials) return sum
           return (
             sum +
             item.materials
-              .filter((m) => m.type === 'Diamond')
+              .filter((m) => classifyMaterial(m, mode) === 'second')
               .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
           )
         }, 0)
@@ -2919,13 +2922,14 @@ export default {
     },
 
     getGemWeight(items) {
+      const mode = getDocMaterialMode(items)
       return items
         .reduce((sum, item) => {
           if (!item.materials) return sum
           return (
             sum +
             item.materials
-              .filter((m) => m.type === 'Gem')
+              .filter((m) => classifyMaterial(m, mode) === 'gem')
               .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
           )
         }, 0)

@@ -3,6 +3,12 @@ import ExcelJS from 'exceljs'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount, roundHalfUp } from '@/services/utils/money.js'
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
 import { writeMaterialsSheet } from '@/services/helper/excel/shared/material-rows.js'
+import {
+  classifyMaterial,
+  getColumnHeaders,
+  getDocMaterialMode,
+  getMaterialLabel
+} from '@/services/helper/sale-material-columns.js'
 
 export class SaleOrderExcelBuilder {
   constructor(soData, options = {}) {
@@ -58,6 +64,15 @@ export class SaleOrderExcelBuilder {
 
     // cache รูป base64 แยกจาก item เพื่อไม่ให้ base64 ติดกลับไปบันทึกซ้ำกับ item ของหน้าจอ (key = blobPath/imagePath)
     this.imageCache = new Map()
+  }
+
+  get materialMode() {
+    if (this._materialMode === undefined) this._materialMode = getDocMaterialMode(this.items)
+    return this._materialMode
+  }
+
+  get columnHeaders() {
+    return getColumnHeaders(this.materialMode)
   }
 
   // stock items + copy items รวมกัน — ใช้คิดยอดรวม/น้ำหนักรวมทั้งใบ (P2-3)
@@ -413,8 +428,8 @@ export class SaleOrderExcelBuilder {
       'Image',
       'Style/Product',
       'Description',
-      'Gold (gms)',
-      'Diamond (cts)',
+      this.columnHeaders.metal,
+      this.columnHeaders.second,
       'Gem (cts)',
       'Qty',
       `Price (${this.currencyUnit})`,
@@ -458,14 +473,14 @@ export class SaleOrderExcelBuilder {
       // Build multiline material text (mirrors PDF buildMaterialTable)
       const buildMaterialText = (type) => {
         if (!item.materials || !Array.isArray(item.materials)) return ''
-        const entries = item.materials.filter((m) => m.type === type)
+        const entries = item.materials.filter((m) => classifyMaterial(m, this.materialMode) === type)
         if (!entries.length) return ''
         return entries
           .map((m) => {
             const code =
-              type === 'Gold'
-                ? m.typeCode || ''
-                : `(${m.qty || ''}) ${m.typeCode || ''}`
+              type === 'metal'
+                ? getMaterialLabel(m)
+                : `(${m.qty || ''}) ${getMaterialLabel(m)}`
             const weight = m.weight ? Number(m.weight).toFixed(2) : '0.00'
             return `${code}  ${weight}`
           })
@@ -478,9 +493,10 @@ export class SaleOrderExcelBuilder {
         gemWeight = 0
       if (item.materials && Array.isArray(item.materials)) {
         item.materials.forEach((m) => {
-          if (m.type === 'Gold') goldWeight += Number(m.weight) || 0
-          if (m.type === 'Diamond') diamondWeight += Number(m.weight) || 0
-          if (m.type === 'Gem') gemWeight += Number(m.weight) || 0
+          const kind = classifyMaterial(m, this.materialMode)
+          if (kind === 'metal') goldWeight += Number(m.weight) || 0
+          if (kind === 'second') diamondWeight += Number(m.weight) || 0
+          if (kind === 'gem') gemWeight += Number(m.weight) || 0
         })
       }
       sumGold += goldWeight
@@ -501,9 +517,9 @@ export class SaleOrderExcelBuilder {
           align: 'left',
           wrap: true
         },
-        { col: 'E', value: buildMaterialText('Gold'), align: 'left', wrap: true },
-        { col: 'F', value: buildMaterialText('Diamond'), align: 'left', wrap: true },
-        { col: 'G', value: buildMaterialText('Gem'), align: 'left', wrap: true },
+        { col: 'E', value: buildMaterialText('metal'), align: 'left', wrap: true },
+        { col: 'F', value: buildMaterialText('second'), align: 'left', wrap: true },
+        { col: 'G', value: buildMaterialText('gem'), align: 'left', wrap: true },
         { col: 'H', value: qty, align: 'right', wrap: false },
         { col: 'I', value: this.moneyValue(convertedPrice), align: 'right', wrap: false, numFmt: this.moneyNumFmt },
         { col: 'J', value: this.moneyValue(amount), align: 'right', wrap: false, numFmt: this.moneyNumFmt }
@@ -526,9 +542,9 @@ export class SaleOrderExcelBuilder {
       // Row height — based on max material entries or image height
       const maxLines = item.materials
         ? Math.max(
-            item.materials.filter((m) => m.type === 'Gold').length,
-            item.materials.filter((m) => m.type === 'Diamond').length,
-            item.materials.filter((m) => m.type === 'Gem').length,
+            item.materials.filter((m) => classifyMaterial(m, this.materialMode) === 'metal').length,
+            item.materials.filter((m) => classifyMaterial(m, this.materialMode) === 'second').length,
+            item.materials.filter((m) => classifyMaterial(m, this.materialMode) === 'gem').length,
             1
           )
         : 1
@@ -750,9 +766,10 @@ export class SaleOrderExcelBuilder {
     this.allItems.forEach((item) => {
       if (item.materials) {
         item.materials.forEach((m) => {
-          if (m.type === 'Gold') gold += Number(m.weight) || 0
-          if (m.type === 'Diamond') diamond += Number(m.weight) || 0
-          if (m.type === 'Gem') gem += Number(m.weight) || 0
+          const kind = classifyMaterial(m, this.materialMode)
+          if (kind === 'metal') gold += Number(m.weight) || 0
+          if (kind === 'second') diamond += Number(m.weight) || 0
+          if (kind === 'gem') gem += Number(m.weight) || 0
         })
       }
     })

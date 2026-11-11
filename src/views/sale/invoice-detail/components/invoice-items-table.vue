@@ -49,8 +49,8 @@
             <Column :header="$t('view.sale.saleOrder.stockNumberOld')" :frozen="!!frozenCols['stockNumberOld']" :alignFrozen="frozenCols['stockNumberOld'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.productCode')" :frozen="!!frozenCols['productNumber']" :alignFrozen="frozenCols['productNumber'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.description')" :frozen="!!frozenCols['description']" :alignFrozen="frozenCols['description'] || undefined" />
-            <Column header="Gold (gms)" :frozen="!!frozenCols['gold']" :alignFrozen="frozenCols['gold'] || undefined" />
-            <Column header="Diamond (cts)" :frozen="!!frozenCols['diamond']" :alignFrozen="frozenCols['diamond'] || undefined" />
+            <Column :header="columnHeaders.metal" :frozen="!!frozenCols['gold']" :alignFrozen="frozenCols['gold'] || undefined" />
+            <Column :header="columnHeaders.second" :frozen="!!frozenCols['diamond']" :alignFrozen="frozenCols['diamond'] || undefined" />
             <Column header="Stone (cts)" :frozen="!!frozenCols['gem']" :alignFrozen="frozenCols['gem'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.salePriceTHB')" :frozen="!!frozenCols['priceOrigin']" :alignFrozen="frozenCols['priceOrigin'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.appraisalPriceTHB')" :frozen="!!frozenCols['appraisalPrice']" :alignFrozen="frozenCols['appraisalPrice'] || undefined" />
@@ -169,12 +169,12 @@
           <template #body="slotProps">
             <div v-if="slotProps.data.materials">
               <div
-                v-for="(item, idx) in slotProps.data.materials.filter((m) => m.type === 'Gold')"
+                v-for="(item, idx) in slotProps.data.materials.filter((m) => materialKind(m) === 'metal')"
                 :key="idx"
                 class="material-cell"
               >
                 <div class="material-typecode-gold">
-                  {{ item.typeCode }}
+                  {{ materialLabel(item) }}
                 </div>
                 <div class="material-weight">
                   {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
@@ -192,13 +192,13 @@
             <div v-if="slotProps.data.materials">
               <div
                 v-for="(item, idx) in slotProps.data.materials.filter(
-                  (m) => m.type === 'Diamond'
+                  (m) => materialKind(m) === 'second'
                 )"
                 :key="idx"
                 class="material-cell"
               >
                 <div class="material-typecode">
-                  {{ `${item.qty ? `(${item.qty})` : ''} ${item.typeCode}` }}
+                  {{ `${item.qty ? `(${item.qty})` : ''} ${materialLabel(item)}` }}
                 </div>
                 <div class="material-weight">
                   {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
@@ -215,12 +215,12 @@
           <template #body="slotProps">
             <div v-if="slotProps.data.materials">
               <div
-                v-for="(item, idx) in slotProps.data.materials.filter((m) => m.type === 'Gem')"
+                v-for="(item, idx) in slotProps.data.materials.filter((m) => materialKind(m) === 'gem')"
                 :key="idx"
                 class="material-cell"
               >
                 <div class="material-typecode">
-                  {{ `${item.qty ? `(${item.qty})` : ''} ${item.typeCode}` }}
+                  {{ `${item.qty ? `(${item.qty})` : ''} ${materialLabel(item)}` }}
                 </div>
                 <div class="material-weight">
                   {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
@@ -476,6 +476,7 @@ import { formatDocCurrency } from '@/services/utils/decimal.js'
 import { convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
+import { classifyMaterial, getColumnHeaders, getDocMaterialMode, getMaterialLabel } from '@/services/helper/sale-material-columns.js'
 export default {
   name: 'InvoiceItemsTable',
 
@@ -512,6 +513,12 @@ export default {
   },
 
   computed: {
+    materialMode() {
+      return getDocMaterialMode(this.invoiceItems)
+    },
+    columnHeaders() {
+      return getColumnHeaders(this.materialMode)
+    },
     activeRowItems() {
       return this.invoiceItems
     },
@@ -528,8 +535,8 @@ export default {
         { field: 'stockNumberOld', label: this.$t('view.sale.saleOrder.stockNumberOld') },
         { field: 'productNumber', label: this.$t('view.sale.saleOrder.productCode') },
         { field: 'description', label: this.$t('view.sale.saleOrder.description') },
-        { field: 'gold', label: 'Gold (gms)' },
-        { field: 'diamond', label: 'Diamond (cts)' },
+        { field: 'gold', label: this.columnHeaders.metal },
+        { field: 'diamond', label: this.columnHeaders.second },
         { field: 'gem', label: 'Stone (cts)' },
         { field: 'priceOrigin', label: this.$t('view.sale.saleOrder.salePriceTHB') },
         { field: 'appraisalPrice', label: this.$t('view.sale.saleOrder.appraisalPriceTHB') },
@@ -552,6 +559,12 @@ export default {
   },
 
   methods: {
+    materialKind(m) {
+      return classifyMaterial(m, this.materialMode)
+    },
+    materialLabel(m) {
+      return getMaterialLabel(m)
+    },
     isFrozenLeft(field) {
       return this.frozenCols[field] === 'left'
     },
@@ -625,7 +638,7 @@ export default {
           return (
             sum +
             item.materials
-              .filter((m) => m.type === 'Gold')
+              .filter((m) => this.materialKind(m) === 'metal')
               .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
           )
         }, 0)
@@ -639,7 +652,7 @@ export default {
           return (
             sum +
             item.materials
-              .filter((m) => m.type === 'Diamond')
+              .filter((m) => this.materialKind(m) === 'second')
               .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
           )
         }, 0)
@@ -653,7 +666,7 @@ export default {
           return (
             sum +
             item.materials
-              .filter((m) => m.type === 'Gem')
+              .filter((m) => this.materialKind(m) === 'gem')
               .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
           )
         }, 0)

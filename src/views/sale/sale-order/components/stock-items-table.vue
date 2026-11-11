@@ -65,7 +65,7 @@
             <Column :header="$t('view.sale.saleOrder.saleStatus')" :frozen="!!frozenCols['isConfirm']" :alignFrozen="frozenCols['isConfirm'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.description')" :frozen="!!frozenCols['description']" :alignFrozen="frozenCols['description'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.goldSilverGms')" :frozen="!!frozenCols['gold']" :alignFrozen="frozenCols['gold'] || undefined" />
-            <Column header="Diamond (cts)" :frozen="!!frozenCols['diamond']" :alignFrozen="frozenCols['diamond'] || undefined" />
+            <Column :header="columnHeaders.second" :frozen="!!frozenCols['diamond']" :alignFrozen="frozenCols['diamond'] || undefined" />
             <Column header="Stone (cts)" :frozen="!!frozenCols['gem']" :alignFrozen="frozenCols['gem'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.salePriceTHB')" :frozen="!!frozenCols['priceOrigin']" :alignFrozen="frozenCols['priceOrigin'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.appraisalPriceTHB')" :frozen="!!frozenCols['appraisalPrice']" :alignFrozen="frozenCols['appraisalPrice'] || undefined" />
@@ -382,7 +382,7 @@
                 class="material-cell"
               >
                 <div :class="item.type === 'Silver' ? 'material-typecode-silver' : 'material-typecode-gold'">
-                  {{ item.typeCode || '' }}
+                  {{ getMaterialLabel(item) }}
                 </div>
                 <div class="material-weight">
                   {{ item.weight ? item.weight.toFixed(2) : (0).toFixed(2) }}
@@ -400,7 +400,7 @@
             <div v-if="slotProps.data.materials">
               <div
                 v-for="(item, idx) in slotProps.data.materials.filter(
-                  (m) => m.type === 'Diamond'
+                  (m) => materialKind(m) === 'second'
                 )"
                 :key="idx"
                 class="material-cell"
@@ -423,7 +423,7 @@
           <template #body="slotProps">
             <div v-if="slotProps.data.materials">
               <div
-                v-for="(item, idx) in slotProps.data.materials.filter((m) => m.type === 'Gem')"
+                v-for="(item, idx) in slotProps.data.materials.filter((m) => materialKind(m) === 'gem')"
                 :key="idx"
                 class="material-cell"
               >
@@ -941,6 +941,7 @@ import { convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/
 import { getPieceQtyAvailable } from '@/services/utils/stock-piece-qty.js'
 import { isPlaceholderItem } from '@/services/utils/copy-item.js'
 import { getMetalMaterials, sumMetalWeight } from '@/services/utils/metal-weight.js'
+import { classifyMaterial, getColumnHeaders, getDocMaterialMode, getMaterialLabel } from '@/services/helper/sale-material-columns.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
@@ -1058,6 +1059,12 @@ export default {
   },
 
   computed: {
+    materialMode() {
+      return getDocMaterialMode(this.stockItems)
+    },
+    columnHeaders() {
+      return getColumnHeaders(this.materialMode)
+    },
     canViewMargin() {
       return hasMarginAccess()
     },
@@ -1095,7 +1102,7 @@ export default {
         { field: 'isConfirm', label: this.$t('view.sale.saleOrder.saleStatus') },
         { field: 'description', label: this.$t('view.sale.saleOrder.description') },
         { field: 'gold', label: this.$t('view.sale.saleOrder.goldSilverGms') },
-        { field: 'diamond', label: 'Diamond (cts)' },
+        { field: 'diamond', label: this.columnHeaders.second },
         { field: 'gem', label: 'Stone (cts)' },
         { field: 'priceOrigin', label: this.$t('view.sale.saleOrder.salePriceTHB') },
         { field: 'appraisalPrice', label: this.$t('view.sale.saleOrder.appraisalPriceTHB') },
@@ -1182,7 +1189,7 @@ export default {
     // T7: ชื่อ/รหัสวัตถุดิบอาจไม่มี typeCode — ห้ามให้ template literal โชว์คำว่า "undefined" (เดิม `${qty} ${item.typeCode}`)
     materialLabel(item) {
       const qtyPart = item.qty ? `(${item.qty})` : ''
-      const code = item.typeCode || ''
+      const code = getMaterialLabel(item)
       return [qtyPart, code].filter(Boolean).join(' ')
     },
 
@@ -1387,6 +1394,10 @@ export default {
     },
 
     getMetalMaterials,
+    getMaterialLabel,
+    materialKind(m) {
+      return classifyMaterial(m, this.materialMode)
+    },
 
     getGoldWeight(items) {
       return items
@@ -1401,7 +1412,7 @@ export default {
           return (
             sum +
             item.materials
-              .filter((m) => m.type === 'Diamond')
+              .filter((m) => this.materialKind(m) === 'second')
               .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
           )
         }, 0)
@@ -1415,7 +1426,7 @@ export default {
           return (
             sum +
             item.materials
-              .filter((m) => m.type === 'Gem')
+              .filter((m) => this.materialKind(m) === 'gem')
               .reduce((matSum, mat) => matSum + (mat.weight || 0), 0)
           )
         }, 0)

@@ -1,3 +1,5 @@
+import { isSilverMetal } from '@/services/helper/sale-material-columns.js'
+
 const num = (v) => Number(v) || 0
 
 // ชื่อวัสดุ (Latin) จาก typeCode — เรนเดอร์ได้ใน AcherusGrotesque
@@ -10,6 +12,9 @@ function resolveName(m) {
     if (u === 'PG' || u === 'RG') return 'PINK GOLD'
     return code ? code.toUpperCase() : 'GOLD'
   }
+  if (m.type === 'Silver') {
+    return code ? code.toUpperCase() : 'SILVER'
+  }
   if (m.type === 'Diamond') {
     return code ? `DIAMOND (${code})` : 'DIAMOND'
   }
@@ -21,9 +26,10 @@ function resolveName(m) {
 
 export function summarizeMaterials(materials = []) {
   const list = Array.isArray(materials) ? materials : []
-  const order = { Gold: 0, Diamond: 1, Gem: 2 }
+  const order = { Gold: 0, Silver: 1, Diamond: 2, Gem: 3 }
   const groups = new Map()
-  for (const m of list) {
+  for (const raw of list) {
+    const m = isSilverMetal(raw) && raw.type !== 'Silver' ? { ...raw, type: 'Silver', typeCode: raw.typeCode?.trim() ? raw.typeCode : raw.typeOrigin } : raw
     if (!(m.type in order)) continue
     const name = resolveName(m)
     const key = `${m.type}|${name}`
@@ -37,13 +43,13 @@ export function summarizeMaterials(materials = []) {
   return [...groups.values()]
     .sort((a, b) => order[a.type] - order[b.type])
     .map((g) => {
-      const wUnit = g.weightUnit || (g.type === 'Gold' ? 'g.' : 'ct.')
+      const wUnit = g.weightUnit || (g.type === 'Gold' || g.type === 'Silver' ? 'g.' : 'ct.')
       const qUnit = g.qtyUnit || 'pcs'
       const pcs = Math.round(g.qty)
       return {
         type: g.type,
         name: g.name,
-        qty: g.type === 'Gold' || !pcs ? '' : `${pcs} ${qUnit}`,
+        qty: g.type === 'Gold' || g.type === 'Silver' || !pcs ? '' : `${pcs} ${qUnit}`,
         weight: `${g.weight.toFixed(2)} ${wUnit}`
       }
     })

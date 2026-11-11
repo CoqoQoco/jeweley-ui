@@ -7,6 +7,12 @@ import { PDF_FONT, PDF_COLORS } from '@/services/helper/pdf/shared/pdf-theme.js'
 import { buildDocumentHeader } from '@/services/helper/pdf/shared/pdf-sections.js'
 import { COMPANY_INFO, loadCompanyInfo } from '@/config/company-info.js'
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
+import {
+  classifyMaterial,
+  getColumnHeaders,
+  getDocMaterialMode,
+  getMaterialLabel
+} from '@/services/helper/sale-material-columns.js'
 
 export class InvoicePdfBuilder {
   constructor(
@@ -75,6 +81,15 @@ export class InvoicePdfBuilder {
     this.deposit = Number(saleOrderData.deposit) || 0
     this.amountPaid = (Number(saleOrderData.amountPaid) || 0) + this.deposit
     this.netPayable = this.grandTotalRounded - this.amountPaid
+  }
+
+  get materialMode() {
+    if (this._materialMode === undefined) this._materialMode = getDocMaterialMode(this.data)
+    return this._materialMode
+  }
+
+  get columnHeaders() {
+    return getColumnHeaders(this.materialMode)
   }
 
   // เมธอดใหม่สำหรับเตรียมข้อมูล PDF ซึ่งจะโหลดโลโก้ก่อน
@@ -269,8 +284,8 @@ export class InvoicePdfBuilder {
             this.setTableHeader(''),
             this.setTableHeader('Style/Product'),
             this.setTableHeader('Description'),
-            this.setTableHeader('Gold (gms)'),
-            this.setTableHeader('Diamond (cts)'),
+            this.setTableHeader(this.columnHeaders.metal),
+            this.setTableHeader(this.columnHeaders.second),
             this.setTableHeader('Gem (cts)'),
             this.setTableHeader('Qty'),
             this.setTableHeader('Price (' + this.currencyUnit + ')'),
@@ -364,8 +379,8 @@ export class InvoicePdfBuilder {
       this.setTableHeader(''),
       this.setTableHeader('Style/Product'),
       this.setTableHeader('Description'),
-      this.setTableHeader('Gold (gms)'),
-      this.setTableHeader('Diamond (cts)'),
+      this.setTableHeader(this.columnHeaders.metal),
+      this.setTableHeader(this.columnHeaders.second),
       this.setTableHeader('Gem (cts)'),
       this.setTableHeader('Qty'),
       this.setTableHeader('Price (' + this.currencyUnit + ')'),
@@ -393,9 +408,10 @@ export class InvoicePdfBuilder {
 
       if (item.materials && Array.isArray(item.materials)) {
         item.materials.forEach((m) => {
-          if (m.type === 'Gold') sumGold += Number(m.weight) || 0
-          if (m.type === 'Diamond') sumDiamond += Number(m.weight) || 0
-          if (m.type === 'Gem') sumGem += Number(m.weight) || 0
+          const kind = classifyMaterial(m, this.materialMode)
+          if (kind === 'metal') sumGold += Number(m.weight) || 0
+          if (kind === 'second') sumDiamond += Number(m.weight) || 0
+          if (kind === 'gem') sumGem += Number(m.weight) || 0
         })
       }
 
@@ -406,9 +422,9 @@ export class InvoicePdfBuilder {
           : this.setTableCell(''),
         this.setTableCell(formatItemStyleCode(item)),
         this.setTableCell(this.getDescription(item)),
-        this.buildMaterialTable(item.materials, 'Gold'),
-        this.buildMaterialTable(item.materials, 'Diamond'),
-        this.buildMaterialTable(item.materials, 'Gem'),
+        this.buildMaterialTable(item.materials, 'metal'),
+        this.buildMaterialTable(item.materials, 'second'),
+        this.buildMaterialTable(item.materials, 'gem'),
         this.setTableCellRight(qty ? qty.toString() : '0'),
         this.setTableCellRight(this.formatPrice(Number(convertedPrice))),
         this.setTableCellRight(this.roundNoDecimal(amount))
@@ -448,9 +464,10 @@ export class InvoicePdfBuilder {
           sumQtyAll += Number(item.qty) || 0
           if (item.materials && Array.isArray(item.materials)) {
             item.materials.forEach((m) => {
-              if (m.type === 'Gold') sumGoldAll += Number(m.weight) || 0
-              if (m.type === 'Diamond') sumDiamondAll += Number(m.weight) || 0
-              if (m.type === 'Gem') sumGemAll += Number(m.weight) || 0
+              const kind = classifyMaterial(m, this.materialMode)
+              if (kind === 'metal') sumGoldAll += Number(m.weight) || 0
+              if (kind === 'second') sumDiamondAll += Number(m.weight) || 0
+              if (kind === 'gem') sumGemAll += Number(m.weight) || 0
             })
           }
         })
@@ -651,9 +668,10 @@ export class InvoicePdfBuilder {
       this.data.forEach((item) => {
         if (item.materials) {
           item.materials.forEach((m) => {
-            if (m.type === 'Gold') gold += Number(m.weight) || 0
-            if (m.type === 'Diamond') diamond += Number(m.weight) || 0
-            if (m.type === 'Gem') gem += Number(m.weight) || 0
+            const kind = classifyMaterial(m, this.materialMode)
+            if (kind === 'metal') gold += Number(m.weight) || 0
+            if (kind === 'second') diamond += Number(m.weight) || 0
+            if (kind === 'gem') gem += Number(m.weight) || 0
           })
         }
       })
@@ -751,19 +769,19 @@ export class InvoicePdfBuilder {
   buildMaterialTable(materials, type) {
     if (!materials || !Array.isArray(materials)) return ''
     const rows = materials
-      .filter((m) => m.type === type)
+      .filter((m) => classifyMaterial(m, this.materialMode) === type)
       .map((m) => [
         {
           text:
-            type === 'Gold'
-              ? m.typeCode || ''
-              : (m.qty ? '(' + m.qty + ') ' : '') + (m.typeCode || ''),
+            type === 'metal'
+              ? getMaterialLabel(m)
+              : (m.qty ? '(' + m.qty + ') ' : '') + getMaterialLabel(m),
           alignment: 'left',
           fontSize: 7,
           margin: [0, 0, 0, 0]
         },
         {
-          text: (m.weight ? Number(m.weight) : 0).toFixed(type === 'Diamond' ? 3 : 2),
+          text: (m.weight ? Number(m.weight) : 0).toFixed(type === 'second' ? 3 : 2),
           alignment: 'right',
           fontSize: 7,
           margin: [0, 0, 0, 0]

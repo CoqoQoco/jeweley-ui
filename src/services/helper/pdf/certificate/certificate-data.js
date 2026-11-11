@@ -3,6 +3,7 @@
 
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
+import { classifyMaterial } from '@/services/helper/sale-material-columns.js'
 
 const GOLD_TYPE_METAL_NAME = {
   YG: 'Yellow Gold',
@@ -49,9 +50,8 @@ export function isWalkInCustomer(customerCode) {
   return String(customerCode || '').trim().toUpperCase() === 'WALKIN'
 }
 
-function sumWeight(materials, type) {
+function sumWeight(materials) {
   return materials
-    .filter((m) => m.type === type)
     .reduce((sum, m) => sum + (Number(m.weight) || 0), 0)
 }
 
@@ -166,17 +166,17 @@ export function buildCertificatesFromItems(items, options = {}) {
     const itemNo = item.stockNumberOrigin || item.productNumber || ''
     const certificateNo = `DKC-${itemNo}`
 
-    const goldMaterials = enrichedMaterials.filter((m) => m.type === 'Gold')
-    const metalWeight = goldMaterials.length ? `${sumWeight(enrichedMaterials, 'Gold').toFixed(2)} g` : ''
+    const goldMaterials = enrichedMaterials.filter((m) => classifyMaterial(m) === 'metal')
+    const metalWeight = goldMaterials.length ? `${sumWeight(goldMaterials).toFixed(2)} g` : ''
     const metal = deriveMetal(item, goldMaterials)
 
     const diamondMaterials = enrichedMaterials.filter((m) => m.type === 'Diamond')
     const hasDiamond = diamondMaterials.length > 0
     const diamondPcs = hasDiamond ? Math.round(sumQty(diamondMaterials)) : ''
-    const diamondWeight = hasDiamond ? `${sumWeight(enrichedMaterials, 'Diamond').toFixed(2)} ct` : ''
+    const diamondWeight = hasDiamond ? `${sumWeight(diamondMaterials).toFixed(2)} ct` : ''
     const diamondQuality = diamondMaterials[0]?.typeCode || ''
 
-    const gemMaterials = enrichedMaterials.filter((m) => m.type === 'Gem')
+    const gemMaterials = enrichedMaterials.filter((m) => m.type === 'Gem' && classifyMaterial(m) === 'gem')
     const mainGem = pickMainGem(gemMaterials)
     const gemBlock = mainGem
       ? buildGemBlock(mainGem)

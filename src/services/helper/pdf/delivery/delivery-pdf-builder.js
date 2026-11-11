@@ -5,6 +5,12 @@ import { formatItemStyleCode } from '@/services/utils/item-code.js'
 import { PDF_FONT, PDF_COLORS } from '@/services/helper/pdf/shared/pdf-theme.js'
 import { buildDocumentHeader } from '@/services/helper/pdf/shared/pdf-sections.js'
 import { COMPANY_INFO, loadCompanyInfo } from '@/config/company-info.js'
+import {
+  classifyMaterial,
+  getColumnHeaders,
+  getDocMaterialMode,
+  getMaterialLabel
+} from '@/services/helper/sale-material-columns.js'
 
 export class DeliveryPdfBuilder {
   constructor(
@@ -28,6 +34,15 @@ export class DeliveryPdfBuilder {
     this.currencyRate = Number(currencyRate) || 1
 
     this.itemsPerPage = Number(itemsPerPage) || 10
+  }
+
+  get materialMode() {
+    if (this._materialMode === undefined) this._materialMode = getDocMaterialMode(this.data)
+    return this._materialMode
+  }
+
+  get columnHeaders() {
+    return getColumnHeaders(this.materialMode)
   }
 
   // เมธอดใหม่สำหรับเตรียมข้อมูล PDF ซึ่งจะโหลดโลโก้ก่อน
@@ -208,8 +223,8 @@ export class DeliveryPdfBuilder {
             this.setTableHeader(''),
             this.setTableHeader('Style/Product'),
             this.setTableHeader('Description'),
-            this.setTableHeader('Gold (gms)'),
-            this.setTableHeader('Diamond (cts)'),
+            this.setTableHeader(this.columnHeaders.metal),
+            this.setTableHeader(this.columnHeaders.second),
             this.setTableHeader('Gem (cts)'),
             this.setTableHeader('Qty')
           ]
@@ -275,8 +290,8 @@ export class DeliveryPdfBuilder {
       this.setTableHeader(''),
       this.setTableHeader('Style/Product'),
       this.setTableHeader('Description'),
-      this.setTableHeader('Gold (gms)'),
-      this.setTableHeader('Diamond (cts)'),
+      this.setTableHeader(this.columnHeaders.metal),
+      this.setTableHeader(this.columnHeaders.second),
       this.setTableHeader('Gem (cts)'),
       this.setTableHeader('Qty')
     ])
@@ -295,9 +310,10 @@ export class DeliveryPdfBuilder {
 
       if (item.materials && Array.isArray(item.materials)) {
         item.materials.forEach((m) => {
-          if (m.type === 'Gold') sumGold += Number(m.weight) || 0
-          if (m.type === 'Diamond') sumDiamond += Number(m.weight) || 0
-          if (m.type === 'Gem') sumGem += Number(m.weight) || 0
+          const kind = classifyMaterial(m, this.materialMode)
+          if (kind === 'metal') sumGold += Number(m.weight) || 0
+          if (kind === 'second') sumDiamond += Number(m.weight) || 0
+          if (kind === 'gem') sumGem += Number(m.weight) || 0
         })
       }
 
@@ -308,9 +324,9 @@ export class DeliveryPdfBuilder {
           : this.setTableCell(''),
         this.setTableCell(formatItemStyleCode(item)),
         this.setTableCell(this.getDescription(item)),
-        this.buildMaterialTable(item.materials, 'Gold'),
-        this.buildMaterialTable(item.materials, 'Diamond'),
-        this.buildMaterialTable(item.materials, 'Gem'),
+        this.buildMaterialTable(item.materials, 'metal'),
+        this.buildMaterialTable(item.materials, 'second'),
+        this.buildMaterialTable(item.materials, 'gem'),
         this.setTableCellRight(qty ? qty.toString() : '0')
       ])
     })
@@ -344,9 +360,10 @@ export class DeliveryPdfBuilder {
       this.data.forEach((item) => {
         if (item.materials) {
           item.materials.forEach((m) => {
-            if (m.type === 'Gold') gold += Number(m.weight) || 0
-            if (m.type === 'Diamond') diamond += Number(m.weight) || 0
-            if (m.type === 'Gem') gem += Number(m.weight) || 0
+            const kind = classifyMaterial(m, this.materialMode)
+            if (kind === 'metal') gold += Number(m.weight) || 0
+            if (kind === 'second') diamond += Number(m.weight) || 0
+            if (kind === 'gem') gem += Number(m.weight) || 0
           })
         }
       })
@@ -426,13 +443,13 @@ export class DeliveryPdfBuilder {
   buildMaterialTable(materials, type) {
     if (!materials || !Array.isArray(materials)) return ''
     const rows = materials
-      .filter((m) => m.type === type)
+      .filter((m) => classifyMaterial(m, this.materialMode) === type)
       .map((m) => [
         {
           text:
-            type === 'Gold'
-              ? m.typeCode || ''
-              : (m.qty ? '(' + m.qty + ') ' : '') + (m.typeCode || ''),
+            type === 'metal'
+              ? getMaterialLabel(m)
+              : (m.qty ? '(' + m.qty + ') ' : '') + getMaterialLabel(m),
           alignment: 'left',
           fontSize: 10,
           margin: [0, 0, 0, 0]

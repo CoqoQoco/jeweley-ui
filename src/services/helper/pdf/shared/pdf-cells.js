@@ -1,3 +1,5 @@
+import { classifyMaterial, getMaterialLabel } from '@/services/helper/sale-material-columns.js'
+
 export function setTableHeader(text) {
   return {
     text: text,
@@ -60,16 +62,16 @@ export function setImageCell(imageBase64, imageBlobPath = null) {
   }
 }
 
-export function buildMaterialTable(materials, type) {
+export function buildMaterialTable(materials, type, mode = 'gold') {
   if (!materials || !Array.isArray(materials)) return ''
   const rows = materials
-    .filter((m) => m.type === type)
+    .filter((m) => classifyMaterial(m, mode) === type)
     .map((m) => [
       {
         text:
-          type === 'Gold'
-            ? m.typeCode || ''
-            : (m.qty ? '(' + m.qty + ') ' : '') + (m.typeCode || ''),
+          type === 'metal'
+            ? getMaterialLabel(m)
+            : (m.qty ? '(' + m.qty + ') ' : '') + getMaterialLabel(m),
         alignment: 'left',
         fontSize: 7,
         margin: [0, 0, 0, 0]
