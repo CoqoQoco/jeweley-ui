@@ -176,6 +176,7 @@ export const invoiceDetail = {
   previewPageLabel: 'Page {current}/{total}',
   previewGridToggle: 'Show grid',
   previewPrintNowBtn: 'Print now',
+  previewDownloadA4Btn: 'Download A4 check copy',
   previewOffsetLabel: 'Offset X: {x} mm / Y: {y} mm',
   downloadBtn: 'Download / Print',
   recordPaymentTitle: 'Record Payment',

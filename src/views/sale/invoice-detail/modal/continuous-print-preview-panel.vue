@@ -64,6 +64,14 @@
       />
       <ButtonGeneric
         variant="outline"
+        icon="bi-file-earmark-pdf"
+        :label="$t('view.sale.invoiceDetail.previewDownloadA4Btn')"
+        :disabled="!model"
+        class="mr-2"
+        @click="onDownloadA4"
+      />
+      <ButtonGeneric
+        variant="outline"
         :label="$t('common.btn.close')"
         @click="onClose"
       />
@@ -77,6 +85,7 @@ import PrintModelPreview from '@/components/print/print-model-preview.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import { downloadPrintModelA4Pdf } from '@/services/helper/pdf/continuous-a4/print-model-a4-pdf.js'
 
 export default {
   name: 'ContinuousPrintPreviewPanel',
@@ -103,6 +112,10 @@ export default {
       default: ''
     },
     offsetLabel: {
+      type: String,
+      default: ''
+    },
+    fileBaseName: {
       type: String,
       default: ''
     }
@@ -205,6 +218,14 @@ export default {
 
     onPrintNow() {
       this.$emit('print-now')
+    },
+
+    onDownloadA4() {
+      if (!this.model) return
+      const baseName = (this.fileBaseName || 'invoice').replace(/[\\/:*?"<>|]/g, '-')
+      downloadPrintModelA4Pdf(this.model, {
+        fileName: `${baseName}-ฉบับตรวจ.pdf`
+      })
     }
   }
 }

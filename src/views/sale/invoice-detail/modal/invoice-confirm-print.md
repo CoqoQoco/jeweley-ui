@@ -197,3 +197,7 @@ data() {
 เมื่อ `isPreviewOpen = true` modal จะ watch field ที่กระทบ layout กระดาษต่อเนื่อง (`paperSize`, `continuousOffset.x/.y`, `billOffset.x/.y`, `billElementFlags`, `printData.showDecimals`, `selectedPrinter`, `printData.invoiceNumber`, `printData.invoiceDate`) แบบ debounce 250ms แล้ว re-emit `preview-print` อัตโนมัติ — ทำให้ปรับ offset/flag แล้วเห็นผลใน preview ทันทีโดยไม่ต้องกดปุ่ม "ดูตัวอย่าง" ซ้ำ เมื่อ `isPreviewOpen = false` จะไม่ re-emit
 
 เมื่อสลับ `paperSize` ขณะ preview เปิดอยู่ index-view.vue จะสลับ panel ให้ตรงกับกระดาษที่เลือกอัตโนมัติ (ต่อเนื่อง ↔ A4) โดยปิด panel เดิมก่อนเปิดอันใหม่เสมอ ไม่มีทางเปิดซ้อนกันสองอัน
+
+### ดาวน์โหลด A4 เพื่อตรวจ
+
+footer ของ `continuous-print-preview-panel.vue` มีปุ่ม "ดาวน์โหลด A4 เพื่อตรวจ" (prop `fileBaseName` = เลขที่ใบแจ้งหนี้) ซึ่งแปลง model เดียวกับที่ preview แสดง เป็น PDF A4 แนวตั้งผ่าน `src/services/helper/pdf/continuous-a4/print-model-a4-pdf.js` (ย่อกระดาษต่อเนื่องให้พอดีความกว้าง A4 พร้อมกรอบขอบกระดาษ + หมายเหตุ "ฉบับตรวจ ไม่ใช่เอกสารจริง") หนึ่งหน้า model = หนึ่งหน้า A4 — ใช้ตรวจตำแหน่งก่อนพิมพ์จริง ไม่ส่งไป bridge และไม่สร้าง print log

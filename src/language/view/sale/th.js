@@ -176,6 +176,7 @@ export const invoiceDetail = {
   previewPageLabel: 'หน้า {current}/{total}',
   previewGridToggle: 'แสดงเส้นกริด',
   previewPrintNowBtn: 'พิมพ์จริง',
+  previewDownloadA4Btn: 'ดาวน์โหลด A4 เพื่อตรวจ',
   previewOffsetLabel: 'ระยะเลื่อน X: {x} มม. / Y: {y} มม.',
   downloadBtn: 'ดาวน์โหลด / พิมพ์',
   recordPaymentTitle: 'บันทึกการเก็บเงิน',

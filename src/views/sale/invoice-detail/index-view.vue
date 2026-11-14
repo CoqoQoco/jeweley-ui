@@ -202,6 +202,7 @@
         :model="continuousPreviewModel"
         :paperLabel="continuousPaperLabel"
         :offsetLabel="continuousOffsetLabel"
+        :fileBaseName="lastPreviewPrintData?.invoiceNumber"
         @close-modal="closeContinuousPreview"
         @print-now="handleContinuousPrintNow"
       />
