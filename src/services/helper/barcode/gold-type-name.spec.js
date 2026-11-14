@@ -47,3 +47,29 @@ describe('applyGoldTypeName', () => {
     expect(applyGoldTypeName('', 'WG')).toBe('')
   })
 })
+
+describe('applyGoldTypeName — คำสีนำหน้าไม่ซ้ำ', () => {
+  it('แทนคำสีเดิมแทนที่จะต่อซ้ำ', () => {
+    expect(applyGoldTypeName('1.17 g. Gold', 'YG')).toBe('1.17 g. Yellow Gold')
+    expect(applyGoldTypeName('1.17 g. Yellow Gold', 'YG')).toBe('1.17 g. Yellow Gold')
+    expect(applyGoldTypeName('1.17 g. White Gold', 'YG')).toBe('1.17 g. Yellow Gold')
+    expect(applyGoldTypeName('1.17 g. Y/P Gold', 'PG')).toBe('1.17 g. Pink Gold')
+    expect(applyGoldTypeName('1.17 g. yellow gold', 'WG')).toBe('1.17 g. White Gold')
+  })
+
+  it('ไม่มี/ไม่รู้จัก typeCode คืนข้อความเดิม', () => {
+    expect(applyGoldTypeName('1.17 g. Yellow Gold', '')).toBe('1.17 g. Yellow Gold')
+    expect(applyGoldTypeName('1.17 g. Yellow Gold', 'XX')).toBe('1.17 g. Yellow Gold')
+  })
+})
+
+describe('applyGoldTypeName — ช่องว่างท้ายข้อความ', () => {
+  it('ตัดช่องว่างท้ายและแทนชื่อถูกต้อง', () => {
+    expect(applyGoldTypeName('6.15 g. Gold ', 'WG')).toBe('6.15 g. White Gold')
+    expect(applyGoldTypeName('1.17 g. Yellow Gold ', 'YG')).toBe('1.17 g. Yellow Gold')
+  })
+
+  it('ไม่มี typeCode คืนข้อความเดิมรวมช่องว่างท้าย', () => {
+    expect(applyGoldTypeName('6.15 g. Gold ', '')).toBe('6.15 g. Gold ')
+  })
+})

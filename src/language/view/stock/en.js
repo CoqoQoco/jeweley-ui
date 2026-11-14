@@ -1013,6 +1013,7 @@ export default {
     skippedNoCost: 'Skipping {count} item(s) without cost data: {list}',
     printUnitNo: 'Print piece no. (e.g. 3/6)',
     hideMold: 'Hide mold',
+    abbreviateGems: 'Abbreviate gem names',
     unitNoMissing: '{count} label(s) have no piece number data and will print without it',
     skippedNoLink: 'Skipping {count} item(s) whose product link could not be created: {list}',
     nothingToPrint: 'Nothing to print',

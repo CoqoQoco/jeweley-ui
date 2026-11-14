@@ -25,5 +25,5 @@ export function resolveGoldTypeWord(type, typeCode) {
 export function applyGoldTypeName(text, typeCode) {
   const name = goldTypeNameEn(typeCode)
   if (!text || !name) return text
-  return text.replace(/(\s)(Gold|Silver)$/i, `$1${name}`)
+  return text.replace(/(\s)(?:(?:White|Yellow|Pink|Y\/P|W\/P)\s+)?(?:Gold|Silver)\s*$/i, `$1${name}`)
 }

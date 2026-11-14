@@ -53,6 +53,10 @@ export default {
   name: 'BarcodeTag',
 
   props: {
+    abbreviateGems: {
+      type: Boolean,
+      default: true
+    },
     gemLabelMeta: {
       type: Object,
       default: null
@@ -179,7 +183,7 @@ export default {
 
     displayGems() {
       if (!this.isGt800) return this.gems
-      if (this.gemLabelMeta) return formatGt800Gems(this.gems, this.gemLabelMeta)
+      if (this.gemLabelMeta || !this.abbreviateGems) return formatGt800Gems(this.gems, this.gemLabelMeta, this.abbreviateGems)
       return (this.gems || []).map(formatGemText)
     }
   },

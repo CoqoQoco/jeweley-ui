@@ -378,11 +378,11 @@ export function abbreviateGemText(text, meta) {
   return result.replace(/\s{2,}/g, ' ').trim()
 }
 
-export function formatGt800Gems(gems, meta) {
-  if (hasGemMeta(meta)) return buildSortedGemEntries(gems, meta).map((entry) => entry.rawText)
+export function formatGt800Gems(gems, meta, abbreviate = true) {
+  if (hasGemMeta(meta)) return buildSortedGemEntries(gems, meta, abbreviate).map((entry) => entry.rawText)
   return (Array.isArray(gems) ? gems : [])
     .filter(Boolean)
-    .map((gem) => abbreviateGemText(formatGemText(gem)))
+    .map((gem) => (abbreviate ? abbreviateGemText(formatGemText(gem)) : formatGemText(gem)))
 }
 
 // พลอยตั้งแต่ 5 รายการขึ้นไปจับคู่ 2 รายการต่อแถว
@@ -400,8 +400,8 @@ function estimateGt800BarcodeEnd(code, startX) {
   return startX + (code.length + GT800_BARCODE_CHAR_EXTRA) * GT800_BARCODE_CHAR_WIDTH + GT800_BARCODE_END_PAD
 }
 
-function chooseGemLevel({ gems, checkLines, meta }) {
-  const formattedGems = formatGt800Gems(gems, meta)
+function chooseGemLevel({ gems, checkLines, meta, abbreviate }) {
+  const formattedGems = formatGt800Gems(gems, meta, abbreviate)
 
   const hasManyGemLines = formattedGems.length >= GT800_ROOMY_LINE_COUNT_THRESHOLD
   const linesFitLength =
@@ -504,7 +504,7 @@ export function layoutGt800(formValue, template) {
   if (template === 'original') {
     const salePriceText = formValue?.hidePrice ? '' : formatLabelPrice(formValue?.salePrice)
     const codeLine = [code, salePriceText].filter(Boolean).join(' - ')
-    const { level, formattedGems } = chooseGemLevel({ gems, checkLines: [codeLine], meta: formValue?.gemLabelMeta })
+    const { level, formattedGems } = chooseGemLevel({ gems, checkLines: [codeLine], meta: formValue?.gemLabelMeta, abbreviate: formValue?.abbreviateGems !== false })
 
     const productNameEn = formValue?.productNameEn || ''
     const nameFont = computeGt800NameFont(productNameEn)
@@ -548,7 +548,7 @@ export function layoutGt800(formValue, template) {
   const priceText = hasPrice ? formatLabelPrice(formValue.price) : ''
   const codeLine = [formValue?.productNumber, priceText].filter(Boolean).join(' - ')
 
-  const formattedGems = formatGt800Gems(gems, formValue?.gemLabelMeta)
+  const formattedGems = formatGt800Gems(gems, formValue?.gemLabelMeta, formValue?.abbreviateGems !== false)
   const gemRows = buildGt800GemRows(formattedGems)
   const gem = computeGt800GemFont(gemRows.length, longestLength(gemRows), GT800_GEM_X)
   const productNameEn = formValue?.productNameEn || ''
@@ -805,7 +805,7 @@ export function buildGemLabelMeta(masterGems) {
     .map((key) => key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s+'))
     .join('|')
   const re = pattern ? new RegExp(`(?<![A-Za-z])(?:${pattern})(?![A-Za-z])`, 'gi') : null
-  Object.defineProperty(meta, '__names', { value: { map: names, re }, enumerable: false })
+  Object.defineProperty(meta, '__names', { value: { map: names, re }, enumerable: false, writable: true, configurable: true })
   return meta
 }
 
@@ -849,12 +849,12 @@ function resolveGemSortKey(code, meta) {
 }
 
 // ย่อ + เรียงพลอย: labelSort น้อย→มาก, ไม่มี labelSort ต่อท้ายเรียงตามรหัสบนป้าย (ตัวอักษร) · rawText = ไม่แทรกช่องว่างหลังจำนวน
-function buildSortedGemEntries(gems, meta) {
+function buildSortedGemEntries(gems, meta, abbreviate = true) {
   const index = getMasterNameIndex(meta)
   const entries = (Array.isArray(gems) ? gems : [])
     .filter(Boolean)
     .map((gem, position) => {
-      let rawText = abbreviateGemText(formatGemText(gem), meta)
+      let rawText = abbreviate ? abbreviateGemText(formatGemText(gem), meta) : formatGemText(gem)
       let code
       let labelCode
       if (index) {
@@ -864,7 +864,7 @@ function buildSortedGemEntries(gems, meta) {
       } else {
         code = detectGemCode(gem, meta)
         labelCode = (code && meta?.[code]?.labelCode) || code
-        if (code && labelCode && labelCode !== code) {
+        if (abbreviate && code && labelCode && labelCode !== code) {
           rawText = rawText.replace(new RegExp(`(?<![A-Za-z])${code}(?![A-Za-z])`), labelCode)
         }
       }
@@ -882,8 +882,8 @@ function buildSortedGemEntries(gems, meta) {
   return entries
 }
 
-export function sortGt800LabelGems(gems, meta = {}) {
-  return buildSortedGemEntries(gems, meta).map((entry) => entry.rawText.replace(/^(\d+)(?=[A-Z])/, '$1 '))
+export function sortGt800LabelGems(gems, meta = {}, abbreviate = true) {
+  return buildSortedGemEntries(gems, meta, abbreviate).map((entry) => entry.rawText.replace(/^(\d+)(?=[A-Z])/, '$1 '))
 }
 
 // ฟอนต์ 1 บรรทัดให้พอดี budget: ฟอนต์เต็มก่อน → บีบความกว้าง → ถึงขั้นต่ำแล้ว overflow=true
@@ -947,7 +947,7 @@ export function layoutGt800Small(formValue) {
   }
 
   const line2 = buildGt800SmallLine2(formValue)
-  const gem = layoutGt800SmallGems(sortGt800LabelGems(formValue?.gems, formValue?.gemLabelMeta))
+  const gem = layoutGt800SmallGems(sortGt800LabelGems(formValue?.gems, formValue?.gemLabelMeta, formValue?.abbreviateGems !== false))
 
   return {
     code,

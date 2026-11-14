@@ -59,6 +59,15 @@
                   <CheckboxGeneric v-model="hidePrice" :label="$t('common.label.hidePrice')" />
                   <span class="title-text ml-2 mr-2">|</span>
 
+                  <template v-if="isGt800Profile">
+                    <CheckboxGeneric
+                      v-model="abbreviateGems"
+                      :label="$t('view.stock.printBarcode.abbreviateGems')"
+                      @update:modelValue="onAbbreviateGemsChange"
+                    />
+                    <span class="title-text ml-2 mr-2">|</span>
+                  </template>
+
                   <div class="printer-status-indicator">
                     <div class="status-container">
                       <div
@@ -124,6 +133,7 @@ const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.v
 import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
 import { error } from '@/services/alert/sweetAlerts.js'
 import { applyGoldTypeName } from '@/services/helper/barcode/gold-type-name.js'
+import { getBarcodeProfile, PRINTER_PROFILES, getAbbreviateGems, setAbbreviateGems } from '@/services/api/barcode-printer-config.js'
 import { normalizeCopies } from '@/services/helper/barcode/print-batch.js'
 
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
@@ -188,6 +198,7 @@ export default {
       printerCheck: { status: 'unknown', printerName: '', printers: [], detail: null },
       selectedType: 'original',
       hidePrice: false,
+      abbreviateGems: getAbbreviateGems(),
 
       stock: this.modelStock,
       selectedItems: [],
@@ -197,6 +208,10 @@ export default {
   },
 
   computed: {
+    isGt800Profile() {
+      return getBarcodeProfile() === PRINTER_PROFILES.GT800
+    },
+
     columns() {
       return [
         {
@@ -287,6 +302,10 @@ export default {
   },
 
   methods: {
+    onAbbreviateGemsChange(value) {
+      setAbbreviateGems(value)
+    },
+
     onClear() {
       this.stock = []
       this.selectedItems = []
@@ -338,6 +357,7 @@ export default {
           isSilver: String(item.productionTypeSize || '').toUpperCase() === 'SILVER',
           barcodeType: this.selectedType,
           hidePrice: this.hidePrice,
+          abbreviateGems: this.abbreviateGems,
           print: normalizeCopies(item.qty)
         }
 

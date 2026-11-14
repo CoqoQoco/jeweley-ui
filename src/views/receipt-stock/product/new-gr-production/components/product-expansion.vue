@@ -56,7 +56,7 @@
       <!-- Barcode preview -->
       <div class="form-col-container mt-2">
         <div class="filter-container-bg-focus">
-          <barcodePreview selectedType="original" :type="formBarcode.type" :barcode="barcodeModel" />
+          <barcodePreview selectedType="original" :type="formBarcode.type" :barcode="barcodeModel" :abbreviateGems="abbreviateGems" />
         </div>
       </div>
     </div>
@@ -69,6 +69,7 @@ import StockDetails from './expansion/stock-details.vue'
 import ProductImage from './expansion/product-image.vue'
 import MaterialsSection from './expansion/materials-section.vue'
 import barcodePreview from '@/components/custom/barcode-demo/barcode-preview.vue'
+import { getAbbreviateGems } from '@/services/api/barcode-printer-config.js'
 
 export default {
   name: 'ProductExpansion',
@@ -160,6 +161,10 @@ export default {
     'loadFromBreakdown',
     'editAllMaterials'
   ],
+
+  data() {
+    return { abbreviateGems: getAbbreviateGems() }
+  },
 
   computed: {
     barcodeModel() {

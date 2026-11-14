@@ -1013,6 +1013,7 @@ export default {
     skippedNoCost: 'ข้าม {count} รายการที่ไม่มีข้อมูลต้นทุน: {list}',
     printUnitNo: 'พิมพ์ลำดับชิ้น (เช่น 3/6)',
     hideMold: 'ไม่แสดงแม่พิมพ์',
+    abbreviateGems: 'ย่อชื่อพลอย',
     unitNoMissing: 'มี {count} ใบที่ไม่มีข้อมูลลำดับชิ้น จะพิมพ์โดยไม่มีเลขลำดับ',
     skippedNoLink: 'ข้าม {count} รายการที่สร้างลิงก์หน้าสินค้าไม่ได้: {list}',
     nothingToPrint: 'ไม่มีรายการที่พิมพ์ได้',

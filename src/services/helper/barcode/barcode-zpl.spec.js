@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { reactive } from 'vue'
 import {
   resolveLabelCode,
   formatGemText,
@@ -1217,5 +1218,61 @@ describe('GT800 — ย่อชื่อ/เรียงพลอยจาก m
     const form = { stockNumber: 'RG-001', gold: '18K', gems: ['1Ruby 0.5 ct.', '1Diamond 0.5 ct.'] }
     expect(generateLegacyZPL({ ...form, gemLabelMeta: meta })).toBe(generateLegacyZPL(form))
     expect(generateLegacyZPLVertical({ ...form, gemLabelMeta: meta })).toBe(generateLegacyZPLVertical(form))
+  })
+})
+
+describe('gemLabelMeta ที่ถูกห่อด้วย Vue reactive (TK202611140004)', () => {
+  const master = [
+    { code: 'DI', nameEn: 'Diamond', labelCode: 'DI', labelSort: 1 },
+    { code: 'RU', nameEn: 'Ruby', labelCode: 'RU', labelSort: 2 }
+  ]
+  const form = {
+    stockNumber: 'RG-001',
+    productNumber: 'P-1',
+    productNameEn: 'Ring',
+    gold: '1.17 g. Yellow Gold',
+    size: '52',
+    salePrice: 12345,
+    mold: 'M1',
+    goldWeight: '1.17',
+    goldColorCode: 'Y',
+    goldKarat: '18',
+    gems: ['2Diamond 0.20 ct., G,VS1', '1Ruby 0.5 ct.']
+  }
+
+  it('layoutGt800 / generator ไม่ throw และผลเท่ากับ meta ดิบ', () => {
+    const raw = buildGemLabelMeta(master)
+    const wrapped = reactive({ meta: buildGemLabelMeta(master) }).meta
+    expect(() => wrapped.__names.map.get('diamond')).not.toThrow()
+    expect(wrapped.__names.re).toBeInstanceOf(RegExp)
+    ;['original', 'vertical'].forEach((tpl) => {
+      const a = layoutGt800({ ...form, gemLabelMeta: wrapped }, tpl)
+      const b = layoutGt800({ ...form, gemLabelMeta: raw }, tpl)
+      expect(a).toEqual(b)
+    })
+    expect(generateGt800ZPL({ ...form, gemLabelMeta: wrapped }, 1)).toBe(generateGt800ZPL({ ...form, gemLabelMeta: raw }, 1))
+    expect(generateGt800ZPLVertical({ ...form, gemLabelMeta: wrapped }, 1)).toBe(
+      generateGt800ZPLVertical({ ...form, gemLabelMeta: raw }, 1)
+    )
+    expect(generateGt800ZPLSmall({ ...form, gemLabelMeta: wrapped }, 1)).toBe(generateGt800ZPLSmall({ ...form, gemLabelMeta: raw }, 1))
+    const formReactive = reactive({ ...form, gemLabelMeta: buildGemLabelMeta(master) })
+    expect(() => generateGt800ZPL(formReactive, 1)).not.toThrow()
+  })
+
+  it('abbreviateGems=false ได้ข้อความพลอยเต็ม / true (ค่าเริ่มต้น) ได้ข้อความย่อ', () => {
+    const meta = buildGemLabelMeta(master)
+    ;['original', 'vertical'].forEach((tpl) => {
+      const abbr = layoutGt800({ ...form, gemLabelMeta: meta }, tpl).formattedGems.join('|')
+      expect(abbr).toContain('2DI')
+      expect(layoutGt800({ ...form, gemLabelMeta: meta, abbreviateGems: true }, tpl).formattedGems.join('|')).toBe(abbr)
+      const full = layoutGt800({ ...form, gemLabelMeta: meta, abbreviateGems: false }, tpl).formattedGems.join('|')
+      expect(full).toContain('Diamond')
+      expect(full).toContain('Ruby')
+    })
+    const noMeta = layoutGt800({ ...form, abbreviateGems: false }, 'original').formattedGems.join('|')
+    expect(noMeta).toContain('Diamond')
+    expect(layoutGt800({ ...form }, 'original').formattedGems.join('|')).toContain('2DI')
+    expect(layoutGt800Small({ ...form, gemLabelMeta: meta }).gemRows.join('|')).toContain('DI')
+    expect(layoutGt800Small({ ...form, gemLabelMeta: meta, abbreviateGems: false }).gemRows.join('|')).toContain('Diamond')
   })
 })

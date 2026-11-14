@@ -44,6 +44,15 @@
         />
       </div>
 
+      <div v-if="!isLegacyProfile" class="field field-checkbox">
+        <CheckboxGeneric
+          :modelValue="abbreviateGems"
+          :label="$t('view.stock.printBarcode.abbreviateGems')"
+          :disabled="isPrinting"
+          @update:modelValue="$emit('update:abbreviateGems', $event)"
+        />
+      </div>
+
       <div v-if="showUnitNoOption" class="field field-checkbox">
         <CheckboxGeneric
           :modelValue="printUnitNo"
@@ -144,6 +153,10 @@ export default {
       type: Boolean,
       default: false
     },
+    abbreviateGems: {
+      type: Boolean,
+      default: true
+    },
     printUnitNo: {
       type: Boolean,
       default: false
@@ -186,7 +199,7 @@ export default {
     }
   },
 
-  emits: ['update:barcodeType', 'update:remarkSymbol', 'update:hidePrice', 'update:hideMold', 'update:printUnitNo', 'print', 'retry'],
+  emits: ['update:barcodeType', 'update:remarkSymbol', 'update:hidePrice', 'update:hideMold', 'update:abbreviateGems', 'update:printUnitNo', 'print', 'retry'],
 
   setup() {
     const zebraPrinter = zebraPrinterApi()

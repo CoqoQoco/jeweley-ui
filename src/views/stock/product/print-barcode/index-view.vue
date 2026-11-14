@@ -23,6 +23,8 @@
       v-model:remarkSymbol="remarkSymbol"
       v-model:hidePrice="hidePrice"
       v-model:hideMold="hideMold"
+      :abbreviateGems="abbreviateGems"
+      @update:abbreviateGems="onAbbreviateGemsChange"
       v-model:printUnitNo="printUnitNo"
       :selectedCount="selectedRows.length"
       :totalCount="rows.length"
@@ -66,7 +68,7 @@ import {
   summarizeSelection
 } from '@/services/helper/barcode/print-batch.js'
 import { getPieceQty } from '@/services/utils/stock-piece-qty.js'
-import { getBarcodeProfile, PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
+import { getBarcodeProfile, PRINTER_PROFILES, getAbbreviateGems, setAbbreviateGems } from '@/services/api/barcode-printer-config.js'
 import { buildPublicUrl } from '@/config/public-site-config.js'
 
 import BarcodeNoDashNotice from '@/components/custom/barcode-no-dash-notice.vue'
@@ -102,6 +104,7 @@ export default {
       remarkSymbol: REMARK_SYMBOL_NONE,
       hidePrice: false,
       hideMold: false,
+      abbreviateGems: getAbbreviateGems(),
       printUnitNo: false,
       isPrinting: false,
       progress: { done: 0, total: 0 },
@@ -127,6 +130,11 @@ export default {
   },
 
   methods: {
+    onAbbreviateGemsChange(value) {
+      this.abbreviateGems = value
+      setAbbreviateGems(value)
+    },
+
     // ---------------- search
     decorateRow(row) {
       return {
@@ -277,6 +285,7 @@ export default {
         barcodeType: this.barcodeType,
         hidePrice: this.hidePrice,
         hideMold: this.hideMold,
+        abbreviateGems: this.abbreviateGems,
         remarkSymbol: showRemark ? this.remarkSymbol : '',
         print: normalizeCopies(row.printCount, MAX_COPIES_PER_ROW)
       }

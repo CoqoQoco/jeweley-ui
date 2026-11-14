@@ -8,6 +8,7 @@
     :gold="barcode.gold"
     :gems="previewGems"
     :gemLabelMeta="effectiveGemLabelMeta"
+    :abbreviateGems="abbreviateGems"
     :size="barcode.size"
     :goldType="barcode.goldType"
     :salePrice="barcode.salePrice"
@@ -30,6 +31,7 @@
     :hidePrice="hidePrice"
     :gems="barcode.gems"
     :gemLabelMeta="effectiveGemLabelMeta"
+    :abbreviateGems="abbreviateGems"
     :madeIn="barcode.madeIn"
     :profile="profile"
   />
@@ -94,6 +96,10 @@ export default {
       type: Boolean,
       default: false
     },
+    abbreviateGems: {
+      type: Boolean,
+      default: true
+    },
     gemLabelMeta: {
       type: Object,
       default: null
@@ -115,6 +121,7 @@ export default {
         ...this.barcode,
         hidePrice: this.hidePrice,
         hideMold: this.hideMold,
+        abbreviateGems: this.abbreviateGems,
         gemLabelMeta: this.effectiveGemLabelMeta
       }
     },

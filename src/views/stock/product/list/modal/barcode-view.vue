@@ -89,6 +89,7 @@
               :qrUrl="selectedType === 'original-qr' ? publicUrl : ''"
               :remarkSymbol="showRemarkSelect ? remarkSymbol : ''"
               :hideMold="hideMold"
+              :abbreviateGems="abbreviateGems"
               :gemLabelMeta="gemLabelMeta"
             />
           </div>
@@ -110,6 +111,14 @@
 
         <div v-if="selectedType === 'small-50x14'" class="pl-4 pr-4 pt-2">
           <CheckboxGeneric v-model="hideMold" :label="$t('view.stock.printBarcode.hideMold')" />
+        </div>
+
+        <div v-if="!isLegacyProfile" class="pl-4 pr-4 pt-2">
+          <CheckboxGeneric
+            v-model="abbreviateGems"
+            :label="$t('view.stock.printBarcode.abbreviateGems')"
+            @update:modelValue="onAbbreviateGemsChange"
+          />
         </div>
 
         <div v-if="showRemarkSelect" class="pl-4 pr-4 pt-2 remark-select">
@@ -243,7 +252,7 @@ import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.
 import { buildBarcodeModel } from '@/services/helper/barcode/barcode-model.js'
 import { getPieceQty } from '@/services/utils/stock-piece-qty.js'
 import { error, success } from '@/services/alert/sweetAlerts.js'
-import { getBarcodeProfile, PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
+import { getBarcodeProfile, PRINTER_PROFILES, getAbbreviateGems, setAbbreviateGems } from '@/services/api/barcode-printer-config.js'
 import { buildPublicUrl } from '@/config/public-site-config.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { layoutGt800, buildGemLabelMeta, REMARK_SYMBOLS, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
@@ -500,6 +509,7 @@ export default {
       labelTopLine: 'name',
       hidePrice: false,
       hideMold: false,
+      abbreviateGems: getAbbreviateGems(),
       gemLabelMeta: null,
       isPrinting: false,
       progress: { done: 0, total: 0 }
@@ -507,6 +517,10 @@ export default {
   },
 
   methods: {
+    onAbbreviateGemsChange(value) {
+      setAbbreviateGems(value)
+    },
+
     onClear() {
       this.stock = {}
       this.barcode = { ...interfaceBarcode }
@@ -597,6 +611,7 @@ export default {
         publicUrl: this.publicUrl,
         hidePrice: this.hidePrice,
         hideMold: this.hideMold,
+        abbreviateGems: this.abbreviateGems,
         gemLabelMeta: this.gemLabelMeta,
         remarkSymbol: this.showRemarkSelect ? this.remarkSymbol : ''
       }

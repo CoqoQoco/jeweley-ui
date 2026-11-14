@@ -38,6 +38,15 @@
                   </span>
                   <span class="title-text ml-2 mr-2">|</span>
 
+                  <template v-if="isGt800Profile">
+                    <CheckboxGeneric
+                      v-model="abbreviateGems"
+                      :label="$t('view.stock.printBarcode.abbreviateGems')"
+                      @update:modelValue="onAbbreviateGemsChange"
+                    />
+                    <span class="title-text ml-2 mr-2">|</span>
+                  </template>
+
                   <div class="printer-status-indicator">
                     <div class="status-container">
                       <div
@@ -104,6 +113,8 @@ import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
 import { error } from '@/services/alert/sweetAlerts.js'
 import { applyGoldTypeName } from '@/services/helper/barcode/gold-type-name.js'
 
+import { getBarcodeProfile, PRINTER_PROFILES, getAbbreviateGems, setAbbreviateGems } from '@/services/api/barcode-printer-config.js'
+import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import BarcodeNoDashNotice from '@/components/custom/barcode-no-dash-notice.vue'
 
@@ -111,6 +122,7 @@ export default {
   components: {
     modal,
     BarcodeNoDashNotice,
+    CheckboxGeneric,
     BaseDataTable
   },
 
@@ -159,6 +171,10 @@ export default {
   },
 
   computed: {
+    isGt800Profile() {
+      return getBarcodeProfile() === PRINTER_PROFILES.GT800
+    },
+
     isPrinterReady() {
       return this.printerCheck.status === 'success'
     },
@@ -209,6 +225,7 @@ export default {
   data() {
     return {
       isShowModal: false,
+      abbreviateGems: getAbbreviateGems(),
       printerCheck: { status: 'unknown', printerName: '', printers: [], detail: null },
 
       stock: this.modelStock,
@@ -257,6 +274,10 @@ export default {
   },
 
   methods: {
+    onAbbreviateGemsChange(value) {
+      setAbbreviateGems(value)
+    },
+
     onClear() {
       this.stock = []
       this.selectedItems = []
@@ -300,6 +321,7 @@ export default {
           size: item.size,
           gold: '',
           gems: [],
+          abbreviateGems: this.abbreviateGems,
           isSilver: String(item.productionTypeSize || '').toUpperCase() === 'SILVER'
         }
 

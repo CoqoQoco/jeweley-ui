@@ -5,6 +5,7 @@ export const BARCODE_DPI_STORAGE_KEY = 'print-bridge-barcode-dpi'
 export const BARCODE_DELAY_STORAGE_KEY = 'print-bridge-barcode-delay'
 export const BARCODE_PROFILE_STORAGE_KEY = 'print-bridge-barcode-profile'
 export const BARCODE_ROTATE180_STORAGE_KEY = 'print-bridge-barcode-rotate180'
+export const BARCODE_ABBREVIATE_GEMS_STORAGE_KEY = 'print-bridge-barcode-abbreviate-gems'
 
 // template ฉลากปัจจุบันเขียนพิกัดไว้ที่หัวพิมพ์ 203 dpi
 export const BASE_DPI = 203
@@ -101,6 +102,15 @@ export function getBarcodeRotate180() {
 
 export function setBarcodeRotate180(value) {
   storage.setItem(BARCODE_ROTATE180_STORAGE_KEY, value ? 'true' : 'false')
+}
+
+// GT800 เท่านั้น — ย่อชื่อพลอยบนป้าย (จำค่าล่าสุดต่อเครื่อง) ค่าเริ่มต้นเปิด
+export function getAbbreviateGems() {
+  return storage.getItem(BARCODE_ABBREVIATE_GEMS_STORAGE_KEY, 'true') !== 'false'
+}
+
+export function setAbbreviateGems(value) {
+  storage.setItem(BARCODE_ABBREVIATE_GEMS_STORAGE_KEY, value ? 'true' : 'false')
 }
 
 export function getBarcodePrinterConfig() {
