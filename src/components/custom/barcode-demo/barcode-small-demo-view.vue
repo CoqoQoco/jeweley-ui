@@ -1,9 +1,12 @@
 <template>
   <div class="small-preview">
     <div class="small-label" :style="labelStyle">
-      <!-- หางป้าย: MADE IN THAILAND -->
-      <div class="text-line made-in" :style="madeInStyle">{{ madeIn }}</div>
-      <div class="tail-edge" :style="tailEdgeStyle"></div>
+      <!-- หางป้าย: MADE IN THAILAND (pill เหมือนตัวอย่างป้ายเดิม) -->
+      <div class="tail-shape" :style="tailStyle">
+        <span :style="madeInStyle">{{ madeIn }}</span>
+      </div>
+      <!-- หัวป้าย -->
+      <div class="head-shape" :style="headStyle"></div>
 
       <!-- หน้าป้าย: บรรทัด 1-2 + บาร์โค้ด -->
       <div class="text-line" :style="lineStyle(layout.line1Font, 8)">{{ layout.line1 }}</div>
@@ -36,8 +39,8 @@ import { layoutGt800Small } from '@/services/helper/barcode/barcode-zpl.js'
 // ขนาดป้ายใน ZPL (dots) และตำแหน่งที่ต้องตรงกับ barcode-zpl.js
 const LABEL_WIDTH = 640
 const LABEL_HEIGHT = 112
-const MADE_IN_X = 25
-const MADE_IN_Y = 50
+const TAIL_HEIGHT = 34 // สัดส่วนเดียวกับป้ายเดิม (หาง 30 : หัว 100)
+const SHAPE_RADIUS = 17
 const MADE_IN_FONT = [17, 17]
 const MADE_IN_DEFAULT = 'MADE IN THAILAND'
 const BARCODE_Y = 70
@@ -77,17 +80,25 @@ export default {
       return { left: `${this.layout.foldX * this.scale}px` }
     },
 
-    tailEdgeStyle() {
-      return { left: `${this.layout.headX * this.scale}px` }
+    tailStyle() {
+      return {
+        width: `${this.layout.headX * this.scale}px`,
+        height: `${TAIL_HEIGHT * this.scale}px`,
+        top: `${((LABEL_HEIGHT - TAIL_HEIGHT) / 2) * this.scale}px`,
+        borderRadius: `${SHAPE_RADIUS * this.scale}px 0 0 ${SHAPE_RADIUS * this.scale}px`
+      }
+    },
+
+    headStyle() {
+      return {
+        left: `${this.layout.headX * this.scale}px`,
+        width: `${(LABEL_WIDTH - this.layout.headX) * this.scale}px`,
+        borderRadius: `${SHAPE_RADIUS * this.scale}px`
+      }
     },
 
     madeInStyle() {
-      return {
-        left: `${MADE_IN_X * this.scale}px`,
-        top: `${MADE_IN_Y * this.scale}px`,
-        fontSize: `${MADE_IN_FONT[0] * this.scale}px`,
-        lineHeight: 1
-      }
+      return { fontSize: `${MADE_IN_FONT[0] * this.scale}px`, lineHeight: 1 }
     },
 
     barcodeStyle() {
@@ -171,20 +182,35 @@ export default {
 .small-preview {
   display: flex;
   justify-content: safe center;
-  padding: var(--sp-md);
+  width: 600px;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
   overflow-x: auto;
 }
 
 .small-label {
   position: relative;
   flex: none;
-  background: #ffffff;
-  border: 1px solid var(--base-font-color);
-  box-sizing: border-box;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  color: var(--base-font-color);
   font-weight: bold;
+}
+
+.tail-shape {
+  position: absolute;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffff;
+  white-space: nowrap;
+}
+
+.head-shape {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background-color: #ffff;
 }
 
 .text-line {
@@ -203,21 +229,12 @@ export default {
   height: 100%;
 }
 
-.tail-edge {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 0;
-  border-right: 1px dotted var(--base-font-color);
-  opacity: 0.3;
-}
-
 .fold-line {
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: var(--sp-sm);
+  bottom: var(--sp-sm);
   width: 0;
   border-right: 1px dashed var(--base-font-color);
-  opacity: 0.5;
+  opacity: 0.3;
 }
 </style>

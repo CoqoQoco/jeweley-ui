@@ -103,6 +103,8 @@ export default {
     tabOriginalQr: 'QR Label (scan for details)',
     tabSmall50x14: 'Label 80×14 mm',
     qrGt800Only: 'GT800 printer only',
+    qrGt800Blocked: 'This label can only be printed on a GT800 printer —',
+    qrGt800SettingLink: 'Barcode printer settings',
     labelTopLine: 'Top line on label',
     labelTopLineName: 'Product name',
     labelTopLineMold: 'Mold',

@@ -106,6 +106,13 @@
       </div>
     </div>
 
+    <div v-if="isGt800OnlyBlocked" class="panel-note">
+      <span class="status-message">
+        {{ $t('view.stock.product.qrGt800Blocked') }}
+        <router-link to="/setting/barcode-printer">{{ $t('view.stock.product.qrGt800SettingLink') }}</router-link>
+      </span>
+    </div>
+
     <div v-if="showNote" class="panel-note">
       <span v-if="isPrinting" class="progress-text">
         <i class="bi bi-printer"></i>
@@ -217,6 +224,10 @@ export default {
       return getBarcodeProfile() === PRINTER_PROFILES.LEGACY
     },
 
+    isGt800OnlyBlocked() {
+      return this.isLegacyProfile && (this.barcodeType === 'original-qr' || this.barcodeType === 'small-50x14')
+    },
+
     typeOptions() {
       const options = [
         { value: 'original', label: this.$t('view.stock.product.tabOriginal') },
@@ -225,15 +236,13 @@ export default {
         { value: 'tag-with-gold', label: this.$t('view.stock.product.tabTagWithGold') },
         { value: 'tag-no-gold', label: this.$t('view.stock.product.tabTagNoGold') }
       ]
-      if (!this.isLegacyProfile) {
-        options.push({ value: 'original-qr', label: this.$t('view.stock.product.tabOriginalQr') })
-        options.push({ value: 'small-50x14', label: this.$t('view.stock.product.tabSmall50x14') })
-      }
+      options.push({ value: 'original-qr', label: this.$t('view.stock.product.tabOriginalQr') })
+      options.push({ value: 'small-50x14', label: this.$t('view.stock.product.tabSmall50x14') })
       return options
     },
 
     showHideMoldOption() {
-      return this.barcodeType === 'small-50x14' && !this.isLegacyProfile
+      return this.barcodeType === 'small-50x14'
     },
 
     showUnitNoOption() {
@@ -311,18 +320,7 @@ export default {
     },
 
     isPrintDisabled() {
-      return this.isPrinting || !this.isPrinterReady || this.selectedCount === 0
-    }
-  },
-
-  watch: {
-    isLegacyProfile: {
-      handler(isLegacy) {
-        if (isLegacy && (this.barcodeType === 'original-qr' || this.barcodeType === 'small-50x14')) {
-          this.$emit('update:barcodeType', 'original')
-        }
-      },
-      immediate: true
+      return this.isPrinting || !this.isPrinterReady || this.selectedCount === 0 || this.isGt800OnlyBlocked
     }
   },
 

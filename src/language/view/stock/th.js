@@ -103,6 +103,8 @@ export default {
     tabOriginalQr: 'ป้าย QR (สแกนดูรายละเอียด)',
     tabSmall50x14: 'ป้าย 80×14 มม.',
     qrGt800Only: 'ใช้ได้เฉพาะเครื่องพิมพ์ GT800',
+    qrGt800Blocked: 'ป้ายนี้พิมพ์ได้เฉพาะเครื่องพิมพ์ GT800 —',
+    qrGt800SettingLink: 'ตั้งค่าเครื่องพิมพ์บาร์โค้ด',
     labelTopLine: 'บรรทัดบนป้าย',
     labelTopLineName: 'ชื่อสินค้า',
     labelTopLineMold: 'แม่พิมพ์',

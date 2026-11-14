@@ -40,16 +40,12 @@
             </button>
             <button
               :class="['tab-btn', selectedType === 'original-qr' ? 'tab-btn-active' : '']"
-              :disabled="isLegacyProfile"
-              :title="isLegacyProfile ? $t('view.stock.product.qrGt800Only') : ''"
               @click="selectedType = 'original-qr'"
             >
               <i class="bi bi-qr-code mr-1"></i> {{ $t('view.stock.product.tabOriginalQr') }}
             </button>
             <button
               :class="['tab-btn', selectedType === 'small-50x14' ? 'tab-btn-active' : '']"
-              :disabled="isLegacyProfile"
-              :title="isLegacyProfile ? $t('view.stock.product.qrGt800Only') : ''"
               @click="selectedType = 'small-50x14'"
             >
               <i class="bi bi-tags mr-1"></i> {{ $t('view.stock.product.tabSmall50x14') }}
@@ -65,6 +61,14 @@
           <div class="cost-missing-warning">
             <span class="bi bi-exclamation-triangle mr-1"></span>
             <span>{{ $t('view.stock.product.costMissingWarning') }}</span>
+          </div>
+        </div>
+
+        <div v-if="isGt800OnlyBlocked" class="pl-4 pr-4 pt-2">
+          <div class="cost-missing-warning">
+            <span class="bi bi-exclamation-triangle mr-1"></span>
+            <span>{{ $t('view.stock.product.qrGt800Blocked') }}</span>
+            <router-link to="/setting/barcode-printer" class="ml-1">{{ $t('view.stock.product.qrGt800SettingLink') }}</router-link>
           </div>
         </div>
 
@@ -113,7 +117,7 @@
           <CheckboxGeneric v-model="hideMold" :label="$t('view.stock.printBarcode.hideMold')" />
         </div>
 
-        <div v-if="!isLegacyProfile" class="pl-4 pr-4 pt-2">
+        <div v-if="!isLegacyProfile || isGt800OnlyType" class="pl-4 pr-4 pt-2">
           <CheckboxGeneric
             v-model="abbreviateGems"
             :label="$t('view.stock.printBarcode.abbreviateGems')"
@@ -435,6 +439,14 @@ export default {
       return getBarcodeProfile() === PRINTER_PROFILES.LEGACY
     },
 
+    isGt800OnlyType() {
+      return this.selectedType === 'original-qr' || this.selectedType === 'small-50x14'
+    },
+
+    isGt800OnlyBlocked() {
+      return this.isLegacyProfile && this.isGt800OnlyType
+    },
+
     showPublicLinkWarning() {
       return this.selectedType === 'original-qr' && this.publicLinkStatus === 'error'
     },
@@ -487,6 +499,7 @@ export default {
 
     isPrintDisabled() {
       if (this.isPrinting) return true
+      if (this.isGt800OnlyBlocked) return true
       if (!this.isPrinterReady) return true
       if (this.selectedType === 'original-qr' && this.publicLinkStatus !== 'ready') return true
       return false
