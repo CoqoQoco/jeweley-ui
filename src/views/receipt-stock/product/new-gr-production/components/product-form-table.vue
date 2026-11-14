@@ -59,6 +59,12 @@
         :isRequiredField="isRequiredField"
         @update="(field, value) => onFieldUpdate(data, field, value)"
       />
+      <div v-if="data.suggestAuto && data.topUpStockNumber" class="topup-note">
+        {{ $t('view.receiptStock.product.receiptLot.suggestAutoNote', { stockNumber: data.topUpStockNumber }) }}
+      </div>
+      <div v-else-if="showChooseNote(data)" class="topup-note">
+        {{ $t('view.receiptStock.product.receiptLot.suggestChooseNote', { count: data.suggestLots.length }) }}
+      </div>
     </template>
 
     <!-- Mold Design -->
@@ -147,7 +153,8 @@ import MoldDesignField from './fields/mold-design-field.vue'
 import ProductNameField from './fields/product-name-field.vue'
 import ProductExpansion from './product-expansion.vue'
 import TableFooter from './table-footer.vue'
-import { isSilverPlanData } from '@/services/helper/receipt-lot/receipt-lot.js'
+import { isSilverPlanData, normalizeProductNumber } from '@/services/helper/receipt-lot/receipt-lot.js'
+import { isSuggestDismissed } from '../../components/lot-suggest-mixin.js'
 
 const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
 
@@ -251,7 +258,8 @@ export default {
     'editAllMaterials',
     'fetchDraft',
     'submit',
-    'adjustBreakdown'
+    'adjustBreakdown',
+    'productNumberChange'
   ],
 
   computed: {
@@ -263,6 +271,11 @@ export default {
   methods: {
     onFieldUpdate(row, field, value) {
       row[field] = value
+      if (field === 'productNumber') this.$emit('productNumberChange', row)
+    },
+
+    showChooseNote(row) {
+      return !row.topUpStockNumber && !isSuggestDismissed(row, normalizeProductNumber(row.productNumber)) && (row.suggestLots?.length || 0) > 0
     },
 
     updateSelection(newSelection) {
@@ -393,6 +406,13 @@ export default {
   color: var(--base-font-color);
   font-size: var(--fs-sm);
   font-weight: 700;
+}
+
+.topup-note {
+  margin-top: var(--sp-xs);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--base-font-color);
 }
 
 .image-column-cell {

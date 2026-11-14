@@ -56,3 +56,48 @@ export function pickDefaultLot({ lots, rowLocation, rowIsSilver }) {
   if (!rowIsSilver || !Array.isArray(lots) || lots.length !== 1) return null
   return evaluateTopUp({ lot: lots[0], rowLocation, rowIsSilver }).canTopUp ? lots[0] : null
 }
+
+export function normalizeProductNumber(value) {
+  return String(value ?? '').trim().toUpperCase()
+}
+
+function isSoldLot(lot) {
+  return String(lot?.status ?? '').trim().toUpperCase() === 'SOLD'
+}
+
+// ล็อตที่เติมได้จากผลแนะนำตามรหัสสินค้า (เงินเท่านั้น)
+export function filterTopUpCandidates({ lots, rowLocation, rowIsSilver }) {
+  if (!rowIsSilver || !Array.isArray(lots)) return []
+  return lots.filter((lot) => evaluateTopUp({ lot, rowLocation, rowIsSilver }).canTopUp)
+}
+
+// ขนาด: trim + upper + ตัด '#' นำหน้า; '', '#', '0', null = ว่าง
+export function normalizeSize(value) {
+  const t = String(value ?? '').trim().toUpperCase().replace(/^#/, '').trim()
+  return t === '0' ? '' : t
+}
+
+// ขนาด/แป้น/ก้านต่างหูต้องตรงกันเป๊ะหลัง normalize (ว่างทั้งคู่ = ตรง, ว่างฝั่งเดียว = ไม่ตรง)
+export function isSameSpec({ lot, rowSize, rowStud, rowStem }) {
+  return (
+    normalizeSize(lot?.size) === normalizeSize(rowSize) &&
+    normalizeSize(lot?.studEarring) === normalizeSize(rowStud) &&
+    normalizeSize(lot?.earringStemSize) === normalizeSize(rowStem)
+  )
+}
+
+// เลือกล็อตอัตโนมัติจากผลแนะนำ: เงินเท่านั้น, ต้องตรงทั้งคลัง/โลหะ/ขนาด/แป้น/ก้าน,
+// ถ้าล็อตเงินของรหัสนี้มีหลายขนาด -> ไม่เลือกให้ (ให้ผู้ใช้เลือกเอง),
+// ล็อตที่ยังไม่ SOLD มีล็อตเดียว -> เลือก, ไม่มีล็อตที่ยังไม่ SOLD และมี SOLD ล็อตเดียว -> เลือก,
+// นอกนั้น (กำกวม/สเปกไม่ตรง) -> null
+export function pickSuggestedLot({ lots, rowLocation, rowIsSilver, rowSize, rowStud, rowStem }) {
+  const silverLots = filterTopUpCandidates({ lots, rowLocation, rowIsSilver })
+  if (new Set(silverLots.map((lot) => normalizeSize(lot.size))).size > 1) return null
+
+  const candidates = silverLots.filter((lot) => isSameSpec({ lot, rowSize, rowStud, rowStem }))
+  const active = candidates.filter((lot) => !isSoldLot(lot))
+  if (active.length === 1) return active[0]
+  if (active.length > 1) return null
+  const sold = candidates.filter(isSoldLot)
+  return sold.length === 1 ? sold[0] : null
+}

@@ -31,6 +31,7 @@
           @loadFromBreakdown="onLoadFromBreakdown"
           @editAllMaterials="onEditAllMaterials"
           @fetchDraft="fetchDraft"
+          @productNumberChange="onSuggestInputChanged"
           @submit="onSubmit"
           @adjustBreakdown="onAdjustBreakdown"
           @selectImageBulk="onSelectImageBulk"
@@ -106,6 +107,7 @@ import { getAzureBlobUrl } from '@/config/azure-storage-config.js'
 import priceCheckConfirm from '@/composables/usePriceCheckConfirm.js'
 import { summarizeMaterials } from '@/services/helper/price-check/price-check.js'
 import PriceOutlierConfirmModal from '@/components/modal/price-outlier-confirm-modal.vue'
+import lotSuggest, { stripAllSuggestFields, stripSuggestFields } from '../components/lot-suggest-mixin.js'
 
 import headerView from './components/production-header-view.vue'
 import ProductFormTable from './components/product-form-table.vue'
@@ -146,7 +148,11 @@ export default {
     modalAdjustBreakdown
   },
 
-  mixins: [priceCheckConfirm],
+  mixins: [priceCheckConfirm, lotSuggest],
+
+  provide() {
+    return { onSuggestInputChanged: this.onSuggestInputChanged }
+  },
 
   setup() {
     const receiptProductionStore = useReceiptProductionApiStore()
@@ -768,7 +774,7 @@ export default {
       }
 
       const stocksWithMaterials = confirm.map((item) => ({
-        ...item,
+        ...stripAllSuggestFields(item),
         qty: Number(item.qty),
         topUpStockNumber: item.topUpStockNumber || null,
         materials: (item.materials || []).map((m) => {
@@ -858,6 +864,8 @@ export default {
         price: item.price ?? 0,
         barcodeGold: '',
         barcodeGems: [],
+        suggestAuto: item.suggestAuto === true,
+        suggestDismissedFor: item.suggestDismissedFor || '',
         materials: (item.materials || []).map((m) => ({
           ...m,
           typeBarcode:
@@ -875,6 +883,24 @@ export default {
       this.formBarcode.type = this.isSilverPlan ? 'silver' : 'gem'
 
       this.updateFormBarcodeAll()
+
+      if (this.isSilverPlan) this.runSuggest()
+    },
+
+    suggestRows() {
+      return this.form.filter((item) => !item.isReceipt)
+    },
+
+    suggestIsSilver() {
+      return this.isSilverPlan
+    },
+
+    suggestApply(row, lot) {
+      row.topUpStockNumber = lot.stockNumber
+    },
+
+    suggestRevert(row) {
+      row.topUpStockNumber = ''
     },
 
     async fetchDraft() {
@@ -883,7 +909,7 @@ export default {
       try {
         const formValue = {
           receiptNumber: this.data.receiptNumber,
-          stocks: [...this.form],
+          stocks: this.form.map(stripSuggestFields),
           breakDown: this.data.breakDown
         }
 

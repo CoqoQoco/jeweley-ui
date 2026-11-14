@@ -6,6 +6,10 @@
       :location="slotProps.data.location || 'MAIN'"
       :isSilver="isSilverPlan"
       :topUpStockNumber="slotProps.data.topUpStockNumber || ''"
+      :suggestedLots="slotProps.data.suggestLots || []"
+      :rowSize="slotProps.data.size || ''"
+      :rowStud="slotProps.data.studEarring || ''"
+      :rowStem="slotProps.data.earringStemSize || ''"
       @select="onSelectLot"
     />
 
@@ -134,6 +138,7 @@ import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import PriceInputGeneric from '@/components/generic/PriceInputGeneric.vue'
 import LotTopupPicker from '../../../components/lot-topup-picker.vue'
 import { validateReceiptQty } from '@/services/helper/receipt-lot/receipt-lot.js'
+import { markSuggestDismissed } from '../../../components/lot-suggest-mixin.js'
 
 export default {
   name: 'StockDetails',
@@ -175,6 +180,10 @@ export default {
     }
   },
 
+  inject: {
+    onSuggestInputChanged: { default: null }
+  },
+
   emits: ['selectImage'],
 
   computed: {
@@ -189,10 +198,32 @@ export default {
     }
   },
 
+  watch: {
+    'slotProps.data.size'() {
+      this.notifySpecChanged()
+    },
+    'slotProps.data.earringStemSize'() {
+      this.notifySpecChanged()
+    },
+    'slotProps.data.studEarring'() {
+      this.notifySpecChanged()
+    },
+    'slotProps.data.location'() {
+      this.notifySpecChanged()
+    }
+  },
+
   methods: {
-    onSelectLot(lot) {
+    notifySpecChanged() {
+      if (this.onSuggestInputChanged) this.onSuggestInputChanged(this.slotProps.data)
+    },
+
+    onSelectLot(lot, meta) {
       // eslint-disable-next-line vue/no-mutating-props
-      this.slotProps.data.topUpStockNumber = lot ? lot.stockNumber : ''
+      const row = this.slotProps.data
+      row.topUpStockNumber = lot ? lot.stockNumber : ''
+      row.suggestAuto = false
+      if (!lot && !meta?.system) markSuggestDismissed(row)
     }
   }
 }

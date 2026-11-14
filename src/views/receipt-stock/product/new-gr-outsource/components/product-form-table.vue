@@ -31,10 +31,17 @@
           v-model.trim="data.productNumber"
           placeholder="รหัสสินค้า"
           :style="getFieldBg(data.productNumber)"
+          @change="onSuggestInputChanged(data)"
         />
         <span v-if="data.topUpStockNumber" class="topup-badge">
           {{ $t('view.receiptStock.product.receiptLot.topUpBadge', { stockNumber: data.topUpStockNumber }) }}
         </span>
+        <div v-if="data.suggestAuto && data.topUpStockNumber" class="topup-note">
+          {{ $t('view.receiptStock.product.receiptLot.suggestAutoNote', { stockNumber: data.topUpStockNumber }) }}
+        </div>
+        <div v-else-if="showChooseNote(data)" class="topup-note">
+          {{ $t('view.receiptStock.product.receiptLot.suggestChooseNote', { count: data.suggestLots.length }) }}
+        </div>
       </template>
 
       <!-- Product Name EN -->
@@ -101,7 +108,7 @@
           optionValue="code"
           placeholder="สีทอง"
           :showClear="true"
-          @update:modelValue="data.productionType = $event"
+          @update:modelValue="onProductionTypeChange(data, $event)"
         />
       </template>
 
@@ -150,7 +157,10 @@
                 :location="slotProps.data.location || 'MAIN'"
                 :isSilver="isSilverRow(slotProps.data)"
                 :topUpStockNumber="slotProps.data.topUpStockNumber || ''"
-                @select="(lot) => onSelectLot(slotProps.data, lot)"
+                :suggestedLots="slotProps.data.suggestLots || []"
+                :rowSize="slotProps.data.size || ''"
+                :rowStud="slotProps.data.studEarring || ''"
+                @select="(lot, meta) => onSelectLot(slotProps.data, lot, meta)"
               />
 
               <!-- Qty / Price / Size / Stud / Location / Remark -->
@@ -189,6 +199,7 @@
                     class="form-control form-control-sm"
                     type="text"
                     v-model="slotProps.data.size"
+                    @change="onSuggestInputChanged(slotProps.data)"
                   />
                 </div>
                 <div>
@@ -201,7 +212,7 @@
                     placeholder="เลือกแป้นต่างหู"
                     :showClear="true"
                     :disabled="slotProps.data.productType !== 'ES'"
-                    @update:modelValue="slotProps.data.studEarring = $event"
+                    @update:modelValue="onStudChange(slotProps.data, $event)"
                   />
                 </div>
               </div>
@@ -214,6 +225,7 @@
                     type="text"
                     v-model="slotProps.data.location"
                     placeholder="MAIN"
+                    @change="onSuggestInputChanged(slotProps.data)"
                   />
                 </div>
               </div>
@@ -290,10 +302,13 @@ import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import ProductImage from '../../new-gr-production/components/expansion/product-image.vue'
 import MaterialsSection from '../../new-gr-production/components/expansion/materials-section.vue'
 import LotTopupPicker from '../../components/lot-topup-picker.vue'
-import { isSilverMetal, resolveProductionType, validateReceiptQty } from '@/services/helper/receipt-lot/receipt-lot.js'
+import { isSilverMetal, normalizeProductNumber, resolveProductionType, validateReceiptQty } from '@/services/helper/receipt-lot/receipt-lot.js'
+import lotSuggest, { isSuggestDismissed, markSuggestDismissed } from '../../components/lot-suggest-mixin.js'
 
 export default {
   name: 'product-form-table',
+
+  mixins: [lotSuggest],
 
   components: {
     BaseDataTable,
@@ -369,8 +384,46 @@ export default {
       return ''
     },
 
-    onSelectLot(row, lot) {
+    suggestRows() {
+      return this.form
+    },
+
+    suggestIsSilver(row) {
+      return this.isSilverRow(row)
+    },
+
+    suggestApply(row, lot) {
+      this.applyLot(row, lot)
+    },
+
+    // เลิกเติมอัตโนมัติเพราะรหัสสินค้าเปลี่ยน -- คืนชื่อ/ประเภทเดิม แต่ห้ามทับรหัสที่ผู้ใช้เพิ่งพิมพ์
+    suggestRevert(row) {
+      if (row.preTopUp) {
+        const { productNumber, ...rest } = row.preTopUp // eslint-disable-line no-unused-vars
+        Object.assign(row, rest)
+      }
+      row.topUpStockNumber = ''
+      row.preTopUp = null
+    },
+
+    onStudChange(row, value) {
+      row.studEarring = value
+      this.onSuggestInputChanged(row)
+    },
+
+    onProductionTypeChange(row, value) {
+      row.productionType = value
+      this.onSuggestInputChanged(row)
+    },
+
+    showChooseNote(row) {
+      return !row.topUpStockNumber && !isSuggestDismissed(row, normalizeProductNumber(row.productNumber)) && (row.suggestLots?.length || 0) > 0
+    },
+
+    onSelectLot(row, lot, meta) {
+      row.suggestAuto = false
       if (!lot) {
+        if (!meta?.system) markSuggestDismissed(row)
         if (row.topUpStockNumber && row.preTopUp) {
           Object.assign(row, row.preTopUp)
         }
@@ -378,7 +431,10 @@ export default {
         row.preTopUp = null
         return
       }
+      this.applyLot(row, lot)
+    },
 
+    applyLot(row, lot) {
       if (!row.topUpStockNumber) {
         row.preTopUp = {
           productNumber: row.productNumber,
@@ -422,6 +478,13 @@ export default {
     border-bottom: 1px solid #f0f0f0;
     background: transparent !important;
   }
+}
+
+.topup-note {
+  margin-top: var(--sp-xs);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  color: var(--base-font-color);
 }
 
 .topup-badge {

@@ -7,7 +7,12 @@ import {
   resolveProductionType,
   validateReceiptQty,
   evaluateTopUp,
-  pickDefaultLot
+  pickDefaultLot,
+  pickSuggestedLot,
+  filterTopUpCandidates,
+  normalizeProductNumber,
+  normalizeSize,
+  isSameSpec
 } from './receipt-lot.js'
 
 describe('isSilverMetal', () => {
@@ -107,5 +112,116 @@ describe('hasSilverMaterial / resolveProductionType', () => {
 
   it('leaves empty productionType when no Silver material', () => {
     expect(resolveProductionType({ productionType: null, materials: [] })).toBe(null)
+  })
+})
+
+describe('pickSuggestedLot', () => {
+  const lot = (stockNumber, extra = {}) => ({
+    stockNumber,
+    locationCode: 'MAIN',
+    productionType: 'SV',
+    status: 'IN_STOCK',
+    ...extra
+  })
+  const pick = (lots, extra = {}) =>
+    pickSuggestedLot({ lots, rowLocation: 'MAIN', rowIsSilver: true, ...extra })
+
+  it('picks the only non-SOLD candidate', () => {
+    expect(pick([lot('A')])?.stockNumber).toBe('A')
+  })
+
+  it('ignores SOLD when exactly one non-SOLD candidate exists', () => {
+    expect(pick([lot('S', { status: 'SOLD' }), lot('A')])?.stockNumber).toBe('A')
+  })
+
+  it('returns null when several non-SOLD candidates (ambiguous)', () => {
+    expect(pick([lot('A'), lot('B')])).toBeNull()
+  })
+
+  it('picks the single SOLD lot when no non-SOLD candidate', () => {
+    expect(pick([lot('S', { status: 'sold' })])?.stockNumber).toBe('S')
+  })
+
+  it('returns null for several SOLD lots and no non-SOLD', () => {
+    expect(pick([lot('S1', { status: 'SOLD' }), lot('S2', { status: 'SOLD' })])).toBeNull()
+  })
+
+  it('skips lots in another location or metal', () => {
+    expect(pick([lot('A', { locationCode: 'SHOP' })])).toBeNull()
+    expect(pick([lot('A', { productionType: 'YG' })])).toBeNull()
+    expect(pick([lot('A', { locationCode: 'SHOP' }), lot('B')])?.stockNumber).toBe('B')
+  })
+
+  it('never suggests for gold rows or empty input', () => {
+    expect(pick([lot('A')], { rowIsSilver: false })).toBeNull()
+    expect(pick([])).toBeNull()
+    expect(pick(undefined)).toBeNull()
+  })
+})
+
+describe('filterTopUpCandidates / normalizeProductNumber', () => {
+  it('returns only valid candidates for silver rows', () => {
+    const lots = [
+      { stockNumber: 'A', locationCode: 'MAIN', productionType: 'SV' },
+      { stockNumber: 'B', locationCode: 'SHOP', productionType: 'SV' }
+    ]
+    expect(filterTopUpCandidates({ lots, rowLocation: 'main', rowIsSilver: true }).map((l) => l.stockNumber)).toEqual(['A'])
+    expect(filterTopUpCandidates({ lots, rowLocation: 'MAIN', rowIsSilver: false })).toEqual([])
+  })
+
+  it('trims and upper-cases product numbers', () => {
+    expect(normalizeProductNumber('  ab12 ')).toBe('AB12')
+    expect(normalizeProductNumber(null)).toBe('')
+  })
+})
+
+describe('size matching for auto-pick', () => {
+  const lot = (size, extra = {}) => ({
+    stockNumber: 'A',
+    locationCode: 'MAIN',
+    productionType: 'SV',
+    status: 'IN_STOCK',
+    size,
+    ...extra
+  })
+  const pick = (lots, extra = {}) =>
+    pickSuggestedLot({ lots, rowLocation: 'MAIN', rowIsSilver: true, ...extra })
+
+  it('normalizes size: trim, upper, strip leading #, zero/empty = empty', () => {
+    expect(normalizeSize(' #52 ')).toBe('52')
+    expect(normalizeSize('m')).toBe('M')
+    expect(['', '#', '0', null, undefined, ' 0 '].map(normalizeSize)).toEqual(['', '', '', '', '', ''])
+  })
+
+  it('picks only when sizes are equal after normalization', () => {
+    expect(pick([lot('52')], { rowSize: '#52' })?.stockNumber).toBe('A')
+    expect(pick([lot('52')], { rowSize: '54' })).toBeNull()
+  })
+
+  it('treats empty sizes as equal but one-sided empty as mismatch', () => {
+    expect(pick([lot('')], { rowSize: '#' })?.stockNumber).toBe('A')
+    expect(pick([lot(null)], { rowSize: '0' })?.stockNumber).toBe('A')
+    expect(pick([lot('52')], { rowSize: '' })).toBeNull()
+    expect(pick([lot('')], { rowSize: '52' })).toBeNull()
+  })
+
+  it('compares stud / stem strictly like size', () => {
+    expect(isSameSpec({ lot: lot('52', { studEarring: 'lg' }), rowSize: '52', rowStud: 'sm' })).toBe(false)
+    expect(isSameSpec({ lot: lot('52', { studEarring: 'lg' }), rowSize: '52', rowStud: 'LG' })).toBe(true)
+    expect(isSameSpec({ lot: lot('52'), rowSize: '52', rowStud: 'sm' })).toBe(false)
+    expect(isSameSpec({ lot: lot('52', { studEarring: 'lg' }), rowSize: '52' })).toBe(false)
+    expect(isSameSpec({ lot: lot('52'), rowSize: '52' })).toBe(true)
+    expect(isSameSpec({ lot: lot('52', { earringStemSize: '10' }), rowSize: '52', rowStem: '12' })).toBe(false)
+    expect(isSameSpec({ lot: lot('52', { earringStemSize: '10' }), rowSize: '52', rowStem: '#10' })).toBe(true)
+  })
+
+  it('does not auto-pick on stud mismatch', () => {
+    expect(pick([lot('52', { studEarring: 'lg' })], { rowSize: '52', rowStud: 'sm' })).toBeNull()
+    expect(pick([lot('52', { studEarring: 'lg' })], { rowSize: '52', rowStud: 'lg' })?.stockNumber).toBe('A')
+  })
+
+  it('does not auto-pick when the product has lots of different sizes', () => {
+    expect(pick([lot('50', { stockNumber: 'X' }), lot('52')], { rowSize: '52' })).toBeNull()
+    expect(pick([lot('#52', { stockNumber: 'X', status: 'SOLD' }), lot('52')], { rowSize: '52' })?.stockNumber).toBe('A')
   })
 })

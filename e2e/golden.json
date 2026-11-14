@@ -2,6 +2,7 @@
   "golden": [
     "app-shell.spec.js",
     "invoice-money.spec.js",
+    "receipt-silver-lot-suggest.spec.js",
     "ticket-my-list.spec.js"
   ],
   "excluded": {

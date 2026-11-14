@@ -10,6 +10,15 @@ export const useReceiptLotApiStore = defineStore('receiptLot', {
         { skipLoading: true }
       )
       return Array.isArray(res) ? res : []
+    },
+
+    async fetchSuggestByProduct(productNumbers) {
+      const res = await api.jewelry.post(
+        'ReceiptLot/SuggestByProduct',
+        { productNumbers },
+        { skipLoading: true, skipError: true }
+      )
+      return Array.isArray(res) ? res : []
     }
   }
 })

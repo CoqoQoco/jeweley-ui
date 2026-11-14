@@ -20,11 +20,15 @@
       {{ $t('view.receiptStock.product.receiptLot.topUpBadge', { stockNumber: topUpStockNumber }) }}
     </span>
 
+    <p v-if="showSuggestedTitle" class="lot-note">
+      {{ $t('view.receiptStock.product.receiptLot.suggestedTitle') }}
+    </p>
+
     <p v-if="searched && lots.length === 0" class="lot-note">
       {{ $t('view.receiptStock.product.receiptLot.notFound') }}
     </p>
 
-    <template v-if="lots.length > 0">
+    <template v-if="displayLots.length > 0">
       <p v-if="!isSilver" class="lot-warn">
         <i class="bi bi-exclamation-triangle"></i>
         {{ $t('view.receiptStock.product.receiptLot.goldDuplicateWarn') }}
@@ -58,6 +62,9 @@
           <div v-if="item.reason" class="lot-reason">
             {{ reasonText(item.reason) }}
           </div>
+          <div v-else-if="item.specMismatch" class="lot-reason">
+            {{ $t('view.receiptStock.product.receiptLot.specMismatchWarn') }}
+          </div>
         </div>
         <ButtonGeneric
           :variant="item.lot.stockNumber === topUpStockNumber ? 'main' : 'outline'"
@@ -81,7 +88,7 @@ import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 
 import { useReceiptLotApiStore } from '@/stores/modules/api/receipt/receipt-lot-api.js'
-import { evaluateTopUp, pickDefaultLot } from '@/services/helper/receipt-lot/receipt-lot.js'
+import { evaluateTopUp, isSameSpec, pickDefaultLot } from '@/services/helper/receipt-lot/receipt-lot.js'
 
 export default {
   name: 'LotTopupPicker',
@@ -103,6 +110,22 @@ export default {
     topUpStockNumber: {
       type: String,
       default: ''
+    },
+    rowSize: {
+      type: [String, Number],
+      default: ''
+    },
+    rowStud: {
+      type: String,
+      default: ''
+    },
+    rowStem: {
+      type: [String, Number],
+      default: ''
+    },
+    suggestedLots: {
+      type: Array,
+      default: () => []
     }
   },
 
@@ -122,11 +145,22 @@ export default {
   },
 
   computed: {
+    displayLots() {
+      return this.searched ? this.lots : this.suggestedLots
+    },
+
+    showSuggestedTitle() {
+      return !this.searched && this.suggestedLots.length > 0
+    },
+
     lotViews() {
-      return this.lots.map((lot) => ({
-        lot,
-        ...evaluateTopUp({ lot, rowLocation: this.location, rowIsSilver: this.isSilver })
-      }))
+      return this.displayLots.map((lot) => {
+        const result = evaluateTopUp({ lot, rowLocation: this.location, rowIsSilver: this.isSilver })
+        const specMismatch =
+          result.canTopUp &&
+          !isSameSpec({ lot, rowSize: this.rowSize, rowStud: this.rowStud, rowStem: this.rowStem })
+        return { lot, ...result, specMismatch }
+      })
     },
 
     selectedLotInvalid() {
@@ -138,7 +172,7 @@ export default {
 
   watch: {
     selectedLotInvalid(invalid) {
-      if (invalid) this.$emit('select', null)
+      if (invalid) this.$emit('select', null, { system: true })
     }
   },
 
