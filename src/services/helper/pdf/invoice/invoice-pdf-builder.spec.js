@@ -135,15 +135,15 @@ describe('InvoicePdfBuilder — money rounding reconciliation (มาตรฐ�
 
 describe('InvoicePdfBuilder — รวมบรรทัดเงิน: ยอดท้ายตารางต้องเท่าเดิม', () => {
   const mats = (w) => [{ type: 'Silver', weight: w }, { type: 'Gem', typeCode: 'Cubic Zirconia', typeOrigin: 'CZ', weight: 0.5 }]
-  const silver = (origin, qty, extra = {}) => ({
-    stockNumber: `S-${origin}`, stockNumberOrigin: origin, mold: 'R-7416', productionType: 'Silver',
-    appraisalPrice: 1550, discountPercent: 0, qty, materials: mats(2), ...extra
+  const silver = (pn, qty, extra = {}) => ({
+    stockNumber: `DK-${pn}-${qty}`, stockNumberOrigin: `DK-${pn}-${qty}`, productNumber: pn, mold: 'R-7416Z-SIL', productionType: 'Silver',
+    appraisalPrice: '1550.00', discountPercent: 0, qty, materials: mats(2), ...extra
   })
   const raw = [
     silver('R07416CZ9L-7', 3),
     silver('R07416CZ9L-3', 3),
-    silver('R09999AA9L-1', 2, { mold: 'R-9999', appraisalPrice: 900 }),
-    silver('R09999AA9L-2', 4, { mold: 'R-9999', appraisalPrice: 900 }),
+    silver('R09999AA9L-1', 2, { mold: 'R-9999', appraisalPrice: '900.00' }),
+    silver('R09999AA9L-2', 4, { mold: 'R-9999-SIL', appraisalPrice: '900.00' }),
     silver('R05555BB9L-1', 1, { mold: 'R-5555' })
   ]
 

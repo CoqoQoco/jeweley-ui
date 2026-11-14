@@ -1,30 +1,29 @@
 import { isSilverItem } from '@/services/helper/sale-material-columns.js'
 
 // รวมบรรทัดสินค้าเงินแบบเดียวกันตอนพิมพ์ใบแจ้งหนี้เท่านั้น (ไม่แตะหน้าจอ/DB/สต็อก)
-// เงื่อนไข: เป็นเงิน + แม่พิมพ์เดียวกัน + เลขที่ผลิตเหมือนกันหลังตัด "-<ตัวเลข>" ท้ายสุด + ราคา/ส่วนลดเท่ากัน
-// น้ำหนัก materials ของ item เป็นต่อชิ้น (1 ชุดต่อล็อต) → บรรทัดรวมโชว์ของบรรทัดแรก
-// ส่วนยอดรวมน้ำหนักท้ายตารางใช้ totalMaterials (materials ของทุกบรรทัดเดิม) เพื่อให้เท่าก่อนรวม
+// เงื่อนไข: เป็นเงิน + productNumber เดียวกันหลังตัด "-<ตัวเลข>" ท้ายสุด (สีอยู่ใน productNumber)
+// + mold เดียวกันหลังตัด "-SIL" ท้ายสุด + ราคา/ส่วนลดเท่ากัน
+// บรรทัดที่รวมแล้วโชว์ข้อมูลของบรรทัดที่ qty มากสุด (เท่ากัน → บรรทัดแรก) แต่อยู่ตำแหน่งบรรทัดแรก
+// น้ำหนัก materials ของ item เป็นต่อชิ้น → ยอดรวมน้ำหนักท้ายตารางใช้ totalMaterials (materials ทุกบรรทัดเดิม)
 
 const STRIP_SUFFIX = /-\d+$/
-
-// ฐานเลขที่ผลิตมาจาก stockNumberOrigin เท่านั้น — ห้ามถอยไป stockNumber (เลขล็อตเงินอย่าง DK-SIL-20H-002 ไม่ใช่เลขที่ผลิต)
-function productionBase(item) {
-  return String(item?.stockNumberOrigin || '').replace(STRIP_SUFFIX, '')
-}
+const STRIP_SIL = /-SIL$/i
 
 function mergeKey(item) {
   if (!isSilverItem(item)) return null
-  const mold = String(item.mold || '').trim()
-  const base = productionBase(item)
-  if (!mold || !base) return null
+  const base = String(item.productNumber || '').trim().replace(STRIP_SUFFIX, '')
+  const mold = String(item.mold || '').trim().replace(STRIP_SIL, '').trim()
+  if (!base || !mold) return null
   const price = Number(item.appraisalPrice) || 0
   const discount = Number(item.discountPercent) || 0
-  return [mold, base, price, discount].join('\u0001')
+  return [base, mold, price, discount].join('\u0001')
 }
+
+const qtyOf = (item) => Number(item?.qty) || 0
 
 /**
  * @param {Array} items
- * @returns {Array} รายการใหม่ (ไม่แก้ input) — บรรทัดที่รวมแล้วอยู่ตำแหน่งของบรรทัดแรก
+ * @returns {Array} รายการใหม่ (ไม่แก้ input)
  */
 export function groupInvoiceLinesForPrint(items) {
   if (!Array.isArray(items)) return items
@@ -50,11 +49,10 @@ export function groupInvoiceLinesForPrint(items) {
     if (entry.single) return entry.single
     const { lines } = entry
     if (lines.length === 1) return lines[0]
-    const first = lines[0]
+    const display = lines.reduce((best, l) => (qtyOf(l) > qtyOf(best) ? l : best), lines[0])
     return {
-      ...first,
-      qty: lines.reduce((sum, l) => sum + (Number(l.qty) || 0), 0),
-      stockNumberOrigin: productionBase(first),
+      ...display,
+      qty: lines.reduce((sum, l) => sum + qtyOf(l), 0),
       totalMaterials: lines.flatMap((l) => (Array.isArray(l.materials) ? l.materials : []))
     }
   })
