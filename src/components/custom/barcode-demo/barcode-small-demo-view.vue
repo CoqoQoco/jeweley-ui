@@ -1,15 +1,16 @@
 <template>
   <div class="small-preview">
     <div class="small-label" :style="labelStyle">
+      <!-- หางป้าย: MADE IN THAILAND -->
+      <div class="text-line made-in" :style="madeInStyle">{{ madeIn }}</div>
+      <div class="tail-edge" :style="tailEdgeStyle"></div>
+
       <!-- หน้าป้าย: บรรทัด 1-2 + บาร์โค้ด -->
       <div class="text-line" :style="lineStyle(layout.line1Font, 8)">{{ layout.line1 }}</div>
       <div v-if="layout.line2" class="text-line" :style="lineStyle(layout.line2Font, 38)">{{ layout.line2 }}</div>
-      <svg
-        ref="barcodeElement"
-        class="barcode-strip"
-        preserveAspectRatio="none"
-        :style="barcodeStyle"
-      ></svg>
+      <div class="barcode-strip" :style="barcodeStyle">
+        <svg ref="barcodeElement" class="barcode-svg" preserveAspectRatio="none"></svg>
+      </div>
 
       <!-- แนวพับครึ่ง -->
       <div class="fold-line" :style="foldStyle"></div>
@@ -33,14 +34,16 @@ import JsBarcode from 'jsbarcode'
 import { layoutGt800Small } from '@/services/helper/barcode/barcode-zpl.js'
 
 // ขนาดป้ายใน ZPL (dots) และตำแหน่งที่ต้องตรงกับ barcode-zpl.js
-const LABEL_WIDTH = 400
+const LABEL_WIDTH = 640
 const LABEL_HEIGHT = 112
-const FOLD_X = 200
-const FRONT_X = 10
+const MADE_IN_X = 25
+const MADE_IN_Y = 50
+const MADE_IN_FONT = [17, 17]
+const MADE_IN_DEFAULT = 'MADE IN THAILAND'
 const BARCODE_Y = 70
 const BARCODE_HEIGHT = 32
 const GEM_TOP = 8
-const SCALE = 2 // ขยายให้เห็นชัด
+const MAX_SCALE = 1.2 // ขยายสูงสุด (px ต่อ dot) — ย่อตามความกว้างกล่องจริงเพื่อไม่ให้ล้น
 
 export default {
   name: 'BarcodeSmallDemo',
@@ -53,26 +56,47 @@ export default {
     }
   },
 
+  data() {
+    return { scale: MAX_SCALE, resizeObserver: null }
+  },
+
   computed: {
+    madeIn() {
+      return this.formValue?.madeIn || MADE_IN_DEFAULT
+    },
+
     layout() {
       return layoutGt800Small(this.formValue)
     },
 
     labelStyle() {
-      return { width: `${LABEL_WIDTH * SCALE}px`, height: `${LABEL_HEIGHT * SCALE}px` }
+      return { width: `${LABEL_WIDTH * this.scale}px`, height: `${LABEL_HEIGHT * this.scale}px` }
     },
 
     foldStyle() {
-      return { left: `${FOLD_X * SCALE}px` }
+      return { left: `${this.layout.foldX * this.scale}px` }
+    },
+
+    tailEdgeStyle() {
+      return { left: `${this.layout.headX * this.scale}px` }
+    },
+
+    madeInStyle() {
+      return {
+        left: `${MADE_IN_X * this.scale}px`,
+        top: `${MADE_IN_Y * this.scale}px`,
+        fontSize: `${MADE_IN_FONT[0] * this.scale}px`,
+        lineHeight: 1
+      }
     },
 
     barcodeStyle() {
-      const width = Math.max(0, this.layout.barcodeEnd - FRONT_X)
+      const width = Math.max(0, this.layout.barcodeEnd - this.layout.frontX)
       return {
-        left: `${FRONT_X * SCALE}px`,
-        top: `${BARCODE_Y * SCALE}px`,
-        width: `${width * SCALE}px`,
-        height: `${BARCODE_HEIGHT * SCALE}px`
+        left: `${this.layout.frontX * this.scale}px`,
+        top: `${BARCODE_Y * this.scale}px`,
+        width: `${width * this.scale}px`,
+        height: `${BARCODE_HEIGHT * this.scale}px`
       }
     }
   },
@@ -86,16 +110,31 @@ export default {
   },
 
   mounted() {
+    this.updateScale()
     this.generateBarcode()
+    if (typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(this.updateScale)
+      this.resizeObserver.observe(this.$el)
+    }
+  },
+
+  beforeUnmount() {
+    this.resizeObserver?.disconnect()
   },
 
   methods: {
+    updateScale() {
+      const style = getComputedStyle(this.$el)
+      const inner = this.$el.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
+      if (inner > 0) this.scale = Math.min(MAX_SCALE, inner / LABEL_WIDTH)
+    },
+
     // font = [สูง, กว้าง] เหมือน ^A0N — กว้างต่างจากสูงให้บีบด้วย scaleX
     lineStyle([height, width], top) {
       return {
-        left: `${FRONT_X * SCALE}px`,
-        top: `${top * SCALE}px`,
-        fontSize: `${height * SCALE}px`,
+        left: `${this.layout.frontX * this.scale}px`,
+        top: `${top * this.scale}px`,
+        fontSize: `${height * this.scale}px`,
         lineHeight: 1,
         transform: `scaleX(${Math.min(1, width / height)})`
       }
@@ -104,9 +143,9 @@ export default {
     gemStyle(index) {
       const [height, width] = this.layout.gemFont
       return {
-        left: `${this.layout.gemX * SCALE}px`,
-        top: `${(GEM_TOP + index * this.layout.gemLineHeight) * SCALE}px`,
-        fontSize: `${height * SCALE}px`,
+        left: `${this.layout.gemX * this.scale}px`,
+        top: `${(GEM_TOP + index * this.layout.gemLineHeight) * this.scale}px`,
+        fontSize: `${height * this.scale}px`,
         lineHeight: 1,
         transform: `scaleX(${Math.min(1, width / height)})`
       }
@@ -131,7 +170,7 @@ export default {
 <style lang="scss" scoped>
 .small-preview {
   display: flex;
-  justify-content: center;
+  justify-content: safe center;
   padding: var(--sp-md);
   overflow-x: auto;
 }
@@ -141,6 +180,7 @@ export default {
   flex: none;
   background: #ffffff;
   border: 1px solid var(--base-font-color);
+  box-sizing: border-box;
   border-radius: var(--radius-sm);
   overflow: hidden;
   color: var(--base-font-color);
@@ -155,6 +195,21 @@ export default {
 
 .barcode-strip {
   position: absolute;
+}
+
+.barcode-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.tail-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-right: 1px dotted var(--base-font-color);
+  opacity: 0.3;
 }
 
 .fold-line {

@@ -337,7 +337,7 @@ export default {
       return { included, skipped, skippedKey: 'skippedNoLink' }
     },
 
-    // ลำดับ/รหัสย่อพลอยบนป้าย 50×14 มาจาก master gem (labelCode/labelSort) — API เก่าไม่ส่งมา ตัวสร้าง ZPL ใช้ลำดับสำรองเอง
+    // ลำดับ/รหัสย่อพลอยบนป้าย 80×14 มาจาก master gem (labelCode/labelSort) — API เก่าไม่ส่งมา ตัวสร้าง ZPL ใช้ลำดับสำรองเอง
     async attachGemLabelMeta(entries) {
       await this.masterStore.fetchGem()
       const gemLabelMeta = buildGemLabelMeta(this.masterStore.gem)

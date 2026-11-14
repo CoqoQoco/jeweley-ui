@@ -101,7 +101,7 @@ export default {
     tabTagWithGold: 'Tag Price incl. Gold',
     tabTagNoGold: 'Tag Price excl. Gold',
     tabOriginalQr: 'QR Label (scan for details)',
-    tabSmall50x14: 'Label 50×14 mm (folded)',
+    tabSmall50x14: 'Label 80×14 mm',
     qrGt800Only: 'GT800 printer only',
     labelTopLine: 'Top line on label',
     labelTopLineName: 'Product name',

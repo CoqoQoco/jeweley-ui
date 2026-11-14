@@ -101,7 +101,7 @@ export default {
     tabTagWithGold: 'ราคาป้ายรวมทอง',
     tabTagNoGold: 'ราคาป้ายไม่รวมทอง',
     tabOriginalQr: 'ป้าย QR (สแกนดูรายละเอียด)',
-    tabSmall50x14: 'ป้าย 50×14 มม. (พับครึ่ง)',
+    tabSmall50x14: 'ป้าย 80×14 มม.',
     qrGt800Only: 'ใช้ได้เฉพาะเครื่องพิมพ์ GT800',
     labelTopLine: 'บรรทัดบนป้าย',
     labelTopLineName: 'ชื่อสินค้า',

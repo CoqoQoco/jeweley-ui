@@ -735,19 +735,24 @@ export function generateGt800ZPLVertical(formValue, dpiScale = 1, options = {}) 
 }
 
 // ─────────────────────────────────────────────────────────────
-// GT800: ป้ายเล็ก 50×14 มม. = 400×112 dots ที่ 203 dpi (พับครึ่งที่ x=200)
-// หน้า (ซ้าย x<200): บรรทัด 1 แม่พิมพ์ - เลขที่ผลิต / บรรทัด 2 รหัสราคา+สีทอง+กะรัต น้ำหนักทอง / บรรทัด 3 บาร์โค้ด
-// หลัง (ขวา x>200): รายการพลอยเรียงตามลำดับ master (labelSort)
+// GT800: ป้ายเล็ก 80×14 มม. = 640×112 dots ที่ 203 dpi — รูปทรงเดียวกับป้าย GT800 เดิม (มีหางป้าย) แต่ยาวขึ้น
+// หางป้ายซ้าย x≈0–250 (ยาวเท่าป้ายเดิม มีแค่ MADE IN THAILAND) · หัวป้ายสีขาว x≈250–640 ไม่มีแถบส้ม ใช้ได้เต็มความสูง
+// หัวป้ายพับครึ่งที่ x=445: หน้า (x 256–440) บรรทัด 1 แม่พิมพ์ - เลขที่ผลิต / บรรทัด 2 รหัสราคา+สีทอง+กะรัต น้ำหนักทอง / บรรทัด 3 บาร์โค้ด
+// หลัง (x 450–628) รายการพลอยเรียงตามลำดับ master (labelSort) — เว้นขอบขวา ~12 dots เพราะยังไม่ได้วัดขอบกระดาษจริง
 // ข้อความทุกบรรทัดต้องไม่ข้ามแนวพับ (เว้นขอบ ~5 dots ทั้งสองฝั่ง) — ย่อฟอนต์อัตโนมัติเมื่อยาว
 // ─────────────────────────────────────────────────────────────
 
-const GT800_S_LABEL_WIDTH = 400
+const GT800_S_LABEL_WIDTH = 640
 const GT800_S_LABEL_HEIGHT = 112
 
-const GT800_S_FRONT_X = 10
-const GT800_S_FRONT_RIGHT = 195 // เว้น 5 dots ก่อนแนวพับ x=200
-const GT800_S_BACK_X = 208
-const GT800_S_BACK_RIGHT = 392
+const GT800_S_HEAD_X = 250 // หัวป้ายเริ่มที่นี่ (ซ้ายของนี้คือหางป้าย)
+const GT800_S_FOLD_X = GT800_S_HEAD_X + 195
+const GT800_S_FRONT_X = GT800_S_HEAD_X + 6
+const GT800_S_FRONT_RIGHT = GT800_S_FOLD_X - 5
+const GT800_S_BACK_X = GT800_S_FOLD_X + 5
+const GT800_S_BACK_RIGHT = GT800_S_LABEL_WIDTH - 12
+
+const GT800_S_DEFAULT_MADE_IN = 'MADE IN THAILAND'
 
 const GT800_S_LINE1_Y = 8
 const GT800_S_LINE2_Y = 38
@@ -951,6 +956,9 @@ export function layoutGt800Small(formValue) {
 
   return {
     code,
+    foldX: GT800_S_FOLD_X,
+    headX: GT800_S_HEAD_X,
+    frontX: GT800_S_FRONT_X,
     line1: composeLine1(),
     line1Font: line1Fit.font,
     line2,
@@ -969,7 +977,10 @@ export function generateGt800ZPLSmall(formValue, dpiScale = 1, options = {}) {
   const s = (n) => Math.round(n * dpiScale)
   const layout = layoutGt800Small(formValue)
 
-  let zpl = gt800Header(s, options.rotate180, GT800_S_LABEL_HEIGHT, GT800_S_LABEL_WIDTH)
+  // ส่ง ^PW ทุกครั้ง (ไม่ผูกกับ rotate180) กันเครื่องที่จำ ^PW600 ไว้ตัดพลอยช่วง x 600–628
+  let zpl = `^XA^LL${s(GT800_S_LABEL_HEIGHT)}^MD15^LT0^XZ^XA${options.rotate180 ? '^POI' : ''}^PW${s(GT800_S_LABEL_WIDTH)}`
+
+  zpl += `^FO${s(GT800_MADE_IN_X)},${s(GT800_MADE_IN_Y)}^A0N,${s(GT800_MADE_IN_FONT[0])},${s(GT800_MADE_IN_FONT[1])}^FD${formValue?.madeIn || GT800_S_DEFAULT_MADE_IN}^FS` // ค่าสำรองเมื่อ caller ไม่ส่ง madeIn (ตัวอย่างบนจอใช้ค่าเดียวกัน)
 
   zpl += `^FO${s(GT800_S_FRONT_X)},${s(GT800_S_LINE1_Y)}^A0N,${s(layout.line1Font[0])},${s(layout.line1Font[1])}^FD${layout.line1}^FS`
 

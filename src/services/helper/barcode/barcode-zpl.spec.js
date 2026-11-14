@@ -1015,7 +1015,7 @@ describe('GT800 original — เลขลำดับชิ้น (unitMark) ต
   })
 })
 
-describe('ป้าย 50×14 มม. (GT800)', () => {
+describe('ป้าย 80×14 มม. มีหางป้าย (GT800)', () => {
   const base = {
     stockNumber: 'DK21AH047',
     stockNumberOrigin: 'AH21047',
@@ -1109,13 +1109,13 @@ describe('ป้าย 50×14 มม. (GT800)', () => {
     it('แม่พิมพ์ยาว ย่อฟอนต์ ไม่ล้ำแนวพับ', () => {
       const layout = layoutGt800Small({ ...base, mold: 'CN-24000XXWPG-LONG', stockNumberOrigin: 'DK18K1XR1747' })
       expect(layout.line1Font[1]).toBeLessThan(22)
-      expect(layout.line1.length * layout.line1Font[1] * 0.54).toBeLessThanOrEqual(185)
+      expect(layout.line1.length * layout.line1Font[1] * 0.54).toBeLessThanOrEqual(184)
     })
 
     it('แม่พิมพ์ยาวเกินจนฟอนต์ถึงขั้นต่ำ -> ตัดท้ายแม่พิมพ์ ไม่ตัดเลขที่ผลิต', () => {
       const layout = layoutGt800Small({ ...base, mold: 'M'.repeat(60) })
       expect(layout.line1.endsWith(' - AH21047')).toBe(true)
-      expect(layout.line1.length * layout.line1Font[1] * 0.54).toBeLessThanOrEqual(185)
+      expect(layout.line1.length * layout.line1Font[1] * 0.54).toBeLessThanOrEqual(184)
     })
 
     it('พลอย 11 รายการ ยังพอดีพื้นที่หลังป้าย', () => {
@@ -1123,32 +1123,70 @@ describe('ป้าย 50×14 มม. (GT800)', () => {
       const layout = layoutGt800Small({ ...base, gems })
       expect(layout.gemRows.length * layout.gemLineHeight).toBeLessThanOrEqual(96)
       layout.gemRows.forEach((row) => {
-        expect(row.length * layout.gemFont[1] * 0.46).toBeLessThanOrEqual(185)
+        expect(row.length * layout.gemFont[1] * 0.46).toBeLessThanOrEqual(178)
       })
     })
 
-    it('ZPL: ^LL112, บรรทัดข้อความ, บาร์โค้ด, พลอยเริ่ม x=208 เรียงตาม labelSort', () => {
+    it('ZPL: ^LL112, บรรทัดข้อความ, บาร์โค้ด, พลอยเริ่ม x=450 เรียงตาม labelSort', () => {
       const meta = buildGemLabelMeta([
         { code: 'RU', labelCode: 'RU', labelSort: 1 },
         { code: 'DI', labelCode: 'DI', labelSort: 2 }
       ])
       const zpl = generateGt800ZPLSmall({ ...base, gemLabelMeta: meta })
       expect(zpl.startsWith('^XA^LL112^MD15^LT0^XZ^XA')).toBe(true)
-      expect(zpl).toContain('^FO10,8^A0N,22,19^FDNF6121SW - AH21047^FS')
+      expect(zpl).toContain('^FO256,8^A0N,22,18^FDNF6121SW - AH21047^FS')
       expect(zpl).toContain('^BCN,32,N,N^FDAH21047^FS')
       expect(zpl).toContain('^FD040950WG18K  11.78g^FS')
-      expect(zpl).toContain('^FO208,8^A0N,18,18^FD1 RU 0.50ct OV^FS')
+      expect(zpl).toContain('^FO450,8^A0N,18,18^FD1 RU 0.50ct OV^FS')
       expect(zpl.endsWith('^XZ')).toBe(true)
     })
 
-    it('rotate180 ใช้ ^PW400', () => {
-      expect(generateGt800ZPLSmall(base, 1, { rotate180: true })).toContain('^POI^PW400')
+    it('MADE IN THAILAND อยู่ที่หางป้าย ตำแหน่ง/ฟอนต์เดียวกับป้ายเดิม', () => {
+      const zpl = generateGt800ZPLSmall(base)
+      expect(zpl).toContain('^FO25,50^A0N,17,17^FDMADE IN THAILAND^FS')
+      expect(generateGt800ZPLSmall({ ...base, madeIn: 'MADE IN ITALY' })).toContain('^FDMADE IN ITALY^FS')
+    })
+
+    it('ทุก ^FO ยกเว้น MADE IN อยู่บนหัวป้าย x>=250 · หน้าจบก่อนแนวพับ · หลังเริ่มหลังแนวพับ', () => {
+      const gems = Array.from({ length: 8 }, (_, i) => `${i + 1}Diamond 0.${i + 10} ct., G,VS1`)
+      const forms = [base, { ...base, mold: 'CN-24000XXWPG-LONG', stockNumberOrigin: 'DK18K1XR1747' }, { ...base, gems }]
+      forms.forEach((form) => {
+        const layout = layoutGt800Small(form)
+        const fields = [...generateGt800ZPLSmall(form).matchAll(/\^FO(\d+),(\d+)([^]*?)\^FS/g)]
+        const others = fields.filter((f) => !f[3].includes('MADE IN THAILAND'))
+        expect(others.length).toBeGreaterThan(0)
+        others.forEach((f) => {
+          const x = Number(f[1])
+          expect(x).toBeGreaterThanOrEqual(250)
+          expect(x === layout.frontX || x === layout.gemX).toBe(true)
+        })
+        const front = others.filter((f) => Number(f[1]) === layout.frontX)
+        const back = others.filter((f) => Number(f[1]) === layout.gemX)
+        expect(layout.barcodeRightLimit).toBeLessThan(layout.foldX)
+        expect(layout.gemX).toBeGreaterThan(layout.foldX)
+        expect(layout.gemRightLimit).toBeLessThanOrEqual(640)
+        expect(layout.barcodeEnd).toBeLessThanOrEqual(layout.barcodeRightLimit)
+        expect(front.length).toBeGreaterThanOrEqual(3)
+        expect(back.length).toBeGreaterThan(0)
+      })
+    })
+
+    it('header: ^LL112 และ rotate180 ใช้ ^POI^PW640', () => {
+      expect(generateGt800ZPLSmall(base)).toContain('^XA^LL112^MD15^LT0^XZ^XA')
+      expect(generateGt800ZPLSmall(base, 1, { rotate180: true })).toContain('^POI^PW640')
+    })
+
+    it('ส่ง ^PW เสมอ: ไม่หมุน ^PW640 (ไม่มี ^POI) · 300dpi หมุน ^POI^PW946', () => {
+      const plain = generateGt800ZPLSmall(base, 1)
+      expect(plain).toContain('^XA^LL112^MD15^LT0^XZ^XA^PW640')
+      expect(plain).not.toContain('^POI')
+      expect(generateGt800ZPLSmall(base, 300 / 203, { rotate180: true })).toContain('^POI^PW946')
     })
 
     it('dpiScale 300 คูณพิกัดทุกจุด', () => {
       const zpl = generateGt800ZPLSmall(base, 300 / 203)
       expect(zpl).toContain('^LL166')
-      expect(zpl).toContain('^FO15,12')
+      expect(zpl).toContain('^FO378,12')
     })
 
     it('ป้ายเดิมไม่เปลี่ยน: header เดิมยังเป็น ^LL104 และ rotate180 ยังเป็น ^PW600', () => {

@@ -31,7 +31,7 @@ const noPrinterSelectedResult = {
 function checkQrLabelGuard(forms, profile) {
   const hasSmallLabel = forms.some((form) => form.barcodeType === SMALL_LABEL_TYPE)
   if (hasSmallLabel && profile === PRINTER_PROFILES.LEGACY) {
-    return { status: 'error', message: 'ป้าย 50×14 ใช้ได้เฉพาะเครื่องพิมพ์ GT800 ครับ' }
+    return { status: 'error', message: 'ป้าย 80×14 ใช้ได้เฉพาะเครื่องพิมพ์ GT800 ครับ' }
   }
 
   const hasQrLabel = forms.some((form) => form.barcodeType === 'original-qr')

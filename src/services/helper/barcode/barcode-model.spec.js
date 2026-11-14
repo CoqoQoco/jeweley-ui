@@ -52,7 +52,7 @@ describe('buildBarcodeModel — gold name from typeCode', () => {
   })
 })
 
-describe('buildBarcodeModel — ข้อมูลป้าย 50×14', () => {
+describe('buildBarcodeModel — ข้อมูลป้าย 80×14', () => {
   const stock = {
     productionTypeSize: '18K',
     productionType: 'White Gold',

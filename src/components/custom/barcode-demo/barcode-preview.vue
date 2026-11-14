@@ -115,7 +115,7 @@ export default {
       return this.gemLabelMeta || this.loadedGemLabelMeta
     },
 
-    // ค่าชุดเดียวกับที่ส่งไปพิมพ์ป้าย 50×14 (layoutGt800Small อ่านจากชุดนี้)
+    // ค่าชุดเดียวกับที่ส่งไปพิมพ์ป้าย 80×14 (layoutGt800Small อ่านจากชุดนี้)
     smallFormValue() {
       return {
         ...this.barcode,
