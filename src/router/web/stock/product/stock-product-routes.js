@@ -27,6 +27,8 @@ const ShowcaseScan = () => import('@/views/showcase-scan/index-view.vue')
 
 const RfidTracking = () => import('@/views/receipt-stock/product/rfid-tracking/index-view.vue')
 
+const RfidBasket = () => import('@/views/stock/rfid-basket/index-view.vue')
+
 import { PERMISSIONS } from '@/services/permission/config.js'
 
 const routes = [
@@ -279,6 +281,20 @@ const routes = [
           Displayname: {
             en: 'RFID Tag Tracking',
             th: 'ติดตามผูกแท็ก RFID'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_RFID_VIEW]
+        }
+      },
+
+      {
+        path: '/stock/rfid-basket',
+        name: 'rfid-basket',
+        component: RfidBasket,
+        meta: {
+          Displayname: {
+            en: 'RFID Tag Basket',
+            th: 'ตะกร้าอ่านแท็ก'
           },
           minorShow: true,
           permissions: [PERMISSIONS.STOCK_RFID_VIEW]

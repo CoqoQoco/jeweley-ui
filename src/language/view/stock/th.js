@@ -838,6 +838,94 @@ export default {
     colTotalReserved: 'จอง',
     colTotalAvailable: 'พร้อมขาย'
   },
+  rfidBasket: {
+    listTitle: 'รายการแท็ก',
+    title: 'ตะกร้าอ่านแท็ก',
+    subtitle: 'อ่านแท็ก RFID จากเครื่องอ่านแบบถาดแล้วตรวจกับระบบ',
+    reader: {
+      title: 'เครื่องอ่านแท็ก',
+      unsupported: 'เบราว์เซอร์นี้เชื่อมต่อเครื่องอ่านไม่ได้ กรุณาใช้ Google Chrome หรือ Microsoft Edge บนคอมพิวเตอร์',
+      disconnected: 'ยังไม่ได้เชื่อมต่อเครื่องอ่าน',
+      connecting: 'กำลังเชื่อมต่อ…',
+      connected: 'เชื่อมต่อแล้ว พร้อมอ่าน',
+      reading: 'กำลังอ่านแท็ก…',
+      errorInUse: 'เชื่อมต่อเครื่องอ่านไม่ได้ ให้ปิดโปรแกรม iData iRFID ก่อน (เครื่องเชื่อมต่อได้ครั้งละ 1 โปรแกรม) แล้วลองใหม่',
+      errorUnavailable: 'ติดต่อเครื่องอ่านไม่สำเร็จ ตรวจว่าเครื่องเปิดอยู่และอยู่ในระยะ หรือปิดโปรแกรม iData iRFID แล้วลองใหม่',
+      lost: 'เครื่องอ่านหลุดการเชื่อมต่อ รายการในตะกร้ายังอยู่ครบ กดเชื่อมต่อใหม่เพื่ออ่านต่อ',
+      deviceBle: 'Bluetooth',
+      deviceHid: 'USB',
+      exclusiveHint: 'ต้องปิดโปรแกรม iData iRFID ก่อน เพราะเครื่องอ่านเชื่อมต่อได้ครั้งละ 1 โปรแกรม',
+      connectBle: 'เชื่อมต่อทาง Bluetooth',
+      connectHid: 'เชื่อมต่อทาง USB',
+      reconnect: 'เชื่อมต่อใหม่',
+      reconnectBle: 'เชื่อมต่อใหม่ (Bluetooth)',
+      reconnectHid: 'เชื่อมต่อใหม่ (USB)',
+      start: 'เริ่มอ่าน',
+      stop: 'หยุดอ่าน',
+      disconnect: 'ตัดการเชื่อมต่อ'
+    },
+    filter: {
+      all: 'ทั้งหมด',
+      bound: 'ผูกแล้ว',
+      unbound: 'ยังไม่ผูก',
+      unchecked: 'ยังไม่ตรวจ'
+    },
+    col: {
+      no: 'ลำดับ',
+      qty: 'จำนวนในล็อต',
+      image: 'รูป',
+      code: 'รหัสสินค้า',
+      name: 'ชื่อสินค้า',
+      status: 'สถานะ',
+      location: 'คลัง',
+      hits: 'อ่านได้ (ครั้ง)',
+      rssi: 'สัญญาณ',
+      epc: 'EPC'
+    },
+    row: {
+      checking: 'ยังไม่ตรวจ',
+      unbound: 'ยังไม่ผูกสินค้า',
+      new: 'ใหม่',
+      sold: 'ขายแล้ว',
+      rssi: '{value} dBm'
+    },
+    empty: {
+      title: 'ยังไม่มีแท็กในตะกร้า',
+      hint: 'เชื่อมต่อเครื่องอ่าน วางสินค้าบนถาด แล้วกด "เริ่มอ่าน"'
+    },
+    summary: 'สินค้า {products} รายการ · {pieces} ชิ้น',
+    detail: {
+      qty: 'จำนวนในล็อต',
+      title: 'รายละเอียดแท็ก',
+      productCode: 'รหัสสินค้า',
+      stockNumber: 'เลขที่ผลิต',
+      name: 'ชื่อสินค้า',
+      status: 'สถานะ',
+      location: 'คลัง',
+      epc: 'EPC',
+      hits: 'จำนวนครั้งที่อ่าน',
+      rssi: 'สัญญาณแรงสุด',
+      rssiMissing: 'เครื่องไม่ได้ส่งมา',
+      firstSeen: 'เจอครั้งแรก',
+      openProduct: 'เปิดหน้าสินค้า (แท็บใหม่)',
+      soldMismatchNote: 'แท็กนี้ผูกกับชิ้นที่ระบบบันทึกว่าขายแล้ว ตรวจสอบสินค้าจริงอีกครั้ง',
+      remove: 'เอาออกจากตะกร้า',
+      close: 'ปิด'
+    },
+    actions: {
+      recheck: 'ตรวจอีกครั้ง',
+      copy: 'คัดลอก EPC ทั้งหมด',
+      clear: 'ล้างตะกร้า'
+    },
+    copyFailed: 'คัดลอกไม่สำเร็จ เบราว์เซอร์ไม่อนุญาตให้เข้าถึงคลิปบอร์ด',
+    copied: 'คัดลอก {count} EPC แล้ว',
+    clearDialog: {
+      title: 'ล้างตะกร้า?',
+      message: 'จะล้างรายการ {count} รายการในหน้านี้เท่านั้น',
+      confirm: 'ล้างตะกร้า',
+      cancel: 'ยกเลิก'
+    }
+  },
   stockRfidTracking: {
     title: 'ติดตามผูกแท็ก RFID',
     subtitle: 'ดูความคืบหน้าการผูกแท็กของแต่ละใบรับสินค้าแบบสด',

@@ -838,6 +838,94 @@ export default {
     colTotalReserved: 'Reserved',
     colTotalAvailable: 'Available'
   },
+  rfidBasket: {
+    listTitle: 'Tag list',
+    title: 'RFID Tag Basket',
+    subtitle: 'Read RFID tags with the tray reader and check them against the system',
+    reader: {
+      title: 'Tag reader',
+      unsupported: 'This browser cannot connect to the reader. Please use Google Chrome or Microsoft Edge on a computer.',
+      disconnected: 'Reader not connected',
+      connecting: 'Connecting…',
+      connected: 'Connected, ready to read',
+      reading: 'Reading tags…',
+      errorInUse: 'Cannot connect to the reader. Close the iData iRFID program first (the reader connects to one program at a time), then try again.',
+      errorUnavailable: 'Could not reach the reader. Check that it is on and in range, or close the iData iRFID program, then try again.',
+      lost: 'The reader was disconnected. The basket is kept as is. Reconnect to continue reading.',
+      deviceBle: 'Bluetooth',
+      deviceHid: 'USB',
+      exclusiveHint: 'Close the iData iRFID program first. The reader can only connect to one program at a time.',
+      connectBle: 'Connect via Bluetooth',
+      connectHid: 'Connect via USB',
+      reconnect: 'Reconnect',
+      reconnectBle: 'Reconnect (Bluetooth)',
+      reconnectHid: 'Reconnect (USB)',
+      start: 'Start reading',
+      stop: 'Stop reading',
+      disconnect: 'Disconnect'
+    },
+    filter: {
+      all: 'All',
+      bound: 'Bound',
+      unbound: 'Unbound',
+      unchecked: 'Unchecked'
+    },
+    col: {
+      no: 'No.',
+      qty: 'Lot qty',
+      image: 'Image',
+      code: 'Product code',
+      name: 'Product name',
+      status: 'Status',
+      location: 'Location',
+      hits: 'Reads',
+      rssi: 'Signal',
+      epc: 'EPC'
+    },
+    row: {
+      checking: 'Not checked',
+      unbound: 'Not bound to a product',
+      new: 'New',
+      sold: 'Sold',
+      rssi: '{value} dBm'
+    },
+    empty: {
+      title: 'No tags in the basket yet',
+      hint: 'Connect the reader, place items on the tray, then press "Start reading"'
+    },
+    summary: '{products} products · {pieces} pieces',
+    detail: {
+      qty: 'Lot qty',
+      title: 'Tag details',
+      productCode: 'Product code',
+      stockNumber: 'Stock number',
+      name: 'Product name',
+      status: 'Status',
+      location: 'Location',
+      epc: 'EPC',
+      hits: 'Times read',
+      rssi: 'Strongest signal',
+      rssiMissing: 'Not sent by the reader',
+      firstSeen: 'First seen',
+      openProduct: 'Open product page (new tab)',
+      soldMismatchNote: 'This tag belongs to a piece the system recorded as sold. Please check the actual item again.',
+      remove: 'Remove from basket',
+      close: 'Close'
+    },
+    actions: {
+      recheck: 'Check again',
+      copy: 'Copy all EPCs',
+      clear: 'Clear basket'
+    },
+    copyFailed: 'Copy failed. The browser did not allow clipboard access.',
+    copied: 'Copied {count} EPCs',
+    clearDialog: {
+      title: 'Clear the basket?',
+      message: 'This only clears the {count} items listed on this screen.',
+      confirm: 'Clear basket',
+      cancel: 'Cancel'
+    }
+  },
   stockRfidTracking: {
     title: 'RFID Tag Tracking',
     subtitle: 'Follow tag binding progress for each goods receipt, live',

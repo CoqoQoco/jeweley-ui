@@ -183,6 +183,7 @@ export default {
       materialValuationReport: { ...stock.materialValuationReport },
       stockBalanceSummary: { ...stock.stockBalanceSummary },
       stockRfidTracking: { ...stock.stockRfidTracking },
+      rfidBasket: { ...stock.rfidBasket },
       convert: { ...stock.convert },
       gold: { ...stock.gold },
       gem: {
