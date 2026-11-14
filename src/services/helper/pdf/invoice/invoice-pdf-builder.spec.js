@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { InvoicePdfBuilder } from './invoice-pdf-builder.js'
+import { groupInvoiceLinesForPrint } from '@/services/utils/invoice-line-merge.js'
 import { roundHalfUp } from '@/services/utils/money.js'
 
 // ตัดการพึ่งพา company-info-store → axios-helper/router/pinia ที่ต้องมี app context จริง
@@ -129,5 +130,44 @@ describe('InvoicePdfBuilder — money rounding reconciliation (มาตรฐ�
     // แถวแรกของหน้า 2 (pageNum=1) ต้องเป็นลำดับที่ 3 (1*2 + 0 + 1) ไม่ใช่ 1*10+0+1=11
     expect(body[1][0].text).toBe('3')
     expect(body[2][0].text).toBe('4')
+  })
+})
+
+describe('InvoicePdfBuilder — รวมบรรทัดเงิน: ยอดท้ายตารางต้องเท่าเดิม', () => {
+  const mats = (w) => [{ type: 'Silver', weight: w }, { type: 'Gem', typeCode: 'Cubic Zirconia', typeOrigin: 'CZ', weight: 0.5 }]
+  const silver = (origin, qty, extra = {}) => ({
+    stockNumber: `S-${origin}`, stockNumberOrigin: origin, mold: 'R-7416', productionType: 'Silver',
+    appraisalPrice: 1550, discountPercent: 0, qty, materials: mats(2), ...extra
+  })
+  const raw = [
+    silver('R07416CZ9L-7', 3),
+    silver('R07416CZ9L-3', 3),
+    silver('R09999AA9L-1', 2, { mold: 'R-9999', appraisalPrice: 900 }),
+    silver('R09999AA9L-2', 4, { mold: 'R-9999', appraisalPrice: 900 }),
+    silver('R05555BB9L-1', 1, { mold: 'R-5555' })
+  ]
+
+  const finalBody = (items) => {
+    const b = makeBuilder(items, { vatPercent: 7 }, 2)
+    const pages = Math.ceil(items.length / 2)
+    return { b, body: b.buildFinalTableBody(items.slice((pages - 1) * 2), pages - 1, pages) }
+  }
+
+  it('grand total (qty/น้ำหนัก) ท้ายตาราง + net weight + ยอดเงิน เท่ากันระหว่างรวมกับไม่รวม', () => {
+    const merged = groupInvoiceLinesForPrint(raw)
+    expect(merged).toHaveLength(3)
+    const a = finalBody(raw)
+    const m = finalBody(merged)
+    // Grand total row: ใช้ builder.data ทั้งหมด (ไม่ใช่แค่หน้าสุดท้าย)
+    const grand = (res) => res.body.find((row) => row?.[7]?.style === 'grandTotalLabel')
+    const ga = grand(a)
+    const gm = grand(m)
+    expect(ga).toBeTruthy()
+    expect(gm).toBeTruthy()
+    expect(gm.map((c) => c?.text)).toEqual(ga.map((c) => c?.text))
+    expect(m.b.subtotal).toBeCloseTo(a.b.subtotal, 6)
+    expect(m.b.grandTotalRounded).toBe(a.b.grandTotalRounded)
+    expect(JSON.stringify(m.b.getSummarySection())).toContain('NET WEIGHT')
+    expect(JSON.stringify(m.b.getSummarySection())).toBe(JSON.stringify(a.b.getSummarySection()))
   })
 })

@@ -406,8 +406,9 @@ export class InvoicePdfBuilder {
       sumQty += qty
       sumAmount += amount
 
-      if (item.materials && Array.isArray(item.materials)) {
-        item.materials.forEach((m) => {
+      const totalMats = item.totalMaterials || item.materials
+      if (totalMats && Array.isArray(totalMats)) {
+        totalMats.forEach((m) => {
           const kind = classifyMaterial(m, this.materialMode)
           if (kind === 'metal') sumGold += Number(m.weight) || 0
           if (kind === 'second') sumDiamond += Number(m.weight) || 0
@@ -462,8 +463,9 @@ export class InvoicePdfBuilder {
       if (this.data && Array.isArray(this.data)) {
         this.data.forEach((item) => {
           sumQtyAll += Number(item.qty) || 0
-          if (item.materials && Array.isArray(item.materials)) {
-            item.materials.forEach((m) => {
+          const totalMats = item.totalMaterials || item.materials
+          if (totalMats && Array.isArray(totalMats)) {
+            totalMats.forEach((m) => {
               const kind = classifyMaterial(m, this.materialMode)
               if (kind === 'metal') sumGoldAll += Number(m.weight) || 0
               if (kind === 'second') sumDiamondAll += Number(m.weight) || 0
@@ -666,8 +668,9 @@ export class InvoicePdfBuilder {
     let gem = 0
     if (this.data && Array.isArray(this.data)) {
       this.data.forEach((item) => {
-        if (item.materials) {
-          item.materials.forEach((m) => {
+        const totalMats = item.totalMaterials || item.materials
+        if (totalMats) {
+          totalMats.forEach((m) => {
             const kind = classifyMaterial(m, this.materialMode)
             if (kind === 'metal') gold += Number(m.weight) || 0
             if (kind === 'second') diamond += Number(m.weight) || 0

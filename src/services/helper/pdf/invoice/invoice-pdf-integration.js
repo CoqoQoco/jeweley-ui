@@ -1,5 +1,6 @@
 import { InvoicePdfBuilder } from './invoice-pdf-builder.js'
 import dayjs from 'dayjs'
+import { groupInvoiceLinesForPrint } from '@/services/utils/invoice-line-merge.js'
 
 export class InvoicePdfIntegration {
   constructor() {
@@ -36,8 +37,9 @@ export class InvoicePdfIntegration {
       const currencyRate = currency?.rate || 1
 
       // Create PDF builder instance
+      const printItems = options.mergeSilverLines ? groupInvoiceLinesForPrint(items) : items
       this.pdfBuilder = new InvoicePdfBuilder(
-        items,
+        printItems,
         customer,
         invoiceDate,
         { ...saleOrder, showCifLabel: options.showCifLabel !== undefined ? options.showCifLabel : true, showSeller: options.showSeller, hideCompanyHeader: options.hideCompanyHeader || false, showDecimals: options.showDecimals, sellerName: options.sellerName, supportName: options.supportName },

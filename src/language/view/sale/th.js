@@ -110,6 +110,7 @@ export const invoiceDetail = {
   showCifLabel: 'แสดงป้าย C.I.F',
   showSeller: 'แสดงชื่อพนักงานขาย',
   hideCompanyHeader: 'พิมพ์แบบไม่มีหัวบริษัท',
+  mergeSilverLines: 'รวมบรรทัดสินค้าเงินแบบเดียวกัน',
   itemsPerPage: 'จำนวนรายการต่อหน้า',
   itemsPerPageHint: 'ลดจำนวนลงหากกล่องลายเซ็นตกหน้ากระดาษ',
   template: 'รูปแบบใบแจ้งหนี้',

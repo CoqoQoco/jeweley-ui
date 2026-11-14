@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import { groupInvoiceLinesForPrint } from '@/services/utils/invoice-line-merge.js'
 import { classifyMaterial } from '@/services/helper/sale-material-columns.js'
 
 import { getVatLayout } from '@/services/helper/print/vat-layout-store.js'
@@ -47,7 +48,7 @@ async function buildVatModel({ invoiceData, invoiceItems, printData, invoiceNo, 
   }
 
   const model = buildVatPrintModel(vatInvoice, mergedLayout, { printerName: printData.printerName ?? null, showDecimals: printData.showDecimals })
-  const logPayload = { flags: null, billOffset: null, continuousOffset: printData.continuousOffset, printerName: printData.printerName, template: printData.invoiceTemplate }
+  const logPayload = { flags: null, billOffset: null, continuousOffset: printData.continuousOffset, printerName: printData.printerName, template: printData.invoiceTemplate, mergeSilverLines: !!printData.mergeSilverLines }
 
   return { model, logPayload }
 }
@@ -120,6 +121,7 @@ async function buildBillModel({ invoiceData, invoiceItems, printData, invoiceNo,
     unitPriceMode: printData.unitPriceMode,
     productCodeMode: printData.productCodeMode,
     customRemark: String(printData.customRemark || '').trim(),
+    mergeSilverLines: !!printData.mergeSilverLines,
     unitVatPercent: printData.unitVatPercent,
     summaryVatPercent: printData.summaryVatPercent,
     flags: Object.fromEntries(Object.entries(printData).filter(([k]) => k.startsWith('show'))),
@@ -140,7 +142,8 @@ async function buildBillModel({ invoiceData, invoiceItems, printData, invoiceNo,
  * @param {{ invoiceData: object, invoiceItems: Array, printData: object, invoiceNo: string, invoiceDate: (string|Date|import('dayjs').Dayjs) }} params
  * @returns {Promise<{ model: object, logPayload: object }|null>}
  */
-export async function buildContinuousPrintModel(paperSize, { invoiceData, invoiceItems, printData, invoiceNo, invoiceDate }) {
+export async function buildContinuousPrintModel(paperSize, { invoiceData, invoiceItems: rawItems, printData, invoiceNo, invoiceDate }) {
+  const invoiceItems = printData?.mergeSilverLines ? groupInvoiceLinesForPrint(rawItems) : rawItems
   if (paperSize === 'vat-bridge') {
     return buildVatModel({ invoiceData, invoiceItems, printData, invoiceNo, invoiceDate })
   }

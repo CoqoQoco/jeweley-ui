@@ -135,6 +135,13 @@
               />
             </div>
 
+            <div v-if="!isMaterial && invoiceTemplate !== 'summary'" class="form-group mb-3">
+              <CheckboxGeneric
+                v-model="printData.mergeSilverLines"
+                :label="$t('view.sale.invoiceDetail.mergeSilverLines')"
+              />
+            </div>
+
             <div v-if="!isMaterial" class="form-group mb-3">
               <CheckboxGeneric
                 v-model="printData.showDecimals"
@@ -610,6 +617,7 @@ export default {
         showSeller: true,
         hideCompanyHeader: false,
         showDecimals: true,
+        mergeSilverLines: true,
         itemsPerPage: 10
       },
       invoiceTemplate: 'standard',
@@ -719,6 +727,7 @@ export default {
         billFlags: { ...this.billElementFlags },
         customRemark: this.customRemark,
         showDecimals: this.printData.showDecimals,
+        mergeSilverLines: this.printData.mergeSilverLines,
         selectedPrinter: this.selectedPrinter,
         invoiceNumber: this.printData.invoiceNumber,
         invoiceDate: this.printData.invoiceDate,
@@ -953,6 +962,7 @@ export default {
         showSeller: true,
         hideCompanyHeader: false,
         showDecimals: this.isMaterial ? true : showDecimals,
+        mergeSilverLines: true,
         itemsPerPage: 10
       }
 
@@ -1005,6 +1015,7 @@ export default {
         showSeller: this.paperSize === 'a4' && !this.isMaterial ? this.printData.showSeller : false,
         hideCompanyHeader: this.paperSize === 'a4' ? this.printData.hideCompanyHeader : false,
         showDecimals: this.isMaterial ? true : this.printData.showDecimals,
+        mergeSilverLines: this.isMaterial || this.invoiceTemplate === 'summary' ? false : !!this.printData.mergeSilverLines,
         itemsPerPage: Number(this.printData.itemsPerPage) || 10,
         invoiceTemplate: this.invoiceTemplate,
         paperSize: this.paperSize,

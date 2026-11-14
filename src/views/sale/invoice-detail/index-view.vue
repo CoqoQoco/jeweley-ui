@@ -1611,6 +1611,7 @@ export default {
           showCifLabel: this.isMaterial ? false : (printData.showCifLabel !== undefined ? printData.showCifLabel : true),
           hideCompanyHeader: printData.hideCompanyHeader || false,
           showDecimals: printData.showDecimals,
+          mergeSilverLines: printData.invoiceTemplate !== 'summary' && printData.mergeSilverLines === true,
           itemsPerPage: Number(printData.itemsPerPage) || 10
         }
 
@@ -1652,7 +1653,7 @@ export default {
         this.invoiceStore.createPrintLog({
           invoiceNumber: printData.invoiceNumber,
           paperType: a4PaperType,
-          data: JSON.stringify({ flags: null, billOffset: null, continuousOffset: null, printerName: printData.printerName, template: printData.invoiceTemplate })
+          data: JSON.stringify({ flags: null, billOffset: null, continuousOffset: null, printerName: printData.printerName, template: printData.invoiceTemplate, mergeSilverLines: options.mergeSilverLines })
         })
       }
     },
@@ -1732,6 +1733,7 @@ export default {
         showCifLabel: this.isMaterial ? false : (printData.showCifLabel !== undefined ? printData.showCifLabel : true),
         hideCompanyHeader: printData.hideCompanyHeader || false,
         showDecimals: printData.showDecimals,
+        mergeSilverLines: printData.invoiceTemplate !== 'summary' && printData.mergeSilverLines === true,
         itemsPerPage: Number(printData.itemsPerPage) || 10
       }
 
