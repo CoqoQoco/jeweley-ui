@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { groupInvoiceLinesForPrint } from '@/services/utils/invoice-line-merge.js'
-import { classifyMaterial } from '@/services/helper/sale-material-columns.js'
+import { splitBillWeights } from '@/services/helper/print/bill-gem-columns.js'
 
 import { getVatLayout } from '@/services/helper/print/vat-layout-store.js'
 import { buildVatPrintModel } from '@/services/helper/print/vat-print-model-builder.js'
@@ -70,6 +70,8 @@ async function buildBillModel({ invoiceData, invoiceItems, printData, invoiceNo,
     ? { ...billLayout, offsetX: (billLayout.offsetX ?? 0) + (offsetMm.x || 0), offsetY: (billLayout.offsetY ?? 0) + (offsetMm.y || 0) }
     : (offsetMm.x || offsetMm.y ? { offsetX: offsetMm.x, offsetY: offsetMm.y } : null)
 
+  const gemColumnMap = printData.gemColumnMap || {}
+
   const billInvoice = {
     invoiceNo,
     invoiceDate: dayjs(invoiceDate).format('YYYY-MM-DD'),
@@ -83,9 +85,7 @@ async function buildBillModel({ invoiceData, invoiceItems, printData, invoiceNo,
     customRemark: String(printData.customRemark || '').trim(),
     items: (invoiceItems || []).map(i => {
       const mats = Array.isArray(i.materials) ? i.materials : []
-      const goldWeight = mats.filter(m => classifyMaterial(m) === 'metal').reduce((s, m) => s + (Number(m.weight) || 0), 0)
-      const stoneWeight = mats.filter(m => classifyMaterial(m) === 'gem').reduce((s, m) => s + (Number(m.weight) || 0), 0)
-      const diamondWeight = mats.filter(m => m.type === 'Diamond').reduce((s, m) => s + (Number(m.weight) || 0), 0)
+      const { goldWeight, stoneWeight, diamondWeight } = splitBillWeights(mats, gemColumnMap)
       const diamondGrade = [...new Set(
         mats.filter(m => m.type === 'Diamond').map(m => m.typeCode).filter(Boolean)
       )].join(', ')
@@ -122,6 +122,7 @@ async function buildBillModel({ invoiceData, invoiceItems, printData, invoiceNo,
     productCodeMode: printData.productCodeMode,
     customRemark: String(printData.customRemark || '').trim(),
     mergeSilverLines: !!printData.mergeSilverLines,
+    gemColumnMap,
     unitVatPercent: printData.unitVatPercent,
     summaryVatPercent: printData.summaryVatPercent,
     flags: Object.fromEntries(Object.entries(printData).filter(([k]) => k.startsWith('show'))),

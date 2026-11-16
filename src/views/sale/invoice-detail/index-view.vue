@@ -182,6 +182,7 @@
         :invoiceData="invoiceData"
         :isPreviewOpen="isShowPreviewModal || isShowContinuousPreview"
         :sellerName="sellerName"
+        :invoiceItems="invoiceItems"
         @close-modal="showConfirmPrintModal = false"
         @confirm-print="handleConfirmPrint"
         @preview-print="handlePreviewPrint"

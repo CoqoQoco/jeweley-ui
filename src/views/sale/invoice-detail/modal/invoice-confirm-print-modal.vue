@@ -475,6 +475,29 @@
               </div>
             </div>
 
+            <div v-if="paperSize === 'bill' && billGemTypes.length > 0" class="form-group mb-3">
+              <div class="bill-element-group">
+                <div class="bill-element-group-title">{{ $t('view.sale.invoiceDetail.billGemColumnsTitle') }}</div>
+                <small class="form-text text-muted mb-2">{{ $t('view.sale.invoiceDetail.billGemColumnsHint') }}</small>
+                <div v-for="gem in billGemTypes" :key="gem.key" class="bill-gem-row">
+                  <div class="bill-gem-info">
+                    <span class="bill-gem-label">{{ gem.label || $t('view.sale.invoiceDetail.billGemUnnamed') }}</span>
+                    <small class="text-muted">
+                      {{ $t('view.sale.invoiceDetail.billGemPieces', { count: gem.pieceCount }) }}
+                      · {{ $t('view.sale.invoiceDetail.billGemWeight', { weight: gem.totalWeight.toFixed(2) }) }}
+                    </small>
+                  </div>
+                  <ToggleGroupGeneric
+                    :modelValue="gemColumnMap[gem.key]"
+                    :options="gemColumnOptions"
+                    size="sm"
+                    :ariaLabel="gem.label || $t('view.sale.invoiceDetail.billGemUnnamed')"
+                    @update:modelValue="onGemColumnChange(gem.key, $event)"
+                  />
+                </div>
+              </div>
+            </div>
+
             <div v-if="paperSize === 'vat-bridge'" class="form-group mb-3">
               <div class="row">
                 <div class="col-6">
@@ -555,7 +578,9 @@ import RadioGroupGeneric from '@/components/prime-vue/RadioGroupGeneric.vue'
 import DrawerGeneric from '@/components/generic/DrawerGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 import { fetchPrinterList, PRINT_BRIDGE_BASE_URL } from '@/services/api/printer-config-service.js'
+import { listBillGemTypes, defaultColumnFor } from '@/services/helper/print/bill-gem-columns.js'
 import { getBillLayout } from '@/services/helper/print/bill-layout-store.js'
 import { getVatLayout } from '@/services/helper/print/vat-layout-store.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
@@ -575,7 +600,8 @@ export default {
     CheckboxGeneric,
     RadioGroupGeneric,
     InputTextGeneric,
-    ButtonGeneric
+    ButtonGeneric,
+    ToggleGroupGeneric
   },
 
   props: {
@@ -594,6 +620,10 @@ export default {
     sellerName: {
       type: String,
       default: ''
+    },
+    invoiceItems: {
+      type: Array,
+      default: () => []
     }
   },
 
@@ -603,6 +633,8 @@ export default {
     return {
       invoiceStore: useInvoiceApiStore(),
       printLogs: [],
+      gemColumnMap: {},
+      gemChoiceTouched: false,
       customRemark: '',
       showHistory: false,
       originalData: {
@@ -717,6 +749,18 @@ export default {
       return found ? '' : this.$t('common.printer.savedNotFound', { name: this.selectedPrinter })
     },
 
+    billGemTypes() {
+      return listBillGemTypes(this.invoiceItems)
+    },
+
+    gemColumnOptions() {
+      return [
+        { value: 'stone', label: this.$t('view.sale.invoiceDetail.billGemColStone') },
+        { value: 'diamond', label: this.$t('view.sale.invoiceDetail.billGemColDiamond') },
+        { value: 'none', label: this.$t('view.sale.invoiceDetail.billGemColNone') }
+      ]
+    },
+
     previewWatchSnapshot() {
       return {
         paperSize: this.paperSize,
@@ -725,6 +769,7 @@ export default {
         billOffsetX: this.billOffset.x,
         billOffsetY: this.billOffset.y,
         billFlags: { ...this.billElementFlags },
+        gemColumnMap: { ...this.gemColumnMap },
         customRemark: this.customRemark,
         showDecimals: this.printData.showDecimals,
         mergeSilverLines: this.printData.mergeSilverLines,
@@ -741,6 +786,10 @@ export default {
       handler(newVal) {
         if (newVal) {
           this.initializePrintData()
+          this.printLogs = []
+          this.gemChoiceTouched = false
+          this.gemColumnMap = {}
+          this.prefillGemColumnMap()
           this.fetchPrintLogs()
         }
       },
@@ -748,6 +797,9 @@ export default {
     },
     previewWatchSnapshot() {
       this.scheduleAutoPreview()
+    },
+    billGemTypes() {
+      this.prefillGemColumnMap(true)
     },
     paperSize(newVal) {
       if (newVal === 'bill') {
@@ -887,6 +939,7 @@ export default {
     },
 
     async fetchPrintLogs() {
+      this.printLogs = []
       if (!this.invoiceData || !this.invoiceData.invoiceNumber) return
       const res = await this.invoiceStore.fetchPrintLogList({ invoiceNumber: this.invoiceData.invoiceNumber })
       if (res && res.data) {
@@ -895,6 +948,37 @@ export default {
         this.printLogs = []
       }
       this.prefillCustomRemark()
+      this.prefillGemColumnMap()
+    },
+
+    onGemColumnChange(key, value) {
+      this.gemChoiceTouched = true
+      this.gemColumnMap = { ...this.gemColumnMap, [key]: value }
+    },
+
+    prefillGemColumnMap(onlyNew = false) {
+      const keepCurrent = onlyNew || this.gemChoiceTouched
+      const saved = [...this.printLogs]
+        .filter((log) => log.paperType === 'bill')
+        .sort((a, b) => String(b.printedAt || '').localeCompare(String(a.printedAt || '')))
+        .map((log) => {
+          try {
+            return JSON.parse(log.data || '{}').gemColumnMap
+          } catch {
+            return null
+          }
+        })
+        .find((map) => map && typeof map === 'object')
+      const next = {}
+      this.billGemTypes.forEach((gem) => {
+        if (keepCurrent && this.gemColumnMap[gem.key]) {
+          next[gem.key] = this.gemColumnMap[gem.key]
+          return
+        }
+        const value = saved?.[gem.key]
+        next[gem.key] = ['stone', 'diamond', 'none'].includes(value) ? value : defaultColumnFor(gem)
+      })
+      this.gemColumnMap = next
     },
 
     prefillCustomRemark() {
@@ -1023,6 +1107,7 @@ export default {
         billOffset: { ...this.billOffset },
         printerName: this.selectedPrinter,
         customRemark: (this.customRemark || '').trim(),
+        gemColumnMap: { ...this.gemColumnMap },
         ...this.billElementFlags
       }
     },
@@ -1155,6 +1240,25 @@ export default {
   margin-bottom: var(--sp-xs);
   text-transform: uppercase;
   letter-spacing: 0.03em;
+}
+
+.bill-gem-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+  padding: var(--sp-xs) 0;
+}
+
+.bill-gem-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.bill-gem-label {
+  font-weight: 600;
+  color: var(--base-font-color);
 }
 
 .bill-column-toggles {
