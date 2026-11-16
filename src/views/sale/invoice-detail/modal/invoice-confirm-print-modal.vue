@@ -135,6 +135,14 @@
               />
             </div>
 
+            <div v-if="paperSize === 'a4'" class="form-group mb-3">
+              <CheckboxGeneric
+                v-model="printData.showImages"
+                :label="$t('view.sale.invoiceDetail.showImages')"
+                @update:modelValue="onShowImagesChange"
+              />
+            </div>
+
             <div v-if="!isMaterial && invoiceTemplate !== 'summary'" class="form-group mb-3">
               <CheckboxGeneric
                 v-model="printData.mergeSilverLines"
@@ -677,6 +685,7 @@ export default {
         showCifLabel: true,
         showSeller: true,
         hideCompanyHeader: false,
+        showImages: true,
         showDecimals: true,
         mergeSilverLines: true,
         itemsPerPage: 10
@@ -848,6 +857,7 @@ export default {
         gemColumnMap: { ...this.gemColumnMap },
         customRemark: this.customRemark,
         showDecimals: this.printData.showDecimals,
+        showImages: this.printData.showImages,
         mergeSilverLines: this.printData.mergeSilverLines,
         selectedPrinter: this.selectedPrinter,
         invoiceNumber: this.printData.invoiceNumber,
@@ -1118,6 +1128,8 @@ export default {
         ? savedShowDecimals === 'true'
         : true
 
+      const showImages = storage.getItem('invoice-print-show-images') !== 'false'
+
       this.printData = {
         invoiceNumber: this.invoiceData.invoiceNumber || '',
         invoiceDate: new Date(),
@@ -1125,6 +1137,7 @@ export default {
         showCifLabel: true,
         showSeller: true,
         hideCompanyHeader: false,
+        showImages,
         showDecimals: this.isMaterial ? true : showDecimals,
         mergeSilverLines: true,
         itemsPerPage: 10
@@ -1141,6 +1154,10 @@ export default {
 
     onShowDecimalsChange(val) {
       storage.setItem('invoice-print-show-decimals-v2', String(val))
+    },
+
+    onShowImagesChange(val) {
+      storage.setItem('invoice-print-show-images', String(val))
     },
 
     formatDate(date) {
@@ -1223,6 +1240,7 @@ export default {
         showCifLabel: this.paperSize === 'a4' && !this.isMaterial ? this.printData.showCifLabel : false,
         showSeller: this.paperSize === 'a4' && !this.isMaterial ? this.printData.showSeller : false,
         hideCompanyHeader: this.paperSize === 'a4' ? this.printData.hideCompanyHeader : false,
+        showImages: this.paperSize === 'a4' ? this.printData.showImages !== false : true,
         showDecimals: this.isMaterial ? true : this.printData.showDecimals,
         mergeSilverLines: this.isMaterial || this.invoiceTemplate === 'summary' ? false : !!this.printData.mergeSilverLines,
         itemsPerPage: Number(this.printData.itemsPerPage) || 10,

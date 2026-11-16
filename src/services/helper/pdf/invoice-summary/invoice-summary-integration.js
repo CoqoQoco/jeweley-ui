@@ -36,7 +36,7 @@ export class InvoiceSummaryPdfIntegration {
         items,
         customer,
         invoiceDate,
-        { ...saleOrder, showCifLabel: options.showCifLabel !== undefined ? options.showCifLabel : true },
+        { ...saleOrder, showCifLabel: options.showCifLabel !== undefined ? options.showCifLabel : true, showImages: options.showImages !== false },
         currencyUnit,
         currencyRate,
         invoiceNo,

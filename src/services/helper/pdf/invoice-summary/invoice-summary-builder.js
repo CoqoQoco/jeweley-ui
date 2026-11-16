@@ -11,7 +11,8 @@ import {
   setTableCell,
   setTableCellRight,
   setImageCell,
-  buildMaterialTable
+  buildMaterialTable,
+  removeTableColumn
 } from '../shared/pdf-cells.js'
 import { paginate } from '../shared/pdf-sections.js'
 import { getColumnHeaders, getDocMaterialMode } from '@/services/helper/sale-material-columns.js'
@@ -55,6 +56,7 @@ export class InvoiceSummaryPdfBuilder {
     this.discount = Number(saleOrderData.discount) || 0
     this.itemsPerPage = Number(itemsPerPage) || 10
     this.showCifLabel = saleOrderData?.showCifLabel !== undefined ? saleOrderData.showCifLabel : true
+    this.showImages = saleOrderData?.showImages !== false
 
     // Compute financial totals — ปัดเศษที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
     const totals = computeDocumentTotals({
@@ -91,7 +93,7 @@ export class InvoiceSummaryPdfBuilder {
   async preparePDF() {
     this.logoBase64 = await loadCompanyLogo()
     this.company = await loadCompanyInfo()
-    await prepareItemImages(this.data)
+    if (this.showImages) await prepareItemImages(this.data)
   }
 
   _fmt(num) {
@@ -164,8 +166,8 @@ export class InvoiceSummaryPdfBuilder {
       margin: [0, 0, 0, 0],
       table: {
         headerRows: 1,
-        widths: [15, 45, 70, 70, 35, 45, '*', 20, 55, 50],
-        body
+        widths: this.showImages ? [15, 45, 70, 70, 35, 45, '*', 20, 55, 50] : [15, 70, 115, 35, 45, '*', 20, 55, 50],
+        body: this.showImages ? body : removeTableColumn(body, 1)
       },
       layout: {
         hLineWidth: (i, node) =>

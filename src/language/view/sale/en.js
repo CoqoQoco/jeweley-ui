@@ -110,6 +110,7 @@ export const invoiceDetail = {
   showCifLabel: 'Show C.I.F Label',
   showSeller: 'Show Seller Name',
   hideCompanyHeader: 'Print without company header',
+  showImages: 'Show product images',
   mergeSilverLines: 'Merge identical silver lines',
   itemsPerPage: 'Items per page',
   itemsPerPageHint: 'Reduce if the signature box overflows the page',

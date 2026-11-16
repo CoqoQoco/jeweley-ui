@@ -112,3 +112,23 @@ export function buildMaterialTable(materials, type, mode = 'gold') {
     margin: [2, 3, 0, 0]
   }
 }
+
+// ตัดคอลัมน์ออกจาก body ของ pdfmake (รองรับ colSpan: ลด span ของเซลล์ที่คลุมคอลัมน์นั้น)
+export function removeTableColumn(body, colIndex) {
+  return body.map((row) => {
+    const next = [...row]
+    for (let j = 0; j <= colIndex; j++) {
+      const span = next[j]?.colSpan
+      if (span > 1 && j + span > colIndex) {
+        if (j === colIndex) {
+          next[j + 1] = { ...next[j], colSpan: span - 1 }
+        } else {
+          next[j] = { ...next[j], colSpan: span - 1 }
+        }
+        break
+      }
+    }
+    next.splice(colIndex, 1)
+    return next
+  })
+}

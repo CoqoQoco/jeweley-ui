@@ -6,6 +6,7 @@ import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/service
 import { PDF_FONT, PDF_COLORS } from '@/services/helper/pdf/shared/pdf-theme.js'
 import { buildDocumentHeader } from '@/services/helper/pdf/shared/pdf-sections.js'
 import { COMPANY_INFO, loadCompanyInfo } from '@/config/company-info.js'
+import { removeTableColumn } from '@/services/helper/pdf/shared/pdf-cells.js'
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
 import {
   classifyMaterial,
@@ -51,6 +52,7 @@ export class InvoicePdfBuilder {
     this.showCifLabel = saleOrderData?.showCifLabel !== undefined ? saleOrderData.showCifLabel : true
     this.showSeller = saleOrderData?.showSeller !== undefined ? saleOrderData.showSeller : true
     this.hideCompanyHeader = saleOrderData?.hideCompanyHeader || false
+    this.showImages = saleOrderData?.showImages !== false
     this.sellerName = saleOrderData?.sellerName || ''
     this.supportName = saleOrderData?.supportName || ''
 
@@ -107,7 +109,7 @@ export class InvoicePdfBuilder {
     this.companyInfo = { ...COMPANY_INFO, ...(company?.info || {}) }
 
     // Pre-load all product images from Azure Blob Storage
-    await this.prepareImages()
+    if (this.showImages) await this.prepareImages()
 
     return this
   }
@@ -277,8 +279,8 @@ export class InvoicePdfBuilder {
       table: {
         headerRows: 1,
         dontBreakRows: true,
-        widths: [15, 45, '*', '*', '*', '*', '*', 20, 62, 72], // 10 columns
-        body: [
+        widths: this.tableWidths([15, 45, '*', '*', '*', '*', '*', 20, 62, 72]), // 10 columns
+        body: this.tableBody([
           [
             this.setTableHeader('No.'),
             this.setTableHeader(''),
@@ -291,7 +293,7 @@ export class InvoicePdfBuilder {
             this.setTableHeader('Price (' + this.currencyUnit + ')'),
             this.setTableHeader('Amount')
           ]
-        ]
+        ])
       },
       layout: {
         hLineWidth: function () {
@@ -311,8 +313,8 @@ export class InvoicePdfBuilder {
       table: {
         headerRows: 1,
         dontBreakRows: true,
-        widths: [15, 43, 100, 49, 50, 58, '*', 20, 62, 72], // 10 columns
-        body: this.buildRegularTableBody(items, pageNum)
+        widths: this.tableWidths([15, 43, 100, 49, 50, 58, '*', 20, 62, 72], 3), // 10 columns
+        body: this.tableBody(this.buildRegularTableBody(items, pageNum))
       },
       layout: {
         hLineWidth: function () {
@@ -344,8 +346,8 @@ export class InvoicePdfBuilder {
       table: {
         headerRows: 1,
         dontBreakRows: true,
-        widths: [15, 43, 100, 49, 50, 58, '*', 20, 62, 72], // 10 columns
-        body: this.buildFinalTableBody(items, pageNum, totalPages)
+        widths: this.tableWidths([15, 43, 100, 49, 50, 58, '*', 20, 62, 72], 3), // 10 columns
+        body: this.tableBody(this.buildFinalTableBody(items, pageNum, totalPages))
       },
       layout: {
         hLineWidth: function () {
@@ -368,6 +370,19 @@ export class InvoicePdfBuilder {
         }
       }
     }
+  }
+
+  // ซ่อนรูปสินค้า: ตัดคอลัมน์รูป (index 1) แล้วยกความกว้างให้คอลัมน์ Description
+  tableWidths(widths, descIndex) {
+    if (this.showImages) return widths
+    const next = [...widths]
+    if (descIndex !== undefined && typeof next[descIndex] === 'number') next[descIndex] += next[1]
+    next.splice(1, 1)
+    return next
+  }
+
+  tableBody(body) {
+    return this.showImages ? body : removeTableColumn(body, 1)
   }
 
   // สร้าง body ตาราง (หน้าปกติ)
