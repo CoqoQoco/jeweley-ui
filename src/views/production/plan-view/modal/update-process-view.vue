@@ -545,11 +545,20 @@
             </div>
           </div>
 
-          <div class="d-flex justify-content-end mt-3">
+          <div class="d-flex justify-content-end align-items-center mt-3">
+            <span v-if="initFailed" class="text-danger mr-3">
+              โหลดข้อมูลไม่สำเร็จ กรุณาปิดแล้วเปิดใหม่
+            </span>
             <button class="btn btn-sm btn-dark mr-2" type="button" @click="closeModal">
               ยกเลิก
             </button>
-            <button class="btn btn-sm btn-main" type="submit">ยืนยัน</button>
+            <button
+              class="btn btn-sm btn-main"
+              type="submit"
+              :disabled="isInitLoading || initFailed"
+            >
+              ยืนยัน
+            </button>
           </div>
         </form>
 
@@ -735,6 +744,9 @@ export default {
       isLoading: false,
       autoId: 0,
       autoIdGem: 0,
+      isInitLoading: false,
+      initFailed: false,
+      initRunId: 0,
       status: this.statusCode,
 
       // --- from --- //
@@ -813,87 +825,103 @@ export default {
     checkOutbound(data) {
       return !_.isEmpty(data.outboundRunning) ? true : false
     },
+    async lookupWorkerOrStub(code) {
+      if (!code) return null
+      const found = await this.onSearchWorkerByCode(code)
+      return found || { code, nameTh: code }
+    },
     async initForm() {
-      var value = this.model.tbtProductionPlanStatusHeader.find((x) => x.status === this.status)
-      if (value && Object.keys(value).length > 0) {
-        console.log('initForm ed 1', value)
+      const runId = ++this.initRunId
+      this.isInitLoading = true
+      this.initFailed = false
+      try {
+        const value = this.model.tbtProductionPlanStatusHeader.find((x) => x.status === this.status)
+        if (value && Object.keys(value).length > 0) {
+          const workerCode = _.get(value, 'workerCode')
+          const form = {
+            worker: workerCode
+              ? await this.onSearchWorkerByCode(workerCode)
+              : null,
+            status: this.status || null,
+            remark1: _.get(value, 'remark1', ''),
+            remark2: _.get(value, 'remark2', ''),
+            headerId: _.get(value, 'id', 0)
+          }
 
-        //set form
-        this.form = {
-          worker: _.get(value, 'workerCode')
-            ? await this.onSearchWorkerByCode(_.get(value, 'workerCode'))
-            : null,
-          status: this.status || null,
-          remark1: _.get(value, 'remark1', ''),
-          remark2: _.get(value, 'remark2', ''),
-          headerId: _.get(value, 'id', 0)
-        }
+          let matAssign = null
+          if (value.tbtProductionPlanStatusDetail) {
+            matAssign = await Promise.all(
+              value.tbtProductionPlanStatusDetail.map(async (thing) => {
+                return {
+                  id: ++this.autoId,
+                  itemNo: thing.itemNo,
+                  gold: thing.gold,
+                  goldQTYSend: thing.goldQtySend,
+                  goldWeightSend: thing.goldWeightSend,
+                  goldQTYCheck: thing.goldQtyCheck,
+                  goldWeightCheck: thing.goldWeightCheck,
+                  description: thing.description,
+                  workers: await this.lookupWorkerOrStub(thing.worker),
+                  workersSub: await this.lookupWorkerOrStub(thing.workerSub),
+                  worker: thing.worker,
+                  workerSub: thing.workerSub,
+                  wages: thing.wages,
+                  totalWages: thing.totalWages,
+                  requestDate: thing.requestDate ? new Date(thing.requestDate) : new Date()
+                }
+              })
+            )
+          }
 
-        console.log('initForm form', this.form)
-        console.log('initForm value', value.tbtProductionPlanStatusDetail)
+          // กรณีเป็นการคัดพลอย หรือ แต่ง
+          let gemAssign = null
+          if ((this.status === 70 || this.status === 50) && value.tbtProductionPlanStatusGem) {
+            gemAssign = await Promise.all(
+              value.tbtProductionPlanStatusGem.map(async (thing) => {
+                const gem = await this.onSearchGemById(thing.id)
+                return {
+                  id: ++this.autoIdGem,
+                  outboundRunning: thing.outboundRunning ?? null,
+                  outboundName: thing.outboundName,
+                  outboundDate: thing.outboundDate,
+                  itemNo: thing.itemNo,
+                  gem: gem || { id: thing.id, code: thing.code, name: thing.name },
+                  gemId: thing.id,
+                  qty: thing.qty,
+                  weight: thing.weight,
+                  price: thing.price,
+                  length: thing.length,
+                  lengthUnit: thing.lengthUnit
+                }
+              })
+            )
+          }
 
-        //set mat >> tbtProductionPlanStatusDetail
-        if (value.tbtProductionPlanStatusDetail) {
-          this.matAssign = await Promise.all(
-            value.tbtProductionPlanStatusDetail.map(async (thing) => {
-              return {
-                id: ++this.autoId,
-                itemNo: thing.itemNo,
-                gold: thing.gold,
-                goldQTYSend: thing.goldQtySend,
-                goldWeightSend: thing.goldWeightSend,
-                goldQTYCheck: thing.goldQtyCheck,
-                goldWeightCheck: thing.goldWeightCheck,
-                description: thing.description,
-                workers: await this.onSearchWorkerByCode(thing.worker),
-                workersSub: await this.onSearchWorkerByCode(thing.workerSub),
-                worker: thing.worker,
-                workerSub: thing.workerSub,
-                wages: thing.wages,
-                totalWages: thing.totalWages,
-                requestDate: thing.requestDate ? new Date(thing.requestDate) : new Date()
-              }
+          if (runId !== this.initRunId) return
+
+          this.form = form
+          if (matAssign) this.matAssign = matAssign
+          if (gemAssign) this.gemAssign = gemAssign
+
+          // โหลด gold loss data สำหรับ status 80
+          if (this.status === 80) {
+            this.goldLossPrice = value.goldLossPrice ?? null
+            const percents = {}
+            const remarks = {}
+            ;(value.tbtProductionPlanStatusDetail || []).forEach((detail) => {
+              if (detail.lossPercent != null) percents[detail.itemNo] = detail.lossPercent
+              if (detail.lossRemark) remarks[detail.itemNo] = detail.lossRemark
             })
-          )
+            this.goldLossPercents = percents
+            this.goldLossRemarks = remarks
+          }
         }
-
-        console.log('initForm matAssign', this.matAssign) 
-
-        // กรณีเป็นการคัดพลอย หรือ แต่ง
-        if ((this.status === 70 || this.status === 50) && value.tbtProductionPlanStatusGem) {
-          this.gemAssign = await Promise.all(
-            value.tbtProductionPlanStatusGem.map(async (thing) => {
-              return {
-                id: ++this.autoIdGem,
-                outboundRunning: thing.outboundRunning ?? null,
-                outboundName: thing.outboundName,
-                outboundDate: thing.outboundDate,
-                itemNo: thing.itemNo,
-                gem: await this.onSearchGemById(thing.id),
-                qty: thing.qty,
-                weight: thing.weight,
-                price: thing.price,
-                length : thing.length,
-                lengthUnit : thing.lengthUnit,
-              }
-            })
-          )
-        }
-
-        // โหลด gold loss data สำหรับ status 80
-        if (this.status === 80) {
-          this.goldLossPrice = value.goldLossPrice ?? null
-          const percents = {}
-          const remarks = {}
-          ;(value.tbtProductionPlanStatusDetail || []).forEach((detail) => {
-            if (detail.lossPercent != null) percents[detail.itemNo] = detail.lossPercent
-            if (detail.lossRemark) remarks[detail.itemNo] = detail.lossRemark
-          })
-          this.goldLossPercents = percents
-          this.goldLossRemarks = remarks
-        }
+      } catch (error) {
+        if (runId === this.initRunId) this.initFailed = true
+        console.log(error)
+      } finally {
+        if (runId === this.initRunId) this.isInitLoading = false
       }
-     //console.log('initForm ed 2', this.form)
     },
 
     // ----- event
@@ -952,6 +980,9 @@ export default {
       }
       this.matAssign = [...this.tempMatAssign]
       this.gemAssign = []
+      this.initRunId++
+      this.isInitLoading = false
+      this.initFailed = false
       this.goldLossPercents = {}
       this.goldLossRemarks = {}
       this.goldLossPrice = null
@@ -962,6 +993,7 @@ export default {
     },
 
     onSubmit() {
+      if (this.isInitLoading || this.initFailed) return
       if (this.validateForm()) {
         confirmSubmit(
           `ยืนยันเเก้ไขงาน [${this.getStatusName}]`,
@@ -987,30 +1019,28 @@ export default {
 
     // --- APIs --- //
     async submit() {
-      this.matAssign = this.matAssign.map((item) => {
-        return {
-          ...item,
-          worker: item.workers?.code,
-          workerSub: item.workersSub?.code
-        }
-      })
+      const golds = this.matAssign.map((item) => ({
+        ...item,
+        worker: item.workers?.code ?? null,
+        workerSub: item.workersSub?.code ?? null,
+        lossPercent: this.status === 80 ? (this.goldLossPercents[item.itemNo] ?? null) : undefined,
+        lossRemark: this.status === 80 ? (this.goldLossRemarks[item.itemNo] ?? null) : undefined
+      }))
 
-      this.gemAssign = this.gemAssign.map((item) => {
-        return {
-          id: item.gem?.id,
-          outboundRunning: item.outboundRunning ?? null,
-          outboundName: item.outboundName ?? null,
-          outboundDate: item.outboundDate ?? null,
-          itemNo: item.itemNo,
-          code: item.gem?.code,
-          name: item.gem?.name,
-          qty: item.qty,
-          weight: item.weight,
-          price: item.price,
-          length: item.length,
-          lengthUnit: item.lengthUnit
-        }
-      })
+      const gems = this.gemAssign.map((item) => ({
+        id: item.gem?.id,
+        outboundRunning: item.outboundRunning ?? null,
+        outboundName: item.outboundName ?? null,
+        outboundDate: item.outboundDate ?? null,
+        itemNo: item.itemNo,
+        code: item.gem?.code,
+        name: item.gem?.name,
+        qty: item.qty,
+        weight: item.weight,
+        price: item.price,
+        length: item.length,
+        lengthUnit: item.lengthUnit
+      }))
 
       const param = {
         wo: this.model.wo,
@@ -1025,12 +1055,8 @@ export default {
         remark2: this.form.remark2,
         totalWages: this.form.totalWages,
         goldLossPrice: this.status === 80 ? (this.goldLossPrice ?? null) : undefined,
-        golds: this.matAssign.map((item) => ({
-          ...item,
-          lossPercent: this.status === 80 ? (this.goldLossPercents[item.itemNo] ?? null) : undefined,
-          lossRemark: this.status === 80 ? (this.goldLossRemarks[item.itemNo] ?? null) : undefined
-        })),
-        gems: [...this.gemAssign]
+        golds,
+        gems
       }
 
       let url = 'ProductionPlan/ProductionPlanUpdateStatusDetail'
