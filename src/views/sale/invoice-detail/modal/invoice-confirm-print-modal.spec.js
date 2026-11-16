@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 import InvoiceConfirmPrintModal from './invoice-confirm-print-modal.vue'
@@ -66,5 +66,134 @@ describe('InvoiceConfirmPrintModal - product code mode radio', () => {
     const radio = findCodeModeRadio(wrapper)
     expect(radio).toBeTruthy()
     expect(radio.props('disabled')).toBe(false)
+  })
+})
+
+describe('InvoiceConfirmPrintModal - bill footer VAT default', () => {
+  async function mountWith(vatPercent, mode) {
+    const wrapper = await createWrapper(true)
+    const vm = wrapper.vm.$.proxy
+    await wrapper.setProps({ invoiceData: { vatPercent } })
+    vm.paperSize = 'vat-bridge'
+    vm.billElementFlags.showVat = true
+    vm.billElementFlags.unitPriceMode = mode
+    await wrapper.vm.$nextTick()
+    vm.paperSize = 'bill'
+    await wrapper.vm.$nextTick()
+    return vm
+  }
+
+  it('turns showVat off for tag mode when invoice VAT is 0', async () => {
+    const vm = await mountWith(0, 'tag')
+    expect(vm.billElementFlags.showVat).toBe(false)
+  })
+
+  it('keeps showVat on for subVat mode or non-zero invoice VAT', async () => {
+    expect((await mountWith(0, 'subVat')).billElementFlags.showVat).toBe(true)
+    expect((await mountWith(7, 'tag')).billElementFlags.showVat).toBe(true)
+  })
+})
+
+describe('InvoiceConfirmPrintModal - bill VAT default persistence + mismatch', () => {
+  beforeEach(() => localStorage.clear())
+
+  async function open(invoiceData, props = {}) {
+    const wrapper = await createWrapper(true)
+    const vm = wrapper.vm.$.proxy
+    vm.billVatOverridden = false
+    vm.billVatTouched = false
+    await wrapper.setProps({ invoiceData, ...props })
+    vm.billElementFlags.showVat = true
+    vm.billElementFlags.unitPriceMode = 'tag'
+    return { wrapper, vm }
+  }
+
+  function saved() {
+    return JSON.parse(localStorage.getItem('bill-print-column-flags-dk') || localStorage.getItem('bill-print-column-flags') || '{}')
+  }
+
+  it('applies the default when opening with paperSize already bill', async () => {
+    const { wrapper, vm } = await open({ vatPercent: 0 })
+    await wrapper.setProps({ isShowModal: true })
+    expect(vm.billElementFlags.showVat).toBe(false)
+  })
+
+  it('never persists the overridden showVat=false', async () => {
+    const { vm } = await open({ vatPercent: 0 })
+    vm.applyBillVatDefault()
+    expect(vm.billElementFlags.showVat).toBe(false)
+    vm.onBillFlagChange()
+    expect(vm.billElementFlags.showVat).toBe(false)
+    expect(JSON.stringify(vm.billElementFlags)).toContain('"showVat":false')
+    const persisted = saved()
+    expect(persisted.showVat).toBe(true)
+  })
+
+  it('restores showVat when mode leaves tag, and persists the user toggle', async () => {
+    const { vm } = await open({ vatPercent: 0 })
+    vm.applyBillVatDefault()
+    vm.onUseSubVat()
+    expect(vm.billElementFlags.showVat).toBe(true)
+    vm.onShowVatToggle(false)
+    expect(saved().showVat).toBe(false)
+    vm.onBillFlagChange()
+    expect(vm.billElementFlags.showVat).toBe(false)
+  })
+
+  it('flags mismatch only when totals differ by more than 1', async () => {
+    const invoiceItems = [{ qty: 1, appraisalPrice: 9300, discountPercent: 0 }]
+    const { vm, wrapper } = await open({ vatPercent: 7 }, { invoiceItems, invoiceTotalExSpecial: 9951 })
+    expect(vm.billTotalMismatch).toBe(false)
+    await wrapper.setProps({ invoiceTotalExSpecial: 9300 })
+    expect(vm.billTotalMismatch).toBe(true)
+  })
+
+  it('onUseSubVat / onHideFooterVat / onShowFooterVat update flags', async () => {
+    const { vm } = await open({ vatPercent: 7 })
+    vm.onUseSubVat()
+    expect(vm.billElementFlags.unitPriceMode).toBe('subVat')
+    vm.onHideFooterVat()
+    expect(vm.billElementFlags.showVat).toBe(false)
+    vm.onShowFooterVat()
+    expect(vm.billElementFlags.showVat).toBe(true)
+  })
+
+  it('shows the show-VAT button only when showVat is off and invoice VAT > 0', async () => {
+    const invoiceItems = [{ qty: 1, appraisalPrice: 9300, discountPercent: 0 }]
+    const { vm, wrapper } = await open({ vatPercent: 7 }, { invoiceItems, invoiceTotalExSpecial: 9300 })
+    vm.billElementFlags.showVat = false
+    vm.billElementFlags.unitPriceMode = 'subVat'
+    vm.billElementFlags.showVat = false
+    await wrapper.vm.$nextTick()
+    await wrapper.setProps({ invoiceTotalExSpecial: 9951 })
+    const labels = wrapper.findAllComponents({ name: 'ButtonGeneric' }).map((b) => b.props('label'))
+    expect(labels).toContain('view.sale.invoiceDetail.billShowFooterVat')
+    expect(labels).not.toContain('view.sale.invoiceDetail.billHideFooterVat')
+  })
+
+  it('button conditions follow VAT, mode and showVat', async () => {
+    const { vm } = await open({ vatPercent: 7 })
+    vm.billElementFlags.showVat = true
+    vm.billElementFlags.unitPriceMode = 'subVat'
+    expect(vm.showUseSubVatBtn).toBe(false)
+    expect(vm.showUseTagBtn).toBe(true)
+    expect(vm.showHideVatBtn).toBe(true)
+    vm.billElementFlags.unitPriceMode = 'tag'
+    expect(vm.showUseSubVatBtn).toBe(true)
+    expect(vm.showUseTagBtn).toBe(false)
+    vm.onUseSubVat()
+    vm.onUseTag()
+    expect(vm.billElementFlags.unitPriceMode).toBe('tag')
+  })
+
+  it('offers tag price for VAT 0 + showVat off + addVat/subVat, and hides empty actions row', async () => {
+    const { vm } = await open({ vatPercent: 0 })
+    vm.billVatTouched = true
+    vm.billElementFlags.showVat = false
+    vm.billElementFlags.unitPriceMode = 'addVat'
+    expect(vm.showUseTagBtn).toBe(true)
+    expect(vm.hasMismatchActions).toBe(true)
+    vm.billElementFlags.unitPriceMode = 'tag'
+    expect(vm.hasMismatchActions).toBe(false)
   })
 })

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildBillPrintModel } from './bill-print-model-builder.js'
+import { buildBillPrintModel, computeBillTotals } from './bill-print-model-builder.js'
 
 function makeItems(count) {
   return Array.from({ length: count }, (_, i) => ({
@@ -148,5 +148,43 @@ describe('buildBillPrintModel - custom remark', () => {
 
   it('prints nothing when both are empty', () => {
     expect(remarkOf(buildBillPrintModel(inv(''), LAYOUT))).toBeUndefined()
+  })
+})
+
+describe('buildBillPrintModel - footer VAT totals', () => {
+  const items = [
+    { qty: 1, appraisalPrice: 4650, discountPercent: 0 },
+    { qty: 1, appraisalPrice: 4650, discountPercent: 0 }
+  ]
+  const inv = { invoiceNo: 'X', invoiceDate: '2026-11-01', customer: {}, soNumbers: [], items, currencyRate: 1 }
+
+  it('keeps summaryVatPercent 0 as 0 (not 7)', () => {
+    const model = buildBillPrintModel(inv, { ...LAYOUT, showVat: true, summaryVatPercent: 0, unitPriceMode: 'tag' })
+    expect(model.totals.vat).toBe(0)
+    expect(model.totals.grandTotal).toBeCloseTo(9300, 2)
+  })
+
+  it('falls back to 7 when percent is missing or NaN', () => {
+    const a = buildBillPrintModel(inv, { ...LAYOUT, showVat: true })
+    const b = buildBillPrintModel(inv, { ...LAYOUT, showVat: true, summaryVatPercent: 'abc' })
+    expect(a.totals.vat).toBeCloseTo(651, 2)
+    expect(b.totals.vat).toBeCloseTo(651, 2)
+  })
+
+  it('subVat mode + showVat 7 keeps grand total at the tag sum', () => {
+    const model = buildBillPrintModel(inv, { ...LAYOUT, showVat: true, summaryVatPercent: 7, unitPriceMode: 'subVat', unitVatPercent: 7 })
+    expect(Math.abs(model.totals.grandTotal - 9300)).toBeLessThan(0.01)
+  })
+
+  it('tag mode + showVat 7 inflates the total to 9,951', () => {
+    const model = buildBillPrintModel(inv, { ...LAYOUT, showVat: true, summaryVatPercent: 7, unitPriceMode: 'tag' })
+    expect(model.totals.subtotal).toBeCloseTo(9300, 2)
+    expect(model.totals.vat).toBeCloseTo(651, 2)
+    expect(model.totals.grandTotal).toBeCloseTo(9951, 2)
+  })
+
+  it('computeBillTotals matches the totals exposed on the model', () => {
+    const layout = { ...LAYOUT, showVat: true, summaryVatPercent: 7, unitPriceMode: 'addVat', unitVatPercent: 7 }
+    expect(computeBillTotals(inv, layout)).toEqual(buildBillPrintModel(inv, layout).totals)
   })
 })

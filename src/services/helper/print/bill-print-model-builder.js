@@ -85,6 +85,38 @@ function buildSoLines(soNumbers, maxChars) {
   return lines
 }
 
+function finiteOr(val, fallback) {
+  if (val === null || val === undefined || val === '') return fallback
+  const num = Number(val)
+  return Number.isFinite(num) ? num : fallback
+}
+
+function resolveUnitPriceFor(item, L, rate) {
+  const base = Number(item.appraisalPrice) * (1 - Number(item.discountPercent) / 100)
+  let factor = 1
+  if (L.unitPriceMode === 'addVat') factor = 1 + L.unitVatPercent / 100
+  else if (L.unitPriceMode === 'subVat') factor = 1 / (1 + L.unitVatPercent / 100)
+  return base * factor / rate
+}
+
+function computeTotalsFromResolved(items, L, rate) {
+  let subtotal = 0
+  for (const item of items) {
+    subtotal += resolveUnitPriceFor(item, L, rate) * Number(item.qty)
+  }
+  const vat = L.showVat ? subtotal * L.summaryVatPercent / 100 : 0
+  return { subtotal, vat, grandTotal: subtotal + vat }
+}
+
+/**
+ * Pure totals of the continuous bill (invoice/foreign currency, unrounded) — same logic the builder prints.
+ */
+export function computeBillTotals(invoice, layout) {
+  const L = resolveLayout(layout)
+  const rate = Number(invoice?.currencyRate) || 1
+  return computeTotalsFromResolved(invoice?.items || [], L, rate)
+}
+
 function resolveLayout(layout) {
   const L = layout || {}
   return {
@@ -140,8 +172,8 @@ function resolveLayout(layout) {
     // Unit price mode: 'tag' | 'addVat' | 'subVat'
     unitPriceMode: L.unitPriceMode ?? 'tag',
     productCodeMode: L.productCodeMode === 'mold' ? 'mold' : 'product',
-    unitVatPercent: Number(L.unitVatPercent ?? 7) || 7,
-    summaryVatPercent: Number(L.summaryVatPercent ?? 7) || 7,
+    unitVatPercent: finiteOr(L.unitVatPercent, 7),
+    summaryVatPercent: finiteOr(L.summaryVatPercent, 7),
 
     // Header flags
     showInvoiceNo: flag(L, 'showInvoiceNo'),
@@ -199,8 +231,6 @@ export function buildBillPrintModel(invoice, layout, options = {}) {
   const ifs = L.itemFontSize
 
   const currencyRate = Number(invoice.currencyRate) || 1
-  const uv = L.unitVatPercent
-  const sv = L.summaryVatPercent
   const showDecimals = L.showDecimals !== undefined ? L.showDecimals : (options?.showDecimals ?? true)
   const money = (val) => showDecimals ? n2(val) : n0(val)
 
@@ -212,21 +242,13 @@ export function buildBillPrintModel(invoice, layout, options = {}) {
 
   // Compute per-item unitPrice based on mode, already converted to foreign currency
   function resolveUnitPrice(item) {
-    const base = Number(item.appraisalPrice) * (1 - Number(item.discountPercent) / 100)
-    let factor = 1
-    if (L.unitPriceMode === 'addVat') factor = 1 + uv / 100
-    else if (L.unitPriceMode === 'subVat') factor = 1 / (1 + uv / 100)
-    return base * factor / r
+    return resolveUnitPriceFor(item, L, r)
   }
 
-  // Summary totals
-  let subtotalSum = 0
-  for (const item of items) {
-    const unitPrice = resolveUnitPrice(item)
-    subtotalSum += unitPrice * Number(item.qty)
-  }
-  const vatAmount = L.showVat ? subtotalSum * sv / 100 : 0
-  const grandTotal = subtotalSum + vatAmount
+  const totals = computeTotalsFromResolved(items, L, r)
+  const subtotalSum = totals.subtotal
+  const vatAmount = totals.vat
+  const grandTotal = totals.grandTotal
 
   const pages = []
 
@@ -350,6 +372,7 @@ export function buildBillPrintModel(invoice, layout, options = {}) {
   return {
     printerName: options.printerName ?? null,
     paper: { widthHundredthInch: 900, heightHundredthInch: 1100 },
-    pages
+    pages,
+    totals
   }
 }

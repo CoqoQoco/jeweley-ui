@@ -869,7 +869,12 @@ export default {
         'headerFontSize', 'customerFontSize', 'itemFontSize', 'offsetX', 'offsetY', 'stockSecondLineDy',
         'unitVatPercent', 'summaryVatPercent', 'customerAddressMaxChars'
       ]
+      const vatKeys = ['unitVatPercent', 'summaryVatPercent']
+      const blankVat = vatKeys.filter(k => result[k] === '' || result[k] === null)
       numFields.forEach(k => { if (result[k] !== undefined) result[k] = Number(result[k]) })
+      vatKeys.forEach(k => {
+        if (blankVat.includes(k) || (result[k] !== undefined && !Number.isFinite(result[k]))) result[k] = 7
+      })
       const xyFields = ['invoiceNo', 'date', 'customerName', 'customerTaxId', 'customerAddress', 'itemsStart', 'subtotal', 'totalQty', 'vat', 'total', 'amountText', 'pageNumber']
       xyFields.forEach(k => {
         if (result[k]) { result[k].x = Number(result[k].x); result[k].y = Number(result[k].y) }

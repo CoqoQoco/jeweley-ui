@@ -183,6 +183,7 @@
         :isPreviewOpen="isShowPreviewModal || isShowContinuousPreview"
         :sellerName="sellerName"
         :invoiceItems="invoiceItems"
+        :invoiceTotalExSpecial="invoiceTotalExSpecial"
         @close-modal="showConfirmPrintModal = false"
         @confirm-print="handleConfirmPrint"
         @preview-print="handlePreviewPrint"
@@ -438,6 +439,11 @@ export default {
     // คำนวณค่า VAT จากเปอร์เซ็นต์
     vatAmount() {
       return this.documentTotals.vatAmount
+    },
+
+    invoiceTotalExSpecial() {
+      const sub = Number(this.documentTotals.subTotal) || 0
+      return sub + (sub * (Number(this.invoiceData?.vatPercent) || 0)) / 100
     },
 
     grandTotalRaw() {

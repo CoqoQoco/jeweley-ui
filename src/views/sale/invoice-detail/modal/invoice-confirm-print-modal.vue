@@ -458,7 +458,7 @@
                 <CheckboxGeneric
                   v-model="billElementFlags.showVat"
                   :label="$t('view.sale.invoiceDetail.billElemVat')"
-                  @update:modelValue="onBillFlagChange"
+                  @update:modelValue="onShowVatToggle"
                 />
                 <div v-if="billElementFlags.showVat" class="mt-2">
                   <label class="form-label">
@@ -472,6 +472,23 @@
                     @blur="onBillFlagChange"
                   />
                 </div>
+              </div>
+
+              <div v-if="billTotalMismatch" class="bill-mismatch-warning mt-2">
+                <div class="bill-mismatch-text">
+                  <i class="bi bi-exclamation-triangle mr-1"></i>
+                  {{ $t('view.sale.invoiceDetail.billTotalMismatch', { bill: formatMoney(billTotals.grandTotal), invoice: formatMoney(invoiceTotalExSpecial) }) }}
+                </div>
+                <div v-if="hasMismatchActions" class="bill-mismatch-actions mt-2">
+                  <ButtonGeneric v-if="showUseSubVatBtn" variant="outline" class="mr-2" :label="$t('view.sale.invoiceDetail.billUseSubVat')" @click="onUseSubVat" />
+                  <ButtonGeneric v-if="showUseTagBtn" variant="outline" class="mr-2" :label="$t('view.sale.invoiceDetail.billUseTag')" @click="onUseTag" />
+                  <ButtonGeneric v-if="showHideVatBtn" variant="outline" class="mr-2" :label="$t('view.sale.invoiceDetail.billHideFooterVat')" @click="onHideFooterVat" />
+                  <ButtonGeneric v-if="showShowVatBtn" variant="outline" class="mr-2" :label="$t('view.sale.invoiceDetail.billShowFooterVat')" @click="onShowFooterVat" />
+                </div>
+              </div>
+
+              <div v-if="paperSize === 'bill' && hasSpecialAmounts" class="bill-special-info mt-2">
+                <i class="bi bi-info-circle mr-1"></i>{{ $t('view.sale.invoiceDetail.billSpecialNotIncluded') }}
               </div>
             </div>
 
@@ -581,6 +598,8 @@ import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 import { fetchPrinterList, PRINT_BRIDGE_BASE_URL } from '@/services/api/printer-config-service.js'
 import { listBillGemTypes, defaultColumnFor } from '@/services/helper/print/bill-gem-columns.js'
+import { formatDocumentMoney } from '@/services/utils/money.js'
+import { computeBillTotals } from '@/services/helper/print/bill-print-model-builder.js'
 import { getBillLayout } from '@/services/helper/print/bill-layout-store.js'
 import { getVatLayout } from '@/services/helper/print/vat-layout-store.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
@@ -588,6 +607,12 @@ import { isMaterialInvoice } from '@/constants/invoice-types.js'
 
 const VAT_PRINTER_STORAGE_KEY = 'print-bridge-printer-vat'
 const BILL_PRINTER_STORAGE_KEY = 'print-bridge-printer-bill'
+
+function vatOrDefault(val) {
+  if (val === undefined || val === null || val === '') return 7
+  const num = Number(val)
+  return Number.isFinite(num) ? num : 7
+}
 
 export default {
   name: 'InvoiceConfirmPrintModal',
@@ -624,6 +649,10 @@ export default {
     invoiceItems: {
       type: Array,
       default: () => []
+    },
+    invoiceTotalExSpecial: {
+      type: Number,
+      default: null
     }
   },
 
@@ -697,6 +726,9 @@ export default {
         unitVatPercent: 7,
         summaryVatPercent: 7
       },
+      billVatOverridden: false,
+      billVatSavedShowVat: true,
+      billVatTouched: false,
       autoPreviewTimer: null
     }
   },
@@ -753,6 +785,50 @@ export default {
       return listBillGemTypes(this.invoiceItems)
     },
 
+    invoiceVatPercent() {
+      return Number(this.invoiceData?.vatPercent) || 0
+    },
+
+    hasSpecialAmounts() {
+      const d = this.invoiceData || {}
+      return [d.specialDiscount, d.specialAddition, d.freightAndInsurance].some((v) => (Number(v) || 0) !== 0)
+    },
+
+    billTotals() {
+      const items = (this.invoiceItems || []).map((i) => ({
+        qty: Number(i.qty) || 0,
+        appraisalPrice: Number(i.appraisalPrice) || 0,
+        discountPercent: Number(i.discountPercent) || 0
+      }))
+      return computeBillTotals({ items, currencyRate: this.invoiceData?.currencyRate }, this.billElementFlags)
+    },
+
+    showUseSubVatBtn() {
+      return !!this.billElementFlags.showVat && this.billElementFlags.unitPriceMode !== 'subVat'
+    },
+
+    showHideVatBtn() {
+      return !!this.billElementFlags.showVat
+    },
+
+    showShowVatBtn() {
+      return !this.billElementFlags.showVat && this.invoiceVatPercent > 0
+    },
+
+    showUseTagBtn() {
+      return this.billElementFlags.unitPriceMode !== 'tag' && (this.invoiceVatPercent > 0 || !this.billElementFlags.showVat)
+    },
+
+    hasMismatchActions() {
+      return this.showUseSubVatBtn || this.showHideVatBtn || this.showShowVatBtn || this.showUseTagBtn
+    },
+
+    billTotalMismatch() {
+      if (this.paperSize !== 'bill' || this.invoiceTotalExSpecial === null) return false
+      if (!this.invoiceItems || this.invoiceItems.length === 0) return false
+      return Math.abs(this.billTotals.grandTotal - this.invoiceTotalExSpecial) > 1
+    },
+
     gemColumnOptions() {
       return [
         { value: 'stone', label: this.$t('view.sale.invoiceDetail.billGemColStone') },
@@ -791,6 +867,8 @@ export default {
           this.gemColumnMap = {}
           this.prefillGemColumnMap()
           this.fetchPrintLogs()
+          this.billVatTouched = false
+          this.applyBillVatDefault()
         }
       },
       immediate: true
@@ -804,11 +882,13 @@ export default {
     paperSize(newVal) {
       if (newVal === 'bill') {
         this.selectedPrinter = this.defaultBillPrinter
+        this.billVatTouched = false
       } else if (newVal === 'vat-bridge') {
         this.selectedPrinter = this.defaultVatPrinter
       } else {
         this.selectedPrinter = null
       }
+      this.applyBillVatDefault()
     }
   },
 
@@ -878,8 +958,8 @@ export default {
             showTotalQty: boolFlag('showTotalQty'),
             productCodeMode: parsed.productCodeMode === 'mold' ? 'mold' : 'product',
             unitPriceMode: parsed.unitPriceMode || 'tag',
-            unitVatPercent: parsed.unitVatPercent !== undefined ? Number(parsed.unitVatPercent) : 7,
-            summaryVatPercent: parsed.summaryVatPercent !== undefined ? Number(parsed.summaryVatPercent) : 7
+            unitVatPercent: vatOrDefault(parsed.unitVatPercent),
+            summaryVatPercent: vatOrDefault(parsed.summaryVatPercent)
           }
         }
       } catch (e) {
@@ -1068,8 +1148,53 @@ export default {
       return dayjs(date).format('DD/MM/YYYY')
     },
 
+    applyBillVatDefault() {
+      const shouldOverride = this.paperSize === 'bill' && this.invoiceVatPercent === 0
+        && this.billElementFlags.unitPriceMode === 'tag' && !this.billVatTouched
+      if (shouldOverride && !this.billVatOverridden) {
+        this.billVatSavedShowVat = this.billElementFlags.showVat
+        this.billElementFlags.showVat = false
+        this.billVatOverridden = true
+      } else if (!shouldOverride && this.billVatOverridden) {
+        this.billElementFlags.showVat = this.billVatSavedShowVat
+        this.billVatOverridden = false
+      }
+    },
+
+    formatMoney(val) {
+      return formatDocumentMoney(val)
+    },
+
+    onUseSubVat() {
+      this.billElementFlags.unitPriceMode = 'subVat'
+      this.onBillFlagChange()
+    },
+
+    onUseTag() {
+      this.billElementFlags.unitPriceMode = 'tag'
+      this.onBillFlagChange()
+    },
+
+    onHideFooterVat() {
+      this.onShowVatToggle(false)
+    },
+
+    onShowFooterVat() {
+      this.onShowVatToggle(true)
+    },
+
+    onShowVatToggle(val) {
+      this.billVatTouched = true
+      this.billVatOverridden = false
+      this.billElementFlags.showVat = val
+      this.onBillFlagChange()
+    },
+
     onBillFlagChange() {
-      storage.setItem('bill-print-column-flags', JSON.stringify(this.billElementFlags))
+      this.applyBillVatDefault()
+      const toSave = { ...this.billElementFlags }
+      if (this.billVatOverridden) toSave.showVat = this.billVatSavedShowVat
+      storage.setItem('bill-print-column-flags', JSON.stringify(toSave))
     },
 
     closeModal() {
@@ -1231,6 +1356,19 @@ export default {
   border-radius: var(--radius-sm);
   padding: var(--sp-sm);
   background: #fafafa;
+}
+
+.bill-mismatch-warning {
+  padding: var(--sp-md);
+  border: 1px solid var(--base-warning);
+  border-radius: var(--radius-md);
+  background: var(--status-open-bg);
+  font-size: var(--fs-sm);
+}
+
+.bill-special-info {
+  font-size: var(--fs-sm);
+  color: var(--base-sub-color);
 }
 
 .bill-element-group-title {
