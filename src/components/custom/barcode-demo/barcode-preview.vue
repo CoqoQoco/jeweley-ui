@@ -40,7 +40,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 
-import { resolveLabelCode, layoutGt800, getRemarkPreviewChar } from '@/services/helper/barcode/barcode-zpl.js'
+import { resolveLabelCode, layoutGt800, formatGoldDateStamp, getRemarkPreviewChar } from '@/services/helper/barcode/barcode-zpl.js'
 import { loadGemLabelMeta } from '@/services/helper/barcode/gem-label-meta.js'
 import { getBarcodeProfile, PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
 
@@ -96,6 +96,10 @@ export default {
       type: Boolean,
       default: false
     },
+    goldPrice: {
+      type: [String, Number],
+      default: ''
+    },
     abbreviateGems: {
       type: Boolean,
       default: true
@@ -121,6 +125,7 @@ export default {
         ...this.barcode,
         hidePrice: this.hidePrice,
         hideMold: this.hideMold,
+        goldDateStamp: formatGoldDateStamp(this.goldPrice, new Date()),
         abbreviateGems: this.abbreviateGems,
         gemLabelMeta: this.effectiveGemLabelMeta
       }

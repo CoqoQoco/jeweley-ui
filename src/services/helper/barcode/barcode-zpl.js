@@ -763,6 +763,8 @@ const GT800_S_BARCODE_RATIO = '3.0:1'
 
 const GT800_S_LINE_FONT = 22 // ฟอนต์พื้นฐานบรรทัด 1-2
 const GT800_S_LINE_CHAR_W = 0.54 // dot ต่อ 1 หน่วยความกว้างฟอนต์ (ตัวพิมพ์ใหญ่+ตัวเลข+ขีด วัดจากภาพ Labelary ได้ 0.52 + เผื่อ)
+const GT800_S_STAMP_RIGHT = 245 // ตราราคาทอง+วันที่ชิดซ้ายของหัวป้าย (หัวเริ่ม 250) เผื่อ 5 dot
+const GT800_S_STAMP_MIN_W = 8
 const GT800_S_LINE_MIN_W = 9 // ความกว้างฟอนต์ต่ำสุดก่อนตัดชื่อแม่พิมพ์
 const GT800_S_LINE_MIN_H = 12
 const GT800_S_LINE_HEIGHT_RATIO = 1.3 // สูง/กว้าง สูงสุดเมื่อบีบความกว้าง
@@ -973,6 +975,21 @@ export function layoutGt800Small(formValue) {
   }
 }
 
+// ฟอนต์หางป้ายเมื่อมีตราราคาทอง: คงความสูง บีบความกว้างให้ข้อความจบไม่เกิน GT800_S_STAMP_RIGHT
+export function getGt800SmallTailFont(text) {
+  const budget = GT800_S_STAMP_RIGHT - GT800_MADE_IN_X
+  const width = Math.floor(budget / (Math.max(1, text.length) * GT800_S_LINE_CHAR_W))
+  return [GT800_MADE_IN_FONT[0], Math.max(GT800_S_STAMP_MIN_W, Math.min(GT800_MADE_IN_FONT[1], width))]
+}
+
+// ตราหางป้าย = "00" + 2 หลักแรกของราคาทอง (จำนวนเต็ม) + วันที่พิมพ์ yyyyMMdd — ราคาว่าง/ไม่ถึง 2 หลัก = ''
+export function formatGoldDateStamp(goldPrice, date = new Date()) {
+  const digits = String(Math.trunc(Number(goldPrice) || 0))
+  if (!/^\d{2,}$/.test(digits)) return ''
+  const pad = (n) => String(n).padStart(2, '0')
+  return `00${digits.slice(0, 2)}${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`
+}
+
 export function generateGt800ZPLSmall(formValue, dpiScale = 1, options = {}) {
   const s = (n) => Math.round(n * dpiScale)
   const layout = layoutGt800Small(formValue)
@@ -980,7 +997,11 @@ export function generateGt800ZPLSmall(formValue, dpiScale = 1, options = {}) {
   // ส่ง ^PW ทุกครั้ง (ไม่ผูกกับ rotate180) กันเครื่องที่จำ ^PW600 ไว้ตัดพลอยช่วง x 600–628
   let zpl = `^XA^LL${s(GT800_S_LABEL_HEIGHT)}^MD15^LT0^XZ^XA${options.rotate180 ? '^POI' : ''}^PW${s(GT800_S_LABEL_WIDTH)}`
 
-  zpl += `^FO${s(GT800_MADE_IN_X)},${s(GT800_MADE_IN_Y)}^A0N,${s(GT800_MADE_IN_FONT[0])},${s(GT800_MADE_IN_FONT[1])}^FD${formValue?.madeIn || GT800_S_DEFAULT_MADE_IN}^FS` // ค่าสำรองเมื่อ caller ไม่ส่ง madeIn (ตัวอย่างบนจอใช้ค่าเดียวกัน)
+  const madeIn = formValue?.madeIn || GT800_S_DEFAULT_MADE_IN
+  const stamp = formValue?.goldDateStamp || ''
+  const tailFont = stamp ? getGt800SmallTailFont(`${stamp} ${madeIn}`) : GT800_MADE_IN_FONT
+  const tailText = stamp ? `${stamp} ${madeIn}` : madeIn
+  zpl += `^FO${s(GT800_MADE_IN_X)},${s(GT800_MADE_IN_Y)}^A0N,${s(tailFont[0])},${s(tailFont[1])}^FD${tailText}^FS` // ค่าสำรองเมื่อ caller ไม่ส่ง madeIn (ตัวอย่างบนจอใช้ค่าเดียวกัน)
 
   zpl += `^FO${s(GT800_S_FRONT_X)},${s(GT800_S_LINE1_Y)}^A0N,${s(layout.line1Font[0])},${s(layout.line1Font[1])}^FD${layout.line1}^FS`
 

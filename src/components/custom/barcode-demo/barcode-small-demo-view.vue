@@ -3,7 +3,7 @@
     <div class="small-label" :style="labelStyle">
       <!-- หางป้าย: MADE IN THAILAND (pill เหมือนตัวอย่างป้ายเดิม) -->
       <div class="tail-shape" :style="tailStyle">
-        <span :style="madeInStyle">{{ madeIn }}</span>
+        <span :style="madeInStyle">{{ tailText }}</span>
       </div>
       <!-- หัวป้าย -->
       <div class="head-shape" :style="headStyle"></div>
@@ -34,7 +34,7 @@
 <script>
 import JsBarcode from 'jsbarcode'
 
-import { layoutGt800Small } from '@/services/helper/barcode/barcode-zpl.js'
+import { layoutGt800Small, getGt800SmallTailFont } from '@/services/helper/barcode/barcode-zpl.js'
 
 // ขนาดป้ายใน ZPL (dots) และตำแหน่งที่ต้องตรงกับ barcode-zpl.js
 const LABEL_WIDTH = 640
@@ -68,6 +68,11 @@ export default {
       return this.formValue?.madeIn || MADE_IN_DEFAULT
     },
 
+    tailText() {
+      const stamp = this.formValue?.goldDateStamp
+      return stamp ? `${stamp} ${this.madeIn}` : this.madeIn
+    },
+
     layout() {
       return layoutGt800Small(this.formValue)
     },
@@ -98,7 +103,13 @@ export default {
     },
 
     madeInStyle() {
-      return { fontSize: `${MADE_IN_FONT[0] * this.scale}px`, lineHeight: 1 }
+      const [height, width] = this.formValue?.goldDateStamp ? getGt800SmallTailFont(this.tailText) : MADE_IN_FONT
+      return {
+        fontSize: `${height * this.scale}px`,
+        lineHeight: 1,
+        display: 'inline-block',
+        transform: `scaleX(${Math.min(1, width / height)})`
+      }
     },
 
     barcodeStyle() {

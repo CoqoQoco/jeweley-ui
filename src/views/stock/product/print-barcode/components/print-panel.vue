@@ -44,6 +44,18 @@
         />
       </div>
 
+      <div v-if="showHideMoldOption" class="field">
+        <FormFieldGeneric :label="$t('view.stock.printBarcode.goldPrice')">
+          <InputTextGeneric
+            :modelValue="goldPrice"
+            type="number"
+            :min="0"
+            :disabled="isPrinting"
+            @update:modelValue="$emit('update:goldPrice', $event)"
+          />
+        </FormFieldGeneric>
+      </div>
+
       <div v-if="!isLegacyProfile" class="field field-checkbox">
         <CheckboxGeneric
           :modelValue="abbreviateGems"
@@ -136,6 +148,8 @@ import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
+import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 const REMARK_I18N_KEYS = {
   star: 'remarkStar',
@@ -149,7 +163,7 @@ const REMARK_I18N_KEYS = {
 }
 
 export default {
-  components: { SectionCardGeneric, ButtonGeneric, DropdownGeneric, CheckboxGeneric },
+  components: { SectionCardGeneric, ButtonGeneric, DropdownGeneric, CheckboxGeneric, FormFieldGeneric, InputTextGeneric },
 
   props: {
     hidePrice: {
@@ -159,6 +173,10 @@ export default {
     hideMold: {
       type: Boolean,
       default: false
+    },
+    goldPrice: {
+      type: [String, Number],
+      default: ''
     },
     abbreviateGems: {
       type: Boolean,
@@ -206,7 +224,7 @@ export default {
     }
   },
 
-  emits: ['update:barcodeType', 'update:remarkSymbol', 'update:hidePrice', 'update:hideMold', 'update:abbreviateGems', 'update:printUnitNo', 'print', 'retry'],
+  emits: ['update:barcodeType', 'update:remarkSymbol', 'update:hidePrice', 'update:hideMold', 'update:goldPrice', 'update:abbreviateGems', 'update:printUnitNo', 'print', 'retry'],
 
   setup() {
     const zebraPrinter = zebraPrinterApi()

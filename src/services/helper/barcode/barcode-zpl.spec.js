@@ -11,6 +11,8 @@ import {
   generateGt800ZPLVertical,
   generateGt800ZPLQr,
   generateGt800ZPLSmall,
+  formatGoldDateStamp,
+  getGt800SmallTailFont,
   layoutGt800Small,
   formatPriceCode,
   buildGemLabelMeta,
@@ -1091,6 +1093,37 @@ describe('ป้าย 80×14 มม. มีหางป้าย (GT800)', () =
     it('ไม่มีพลอย -> ไม่มีแถว', () => {
       expect(sortGt800LabelGems([])).toEqual([])
       expect(sortGt800LabelGems(undefined)).toEqual([])
+    })
+  })
+
+  describe('ตราราคาทอง + วันที่หน้าหางป้าย (TK202611160001)', () => {
+    const day = new Date(2026, 10, 16)
+
+    it('formatGoldDateStamp: 00 + 2 หลักแรกของราคา + yyyyMMdd', () => {
+      expect(formatGoldDateStamp(4000, day)).toBe('004020261116')
+      expect(formatGoldDateStamp('3850', day)).toBe('003820261116')
+      expect(formatGoldDateStamp(45000, day)).toBe('004520261116')
+      expect(formatGoldDateStamp(4000.75, new Date(2026, 0, 5))).toBe('004020260105')
+    })
+
+    it('ราคาว่าง/0/ไม่ถูกต้อง/ไม่ถึง 2 หลัก -> ว่าง', () => {
+      ;['', 0, null, undefined, 'abc', 5, -4000].forEach((v) => expect(formatGoldDateStamp(v, day)).toBe(''))
+    })
+
+    it('ZPL มีตราหน้า MADE IN THAILAND บรรทัดเดียว และจบไม่เกิน x245', () => {
+      const zpl = generateGt800ZPLSmall({ ...base, goldDateStamp: '004020261116' })
+      expect(zpl).toContain('^FD004020261116 MADE IN THAILAND^FS')
+      const m = zpl.match(/\^FO25,50\^A0N,(\d+),(\d+)\^FD([^^]*)\^FS/)
+      expect(m).not.toBeNull()
+      expect(Number(m[1])).toBe(17)
+      expect(25 + m[3].length * Number(m[2]) * 0.54).toBeLessThanOrEqual(245)
+      expect(getGt800SmallTailFont('004020261116 MADE IN THAILAND')[1]).toBe(Number(m[2]))
+    })
+
+    it('ไม่มีตรา -> ZPL เหมือนเดิมทุกตัวอักษร', () => {
+      const plain = generateGt800ZPLSmall(base)
+      expect(generateGt800ZPLSmall({ ...base, goldDateStamp: '' })).toBe(plain)
+      expect(plain).toContain('^FO25,50^A0N,17,17^FDMADE IN THAILAND^FS')
     })
   })
 

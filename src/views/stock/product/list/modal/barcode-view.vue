@@ -93,6 +93,7 @@
               :qrUrl="selectedType === 'original-qr' ? publicUrl : ''"
               :remarkSymbol="showRemarkSelect ? remarkSymbol : ''"
               :hideMold="hideMold"
+              :goldPrice="goldPrice"
               :abbreviateGems="abbreviateGems"
               :gemLabelMeta="gemLabelMeta"
             />
@@ -115,6 +116,12 @@
 
         <div v-if="selectedType === 'small-50x14'" class="pl-4 pr-4 pt-2">
           <CheckboxGeneric v-model="hideMold" :label="$t('view.stock.printBarcode.hideMold')" />
+        </div>
+
+        <div v-if="selectedType === 'small-50x14'" class="pl-4 pr-4 pt-2 gold-price-input">
+          <FormFieldGeneric :label="$t('view.stock.printBarcode.goldPrice')">
+            <InputTextGeneric v-model="goldPrice" type="number" :min="0" :disabled="isPrinting" @update:modelValue="onGoldPriceChange" />
+          </FormFieldGeneric>
         </div>
 
         <div v-if="!isLegacyProfile || isGt800OnlyType" class="pl-4 pr-4 pt-2">
@@ -256,14 +263,23 @@ import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.
 import { buildBarcodeModel } from '@/services/helper/barcode/barcode-model.js'
 import { getPieceQty } from '@/services/utils/stock-piece-qty.js'
 import { error, success } from '@/services/alert/sweetAlerts.js'
-import { getBarcodeProfile, PRINTER_PROFILES, getAbbreviateGems, setAbbreviateGems } from '@/services/api/barcode-printer-config.js'
+import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import {
+  getBarcodeProfile,
+  PRINTER_PROFILES,
+  getAbbreviateGems,
+  setAbbreviateGems,
+  getBarcodeGoldPrice,
+  setBarcodeGoldPrice
+} from '@/services/api/barcode-printer-config.js'
 import { buildPublicUrl } from '@/config/public-site-config.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
-import { layoutGt800, buildGemLabelMeta, REMARK_SYMBOLS, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
+import { layoutGt800, buildGemLabelMeta, formatGoldDateStamp, REMARK_SYMBOLS, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 import BarcodeNoDashNotice from '@/components/custom/barcode-no-dash-notice.vue'
@@ -277,6 +293,7 @@ export default {
     ButtonGeneric,
     DropdownGeneric,
     FormFieldGeneric,
+    InputTextGeneric,
     CheckboxGeneric
   },
 
@@ -522,6 +539,7 @@ export default {
       labelTopLine: 'name',
       hidePrice: false,
       hideMold: false,
+      goldPrice: getBarcodeGoldPrice(),
       abbreviateGems: getAbbreviateGems(),
       gemLabelMeta: null,
       isPrinting: false,
@@ -530,6 +548,10 @@ export default {
   },
 
   methods: {
+    onGoldPriceChange(value) {
+      setBarcodeGoldPrice(value)
+    },
+
     onAbbreviateGemsChange(value) {
       setAbbreviateGems(value)
     },
@@ -613,7 +635,21 @@ export default {
       }
     },
 
-    async onPrintBarcode() {
+    onPrintBarcode() {
+      if (this.selectedType === 'small-50x14' && !formatGoldDateStamp(this.goldPrice)) {
+        confirmThenSubmit(
+          this.$t('view.stock.printBarcode.goldPriceMissingMsg'),
+          this.$t('view.stock.printBarcode.goldPriceMissingTitle'),
+          () => this.printBarcode(),
+          { confirmText: this.$t('view.stock.printBarcode.goldPriceMissingConfirm'), cancelText: this.$t('common.btn.cancel') },
+          'warning'
+        )
+        return
+      }
+      this.printBarcode()
+    },
+
+    async printBarcode() {
       if (this.selectedType === 'small-50x14') {
         await this.loadGemLabelMeta()
       }
@@ -624,6 +660,7 @@ export default {
         publicUrl: this.publicUrl,
         hidePrice: this.hidePrice,
         hideMold: this.hideMold,
+        goldDateStamp: this.selectedType === 'small-50x14' ? formatGoldDateStamp(this.goldPrice, new Date()) : '',
         abbreviateGems: this.abbreviateGems,
         gemLabelMeta: this.gemLabelMeta,
         remarkSymbol: this.showRemarkSelect ? this.remarkSymbol : ''

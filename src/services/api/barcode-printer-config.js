@@ -6,6 +6,7 @@ export const BARCODE_DELAY_STORAGE_KEY = 'print-bridge-barcode-delay'
 export const BARCODE_PROFILE_STORAGE_KEY = 'print-bridge-barcode-profile'
 export const BARCODE_ROTATE180_STORAGE_KEY = 'print-bridge-barcode-rotate180'
 export const BARCODE_ABBREVIATE_GEMS_STORAGE_KEY = 'print-bridge-barcode-abbreviate-gems'
+export const BARCODE_GOLD_PRICE_STORAGE_KEY = 'print-bridge-barcode-gold-price'
 
 // template ฉลากปัจจุบันเขียนพิกัดไว้ที่หัวพิมพ์ 203 dpi
 export const BASE_DPI = 203
@@ -121,5 +122,19 @@ export function getBarcodePrinterConfig() {
     dpiScale: getDpiScale(),
     copyDelayMs: getCopyDelayMs(),
     rotate180: getBarcodeRotate180()
+  }
+}
+
+// ราคาทอง (บาท/กรัม) ที่ใช้ทำตราหางป้าย 80×14 — จำค่าล่าสุดต่อเครื่อง
+export function getBarcodeGoldPrice() {
+  const raw = storage.getItem(BARCODE_GOLD_PRICE_STORAGE_KEY, '')
+  return raw === null || raw === undefined ? '' : String(raw)
+}
+
+export function setBarcodeGoldPrice(value) {
+  if (value === '' || value === null || value === undefined) {
+    storage.removeItem(BARCODE_GOLD_PRICE_STORAGE_KEY)
+  } else {
+    storage.setItem(BARCODE_GOLD_PRICE_STORAGE_KEY, String(value))
   }
 }

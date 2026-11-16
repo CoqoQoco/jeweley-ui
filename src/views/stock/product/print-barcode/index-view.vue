@@ -23,6 +23,8 @@
       v-model:remarkSymbol="remarkSymbol"
       v-model:hidePrice="hidePrice"
       v-model:hideMold="hideMold"
+      :goldPrice="goldPrice"
+      @update:goldPrice="onGoldPriceChange"
       :abbreviateGems="abbreviateGems"
       @update:abbreviateGems="onAbbreviateGemsChange"
       v-model:printUnitNo="printUnitNo"
@@ -47,7 +49,7 @@ import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
 import { warning, error } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { buildBarcodeModel } from '@/services/helper/barcode/barcode-model.js'
-import { resolveLabelCode, buildGemLabelMeta, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
+import { resolveLabelCode, buildGemLabelMeta, formatGoldDateStamp, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
 import {
   MAX_COPIES_PER_ROW,
   MAX_LABELS_PER_RUN,
@@ -68,7 +70,14 @@ import {
   summarizeSelection
 } from '@/services/helper/barcode/print-batch.js'
 import { getPieceQty } from '@/services/utils/stock-piece-qty.js'
-import { getBarcodeProfile, PRINTER_PROFILES, getAbbreviateGems, setAbbreviateGems } from '@/services/api/barcode-printer-config.js'
+import {
+  getBarcodeProfile,
+  PRINTER_PROFILES,
+  getAbbreviateGems,
+  setAbbreviateGems,
+  getBarcodeGoldPrice,
+  setBarcodeGoldPrice
+} from '@/services/api/barcode-printer-config.js'
 import { buildPublicUrl } from '@/config/public-site-config.js'
 
 import BarcodeNoDashNotice from '@/components/custom/barcode-no-dash-notice.vue'
@@ -104,6 +113,8 @@ export default {
       remarkSymbol: REMARK_SYMBOL_NONE,
       hidePrice: false,
       hideMold: false,
+      goldPrice: getBarcodeGoldPrice(),
+      sentGoldPrice: '',
       abbreviateGems: getAbbreviateGems(),
       printUnitNo: false,
       isPrinting: false,
@@ -130,6 +141,11 @@ export default {
   },
 
   methods: {
+    onGoldPriceChange(value) {
+      this.goldPrice = value
+      setBarcodeGoldPrice(value)
+    },
+
     onAbbreviateGemsChange(value) {
       this.abbreviateGems = value
       setAbbreviateGems(value)
@@ -401,6 +417,20 @@ export default {
         return
       }
 
+      if (this.barcodeType === 'small-50x14' && !formatGoldDateStamp(this.goldPrice)) {
+        confirmThenSubmit(
+          this.$t('view.stock.printBarcode.goldPriceMissingMsg'),
+          this.$t('view.stock.printBarcode.goldPriceMissingTitle'),
+          () => this.confirmPrint(prepared, unmarkedLabels),
+          { confirmText: this.$t('view.stock.printBarcode.goldPriceMissingConfirm'), cancelText: this.$t('common.btn.cancel') },
+          'warning'
+        )
+        return
+      }
+      this.confirmPrint(prepared, unmarkedLabels)
+    },
+
+    confirmPrint(prepared, unmarkedLabels) {
       const labels = prepared.included.reduce((sum, entry) => sum + entry.form.print, 0)
       const itemCount = new Set(prepared.included.map((entry) => entry.row.rowKey)).size
       let message = this.$t('view.stock.printBarcode.confirmMsg', { count: itemCount, labels })
@@ -424,8 +454,10 @@ export default {
       )
     },
 
-    async sendEntries(entries) {
-      const forms = entries.map((entry) => entry.form)
+    async sendEntries(entries, goldPrice = this.goldPrice) {
+      this.sentGoldPrice = goldPrice
+      const stamp = entries[0]?.form.barcodeType === 'small-50x14' ? formatGoldDateStamp(goldPrice, new Date()) : ''
+      const forms = entries.map((entry) => ({ ...entry.form, goldDateStamp: stamp }))
       this.statusMessage = ''
       this.failedEntries = []
       this.progress = { done: 0, total: forms.reduce((sum, form) => sum + form.print, 0) }
@@ -464,7 +496,7 @@ export default {
 
     onRetryFailed() {
       if (this.failedEntries.length === 0) return
-      this.sendEntries(this.failedEntries)
+      this.sendEntries(this.failedEntries, this.sentGoldPrice)
     }
   }
 }
