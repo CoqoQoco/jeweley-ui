@@ -134,7 +134,7 @@ export const invoiceDetail = {
   billGemColDiamond: 'Diamond',
   billGemColNone: 'ไม่พิมพ์',
   billColumnStockNumber: 'รหัสเก่า (Stock No.)',
-  billColumnProductNumber: 'รหัสสินค้า',
+  billColumnProductNumber: 'รหัสสินค้า / แม่พิมพ์',
   billColumnRemark: 'หมายเหตุ (ขนาดแป้นต่างหู)',
   billElemSoNumber: 'เลขที่ SO',
   billCustomRemarkLabel: 'หมายเหตุเพิ่มเติม (พิมพ์ลงบิล)',

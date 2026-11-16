@@ -134,7 +134,7 @@ export const invoiceDetail = {
   billGemColDiamond: 'Diamond',
   billGemColNone: 'None',
   billColumnStockNumber: 'Old Code (Stock No.)',
-  billColumnProductNumber: 'Product Code',
+  billColumnProductNumber: 'Product code / Mold',
   billColumnRemark: 'Remark (Earring Stem Size)',
   billElemSoNumber: 'SO No.',
   billCustomRemarkLabel: 'Additional remark (printed on bill)',

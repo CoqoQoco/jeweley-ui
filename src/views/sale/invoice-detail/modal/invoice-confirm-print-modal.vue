@@ -330,8 +330,8 @@
                     @update:modelValue="onBillFlagChange"
                   />
                   <RadioGroupGeneric
-                    v-if="billElementFlags.showProductNumber"
                     v-model="billElementFlags.productCodeMode"
+                    :disabled="!billElementFlags.showProductNumber"
                     :options="productCodeModeOptions"
                     optionLabel="label"
                     optionValue="value"
