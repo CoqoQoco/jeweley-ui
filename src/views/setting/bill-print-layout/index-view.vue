@@ -325,13 +325,13 @@
           </div>
 
           <div class="form-row">
-            <label class="form-label-col">แสดงคอลัมน์ รหัสสินค้า</label>
+            <label class="form-label-col">แสดงคอลัมน์ รหัสสินค้า / แม่พิมพ์</label>
             <div class="form-input-col">
               <CheckboxGeneric v-model="form.showProductNumber" />
             </div>
           </div>
 
-          <div v-if="form.showProductNumber" class="form-row">
+          <div class="form-row">
             <label class="form-label-col">{{ $t('view.sale.invoiceDetail.billProductCodeMode') }}</label>
             <div class="form-input-col">
               <RadioGroupGeneric
@@ -339,6 +339,7 @@
                 :options="productCodeModeOptions"
                 optionLabel="label"
                 optionValue="value"
+                :disabled="!form.showProductNumber"
                 inline
               />
             </div>
