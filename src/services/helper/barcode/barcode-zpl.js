@@ -740,7 +740,7 @@ export function generateGt800ZPLVertical(formValue, dpiScale = 1, options = {}) 
 // ─────────────────────────────────────────────────────────────
 // GT800: ป้ายเล็ก 80×14 มม. = 640×112 dots ที่ 203 dpi — รูปทรงเดียวกับป้าย GT800 เดิม (มีหางป้าย) แต่ยาวขึ้น
 // หางป้ายซ้าย x≈0–250 (ยาวเท่าป้ายเดิม มีแค่ MADE IN THAILAND) · หัวป้ายสีขาว x≈250–640 ไม่มีแถบส้ม ใช้ได้เต็มความสูง
-// หัวป้ายพับครึ่งที่ x=445: หน้า (x 256–440) บรรทัด 1 แม่พิมพ์ - เลขที่ผลิต / บรรทัด 2 รหัสราคา+สีทอง+กะรัต น้ำหนักทอง / บรรทัด 3 บาร์โค้ด
+// หัวป้ายพับครึ่งที่ x=445: หน้า (x 256–440) บรรทัด 1 แม่พิมพ์ - เลขที่ผลิต / บรรทัด 2 รหัสราคา+สีทอง+กะรัต น้ำหนักทอง ไซซ์ท้ายบรรทัด / บรรทัด 3 บาร์โค้ด
 // หลัง (x 450–628) รายการพลอยเรียงตามลำดับ master (labelSort) — เว้นขอบขวา ~12 dots เพราะยังไม่ได้วัดขอบกระดาษจริง
 // ข้อความทุกบรรทัดต้องไม่ข้ามแนวพับ (เว้นขอบ ~5 dots ทั้งสองฝั่ง) — ย่อฟอนต์อัตโนมัติเมื่อยาว
 // ─────────────────────────────────────────────────────────────
@@ -936,12 +936,21 @@ function layoutGt800SmallGems(texts) {
   return { rows: result.rows, font: [height, width], lineHeight: height }
 }
 
-// ข้อความบรรทัด 2: {รหัสราคา}{สีทอง}{กะรัต}  {น้ำหนัก}g — ส่วนที่ไม่มีข้อมูลข้ามไป (เงิน/ไม่มีข้อมูลทอง = ไม่ต่อสี/กะรัต)
-export function buildGt800SmallLine2(formValue) {
+// ไซซ์สินค้า (เบอร์แหวน/ความยาวสร้อย) -> '#54' — ตัด # ซ้ำ, ว่าง/0/ไม่มีตัวเลข = ''
+export function formatLabelSize(size) {
+  const value = String(size ?? '').trim().replace(/^#+/, '').trim().replace(/[\^~]/g, '')
+  if (!value || !/\d/.test(value)) return ''
+  if (Number(value) === 0) return ''
+  return `#${value}`
+}
+
+// ข้อความบรรทัด 2: {รหัสราคา}{สีทอง}{กะรัต}  {น้ำหนัก}g  #{ไซซ์} — ส่วนที่ไม่มีข้อมูลข้ามไป (เงิน/ไม่มีข้อมูลทอง = ไม่ต่อสี/กะรัต)
+export function buildGt800SmallLine2(formValue, { withSize = true } = {}) {
   const priceCode = formValue?.hidePrice ? '' : formatPriceCode(formValue?.salePrice)
   const metal = `${formValue?.goldColorCode || ''}${formValue?.goldKarat || ''}`
   const weight = formValue?.goldWeight ? `${formValue.goldWeight}g` : ''
-  return [`${priceCode}${metal}`, weight].filter(Boolean).join('  ')
+  const size = withSize ? formatLabelSize(formValue?.size) : ''
+  return [`${priceCode}${metal}`, weight, size].filter(Boolean).join('  ')
 }
 
 export function layoutGt800Small(formValue) {
@@ -956,7 +965,8 @@ export function layoutGt800Small(formValue) {
     line1Fit = fitGt800SmallLine(composeLine1(), budget)
   }
 
-  const line2 = buildGt800SmallLine2(formValue)
+  let line2 = buildGt800SmallLine2(formValue)
+  if (fitGt800SmallLine(line2, budget).overflow) line2 = buildGt800SmallLine2(formValue, { withSize: false })
   const gem = layoutGt800SmallGems(sortGt800LabelGems(formValue?.gems, formValue?.gemLabelMeta, formValue?.abbreviateGems !== false))
 
   return {

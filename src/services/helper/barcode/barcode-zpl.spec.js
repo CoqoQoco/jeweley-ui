@@ -19,6 +19,7 @@ import {
   detectGemCode,
   sortGt800LabelGems,
   buildGt800SmallLine2,
+  formatLabelSize,
   pickQrMagnification,
   layoutGt800,
   layoutGt800Qr,
@@ -1076,6 +1077,67 @@ describe('ป้าย 80×14 มม. มีหางป้าย (GT800)', () =
     })
   })
 
+  describe('formatLabelSize', () => {
+    it.each([
+      ['#54', '#54'],
+      ['#55.5', '#55.5'],
+      ['#7.5 ', '#7.5'],
+      ['56', '#56'],
+      [56, '#56'],
+      ['##56', '#56']
+    ])('%j -> %s', (value, expected) => {
+      expect(formatLabelSize(value)).toBe(expected)
+    })
+
+    it.each([
+      ['54^x', '#54x'],
+      ['7~JA', '#7JA']
+    ])('ตัด ^ ~ : %j -> %s', (value, expected) => {
+      expect(formatLabelSize(value)).toBe(expected)
+    })
+
+    it.each(['#', '0', '0.0', '#0', '##', '.', '', null, undefined])('%j -> ว่าง', (value) => {
+      expect(formatLabelSize(value)).toBe('')
+    })
+  })
+
+  describe('บรรทัด 2 + ไซซ์', () => {
+    it('ต่อท้ายน้ำหนัก', () => {
+      expect(buildGt800SmallLine2({ ...base, size: '#56' })).toBe('040950WG18K  11.78g  #56')
+    })
+
+    it('ไซซ์มีช่องว่างท้าย', () => {
+      expect(buildGt800SmallLine2({ ...base, size: '#7.5 ' })).toBe('040950WG18K  11.78g  #7.5')
+    })
+
+    it.each(['#', '0', '##', '.', '', null])('ไซซ์ขยะ %j -> ผลเดิม', (size) => {
+      expect(buildGt800SmallLine2({ ...base, size })).toBe('040950WG18K  11.78g')
+    })
+
+    it('มีแต่ไซซ์', () => {
+      expect(buildGt800SmallLine2({ size: '#56' })).toBe('#56')
+    })
+
+    it('ราคาเยอะ + น้ำหนักเยอะ + ไซซ์ -> ยังพอดีหน้า', () => {
+      const layout = layoutGt800Small({ ...base, size: '#55.5', salePrice: 9999999, goldWeight: '123.45' })
+      expect(layout.line2).toContain('#55.5')
+      expect(layout.line2.length * layout.line2Font[1] * 0.54).toBeLessThanOrEqual(184)
+    })
+
+    it('ไซซ์ยาวเกิน -> ตัดไซซ์ทิ้ง', () => {
+      const layout = layoutGt800Small({ ...base, size: '#16-18 inch adjustable chain' })
+      expect(layout.line2).toBe('040950WG18K  11.78g')
+    })
+
+    it('ZPL มีไซซ์ท้ายบรรทัด 2', () => {
+      expect(generateGt800ZPLSmall({ ...base, size: '#56' })).toContain('^FD040950WG18K  11.78g  #56^FS')
+    })
+
+    it('ซ่อนราคา + ไซซ์', () => {
+      expect(buildGt800SmallLine2({ ...base, hidePrice: true, size: '#56' })).toBe('WG18K  11.78g  #56')
+    })
+  })
+
   describe('การเรียงพลอย', () => {
     const gems = ['1Peridot 0.7 ct.', '1Ruby 0.5 ct.', '1Tanzanite 0.5 ct.', '1Diamond 0.1 ct.', '1Onyx 1 ct.', '1Emerald 0.3 ct.']
 
@@ -1196,7 +1258,7 @@ describe('ป้าย 80×14 มม. มีหางป้าย (GT800)', () =
 
     it('ทุก ^FO ยกเว้น MADE IN อยู่บนหัวป้าย x>=250 · หน้าจบก่อนแนวพับ · หลังเริ่มหลังแนวพับ', () => {
       const gems = Array.from({ length: 8 }, (_, i) => `${i + 1}Diamond 0.${i + 10} ct., G,VS1`)
-      const forms = [base, { ...base, mold: 'CN-24000XXWPG-LONG', stockNumberOrigin: 'DK18K1XR1747' }, { ...base, gems }]
+      const forms = [base, { ...base, size: '#56' }, { ...base, mold: 'CN-24000XXWPG-LONG', stockNumberOrigin: 'DK18K1XR1747' }, { ...base, gems }]
       forms.forEach((form) => {
         const layout = layoutGt800Small(form)
         const fields = [...generateGt800ZPLSmall(form).matchAll(/\^FO(\d+),(\d+)([^]*?)\^FS/g)]
