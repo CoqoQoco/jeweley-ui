@@ -278,6 +278,9 @@
                 {{ $t('common.printer.manualHint') }}
               </small>
 
+              <small v-if="isBarcodePrinterSelected" class="printer-status-msg printer-barcode-warning">
+                <i class="bi bi-exclamation-triangle mr-1"></i>{{ $t('view.sale.invoiceDetail.printerIsBarcode') }}
+              </small>
               <small v-if="printerSavedNotFoundMessage" class="text-warning printer-status-msg">
                 {{ printerSavedNotFoundMessage }}
               </small>
@@ -312,6 +315,8 @@ import { success, error } from '@/services/alert/sweetAlerts.js'
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import { storage } from '@/services/storage.js'
+import { getBarcodePrinterName } from '@/services/api/barcode-printer-config.js'
+import { isBarcodePrinter, confirmIfBarcodePrinter } from '@/services/helper/print/document-printer-guard.js'
 import { fetchPrinterList, PRINT_BRIDGE_BASE_URL } from '@/services/api/printer-config-service.js'
 
 const PRINTER_STORAGE_KEY = 'print-bridge-printer-vat'
@@ -361,6 +366,10 @@ export default {
   computed: {
     printerHealthUrl() {
       return `${PRINT_BRIDGE_BASE_URL}/health`
+    },
+
+    isBarcodePrinterSelected() {
+      return isBarcodePrinter(this.form.printerName, getBarcodePrinterName())
     },
 
     printerSavedNotFoundMessage() {
@@ -420,7 +429,21 @@ export default {
       success('Reset เป็นค่า default สำเร็จ', 'VAT Print Layout')
     },
 
-    async onTestPrint() {
+    onTestPrint() {
+      confirmIfBarcodePrinter(
+        this.form.printerName,
+        getBarcodePrinterName(),
+        {
+          message: this.$t('view.sale.invoiceDetail.printerIsBarcodeConfirmMsg'),
+          title: this.$t('view.sale.invoiceDetail.printerIsBarcodeConfirmTitle'),
+          confirmText: this.$t('view.sale.invoiceDetail.printerIsBarcodeConfirmBtn'),
+          cancelText: this.$t('common.btn.cancel')
+        },
+        () => this.doTestPrint()
+      )
+    },
+
+    async doTestPrint() {
       const dummy = {
         invoice: {
           invoiceNo: 'TEST-' + Date.now(),
@@ -582,6 +605,14 @@ export default {
 
   a {
     color: var(--base-green);
+  }
+}
+
+.printer-barcode-warning {
+  color: var(--base-font-color);
+
+  .bi {
+    color: var(--status-open);
   }
 }
 

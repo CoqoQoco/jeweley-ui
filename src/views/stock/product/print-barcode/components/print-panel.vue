@@ -44,18 +44,6 @@
         />
       </div>
 
-      <div v-if="showHideMoldOption" class="field">
-        <FormFieldGeneric :label="$t('view.stock.printBarcode.goldPrice')">
-          <InputTextGeneric
-            :modelValue="goldPrice"
-            type="number"
-            :min="0"
-            :disabled="isPrinting"
-            @update:modelValue="$emit('update:goldPrice', $event)"
-          />
-        </FormFieldGeneric>
-      </div>
-
       <div v-if="!isLegacyProfile" class="field field-checkbox">
         <CheckboxGeneric
           :modelValue="abbreviateGems"
@@ -97,6 +85,23 @@
         <router-link v-if="showPrinterSettingLink" to="/setting/barcode-printer" class="printer-setting-link">
           {{ $t('common.printer.goToSetting') }}
         </router-link>
+      </div>
+
+      <div v-if="showHideMoldOption" class="field">
+        <FormFieldGeneric :label="$t('view.stock.printBarcode.goldPriceFallback')">
+          <InputTextGeneric
+            :modelValue="goldPrice"
+            type="number"
+            :min="0"
+            :placeholder="$t('view.stock.printBarcode.goldPricePlaceholder')"
+            :disabled="isPrinting"
+            @update:modelValue="$emit('update:goldPrice', $event)"
+          />
+        </FormFieldGeneric>
+        <div v-if="goldPriceOutOfRange" class="gold-price-warning">
+          <span class="bi bi-exclamation-triangle mr-1"></span>
+          <span>{{ goldPriceRangeText }}</span>
+        </div>
       </div>
 
       <div class="actions">
@@ -143,6 +148,7 @@
 import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
 import { getBarcodeProfile, PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
 import { REMARK_SYMBOLS, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
+import { isPriceOutOfRange, MIN_PRICE_PER_GRAM, MAX_PRICE_PER_GRAM } from '@/services/helper/barcode/gold-stamp.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
@@ -257,6 +263,14 @@ export default {
       options.push({ value: 'original-qr', label: this.$t('view.stock.product.tabOriginalQr') })
       options.push({ value: 'small-50x14', label: this.$t('view.stock.product.tabSmall50x14') })
       return options
+    },
+
+    goldPriceRangeText() {
+      return this.$t('view.stock.printBarcode.goldPriceOutOfRange', { min: MIN_PRICE_PER_GRAM, max: MAX_PRICE_PER_GRAM })
+    },
+
+    goldPriceOutOfRange() {
+      return this.showHideMoldOption && isPriceOutOfRange(this.goldPrice)
     },
 
     showHideMoldOption() {
@@ -381,6 +395,16 @@ export default {
 
 .field {
   min-width: calc(var(--sp-2xl) * 8);
+}
+
+.gold-price-warning {
+  font-size: var(--fs-sm);
+  color: var(--base-font-color);
+  margin-top: var(--sp-xs);
+
+  .bi {
+    color: var(--status-open);
+  }
 }
 
 .field-checkbox {

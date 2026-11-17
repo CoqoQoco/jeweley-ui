@@ -96,6 +96,10 @@ export default {
       type: Boolean,
       default: false
     },
+    goldStamp: {
+      type: String,
+      default: null
+    },
     goldPrice: {
       type: [String, Number],
       default: ''
@@ -125,7 +129,7 @@ export default {
         ...this.barcode,
         hidePrice: this.hidePrice,
         hideMold: this.hideMold,
-        goldDateStamp: formatGoldDateStamp(this.goldPrice, new Date()),
+        goldDateStamp: this.goldStamp ?? formatGoldDateStamp(this.goldPrice, new Date()),
         abbreviateGems: this.abbreviateGems,
         gemLabelMeta: this.effectiveGemLabelMeta
       }

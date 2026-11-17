@@ -238,6 +238,10 @@
                 {{ $t('common.printer.manualHint') }}
               </small>
 
+              <small v-if="isBarcodePrinterSelected" class="form-text printer-status-msg printer-barcode-warning">
+                <i class="bi bi-exclamation-triangle mr-1"></i>{{ $t('view.sale.invoiceDetail.printerIsBarcode') }}
+              </small>
+
               <small v-if="printerSavedNotFoundMessage" class="form-text text-warning printer-status-msg">
                 {{ printerSavedNotFoundMessage }}
               </small>
@@ -608,6 +612,8 @@ import { fetchPrinterList, PRINT_BRIDGE_BASE_URL } from '@/services/api/printer-
 import { listBillGemTypes, defaultColumnFor } from '@/services/helper/print/bill-gem-columns.js'
 import { formatDocumentMoney } from '@/services/utils/money.js'
 import { computeBillTotals } from '@/services/helper/print/bill-print-model-builder.js'
+import { getBarcodePrinterName } from '@/services/api/barcode-printer-config.js'
+import { pickDocumentPrinter, isBarcodePrinter, confirmIfBarcodePrinter } from '@/services/helper/print/document-printer-guard.js'
 import { getBillLayout } from '@/services/helper/print/bill-layout-store.js'
 import { getVatLayout } from '@/services/helper/print/vat-layout-store.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
@@ -782,6 +788,10 @@ export default {
 
     printerHealthUrl() {
       return `${PRINT_BRIDGE_BASE_URL}/health`
+    },
+
+    isBarcodePrinterSelected() {
+      return isBarcodePrinter(this.selectedPrinter, getBarcodePrinterName())
     },
 
     printerSavedNotFoundMessage() {
@@ -985,8 +995,9 @@ export default {
     await this.loadPrinters()
 
     const [billLayout, vatLayout] = await Promise.all([getBillLayout(), getVatLayout()])
-    this.defaultBillPrinter = storage.getItem(BILL_PRINTER_STORAGE_KEY) || billLayout?.printerName || null
-    this.defaultVatPrinter = storage.getItem(VAT_PRINTER_STORAGE_KEY) || vatLayout?.printerName || null
+    const barcodePrinter = getBarcodePrinterName()
+    this.defaultBillPrinter = pickDocumentPrinter([storage.getItem(BILL_PRINTER_STORAGE_KEY), billLayout?.printerName], barcodePrinter)
+    this.defaultVatPrinter = pickDocumentPrinter([storage.getItem(VAT_PRINTER_STORAGE_KEY), vatLayout?.printerName], barcodePrinter)
 
     if (this.paperSize === 'bill') {
       this.selectedPrinter = this.defaultBillPrinter
@@ -1272,9 +1283,19 @@ export default {
     onConfirmPrint() {
       if (!this.validatePrintData()) return
 
-      const printDataToEmit = this.buildPrintData()
-      this.$emit('confirm-print', printDataToEmit)
-      this.closeModal()
+      confirmIfBarcodePrinter(this.selectedPrinter, getBarcodePrinterName(), this.barcodePrinterConfirmTexts(), () => {
+        this.$emit('confirm-print', this.buildPrintData())
+        this.closeModal()
+      })
+    },
+
+    barcodePrinterConfirmTexts() {
+      return {
+        message: this.$t('view.sale.invoiceDetail.printerIsBarcodeConfirmMsg'),
+        title: this.$t('view.sale.invoiceDetail.printerIsBarcodeConfirmTitle'),
+        confirmText: this.$t('view.sale.invoiceDetail.printerIsBarcodeConfirmBtn'),
+        cancelText: this.$t('common.btn.cancel')
+      }
     },
 
     onPreviewPDF() {
@@ -1361,6 +1382,14 @@ export default {
 
   a {
     color: var(--base-green);
+  }
+}
+
+.printer-barcode-warning {
+  color: var(--base-font-color);
+
+  .bi {
+    color: var(--status-open);
   }
 }
 

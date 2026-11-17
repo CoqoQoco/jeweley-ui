@@ -787,14 +787,28 @@ describe('GT800 rotate180 — ^POI^PW600 หลัง ^XA ตัวที่ส�
     expect(generateGt800ZPLQr(qrForm, 1, { rotate180: false })).not.toContain('^POI^PW600')
   })
 
+  it('ไม่หมุน → ส่ง ^PMN^LH0,0^PON ชัดเจนหลัง ^XA ตัวที่สอง (ไม่มี ^POI) ทั้ง 3 builder', () => {
+    ;[generateGt800ZPL(form, 1), generateGt800ZPLVertical(form, 1), generateGt800ZPLQr(qrForm, 1)].forEach((zpl) => {
+      expect(zpl).toContain('^XA^LL104^MD15^LT0^XZ^XA^PMN^LH0,0^PON')
+      expect(zpl).not.toContain('^POI')
+    })
+  })
+
+  it('หมุน → ^POI และไม่มี ^PON', () => {
+    ;[generateGt800ZPL(form, 1, { rotate180: true }), generateGt800ZPLVertical(form, 1, { rotate180: true }), generateGt800ZPLQr(qrForm, 1, { rotate180: true })].forEach((zpl) => {
+      expect(zpl).toContain('^POI')
+      expect(zpl).not.toContain('^PON')
+    })
+  })
+
   it('rotate180 เปิด → มี ^POI^PW600 ต่อท้าย ^XA ตัวที่สอง ทั้ง 3 builder', () => {
     const zpl = generateGt800ZPL(form, 1, { rotate180: true })
     const zplVertical = generateGt800ZPLVertical(form, 1, { rotate180: true })
     const zplQr = generateGt800ZPLQr(qrForm, 1, { rotate180: true })
 
-    expect(zpl).toContain('^XA^LL104^MD15^LT0^XZ^XA^POI^PW600')
-    expect(zplVertical).toContain('^XA^LL104^MD15^LT0^XZ^XA^POI^PW600')
-    expect(zplQr).toContain('^XA^LL104^MD15^LT0^XZ^XA^POI^PW600')
+    expect(zpl).toContain('^XA^LL104^MD15^LT0^XZ^XA^PMN^LH0,0^POI^PW600')
+    expect(zplVertical).toContain('^XA^LL104^MD15^LT0^XZ^XA^PMN^LH0,0^POI^PW600')
+    expect(zplQr).toContain('^XA^LL104^MD15^LT0^XZ^XA^PMN^LH0,0^POI^PW600')
   })
 })
 
@@ -1205,13 +1219,13 @@ describe('ป้าย 80×14 มม. มีหางป้าย (GT800)', () =
     })
 
     it('header: ^LL112 และ rotate180 ใช้ ^POI^PW640', () => {
-      expect(generateGt800ZPLSmall(base)).toContain('^XA^LL112^MD15^LT0^XZ^XA')
+      expect(generateGt800ZPLSmall(base)).toContain('^XA^LL112^MD15^LT0^XZ^XA^PMN^LH0,0^PON')
       expect(generateGt800ZPLSmall(base, 1, { rotate180: true })).toContain('^POI^PW640')
     })
 
     it('ส่ง ^PW เสมอ: ไม่หมุน ^PW640 (ไม่มี ^POI) · 300dpi หมุน ^POI^PW946', () => {
       const plain = generateGt800ZPLSmall(base, 1)
-      expect(plain).toContain('^XA^LL112^MD15^LT0^XZ^XA^PW640')
+      expect(plain).toContain('^XA^LL112^MD15^LT0^XZ^XA^PMN^LH0,0^PON^PW640')
       expect(plain).not.toContain('^POI')
       expect(generateGt800ZPLSmall(base, 300 / 203, { rotate180: true })).toContain('^POI^PW946')
     })
@@ -1223,7 +1237,7 @@ describe('ป้าย 80×14 มม. มีหางป้าย (GT800)', () =
     })
 
     it('ป้ายเดิมไม่เปลี่ยน: header เดิมยังเป็น ^LL104 และ rotate180 ยังเป็น ^PW600', () => {
-      expect(generateGt800ZPL(base, 1)).toContain('^XA^LL104^MD15^LT0^XZ^XA')
+      expect(generateGt800ZPL(base, 1)).toContain('^XA^LL104^MD15^LT0^XZ^XA^PMN^LH0,0^PON')
       expect(generateGt800ZPL(base, 1, { rotate180: true })).toContain('^POI^PW600')
     })
   })

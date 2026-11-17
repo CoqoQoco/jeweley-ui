@@ -49,7 +49,8 @@ import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
 import { warning, error } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { buildBarcodeModel } from '@/services/helper/barcode/barcode-model.js'
-import { resolveLabelCode, buildGemLabelMeta, formatGoldDateStamp, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
+import { resolveLabelCode, buildGemLabelMeta, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
+import { resolvePieceGoldStamp, resolveBatchReference, formatStampDisplay, isPriceOutOfRange, MIN_PRICE_PER_GRAM, MAX_PRICE_PER_GRAM } from '@/services/helper/barcode/gold-stamp.js'
 import {
   MAX_COPIES_PER_ROW,
   MAX_LABELS_PER_RUN,
@@ -57,6 +58,7 @@ import {
   buildRowKey,
   buildUnitMarks,
   expandFormByUnitMarks,
+  escapeHtml,
   formatCodeListForDialog,
   isCostLabelType,
   mergeRowsByKey,
@@ -114,7 +116,6 @@ export default {
       hidePrice: false,
       hideMold: false,
       goldPrice: getBarcodeGoldPrice(),
-      sentGoldPrice: '',
       abbreviateGems: getAbbreviateGems(),
       printUnitNo: false,
       isPrinting: false,
@@ -417,9 +418,27 @@ export default {
         return
       }
 
-      if (this.barcodeType === 'small-50x14' && !formatGoldDateStamp(this.goldPrice)) {
+      if (this.barcodeType === 'small-50x14') this.applyGoldStamps(prepared.included, this.goldPrice)
+
+      if (this.barcodeType === 'small-50x14' && isPriceOutOfRange(this.goldPrice) && prepared.included.some((entry) => entry.stampSource === 'fallback')) {
         confirmThenSubmit(
-          this.$t('view.stock.printBarcode.goldPriceMissingMsg'),
+          this.$t('view.stock.printBarcode.goldPriceOutOfRangeMsg', { price: this.goldPrice, min: MIN_PRICE_PER_GRAM, max: MAX_PRICE_PER_GRAM }),
+          this.$t('view.stock.printBarcode.goldPriceOutOfRangeTitle'),
+          () => this.confirmStampThenPrint(prepared, unmarkedLabels),
+          { confirmText: this.$t('view.stock.printBarcode.goldPriceMissingConfirm'), cancelText: this.$t('common.btn.cancel') },
+          'warning'
+        )
+        return
+      }
+      this.confirmStampThenPrint(prepared, unmarkedLabels)
+    },
+
+    confirmStampThenPrint(prepared, unmarkedLabels) {
+      const noStamp = this.barcodeType === 'small-50x14' ? prepared.included.filter((entry) => !entry.form.goldDateStamp) : []
+      if (noStamp.length > 0) {
+        const list = formatCodeListForDialog([...new Set(noStamp.map((entry) => entry.row.labelCode))])
+        confirmThenSubmit(
+          `${this.$t('view.stock.printBarcode.goldPriceMissingMsg')}<br><br>${list}`,
           this.$t('view.stock.printBarcode.goldPriceMissingTitle'),
           () => this.confirmPrint(prepared, unmarkedLabels),
           { confirmText: this.$t('view.stock.printBarcode.goldPriceMissingConfirm'), cancelText: this.$t('common.btn.cancel') },
@@ -428,6 +447,42 @@ export default {
         return
       }
       this.confirmPrint(prepared, unmarkedLabels)
+    },
+
+    // ตราหางป้ายต่อชิ้น: ราคาทองจากรายละเอียดสินค้าก่อน ไม่มีค่อยใช้ราคาสำรอง (ไม่มีทั้งคู่ = ว่าง)
+    applyGoldStamps(entries, fallbackGoldPrice) {
+      const now = new Date()
+      const reference = resolveBatchReference(entries.map((entry) => entry.row.materials), fallbackGoldPrice)
+      entries.forEach((entry) => {
+        const resolved = resolvePieceGoldStamp(entry.row.materials, fallbackGoldPrice, now, reference)
+        entry.form.goldDateStamp = resolved.stamp
+        entry.stampSource = resolved.source
+        entry.stampPrice = resolved.pricePerGram
+        entry.stampAmbiguous = resolved.ambiguous
+      })
+    },
+
+    buildStampPreviewMessage(entries) {
+      const perRow = new Map()
+      entries.forEach((entry) => {
+        if (!perRow.has(entry.row.rowKey)) perRow.set(entry.row.rowKey, entry)
+      })
+      const MAX_LINES = 10
+      const sourceKey = {
+        material: 'stampFromMaterial',
+        fallback: 'stampFromFallback'
+      }
+      const all = [...perRow.values()]
+      const lines = all.slice(0, MAX_LINES).map((entry) => {
+        const text = entry.form.goldDateStamp
+          ? `${formatStampDisplay(entry.form.goldDateStamp)} · ${this.$t('view.stock.printBarcode.stampPricePerGram', { price: Number(entry.stampPrice).toLocaleString('en-US') })} · ${this.$t(`view.stock.printBarcode.${sourceKey[entry.stampSource]}`)}${entry.stampAmbiguous ? ` · ${this.$t('view.stock.printBarcode.stampCheckPrice')}` : ''}`
+          : this.$t('view.stock.printBarcode.stampNone')
+        return `${escapeHtml(entry.row.labelCode)}: ${text}`
+      })
+      if (all.length > MAX_LINES) {
+        lines.push(this.$t('view.stock.printBarcode.stampListMore', { count: all.length - MAX_LINES }))
+      }
+      return `<b>${this.$t('view.stock.printBarcode.stampListTitle')}</b><br>${lines.join('<br>')}`
     },
 
     confirmPrint(prepared, unmarkedLabels) {
@@ -445,6 +500,10 @@ export default {
         })}`
       }
 
+      if (this.barcodeType === 'small-50x14') {
+        message += `<br><br>${this.buildStampPreviewMessage(prepared.included)}`
+      }
+
       confirmThenSubmit(
         message,
         this.$t('view.stock.printBarcode.confirmTitle'),
@@ -454,10 +513,8 @@ export default {
       )
     },
 
-    async sendEntries(entries, goldPrice = this.goldPrice) {
-      this.sentGoldPrice = goldPrice
-      const stamp = entries[0]?.form.barcodeType === 'small-50x14' ? formatGoldDateStamp(goldPrice, new Date()) : ''
-      const forms = entries.map((entry) => ({ ...entry.form, goldDateStamp: stamp }))
+    async sendEntries(entries) {
+      const forms = entries.map((entry) => entry.form)
       this.statusMessage = ''
       this.failedEntries = []
       this.progress = { done: 0, total: forms.reduce((sum, form) => sum + form.print, 0) }
@@ -496,7 +553,7 @@ export default {
 
     onRetryFailed() {
       if (this.failedEntries.length === 0) return
-      this.sendEntries(this.failedEntries, this.sentGoldPrice)
+      this.sendEntries(this.failedEntries)
     }
   }
 }

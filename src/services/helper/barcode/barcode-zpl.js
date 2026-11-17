@@ -585,11 +585,14 @@ export function layoutGt800(formValue, template) {
   }
 }
 
-// header ร่วมของทุกแท็บ GT800 — เมื่อ rotate180 ให้แทรก ^POI^PW600 ต่อท้าย ^XA ตัวที่สอง (จุดเริ่ม label format)
+// header ร่วมของทุกแท็บ GT800 — ต่อท้าย ^XA ตัวที่สองด้วย ^PMN^LH0,0 ก่อน แล้วเมื่อ rotate180 ตามด้วย ^POI^PW600 (จุดเริ่ม label format)
 // ^PW600 เป็นค่าคงที่ตามสเปกความกว้างป้าย ไม่คูณ dpiScale
+// ส่งทิศทางพิมพ์ให้ชัดทุกครั้ง (ไม่เชื่อค่าที่เครื่องจำไว้): ไม่กลับด้าน + จุดเริ่ม 0,0 — ตามด้วย ^PON/^POI
+const GT800_ORIENTATION_RESET = '^PMN^LH0,0'
+
 function gt800Header(s, rotate180, labelHeight = GT800_LABEL_HEIGHT, printWidth = 600) {
-  const header = `^XA^LL${s(labelHeight)}^MD15^LT0^XZ^XA`
-  return rotate180 ? `${header}^POI^PW${printWidth}` : header
+  const header = `^XA^LL${s(labelHeight)}^MD15^LT0^XZ^XA${GT800_ORIENTATION_RESET}`
+  return rotate180 ? `${header}^POI^PW${printWidth}` : `${header}^PON`
 }
 
 function buildGemFieldsZpl(layout, s) {
@@ -995,7 +998,7 @@ export function generateGt800ZPLSmall(formValue, dpiScale = 1, options = {}) {
   const layout = layoutGt800Small(formValue)
 
   // ส่ง ^PW ทุกครั้ง (ไม่ผูกกับ rotate180) กันเครื่องที่จำ ^PW600 ไว้ตัดพลอยช่วง x 600–628
-  let zpl = `^XA^LL${s(GT800_S_LABEL_HEIGHT)}^MD15^LT0^XZ^XA${options.rotate180 ? '^POI' : ''}^PW${s(GT800_S_LABEL_WIDTH)}`
+  let zpl = `^XA^LL${s(GT800_S_LABEL_HEIGHT)}^MD15^LT0^XZ^XA${GT800_ORIENTATION_RESET}${options.rotate180 ? '^POI' : '^PON'}^PW${s(GT800_S_LABEL_WIDTH)}`
 
   const madeIn = formValue?.madeIn || GT800_S_DEFAULT_MADE_IN
   const stamp = formValue?.goldDateStamp || ''

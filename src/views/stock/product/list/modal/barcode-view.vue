@@ -93,7 +93,7 @@
               :qrUrl="selectedType === 'original-qr' ? publicUrl : ''"
               :remarkSymbol="showRemarkSelect ? remarkSymbol : ''"
               :hideMold="hideMold"
-              :goldPrice="goldPrice"
+              :goldStamp="selectedType === 'small-50x14' ? pieceGoldStamp.stamp : null"
               :abbreviateGems="abbreviateGems"
               :gemLabelMeta="gemLabelMeta"
             />
@@ -116,12 +116,6 @@
 
         <div v-if="selectedType === 'small-50x14'" class="pl-4 pr-4 pt-2">
           <CheckboxGeneric v-model="hideMold" :label="$t('view.stock.printBarcode.hideMold')" />
-        </div>
-
-        <div v-if="selectedType === 'small-50x14'" class="pl-4 pr-4 pt-2 gold-price-input">
-          <FormFieldGeneric :label="$t('view.stock.printBarcode.goldPrice')">
-            <InputTextGeneric v-model="goldPrice" type="number" :min="0" :disabled="isPrinting" @update:modelValue="onGoldPriceChange" />
-          </FormFieldGeneric>
         </div>
 
         <div v-if="!isLegacyProfile || isGt800OnlyType" class="pl-4 pr-4 pt-2">
@@ -152,9 +146,32 @@
         </div>
 
         <div class="pl-4 pr-4 pt-2 pb-2">
-          <div class="title-text">
+          <div class="title-text printer-warning-line">
             <span class="bi bi-exclamation-circle mr-1"></span>
             <span>{{ $t('view.stock.product.printerWarning') }}</span>
+          </div>
+
+          <div v-if="selectedType === 'small-50x14'" class="gold-stamp-box">
+            <div class="gold-stamp-fallback">
+              <FormFieldGeneric :label="$t('view.stock.printBarcode.goldPriceFallback')">
+                <InputTextGeneric
+                  v-model="goldPrice"
+                  type="number"
+                  :min="0"
+                  :placeholder="$t('view.stock.printBarcode.goldPricePlaceholder')"
+                  :disabled="isPrinting"
+                  @update:modelValue="onGoldPriceChange"
+                />
+              </FormFieldGeneric>
+              <div v-if="goldPriceOutOfRange" class="gold-price-warning">
+                <span class="bi bi-exclamation-triangle mr-1"></span>
+                <span>{{ goldPriceRangeText }}</span>
+              </div>
+            </div>
+            <div class="gold-stamp-preview" :class="{ 'gold-stamp-preview--none': pieceGoldStamp.source === 'none' }">
+              <span class="bi mr-1" :class="pieceGoldStamp.source === 'none' ? 'bi-exclamation-triangle' : 'bi-tag'"></span>
+              <span>{{ $t('view.stock.printBarcode.stampPrefix') }} {{ goldStampText }}</span>
+            </div>
           </div>
 
           <div class="d-flex justify-content-between items-center">
@@ -274,7 +291,8 @@ import {
 } from '@/services/api/barcode-printer-config.js'
 import { buildPublicUrl } from '@/config/public-site-config.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
-import { layoutGt800, buildGemLabelMeta, formatGoldDateStamp, REMARK_SYMBOLS, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
+import { resolvePieceGoldStamp, formatStampDisplay, isPriceOutOfRange, MIN_PRICE_PER_GRAM, MAX_PRICE_PER_GRAM } from '@/services/helper/barcode/gold-stamp.js'
+import { layoutGt800, buildGemLabelMeta, REMARK_SYMBOLS, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
@@ -382,6 +400,31 @@ export default {
   },
 
   computed: {
+    goldPriceOutOfRange() {
+      return this.selectedType === 'small-50x14' && isPriceOutOfRange(this.goldPrice)
+    },
+
+    usesFallbackPrice() {
+      return this.goldPriceOutOfRange && this.pieceGoldStamp.source === 'fallback'
+    },
+
+    goldPriceRangeText() {
+      return this.$t('view.stock.printBarcode.goldPriceOutOfRange', { min: MIN_PRICE_PER_GRAM, max: MAX_PRICE_PER_GRAM })
+    },
+
+    pieceGoldStamp() {
+      return resolvePieceGoldStamp(this.stock?.materials, this.goldPrice, new Date())
+    },
+
+    goldStampText() {
+      const { stamp, source } = this.pieceGoldStamp
+      if (source === 'none') return this.$t('view.stock.printBarcode.stampNone')
+      const label = this.$t(source === 'material' ? 'view.stock.printBarcode.stampFromMaterial' : 'view.stock.printBarcode.stampFromFallback')
+      const price = this.$t('view.stock.printBarcode.stampPricePerGram', { price: Number(this.pieceGoldStamp.pricePerGram).toLocaleString('en-US') })
+      const check = this.pieceGoldStamp.ambiguous ? ` · ${this.$t('view.stock.printBarcode.stampCheckPrice')}` : ''
+      return `${formatStampDisplay(stamp)} · ${price} · ${label}${check}`
+    },
+
     previewPrice() {
       const origin = Number(this.barcode.originPrice) || 0
       const noGold = Number(this.barcode.price) || 0
@@ -636,9 +679,23 @@ export default {
     },
 
     onPrintBarcode() {
-      if (this.selectedType === 'small-50x14' && !formatGoldDateStamp(this.goldPrice)) {
+      if (this.usesFallbackPrice) {
         confirmThenSubmit(
-          this.$t('view.stock.printBarcode.goldPriceMissingMsg'),
+          this.$t('view.stock.printBarcode.goldPriceOutOfRangeMsg', { price: this.goldPrice, min: MIN_PRICE_PER_GRAM, max: MAX_PRICE_PER_GRAM }),
+          this.$t('view.stock.printBarcode.goldPriceOutOfRangeTitle'),
+          () => this.confirmStampThenPrint(),
+          { confirmText: this.$t('view.stock.printBarcode.goldPriceMissingConfirm'), cancelText: this.$t('common.btn.cancel') },
+          'warning'
+        )
+        return
+      }
+      this.confirmStampThenPrint()
+    },
+
+    confirmStampThenPrint() {
+      if (this.selectedType === 'small-50x14' && this.pieceGoldStamp.source === 'none') {
+        confirmThenSubmit(
+          this.$t('view.stock.printBarcode.goldPriceMissingMsgSingle'),
           this.$t('view.stock.printBarcode.goldPriceMissingTitle'),
           () => this.printBarcode(),
           { confirmText: this.$t('view.stock.printBarcode.goldPriceMissingConfirm'), cancelText: this.$t('common.btn.cancel') },
@@ -660,7 +717,7 @@ export default {
         publicUrl: this.publicUrl,
         hidePrice: this.hidePrice,
         hideMold: this.hideMold,
-        goldDateStamp: this.selectedType === 'small-50x14' ? formatGoldDateStamp(this.goldPrice, new Date()) : '',
+        goldDateStamp: this.selectedType === 'small-50x14' ? this.pieceGoldStamp.stamp : '',
         abbreviateGems: this.abbreviateGems,
         gemLabelMeta: this.gemLabelMeta,
         remarkSymbol: this.showRemarkSelect ? this.remarkSymbol : ''
@@ -698,6 +755,33 @@ export default {
 @import '@/assets/scss/responsive-style/web';
 
 .card { background: #ffffff !important; }
+
+.printer-warning-line {
+  margin-bottom: var(--sp-md);
+}
+
+.gold-stamp-box {
+  margin-bottom: var(--sp-sm);
+}
+
+.gold-price-warning {
+  font-size: var(--fs-sm);
+  color: var(--base-font-color);
+  margin-bottom: var(--sp-xs);
+
+  .bi {
+    color: var(--status-open);
+  }
+}
+
+.gold-stamp-preview {
+  font-size: var(--fs-sm);
+  color: var(--base-font-color);
+
+  &--none .bi {
+    color: var(--status-open);
+  }
+}
 
 .cost-missing-warning {
   padding: var(--sp-sm) var(--sp-md);
