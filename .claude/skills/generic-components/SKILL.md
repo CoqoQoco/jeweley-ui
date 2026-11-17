@@ -257,6 +257,45 @@ Props สำคัญ:
 - ✅ ส่ง API: `status: this.filter.status?.length ? this.filter.status : undefined`
 - ✅ `onClear()` reset เป็น `[]` (ไม่ใช่ `null`)
 - ❌ ห้ามใช้ `DropdownGeneric` สำหรับ filter ในหน้า list
+- ⚠️ ข้อยกเว้น: หน้าที่มีค่าเริ่มต้นไม่ว่างต้องมีเหตุผลใน Decision Log และทำตาม `docs/design-system.md` Core Principle #15 (`defaultFilter()` ตัวเดียว, tooltip "คืนค่าเริ่มต้น", chip เห็นตั้งแต่โหลด, `emptyMessage` อิง `searchedStatus`, ห้ามซ่อนรายการที่ badge ชี้ถึง)
+- ❌ `onClear()` reset เป็น `{ status: [] }` ในหน้าที่มีค่าเริ่มต้นไม่ว่าง (ต้องเรียก `defaultFilter()`)
+- ❌ `emptyMessage` อ่าน `this.filter.status` (ค่าที่กำลังแก้ใน input) แทน `searchedStatus`
+- ❌ ค่าเริ่มต้นที่ซ่อนรายการที่ badge unread นับ (badge นับ system comment ทุกสถานะ)
+
+```javascript
+function defaultFilter() {
+  return { status: [1, 2], type: [], keyword: null }
+}
+
+export default {
+  data() {
+    return { filter: defaultFilter(), searchedStatus: defaultFilter().status }
+  },
+  computed: {
+    emptyMessage() {
+      return this.searchedStatus?.length ? this.$t('view.ticket.emptyFiltered') : null
+    }
+  },
+  methods: {
+    async fetchData() {
+      const status = this.filter.status?.length ? this.filter.status : undefined
+      this.searchedStatus = status || []
+      const res = await this.ticketStore.searchTickets({ take: this.take, skip: this.skip, status })
+      // ...
+    },
+    onClear() {
+      this.filter = defaultFilter()
+      this.resetPaging()
+    }
+  }
+}
+```
+
+```vue
+<BaseDataTable :emptyMessage="emptyMessage" ... />
+```
+
+ref: `src/views/ticket/manage/index-view.vue`
 
 Import:
 ```javascript

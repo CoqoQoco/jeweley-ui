@@ -149,7 +149,7 @@ const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-ti
 - ✅ ปุ่มใน action bar เรียงตามลำดับ: **Search (btn-main)** → **Advanced (btn-sub-main, optional)** → **Clear (btn-dark)** → **Export (btn-primary, optional)** → **Create (btn-main)**
 - ✅ **ปุ่มใน action bar ของหน้า list ใช้ icon-only เสมอ** — ส่งแค่ `icon` + `:title` (tooltip) ไม่ส่ง `:label` (หน้า form create/edit ยังคง label ตามปกติ)
 - ✅ **`SearchBarGeneric` ต้องส่ง `:description` เสมอ** — i18n key เช่น `$t('view.myFeature.searchDesc')` อธิบายหน้านั้นสั้นๆ ห้ามเว้นว่าง
-- ✅ **filter choice ใช้ `MultiSelectGeneric` เป็น default** — `data().filter` เริ่มต้นเป็น `[]`; ส่ง API `arr.length ? arr : undefined`
+- ✅ **filter choice ใช้ `MultiSelectGeneric` เป็น default** — `data().filter` เริ่มต้นเป็น `[]`; ส่ง API `arr.length ? arr : undefined` (ยกเว้นหน้าที่มีค่าเริ่มต้น ดู `docs/design-system.md` #15)
 - ❌ ห้ามมี header ซ้ำซ้อนนอก `filter-container-searchBar` (เช่นห้ามเอา `<h2>` page title มาซ้อนทับ pageTitle ของ search bar)
 - ❌ ห้าม set `isShowBtnClose="true"` กับ pageTitle ใน search bar — กดแล้วหายเลย ไม่มีปุ่มเปิดกลับ
 
@@ -488,7 +488,7 @@ Pattern สำหรับแสดง item เป็นการ์ดสรุ
 | Item summary | `item-card` + `item-card-header` (#fdf2f2) |
 | Modal footer ปุ่ม | บันทึก + ยกเลิก ml-2 |
 | ปุ่มใน list page action bar | `ButtonGeneric` icon-only (ไม่ส่ง `:label`) + `:title` tooltip |
-| filter choice ในหน้า list | `MultiSelectGeneric` (array `[]` default, ส่ง API เฉพาะเมื่อ length > 0) |
+| filter choice ในหน้า list | `MultiSelectGeneric` (array `[]` default, ส่ง API เฉพาะเมื่อ length > 0) — ยกเว้นหน้าที่มีค่าเริ่มต้น ดู `docs/design-system.md` #15 |
 | search bar ทุกหน้า list | `:description="$t('view.xxx.xxxDesc')"` บังคับ — ห้ามเว้นว่าง |
 
 ---
