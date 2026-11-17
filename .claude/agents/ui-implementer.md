@@ -3,6 +3,7 @@ name: ui-implementer
 description: Implement UI plans — สร้าง/แก้ไข Vue component ตาม plan ที่ได้รับ confirm แล้ว ใช้เมื่อ implement, build UI, create component, fix styling
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: sonnet
+effort: medium
 skills:
   - alert-system
   - error-handling
