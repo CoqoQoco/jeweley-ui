@@ -57,7 +57,7 @@
             >
               <Column style="width: 30px">
                 <template #body="prop">
-                  <button class="btn btn-sm btn-red text-center" @click="onDelGold(prop.data)">
+                  <button type="button" class="btn btn-sm btn-red text-center" @click="onDelGold(prop.data)">
                     <i class="bi bi-trash-fill"></i>
                   </button>
                 </template>
@@ -935,10 +935,12 @@ export default {
     },
     onDelGold(item) {
       const index = this.matAssign.indexOf(item)
+      if (index < 0) return
       this.matAssign.splice(index, 1)
     },
     onDelGem(item) {
       const index = this.gemAssign.indexOf(item)
+      if (index < 0) return
       this.gemAssign.splice(index, 1)
     },
     addMat() {

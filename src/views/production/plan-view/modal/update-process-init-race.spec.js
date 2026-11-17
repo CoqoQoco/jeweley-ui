@@ -14,6 +14,14 @@ vi.mock('@/services/alert/sweetAlerts.js', () => ({
 
 import UpdateProcessView from './update-process-view.vue'
 
+const RowCtx = {
+  props: ['row'],
+  provide() {
+    return { stubRow: this.row }
+  },
+  template: '<div><slot /></div>'
+}
+
 const deferred = () => {
   let resolve
   let reject
@@ -221,5 +229,59 @@ describe('update-process-view initForm race', () => {
     const w = mountView(makeModel({ tbtProductionPlanStatusDetail: { notAnArray: true } }))
     await flushPromises()
     expect(w.text()).toContain('โหลดข้อมูลไม่สำเร็จ')
+  })
+})
+
+describe('update-process-view delete gold row button', () => {
+  it('ปุ่มลบแถวทองเป็น type=button: ลบแถวได้ และไม่ submit/ไม่เปิด confirm', async () => {
+    postMock.mockImplementation((url) => {
+      if (url === 'Worker/Search') return Promise.resolve({ data: [{ code: 'W1' }] })
+      return Promise.resolve([])
+    })
+    const w = mount(UpdateProcessView, {
+      props: {
+        isShow: false,
+        modelValue: makeModel(),
+        modelMatValue: [],
+        masterStatus: [],
+        masterGold: [],
+        statusCode: 70
+      },
+      global: {
+        mocks: { $t: (k) => k },
+        stubs: {
+          modal: { template: '<div><slot name="content" /></div>' },
+          AutoComplete: true,
+          Calendar: true,
+          Dropdown: true,
+          BaseDataTable: true,
+          planOverview: true,
+          DataTable: {
+            props: ['value'],
+            components: { RowCtx },
+            template: '<div><RowCtx v-for="(row, i) in value" :key="i" :row="row"><slot /></RowCtx></div>'
+          },
+          Column: {
+            inject: ['stubRow'],
+            template: '<span v-if="$slots.body"><slot name="body" :data="stubRow" /></span>'
+          }
+        }
+      }
+    })
+    w.setProps({ isShow: true })
+    await flushPromises()
+    const delBtn = w.findAll('button.btn-red').find((b) => b.find('i.bi-trash-fill').exists())
+    expect(delBtn).toBeTruthy()
+    expect(delBtn.attributes('type')).toBe('button')
+    const before = w.vm.matAssign.length
+    const row = w.vm.matAssign[0]
+    const submitSpy = vi.spyOn(w.vm, 'onSubmit')
+    // click ก่อน await ใดๆ: ถ้าปุ่มเป็น submit จะยิง submit ใน tick เดียวกัน ไม่ให้ลำดับ async มาบัง
+    await delBtn.trigger('click')
+    expect(w.vm.matAssign.length).toBe(before - 1)
+    expect(w.vm.matAssign).not.toContain(row)
+    await flushPromises()
+    expect(submitSpy).not.toHaveBeenCalled()
+    expect(postMock.mock.calls.some((c) => c[0].includes('UpdateStatusDetail'))).toBe(false)
   })
 })
