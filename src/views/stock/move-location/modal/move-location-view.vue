@@ -36,6 +36,7 @@
             <RadioGroupGeneric
               v-model="plans[item.stockNumber].mode"
               :options="modeOptions"
+              optionValue="value"
               :inline="true"
               @update:modelValue="onModeChange(item)"
             />
