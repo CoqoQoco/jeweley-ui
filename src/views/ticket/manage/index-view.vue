@@ -138,6 +138,11 @@ import ticketStatusBadge from '../components/ticket-status-badge.vue'
 import ticketTypeBadge from '../components/ticket-type-badge.vue'
 import ticketDeployBadge from '../components/ticket-deploy-badge.vue'
 
+// Default status filter: 1 = open, 2 = in progress (see ticket-status.js)
+function defaultFilter() {
+  return { status: [1, 2], type: [], keyword: null }
+}
+
 export default {
   name: 'TicketManageIndexView',
 
@@ -166,11 +171,7 @@ export default {
     return {
       dataList: [],
       total: 0,
-      filter: {
-        status: [],
-        type: [],
-        keyword: null
-      },
+      filter: defaultFilter(),
       statusModal: {
         isShow: false,
         ticket: {}
@@ -236,7 +237,7 @@ export default {
     },
 
     onClear() {
-      this.filter = { status: [], type: [], keyword: null }
+      this.filter = defaultFilter()
       this.resetPaging()
     },
 
