@@ -9,8 +9,10 @@
       <RadioButton
         :inputId="`${groupId}-${getOptionValue(option)}`"
         :value="getOptionValue(option)"
-        v-model="localValue"
+        :modelValue="modelValue"
+        :name="groupId"
         :disabled="disabled"
+        @update:modelValue="$emit('update:modelValue', $event)"
       />
       <label
         :for="`${groupId}-${getOptionValue(option)}`"
@@ -66,17 +68,7 @@ export default {
   data() {
     _uid++
     return {
-      localValue: this.modelValue,
       groupId: `radio-group-${_uid}`
-    }
-  },
-
-  watch: {
-    modelValue(newVal) {
-      this.localValue = newVal
-    },
-    localValue(newVal) {
-      this.$emit('update:modelValue', newVal)
     }
   },
 
@@ -137,11 +129,6 @@ export default {
 :deep(.p-radiobutton) {
   .p-radiobutton-box {
     border-color: var(--color-border);
-
-    &.p-highlight {
-      background: var(--base-font-color);
-      border-color: var(--base-font-color);
-    }
 
     &:not(.p-disabled):hover {
       border-color: var(--base-font-color);
