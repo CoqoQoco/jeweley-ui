@@ -35,7 +35,7 @@
 
       <template #actions-right>
         <ButtonGeneric variant="main" icon="bi-search" type="submit" :title="$t('common.btn.search')" />
-        <ButtonGeneric variant="dark" icon="bi-x-circle" class="ml-2" :title="$t('view.ticket.btn.resetFilter')" @click="onClear" />
+        <ButtonGeneric variant="dark" icon="bi-x-circle" class="ml-2" :title="$t('common.btn.clear')" @click="onClear" />
       </template>
     </SearchBarGeneric>
 
@@ -91,9 +91,9 @@ import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import ticketDetailModal from './modal/ticket-detail-modal.vue'
 
-// Default status filter: 1 = open, 2 = in progress, 3 = resolved (reporters still need to see resolved tickets with dev replies)
+// Default is empty: the unread badge counts system comments on every status (incl. closed/cancelled), so every ticket must stay visible
 function defaultFilter() {
-  return { status: [1, 2, 3], type: [] }
+  return { status: [], type: [] }
 }
 
 export default {
