@@ -81,7 +81,7 @@
         <template #body="{ data }">
           <InputTextGeneric
             type="number"
-            min="1"
+            min="0.01"
             step="any"
             class="text-right"
             :aria-label="$t('view.production.planGold.colReturnWeight')"

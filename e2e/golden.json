@@ -4,6 +4,7 @@
     "invoice-bill-vat.spec.js",
     "invoice-merge-silver.spec.js",
     "invoice-money.spec.js",
+    "plan-gold-return-weight.spec.js",
     "receipt-silver-lot-suggest.spec.js",
     "ticket-my-list.spec.js"
   ],
