@@ -32,6 +32,11 @@
           />
         </div>
       </template>
+
+      <template #actions-right>
+        <ButtonGeneric variant="main" icon="bi-search" type="submit" :title="$t('common.btn.search')" />
+        <ButtonGeneric variant="dark" icon="bi-x-circle" class="ml-2" :title="$t('view.ticket.btn.resetFilter')" @click="onClear" />
+      </template>
     </SearchBarGeneric>
 
     <div class="mt-2">
@@ -40,6 +45,7 @@
         :totalRecords="total"
         :columns="columns"
         :perPage="take"
+        :emptyMessage="emptyMessage"
         @page="handlePageChange"
         @sort="handleSortChange"
       >
@@ -85,6 +91,11 @@ import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import ticketDetailModal from './modal/ticket-detail-modal.vue'
 
+// Default status filter: 1 = open, 2 = in progress, 3 = resolved (reporters still need to see resolved tickets with dev replies)
+function defaultFilter() {
+  return { status: [1, 2, 3], type: [] }
+}
+
 export default {
   name: 'TicketMyView',
 
@@ -107,10 +118,8 @@ export default {
     return {
       dataList: [],
       total: 0,
-      filter: {
-        status: [],
-        type: []
-      },
+      filter: defaultFilter(),
+      searchedStatus: defaultFilter().status,
       isShowModal: false,
       selectedTicket: {}
     }
@@ -133,6 +142,10 @@ export default {
       ]
     },
 
+    emptyMessage() {
+      return this.searchedStatus?.length ? this.$t('view.ticket.emptyFiltered') : null
+    },
+
     columns() {
       return [
         { field: 'ticketNo', header: this.$t('view.ticket.field.ticketNo'), minWidth: '100px' },
@@ -152,11 +165,13 @@ export default {
 
   methods: {
     async fetchData() {
+      const status = this.filter.status?.length ? this.filter.status : undefined
+      this.searchedStatus = status || []
       const res = await this.ticketStore.fetchMyTickets({
         take: this.take,
         skip: this.skip,
         sort: this.sort,
-        status: this.filter.status?.length ? this.filter.status : undefined,
+        status,
         type: this.filter.type?.length ? this.filter.type : undefined
       })
       if (res) {
@@ -170,7 +185,7 @@ export default {
     },
 
     onClear() {
-      this.filter = { status: [], type: [] }
+      this.filter = defaultFilter()
       this.resetPaging()
     },
 

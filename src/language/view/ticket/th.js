@@ -66,8 +66,11 @@ export default {
   btn: {
     submit: 'ส่ง Ticket',
     updateStatus: 'อัปเดตสถานะ',
-    saveDev: 'บันทึกข้อมูล Dev'
+    saveDev: 'บันทึกข้อมูล Dev',
+    resetFilter: 'คืนค่าเริ่มต้น'
   },
+
+  emptyFiltered: 'ไม่พบ ticket ตามตัวกรองที่เลือก',
 
   confirm: {
     submit: 'ยืนยันส่ง Ticket',

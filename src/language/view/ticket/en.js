@@ -66,8 +66,11 @@ export default {
   btn: {
     submit: 'Submit Ticket',
     updateStatus: 'Update Status',
-    saveDev: 'Save Dev Info'
+    saveDev: 'Save Dev Info',
+    resetFilter: 'Reset filters'
   },
+
+  emptyFiltered: 'No tickets match the selected filters.',
 
   confirm: {
     submit: 'Confirm Submit Ticket',

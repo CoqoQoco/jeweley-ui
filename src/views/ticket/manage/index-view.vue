@@ -44,7 +44,7 @@
 
       <template #actions-right>
         <ButtonGeneric variant="main" icon="bi-search" type="submit" :title="$t('common.btn.search')" />
-        <ButtonGeneric variant="dark" icon="bi-x-circle" class="ml-2" :title="$t('common.btn.clear')" @click="onClear" />
+        <ButtonGeneric variant="dark" icon="bi-x-circle" class="ml-2" :title="$t('view.ticket.btn.resetFilter')" @click="onClear" />
       </template>
     </SearchBarGeneric>
 
@@ -55,6 +55,7 @@
         :columns="columns"
         :perPage="take"
         :showColumnSettings="true"
+        :emptyMessage="emptyMessage"
         @page="handlePageChange"
         @sort="handleSortChange"
       >
@@ -172,6 +173,7 @@ export default {
       dataList: [],
       total: 0,
       filter: defaultFilter(),
+      searchedStatus: defaultFilter().status,
       statusModal: {
         isShow: false,
         ticket: {}
@@ -193,6 +195,10 @@ export default {
 
     statusOptions() {
       return getStatusOptions(this.$t)
+    },
+
+    emptyMessage() {
+      return this.searchedStatus?.length ? this.$t('view.ticket.emptyFiltered') : null
     },
 
     columns() {
@@ -218,11 +224,13 @@ export default {
 
   methods: {
     async fetchData() {
+      const status = this.filter.status?.length ? this.filter.status : undefined
+      this.searchedStatus = status || []
       const res = await this.ticketStore.searchTickets({
         take: this.take,
         skip: this.skip,
         sort: this.sort,
-        status: this.filter.status?.length ? this.filter.status : undefined,
+        status,
         type: this.filter.type?.length ? this.filter.type : undefined,
         keyword: this.filter.keyword || undefined
       })
