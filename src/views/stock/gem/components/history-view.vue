@@ -39,6 +39,7 @@
               <div>
                 <span><i class="mr-1" :class="getIconQty(row.type)"></i></span>
                 <span>{{ getTypeName(row.type) }}</span>
+                <span v-if="row.type === 5 && row.status === 'process'" class="not-returned-tag ml-2">{{ $t('view.stock.gem.borrowOpen') }}</span>
               </div>
             </template>
             <template #qtyTemplate="{ data: row }">
@@ -124,11 +125,11 @@ export default {
       return [
         { field: 'requestDate', header: this.$t('view.stock.gem.txDate'), minWidth: '200px' },
         { field: 'running', header: this.$t('view.stock.gem.txRunning'), minWidth: '200px' },
+        { field: 'type', header: this.$t('view.stock.gem.txType'), minWidth: '200px', sortable: false },
         { field: 'operatorBy', header: this.$t('view.stock.gem.txOperatorBy'), minWidth: '200px' },
         { field: 'createBy', header: this.$t('view.stock.gem.txCreateBy'), minWidth: '200px' },
         { field: 'refRunning1', header: this.$t('view.stock.gem.txRef1'), minWidth: '200px' },
         { field: 'refRunning2', header: this.$t('view.stock.gem.txRef2'), minWidth: '200px' },
-        { field: 'type', header: this.$t('view.stock.gem.txType'), minWidth: '200px', sortable: false },
         { field: 'qty', header: this.$t('view.stock.gem.txQty'), minWidth: '200px', sortable: false },
         { field: 'qtyWeight', header: this.$t('view.stock.gem.txWeight'), minWidth: '200px', sortable: false },
         { field: 'previousRemianQty', header: this.$t('view.stock.gem.txPrevQty'), minWidth: '200px' },
@@ -213,7 +214,7 @@ export default {
           grade: null,
           shape: null,
           size: null,
-          status: ['completed']
+          status: null
         }
       }
       const res = await api.jewelry.post('ReceiptAndIssueStockGem/ListTransection', params)
@@ -254,4 +255,15 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-data-table';
+
+.not-returned-tag {
+  display: inline-block;
+  padding: var(--sp-xs) var(--sp-sm);
+  border: 1px solid var(--status-open);
+  border-radius: var(--radius-sm);
+  background: var(--status-open-bg);
+  color: var(--base-font-color);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
 </style>

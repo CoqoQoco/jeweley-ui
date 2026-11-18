@@ -664,6 +664,7 @@ export default {
     typeReturn: 'Receive [Returned Gem]',
     typeIssue: 'Issue Out',
     typeBorrow: 'Borrow Out',
+    borrowOpen: 'Open',
     typeReturnIn: 'Return In',
     typeWithdraw: 'Withdraw Out',
     priceHistoryDate: 'Date',

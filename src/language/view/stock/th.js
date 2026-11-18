@@ -664,6 +664,7 @@ export default {
     typeReturn: 'รับเข้าคลัง [พลอยคืน]',
     typeIssue: 'จ่ายออกคลัง',
     typeBorrow: 'ยืมออกคลัง',
+    borrowOpen: 'ยังไม่ปิดใบ',
     typeReturnIn: 'คืนเข้าคลัง',
     typeWithdraw: 'เบิกออกคลัง',
     priceHistoryDate: 'วันที่',
