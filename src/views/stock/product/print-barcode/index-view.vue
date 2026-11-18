@@ -12,10 +12,15 @@
 
     <dataTable
       :rows="rows"
+      :showLabelPrice="isFullPriceMode && !hidePrice"
+      :labelCurrency="labelCurrency"
+      :labelRate="labelRate"
       :selection="selection"
       @update:selection="selection = $event"
       @change-copies="onChangeCopies"
       @commit-copies="onCommitCopies"
+      @change-label-price="onChangeLabelPrice"
+      @reset-label-price="onResetLabelPrice"
     />
 
     <printPanel
@@ -23,6 +28,13 @@
       v-model:remarkSymbol="remarkSymbol"
       v-model:hidePrice="hidePrice"
       v-model:hideMold="hideMold"
+      :labelPriceMode="labelPriceMode"
+      :labelCurrency="labelCurrency"
+      :labelRate="labelRate"
+      :labelPriceBlockReason="labelPriceBlockReason"
+      @update:labelPriceMode="onLabelPriceModeChange"
+      @update:labelCurrency="onLabelCurrencyChange"
+      @update:labelRate="onLabelRateChange"
       :goldPrice="goldPrice"
       @update:goldPrice="onGoldPriceChange"
       :abbreviateGems="abbreviateGems"
@@ -78,13 +90,27 @@ import {
   getAbbreviateGems,
   setAbbreviateGems,
   getBarcodeGoldPrice,
-  setBarcodeGoldPrice
+  setBarcodeGoldPrice,
+  getBarcodeLabelPriceMode,
+  setBarcodeLabelPriceMode,
+  getBarcodeLabelCurrency,
+  setBarcodeLabelCurrency,
+  getBarcodeLabelRate,
+  setBarcodeLabelRate
 } from '@/services/api/barcode-printer-config.js'
 import { buildPublicUrl } from '@/config/public-site-config.js'
 
 import BarcodeNoDashNotice from '@/components/custom/barcode-no-dash-notice.vue'
 
 import searchView from './components/search-view.vue'
+import {
+  LABEL_PRICE_MODES,
+  LABEL_CURRENCIES,
+  pickLabelPrice,
+  isUsableLabelPrice,
+  isValidLabelRate,
+  formatLabelPriceText
+} from '@/services/helper/barcode/label-price.js'
 import dataTable from './components/data-table-view.vue'
 import printPanel from './components/print-panel.vue'
 
@@ -116,6 +142,9 @@ export default {
       hidePrice: false,
       hideMold: false,
       goldPrice: getBarcodeGoldPrice(),
+      labelPriceMode: getBarcodeLabelPriceMode(),
+      labelCurrency: getBarcodeLabelCurrency(),
+      labelRate: getBarcodeLabelRate(),
       abbreviateGems: getAbbreviateGems(),
       printUnitNo: false,
       isPrinting: false,
@@ -135,6 +164,20 @@ export default {
       return summarizeSelection(this.selectedRows)
     },
 
+    isFullPriceMode() {
+      return this.barcodeType === 'small-50x14' && this.labelPriceMode === LABEL_PRICE_MODES.FULL
+    },
+
+    // เหตุที่ยังพิมพ์ราคาเต็มไม่ได้ (ว่าง = พร้อม) · hidePrice = ไม่พิมพ์ราคา จึงไม่บล็อก
+    labelPriceBlockReason() {
+      if (!this.isFullPriceMode || this.hidePrice || this.selectedRows.length === 0) return ''
+      if (this.labelCurrency === LABEL_CURRENCIES.USD && !isValidLabelRate(this.labelRate)) {
+        return this.$t('view.stock.printBarcode.labelPriceMissingRate')
+      }
+      const missing = this.selectedRows.filter((row) => !isUsableLabelPrice(this.resolveRowLabelPrice(row))).length
+      return missing > 0 ? this.$t('view.stock.printBarcode.labelPriceMissingCount', { count: missing }) : ''
+    },
+
     // เลขลำดับชิ้น (3/6) พิมพ์ได้เฉพาะแท็บ original ของ GT800
     useUnitMarks() {
       return this.printUnitNo && this.barcodeType === 'original' && getBarcodeProfile() !== PRINTER_PROFILES.LEGACY
@@ -145,6 +188,38 @@ export default {
     onGoldPriceChange(value) {
       this.goldPrice = value
       setBarcodeGoldPrice(value)
+    },
+
+    onLabelPriceModeChange(value) {
+      this.labelPriceMode = value
+      setBarcodeLabelPriceMode(value)
+    },
+
+    onLabelCurrencyChange(value) {
+      this.labelCurrency = value
+      setBarcodeLabelCurrency(value)
+      this.rows.forEach((row) => {
+        row.labelPriceOverride = null
+      })
+    },
+
+    onLabelRateChange(value) {
+      this.labelRate = value
+      setBarcodeLabelRate(value)
+    },
+
+    resolveRowLabelPrice(row) {
+      return pickLabelPrice(row.productPrice, this.labelCurrency, this.labelRate, row.labelPriceOverride)
+    },
+
+    onChangeLabelPrice({ rowKey, value }) {
+      const row = this.rows.find((item) => item.rowKey === rowKey)
+      if (row) row.labelPriceOverride = value
+    },
+
+    onResetLabelPrice(rowKey) {
+      const row = this.rows.find((item) => item.rowKey === rowKey)
+      if (row) row.labelPriceOverride = null
     },
 
     onAbbreviateGemsChange(value) {
@@ -158,7 +233,8 @@ export default {
         ...row,
         rowKey: buildRowKey(row),
         labelCode: resolveLabelCode(row),
-        printCount: normalizeCopies(Math.floor(getPieceQty(row)), MAX_COPIES_PER_ROW)
+        printCount: normalizeCopies(Math.floor(getPieceQty(row)), MAX_COPIES_PER_ROW),
+        labelPriceOverride: null
       }
     },
 
@@ -302,6 +378,9 @@ export default {
         barcodeType: this.barcodeType,
         hidePrice: this.hidePrice,
         hideMold: this.hideMold,
+        ...(this.isFullPriceMode
+          ? { labelPriceText: formatLabelPriceText(this.resolveRowLabelPrice(row), this.labelCurrency) }
+          : {}),
         abbreviateGems: this.abbreviateGems,
         remarkSymbol: showRemark ? this.remarkSymbol : '',
         print: normalizeCopies(row.printCount, MAX_COPIES_PER_ROW)

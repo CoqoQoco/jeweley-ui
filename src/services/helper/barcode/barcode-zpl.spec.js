@@ -1423,3 +1423,65 @@ describe('gemLabelMeta ที่ถูกห่อด้วย Vue reactive (TK2
     expect(layoutGt800Small({ ...form, gemLabelMeta: meta, abbreviateGems: false }).gemRows.join('|')).toContain('Diamond')
   })
 })
+
+describe('ป้าย 80×14 — โหมดราคาเต็ม (labelPriceText) TK202611170012', () => {
+  const base = {
+    stockNumber: 'DK21AH047',
+    stockNumberOrigin: 'AH21047',
+    mold: 'NF6121SW',
+    salePrice: 409500,
+    goldWeight: '1.84',
+    goldColorCode: 'WG',
+    goldKarat: '18K'
+  }
+
+  it('ไม่ส่ง labelPriceText -> ZPL โหมดรหัสราคาเดิมทุกตัวอักษร', () => {
+    const zpl = generateGt800ZPLSmall(base)
+    expect(zpl).toContain('^FD040950WG18K  1.84g^FS')
+    expect(generateGt800ZPLSmall({ ...base, labelPriceText: undefined })).toBe(zpl)
+  })
+
+  it('$250 เว้น 1 ช่องก่อนสีทอง ที่เหลือเหมือนเดิม', () => {
+    expect(buildGt800SmallLine2({ ...base, size: '#56', labelPriceText: '$250' })).toBe('$250 WG18K  1.84g  #56')
+  })
+
+  it('ZPL มีราคาเต็มในบรรทัด 2', () => {
+    expect(generateGt800ZPLSmall({ ...base, labelPriceText: '$769.70' })).toContain('^FD$769.70 WG18K  1.84g^FS')
+  })
+
+  it('โหมดบาท ไม่มีสัญลักษณ์', () => {
+    expect(buildGt800SmallLine2({ ...base, size: '#56', labelPriceText: '25400' })).toBe('25400 WG18K  1.84g  #56')
+  })
+
+  it('อักขระนอก ASCII ไม่หลุดเข้า ZPL (เช่น ฿)', () => {
+    expect(buildGt800SmallLine2({ ...base, labelPriceText: '฿25400' })).toBe('25400 WG18K  1.84g')
+    expect(generateGt800ZPLSmall({ ...base, labelPriceText: '฿25400' })).not.toMatch(/[^\x20-\x7E]/)
+  })
+
+  it('ตัด ^ และ ~ ออกจากข้อความราคา', () => {
+    expect(buildGt800SmallLine2({ ...base, labelPriceText: '$2^5~0' })).toBe('$250 WG18K  1.84g')
+  })
+
+  it('hidePrice -> ไม่มีราคาทั้งสองโหมด', () => {
+    expect(buildGt800SmallLine2({ ...base, hidePrice: true, labelPriceText: '$250' })).toBe('WG18K  1.84g')
+  })
+
+  it('ราคาว่างในโหมดเต็ม -> ไม่มีราคา (ไม่ถอยกลับไปรหัสราคา)', () => {
+    expect(buildGt800SmallLine2({ ...base, labelPriceText: '' })).toBe('WG18K  1.84g')
+  })
+
+  it('บรรทัด 2 ยาวเกิน -> ตัดไซซ์ก่อน', () => {
+    const layout = layoutGt800Small({ ...base, labelPriceText: '$250', size: '#16-18 inch adjustable chain' })
+    expect(layout.line2).toBe('$250 WG18K  1.84g')
+  })
+})
+
+describe('ป้าย 80×14 — บรรทัดราคาเต็มที่ยาวที่สุด', () => {
+  it('$1271700 + น้ำหนัก + ไซซ์ ไม่เกินงบบรรทัด', () => {
+    const layout = layoutGt800Small({
+      goldColorCode: 'WG', goldKarat: '18K', goldWeight: '123.45', size: '#55.5', labelPriceText: '$1271700.00'.replace('.00', '')
+    })
+    expect(layout.line2.length * layout.line2Font[1] * 0.54).toBeLessThanOrEqual(184)
+    expect(layout.line2.startsWith('$1271700 WG18K')).toBe(true)
+  })
+})

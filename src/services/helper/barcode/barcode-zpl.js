@@ -946,11 +946,20 @@ export function formatLabelSize(size) {
 
 // ข้อความบรรทัด 2: {รหัสราคา}{สีทอง}{กะรัต}  {น้ำหนัก}g  #{ไซซ์} — ส่วนที่ไม่มีข้อมูลข้ามไป (เงิน/ไม่มีข้อมูลทอง = ไม่ต่อสี/กะรัต)
 export function buildGt800SmallLine2(formValue, { withSize = true } = {}) {
-  const priceCode = formValue?.hidePrice ? '' : formatPriceCode(formValue?.salePrice)
+  // โหมดราคาเต็ม: caller ส่ง labelPriceText ('$250') มา — เว้น 1 ช่องก่อนสีทอง · ไม่ส่ง = โหมดรหัสราคาเดิม
+  const fullPriceMode = typeof formValue?.labelPriceText === 'string'
   const metal = `${formValue?.goldColorCode || ''}${formValue?.goldKarat || ''}`
   const weight = formValue?.goldWeight ? `${formValue.goldWeight}g` : ''
   const size = withSize ? formatLabelSize(formValue?.size) : ''
-  return [`${priceCode}${metal}`, weight, size].filter(Boolean).join('  ')
+  let head
+  if (fullPriceMode) {
+    const priceText = formValue.hidePrice ? '' : formValue.labelPriceText.replace(/[^\x20-\x7E]|[\^~]/g, '').trim()
+    head = [priceText, metal].filter(Boolean).join(' ')
+  } else {
+    const priceCode = formValue?.hidePrice ? '' : formatPriceCode(formValue?.salePrice)
+    head = `${priceCode}${metal}`
+  }
+  return [head, weight, size].filter(Boolean).join('  ')
 }
 
 export function layoutGt800Small(formValue) {

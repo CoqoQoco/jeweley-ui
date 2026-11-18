@@ -7,6 +7,9 @@ export const BARCODE_PROFILE_STORAGE_KEY = 'print-bridge-barcode-profile'
 export const BARCODE_ROTATE180_STORAGE_KEY = 'print-bridge-barcode-rotate180'
 export const BARCODE_ABBREVIATE_GEMS_STORAGE_KEY = 'print-bridge-barcode-abbreviate-gems'
 export const BARCODE_GOLD_PRICE_STORAGE_KEY = 'print-bridge-barcode-gold-price'
+export const BARCODE_LABEL_PRICE_MODE_STORAGE_KEY = 'print-bridge-barcode-label-price-mode'
+export const BARCODE_LABEL_CURRENCY_STORAGE_KEY = 'print-bridge-barcode-label-currency'
+export const BARCODE_LABEL_RATE_STORAGE_KEY = 'print-bridge-barcode-label-rate'
 
 // template ฉลากปัจจุบันเขียนพิกัดไว้ที่หัวพิมพ์ 203 dpi
 export const BASE_DPI = 203
@@ -137,4 +140,50 @@ export function setBarcodeGoldPrice(value) {
   } else {
     storage.setItem(BARCODE_GOLD_PRICE_STORAGE_KEY, String(value))
   }
+}
+
+// ราคาบนป้าย 80×14 (code = รหัสราคา / full = ราคาเต็ม), สกุลเงิน และเรทล่าสุด — จำค่าต่อเครื่อง (ไม่จำราคารายชิ้น)
+function safeGet(key, fallback) {
+  try {
+    return storage.getItem(key, fallback)
+  } catch {
+    return fallback
+  }
+}
+
+function safeSet(key, value) {
+  try {
+    storage.setItem(key, value)
+  } catch {
+    // localStorage ใช้ไม่ได้ (เช่น private mode) — ข้ามการจำค่า
+  }
+}
+
+export function getBarcodeLabelPriceMode() {
+  return safeGet(BARCODE_LABEL_PRICE_MODE_STORAGE_KEY, 'code') === 'full' ? 'full' : 'code'
+}
+
+export function setBarcodeLabelPriceMode(value) {
+  safeSet(BARCODE_LABEL_PRICE_MODE_STORAGE_KEY, value === 'full' ? 'full' : 'code')
+}
+
+export function getBarcodeLabelCurrency() {
+  return safeGet(BARCODE_LABEL_CURRENCY_STORAGE_KEY, 'USD') === 'THB' ? 'THB' : 'USD'
+}
+
+export function setBarcodeLabelCurrency(value) {
+  safeSet(BARCODE_LABEL_CURRENCY_STORAGE_KEY, value === 'THB' ? 'THB' : 'USD')
+}
+
+export const DEFAULT_LABEL_RATE = 33
+
+export function getBarcodeLabelRate() {
+  const raw = safeGet(BARCODE_LABEL_RATE_STORAGE_KEY, '')
+  return raw === '' || raw === null ? String(DEFAULT_LABEL_RATE) : String(raw)
+}
+
+export function setBarcodeLabelRate(value) {
+  const num = Number(value)
+  if (value === '' || value === null || value === undefined || !Number.isFinite(num) || num <= 0) return
+  safeSet(BARCODE_LABEL_RATE_STORAGE_KEY, String(value))
 }

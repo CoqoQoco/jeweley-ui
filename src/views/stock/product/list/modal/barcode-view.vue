@@ -96,6 +96,7 @@
               :goldStamp="selectedType === 'small-50x14' ? pieceGoldStamp.stamp : null"
               :abbreviateGems="abbreviateGems"
               :gemLabelMeta="gemLabelMeta"
+              :labelPriceText="labelPriceText"
             />
           </div>
         </div>
@@ -108,6 +109,80 @@
               :ariaLabel="$t('view.stock.product.labelTopLine')"
             />
           </FormFieldGeneric>
+        </div>
+
+        <div v-if="selectedType === 'small-50x14'" class="pl-4 pr-4 pt-2">
+          <FormFieldGeneric :label="$t('view.stock.printBarcode.labelPriceMode')">
+            <ToggleGroupGeneric
+              v-model="labelPriceMode"
+              :options="priceModeOptions"
+              :ariaLabel="$t('view.stock.printBarcode.labelPriceMode')"
+              :disabled="isPrinting"
+              @update:modelValue="onLabelPriceModeChange"
+            />
+          </FormFieldGeneric>
+        </div>
+
+        <div v-if="isFullPriceMode && hidePrice" class="pl-4 pr-4 pt-2">
+          <div class="label-price-hint">{{ $t('view.stock.printBarcode.labelPriceNotPrinted') }}</div>
+        </div>
+
+        <div v-if="isFullPriceMode && !hidePrice" class="pl-4 pr-4 pt-2">
+          <div class="label-price-box">
+            <FormFieldGeneric :label="$t('view.stock.printBarcode.labelCurrency')">
+              <ToggleGroupGeneric
+                v-model="labelCurrency"
+                :options="currencyOptions"
+                :ariaLabel="$t('view.stock.printBarcode.labelCurrency')"
+                :disabled="isPrinting"
+                @update:modelValue="onLabelCurrencyChange"
+              />
+            </FormFieldGeneric>
+            <FormFieldGeneric v-if="labelCurrency === 'USD'" :label="$t('view.stock.printBarcode.labelRate')">
+              <InputTextGeneric
+                v-model="labelRate"
+                type="number"
+                :min="0"
+                :disabled="isPrinting"
+                @update:modelValue="onLabelRateChange"
+              />
+            </FormFieldGeneric>
+            <FormFieldGeneric :label="$t('view.stock.printBarcode.labelPriceInput')">
+              <div class="label-price-input">
+                <span v-if="labelSymbol" class="label-price-symbol">{{ labelSymbol }}</span>
+                <InputTextGeneric
+                  :modelValue="labelPriceInputValue"
+                  type="number"
+                  :min="0"
+                  :step="0.01"
+                  :disabled="isPrinting"
+                  @update:modelValue="labelPriceOverride = $event"
+                  @blur="onLabelPriceBlur"
+                />
+                <template v-if="labelPriceOverride !== null">
+                  <span class="label-price-edited">{{ $t('view.stock.printBarcode.labelPriceEdited') }}</span>
+                  <ButtonGeneric
+                    variant="outline"
+                    icon="bi-arrow-counterclockwise"
+                    :title="$t('view.stock.printBarcode.labelPriceReset')"
+                    @click="labelPriceOverride = null"
+                  />
+                </template>
+              </div>
+            </FormFieldGeneric>
+            <div v-if="labelPriceHint" class="label-price-hint">{{ labelPriceHint }}</div>
+            <div class="label-price-hint label-price-printed">
+              {{ $t('view.stock.printBarcode.labelPricePrinted') }}: <span class="label-price-printed-text">{{ printedLine2 }}</span>
+            </div>
+            <div v-if="labelRateOutOfRange" class="gold-price-warning">
+              <span class="bi bi-exclamation-triangle mr-1"></span>
+              <span>{{ labelRateRangeText }}</span>
+            </div>
+            <div v-if="labelPriceMissingText" class="gold-price-warning">
+              <span class="bi bi-exclamation-triangle mr-1"></span>
+              <span>{{ labelPriceMissingText }}</span>
+            </div>
+          </div>
         </div>
 
         <div class="pl-4 pr-4 pt-2">
@@ -287,12 +362,33 @@ import {
   getAbbreviateGems,
   setAbbreviateGems,
   getBarcodeGoldPrice,
-  setBarcodeGoldPrice
+  setBarcodeGoldPrice,
+  getBarcodeLabelPriceMode,
+  setBarcodeLabelPriceMode,
+  getBarcodeLabelCurrency,
+  setBarcodeLabelCurrency,
+  getBarcodeLabelRate,
+  setBarcodeLabelRate
 } from '@/services/api/barcode-printer-config.js'
 import { buildPublicUrl } from '@/config/public-site-config.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { resolvePieceGoldStamp, formatStampDisplay, isPriceOutOfRange, MIN_PRICE_PER_GRAM, MAX_PRICE_PER_GRAM } from '@/services/helper/barcode/gold-stamp.js'
-import { layoutGt800, buildGemLabelMeta, REMARK_SYMBOLS, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
+import {
+  LABEL_PRICE_MODES,
+  LABEL_CURRENCIES,
+  LABEL_CURRENCY_SYMBOLS,
+  LABEL_RATE_MIN,
+  LABEL_RATE_MAX,
+  computeLabelPrice,
+  pickLabelPrice,
+  isUsableLabelPrice,
+  isValidLabelRate,
+  isLabelRateOutOfRange,
+  formatLabelPriceText,
+  normalizeLabelPriceInput,
+  formatLabelPriceInput
+} from '@/services/helper/barcode/label-price.js'
+import { layoutGt800, layoutGt800Small, buildGemLabelMeta, REMARK_SYMBOLS, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
 
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
@@ -356,6 +452,7 @@ export default {
         this.publicUrl = ''
         this.publicLinkStatus = 'idle'
         this.remarkSymbol = REMARK_SYMBOL_NONE
+        this.labelPriceOverride = null
 
         this.barcode = {
           ...buildBarcodeModel(val),
@@ -423,6 +520,87 @@ export default {
       const price = this.$t('view.stock.printBarcode.stampPricePerGram', { price: Number(this.pieceGoldStamp.pricePerGram).toLocaleString('en-US') })
       const check = this.pieceGoldStamp.ambiguous ? ` · ${this.$t('view.stock.printBarcode.stampCheckPrice')}` : ''
       return `${formatStampDisplay(stamp)} · ${price} · ${label}${check}`
+    },
+
+    isFullPriceMode() {
+      return this.selectedType === 'small-50x14' && this.labelPriceMode === LABEL_PRICE_MODES.FULL
+    },
+
+    priceModeOptions() {
+      return [
+        { value: LABEL_PRICE_MODES.CODE, label: this.$t('view.stock.printBarcode.labelPriceModeCode') },
+        { value: LABEL_PRICE_MODES.FULL, label: this.$t('view.stock.printBarcode.labelPriceModeFull') }
+      ]
+    },
+
+    currencyOptions() {
+      return [
+        { value: LABEL_CURRENCIES.USD, label: this.$t('view.stock.printBarcode.labelCurrencyUsd') },
+        { value: LABEL_CURRENCIES.THB, label: this.$t('view.stock.printBarcode.labelCurrencyThb') }
+      ]
+    },
+
+    labelSymbol() {
+      return LABEL_CURRENCY_SYMBOLS[this.labelCurrency]
+    },
+
+    computedLabelPrice() {
+      return computeLabelPrice(this.barcode.salePrice, this.labelCurrency, this.labelRate)
+    },
+
+    labelPriceInputValue() {
+      if (this.labelPriceOverride !== null) return this.labelPriceOverride
+      return formatLabelPriceInput(this.computedLabelPrice)
+    },
+
+    effectiveLabelPrice() {
+      return pickLabelPrice(this.barcode.salePrice, this.labelCurrency, this.labelRate, this.labelPriceOverride)
+    },
+
+    // null = โหมดรหัสราคา (ZPL เดิม) · string = ข้อความราคาเต็มที่จะพิมพ์ ('' = ไม่มีราคา)
+    labelPriceText() {
+      if (!this.isFullPriceMode) return null
+      return formatLabelPriceText(this.effectiveLabelPrice, this.labelCurrency)
+    },
+
+    labelPriceHint() {
+      const thb = Number(this.barcode.salePrice)
+      if (!Number.isFinite(thb) || thb <= 0) return ''
+      const thbText = thb.toLocaleString('en-US')
+      if (this.labelCurrency === LABEL_CURRENCIES.THB) {
+        return this.$t('view.stock.printBarcode.labelPriceHintThb', { thb: thbText })
+      }
+      if (this.computedLabelPrice === null) return ''
+      return this.$t('view.stock.printBarcode.labelPriceHintUsd', {
+        thb: thbText,
+        rate: this.labelRate,
+        result: formatLabelPriceText(this.computedLabelPrice, this.labelCurrency).slice(1)
+      })
+    },
+
+    // บรรทัด 2 จริงที่จะพิมพ์ (ใช้ layout เดียวกับ ZPL) — ให้เห็นผลตอนแก้ราคา แม้ตัวอย่างอยู่พ้นจอ
+    printedLine2() {
+      return layoutGt800Small({ ...this.barcode, hidePrice: this.hidePrice, labelPriceText: this.labelPriceText }).line2
+    },
+
+    labelRateOutOfRange() {
+      return this.labelCurrency === LABEL_CURRENCIES.USD && isLabelRateOutOfRange(this.labelRate)
+    },
+
+    labelRateRangeText() {
+      return this.$t('view.stock.printBarcode.labelRateOutOfRange', { rate: this.labelRate, min: LABEL_RATE_MIN, max: LABEL_RATE_MAX })
+    },
+
+    // เหตุที่ยังพิมพ์ราคาเต็มไม่ได้ (ว่าง = พร้อม) · hidePrice = ไม่พิมพ์ราคา จึงไม่ต้องบล็อก
+    labelPriceMissingText() {
+      if (!this.isFullPriceMode || this.hidePrice) return ''
+      if (this.labelCurrency === LABEL_CURRENCIES.USD && !isValidLabelRate(this.labelRate)) {
+        return this.$t('view.stock.printBarcode.labelPriceMissingRate')
+      }
+      if (!isUsableLabelPrice(this.effectiveLabelPrice)) {
+        return this.$t('view.stock.printBarcode.labelPriceMissingSingle')
+      }
+      return ''
     },
 
     previewPrice() {
@@ -561,6 +739,7 @@ export default {
       if (this.isPrinting) return true
       if (this.isGt800OnlyBlocked) return true
       if (!this.isPrinterReady) return true
+      if (this.labelPriceMissingText) return true
       if (this.selectedType === 'original-qr' && this.publicLinkStatus !== 'ready') return true
       return false
     }
@@ -583,6 +762,10 @@ export default {
       hidePrice: false,
       hideMold: false,
       goldPrice: getBarcodeGoldPrice(),
+      labelPriceMode: getBarcodeLabelPriceMode(),
+      labelCurrency: getBarcodeLabelCurrency(),
+      labelRate: getBarcodeLabelRate(),
+      labelPriceOverride: null,
       abbreviateGems: getAbbreviateGems(),
       gemLabelMeta: null,
       isPrinting: false,
@@ -593,6 +776,23 @@ export default {
   methods: {
     onGoldPriceChange(value) {
       setBarcodeGoldPrice(value)
+    },
+
+    onLabelPriceBlur() {
+      this.labelPriceOverride = normalizeLabelPriceInput(this.labelPriceOverride)
+    },
+
+    onLabelPriceModeChange(value) {
+      setBarcodeLabelPriceMode(value)
+    },
+
+    onLabelCurrencyChange(value) {
+      setBarcodeLabelCurrency(value)
+      this.labelPriceOverride = null
+    },
+
+    onLabelRateChange(value) {
+      setBarcodeLabelRate(value)
     },
 
     onAbbreviateGemsChange(value) {
@@ -612,6 +812,7 @@ export default {
       this.labelTopLine = 'name'
       this.hidePrice = false
       this.hideMold = false
+      this.labelPriceOverride = null
       this.gemLabelMeta = null
       this.isPrinting = false
       this.progress = { done: 0, total: 0 }
@@ -717,6 +918,7 @@ export default {
         publicUrl: this.publicUrl,
         hidePrice: this.hidePrice,
         hideMold: this.hideMold,
+        ...(this.labelPriceText !== null ? { labelPriceText: this.labelPriceText } : {}),
         goldDateStamp: this.selectedType === 'small-50x14' ? this.pieceGoldStamp.stamp : '',
         abbreviateGems: this.abbreviateGems,
         gemLabelMeta: this.gemLabelMeta,
@@ -758,6 +960,45 @@ export default {
 
 .printer-warning-line {
   margin-bottom: var(--sp-md);
+}
+
+.label-price-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+  padding: var(--sp-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.label-price-input {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+}
+
+.label-price-symbol {
+  font-weight: 700;
+  color: var(--base-font-color);
+}
+
+.label-price-edited {
+  font-size: var(--fs-sm);
+  color: var(--base-font-color);
+  background: var(--status-open-bg);
+  padding: 0 var(--sp-xs);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.label-price-hint {
+  font-size: var(--fs-sm);
+  color: var(--base-font-color);
+}
+
+.label-price-printed-text {
+  font-weight: 700;
+  white-space: pre;
 }
 
 .gold-stamp-box {

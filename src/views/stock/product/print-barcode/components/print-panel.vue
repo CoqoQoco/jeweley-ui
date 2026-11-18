@@ -44,6 +44,47 @@
         />
       </div>
 
+      <div v-if="showHideMoldOption && !hidePrice" class="field">
+        <FormFieldGeneric :label="$t('view.stock.printBarcode.labelPriceMode')">
+          <ToggleGroupGeneric
+            :modelValue="labelPriceMode"
+            :options="priceModeOptions"
+            :ariaLabel="$t('view.stock.printBarcode.labelPriceMode')"
+            :disabled="isPrinting"
+            @update:modelValue="$emit('update:labelPriceMode', $event)"
+          />
+        </FormFieldGeneric>
+      </div>
+
+      <template v-if="isFullPriceMode">
+        <div class="field">
+          <FormFieldGeneric :label="$t('view.stock.printBarcode.labelCurrency')">
+            <ToggleGroupGeneric
+              :modelValue="labelCurrency"
+              :options="currencyOptions"
+              :ariaLabel="$t('view.stock.printBarcode.labelCurrency')"
+              :disabled="isPrinting"
+              @update:modelValue="$emit('update:labelCurrency', $event)"
+            />
+          </FormFieldGeneric>
+        </div>
+        <div v-if="labelCurrency === 'USD'" class="field">
+          <FormFieldGeneric :label="$t('view.stock.printBarcode.labelRate')">
+            <InputTextGeneric
+              :modelValue="labelRate"
+              type="number"
+              :min="0"
+              :disabled="isPrinting"
+              @update:modelValue="$emit('update:labelRate', $event)"
+            />
+          </FormFieldGeneric>
+          <div v-if="labelRateOutOfRange" class="gold-price-warning">
+            <span class="bi bi-exclamation-triangle mr-1"></span>
+            <span>{{ labelRateRangeText }}</span>
+          </div>
+        </div>
+      </template>
+
       <div v-if="!isLegacyProfile" class="field field-checkbox">
         <CheckboxGeneric
           :modelValue="abbreviateGems"
@@ -130,6 +171,13 @@
       </span>
     </div>
 
+    <div v-if="labelPriceBlockReason" class="panel-note">
+      <span class="gold-price-warning">
+        <span class="bi bi-exclamation-triangle mr-1"></span>
+        <span>{{ labelPriceBlockReason }}</span>
+      </span>
+    </div>
+
     <div v-if="showNote" class="panel-note">
       <span v-if="isPrinting" class="progress-text">
         <i class="bi bi-printer"></i>
@@ -148,12 +196,20 @@
 import { zebraPrinterApi } from '@/stores/modules/api/printer/zebra-store.js'
 import { getBarcodeProfile, PRINTER_PROFILES } from '@/services/api/barcode-printer-config.js'
 import { REMARK_SYMBOLS, REMARK_SYMBOL_NONE } from '@/services/helper/barcode/barcode-zpl.js'
+import {
+  LABEL_PRICE_MODES,
+  LABEL_CURRENCIES,
+  LABEL_RATE_MIN,
+  LABEL_RATE_MAX,
+  isLabelRateOutOfRange
+} from '@/services/helper/barcode/label-price.js'
 import { isPriceOutOfRange, MIN_PRICE_PER_GRAM, MAX_PRICE_PER_GRAM } from '@/services/helper/barcode/gold-stamp.js'
 
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
+import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
@@ -169,7 +225,7 @@ const REMARK_I18N_KEYS = {
 }
 
 export default {
-  components: { SectionCardGeneric, ButtonGeneric, DropdownGeneric, CheckboxGeneric, FormFieldGeneric, InputTextGeneric },
+  components: { SectionCardGeneric, ToggleGroupGeneric, ButtonGeneric, DropdownGeneric, CheckboxGeneric, FormFieldGeneric, InputTextGeneric },
 
   props: {
     hidePrice: {
@@ -182,6 +238,22 @@ export default {
     },
     goldPrice: {
       type: [String, Number],
+      default: ''
+    },
+    labelPriceMode: {
+      type: String,
+      default: LABEL_PRICE_MODES.CODE
+    },
+    labelCurrency: {
+      type: String,
+      default: LABEL_CURRENCIES.USD
+    },
+    labelRate: {
+      type: [String, Number],
+      default: ''
+    },
+    labelPriceBlockReason: {
+      type: String,
       default: ''
     },
     abbreviateGems: {
@@ -230,7 +302,7 @@ export default {
     }
   },
 
-  emits: ['update:barcodeType', 'update:remarkSymbol', 'update:hidePrice', 'update:hideMold', 'update:goldPrice', 'update:abbreviateGems', 'update:printUnitNo', 'print', 'retry'],
+  emits: ['update:barcodeType', 'update:remarkSymbol', 'update:hidePrice', 'update:hideMold', 'update:goldPrice', 'update:labelPriceMode', 'update:labelCurrency', 'update:labelRate', 'update:abbreviateGems', 'update:printUnitNo', 'print', 'retry'],
 
   setup() {
     const zebraPrinter = zebraPrinterApi()
@@ -275,6 +347,32 @@ export default {
 
     showHideMoldOption() {
       return this.barcodeType === 'small-50x14'
+    },
+
+    isFullPriceMode() {
+      return this.showHideMoldOption && !this.hidePrice && this.labelPriceMode === LABEL_PRICE_MODES.FULL
+    },
+
+    priceModeOptions() {
+      return [
+        { value: LABEL_PRICE_MODES.CODE, label: this.$t('view.stock.printBarcode.labelPriceModeCode') },
+        { value: LABEL_PRICE_MODES.FULL, label: this.$t('view.stock.printBarcode.labelPriceModeFull') }
+      ]
+    },
+
+    currencyOptions() {
+      return [
+        { value: LABEL_CURRENCIES.USD, label: this.$t('view.stock.printBarcode.labelCurrencyUsd') },
+        { value: LABEL_CURRENCIES.THB, label: this.$t('view.stock.printBarcode.labelCurrencyThb') }
+      ]
+    },
+
+    labelRateOutOfRange() {
+      return isLabelRateOutOfRange(this.labelRate)
+    },
+
+    labelRateRangeText() {
+      return this.$t('view.stock.printBarcode.labelRateOutOfRange', { rate: this.labelRate, min: LABEL_RATE_MIN, max: LABEL_RATE_MAX })
     },
 
     showUnitNoOption() {
@@ -352,7 +450,7 @@ export default {
     },
 
     isPrintDisabled() {
-      return this.isPrinting || !this.isPrinterReady || this.selectedCount === 0 || this.isGt800OnlyBlocked
+      return this.isPrinting || !this.isPrinterReady || this.selectedCount === 0 || this.isGt800OnlyBlocked || !!this.labelPriceBlockReason
     }
   },
 

@@ -111,6 +111,10 @@ export default {
     gemLabelMeta: {
       type: Object,
       default: null
+    },
+    labelPriceText: {
+      type: String,
+      default: null
     }
   },
 
@@ -127,6 +131,7 @@ export default {
     smallFormValue() {
       return {
         ...this.barcode,
+        ...(this.labelPriceText !== null ? { labelPriceText: this.labelPriceText } : {}),
         hidePrice: this.hidePrice,
         hideMold: this.hideMold,
         goldDateStamp: this.goldStamp ?? formatGoldDateStamp(this.goldPrice, new Date()),
