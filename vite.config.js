@@ -1,5 +1,6 @@
-import { fileURLToPath, URL } from 'node:url'
+import { fileURLToPath, pathToFileURL, URL } from 'node:url'
 import fs from 'node:fs'
+import os from 'node:os'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -22,8 +23,23 @@ function removeConsolePlugin(removeConsole = true) {
   }
 }
 
+// dev เท่านั้น (TK202611170014): หน้าเว็บ local ส่ง token-dk ไปเก็บใน Keychain ให้ Claude ใช้ยิง ticket API
+// plugin อยู่นอก repo (~/.claude/scripts/claude-api) — เครื่องที่ไม่มีไฟล์นี้ / build / vitest = ข้าม
+async function claudeTokenSync() {
+  const p = `${os.homedir()}/.claude/scripts/claude-api/vite-plugin.mjs`
+  // โหมดทดสอบมือถือ (VITE_EXPOSE_HOST) ข้าม — กันคนที่ login บนมือถือผ่าน tunnel มาทับ token ของ dev
+  if (process.env.VITEST || process.env.VITE_EXPOSE_HOST === 'true' || !fs.existsSync(p)) return null
+  try {
+    return (await import(pathToFileURL(p).href)).default('dk')
+  } catch (e) {
+    // plugin เสีย ต้องไม่ทำให้ dev server / Playwright เปิดไม่ขึ้น
+    console.warn(`[claude] ข้าม token sync: ${e.message}`)
+    return null
+  }
+}
+
 // https://vitejs.dev/config/
-export default defineConfig(() => {
+export default defineConfig(async ({ command }) => {
   const appVersion = formatBuildVersion()
   const removeConsole = false // true >> colse console.log
 
@@ -34,8 +50,9 @@ export default defineConfig(() => {
         runtimeOnly: false
       }),
       removeConsolePlugin(removeConsole),
-      versionJsonPlugin(appVersion)
-    ],
+      versionJsonPlugin(appVersion),
+      command === 'serve' && (await claudeTokenSync())
+    ].filter(Boolean),
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url))
