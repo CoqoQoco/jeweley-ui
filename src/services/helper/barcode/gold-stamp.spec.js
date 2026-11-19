@@ -158,3 +158,41 @@ describe('batch reference + ambiguous', () => {
     expect(resolvePieceGoldStamp([m(4000, 99)], '', now).ambiguous).toBe(false)
   })
 })
+
+describe('priceWeight (ราคา/น้ำหนักจริงจากรับงานผลิต)', () => {
+  const dk = (extra = {}) => ({ type: 'Gold', weight: 0.97, weightUnit: 'g.', price: 2000, ...extra })
+
+  it('priceWeight ชนะการเดา — DK20I281: ไม่มี priceWeight อ้างอิง 4000 ได้ 2061.86, มีแล้วได้ 2000', () => {
+    const guessed = resolvePieceGoldStamp([dk()], '', now, 4000)
+    expect(guessed.pricePerGram).toBeCloseTo(2061.86, 2)
+    const exact = resolvePieceGoldStamp([dk({ priceWeight: 2000 })], '', now, 4000)
+    expect(exact.pricePerGram).toBe(2000)
+    expect(exact.ambiguous).toBe(false)
+    expect(exact.source).toBe('material')
+  })
+
+  it('priceWeight ว่าง/0 → ใช้วิธีเดิม', () => {
+    expect(resolvePieceGoldStamp([dk({ priceWeight: null })], '', now, 4000).pricePerGram).toBeCloseTo(2061.86, 2)
+    expect(resolvePieceGoldStamp([dk({ priceWeight: 0 })], '', now, 4000).pricePerGram).toBeCloseTo(2061.86, 2)
+  })
+
+  it('priceWeight นอกช่วง 1500–6000 ยังใช้ค่านั้น และแจ้ง outOfRange', () => {
+    const r = resolvePieceGoldStamp([dk({ priceWeight: 1200 })], '', now)
+    expect(r.pricePerGram).toBe(1200)
+    expect(r.outOfRange).toBe(true)
+    expect(resolvePieceGoldStamp([dk({ priceWeight: 2000 })], '', now).outOfRange).toBe(false)
+  })
+
+  it('แถวที่ updateDate ใหม่สุดชนะ แม้ priceWeight', () => {
+    const r = resolvePieceGoldStamp(
+      [dk({ priceWeight: 2000, updateDate: '2026-11-10T00:00:00Z' }), dk({ priceWeight: 3000, updateDate: '2026-11-12T00:00:00Z' })],
+      '',
+      now
+    )
+    expect(r.pricePerGram).toBe(3000)
+  })
+
+  it('resolveBatchReference นับ priceWeight เป็นค่าเดียว', () => {
+    expect(resolveBatchReference([[dk({ priceWeight: 2000 })], [dk({ priceWeight: 2200 })], [dk({ priceWeight: 2400 })]], '')).toBe(2200)
+  })
+})

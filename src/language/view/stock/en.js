@@ -202,6 +202,7 @@ export default {
     lotBalanceTitle: 'This Lot',
     slocHeader: 'Storage Location',
     materialsEmpty: 'No materials',
+    priceWeight: 'Price/Weight',
     materialTotalPrice: 'Materials Total',
     receiptInfoTitle: 'Receipt & History',
     receiptNumber: 'Receipt No.',

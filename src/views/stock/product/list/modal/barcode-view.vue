@@ -518,7 +518,7 @@ export default {
       if (source === 'none') return this.$t('view.stock.printBarcode.stampNone')
       const label = this.$t(source === 'material' ? 'view.stock.printBarcode.stampFromMaterial' : 'view.stock.printBarcode.stampFromFallback')
       const price = this.$t('view.stock.printBarcode.stampPricePerGram', { price: Number(this.pieceGoldStamp.pricePerGram).toLocaleString('en-US') })
-      const check = this.pieceGoldStamp.ambiguous ? ` · ${this.$t('view.stock.printBarcode.stampCheckPrice')}` : ''
+      const check = this.pieceGoldStamp.ambiguous || this.pieceGoldStamp.outOfRange ? ` · ${this.$t('view.stock.printBarcode.stampCheckPrice')}` : ''
       return `${formatStampDisplay(stamp)} · ${price} · ${label}${check}`
     },
 

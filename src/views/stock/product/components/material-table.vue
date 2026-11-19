@@ -25,6 +25,10 @@
           <template #weightTemplate="{ data }">
             <span>{{ weightText(data) }}</span>
           </template>
+
+          <template #priceWeightTemplate="{ data }">
+            <span>{{ data.priceWeight > 0 ? formatThousands(data.priceWeight) : '—' }}</span>
+          </template>
         </BaseDataTable>
       </div>
       <div class="material-total">
@@ -80,6 +84,7 @@ export default {
         { field: 'region', header: this.$t('view.stock.product.origin'), sortable: false, minWidth: '120px' },
         { field: 'qty', header: this.$t('common.field.quantity'), sortable: false, minWidth: '110px', align: 'right' },
         { field: 'weight', header: this.$t('common.field.weight'), sortable: false, minWidth: '110px', align: 'right' },
+        { field: 'priceWeight', header: this.$t('view.stock.product.priceWeight'), sortable: false, minWidth: '120px', align: 'right' },
         { field: 'price', header: this.$t('common.field.price'), sortable: false, minWidth: '120px', align: 'right', format: 'decimal2' }
       )
 
@@ -99,6 +104,10 @@ export default {
 
   methods: {
     formatDecimal,
+
+    formatThousands(value) {
+      return new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)
+    },
 
     typeLabel(item) {
       if (item.type === 'Gold' || item.type === 'Silver') {

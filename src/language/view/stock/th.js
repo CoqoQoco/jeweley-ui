@@ -202,6 +202,7 @@ export default {
     lotBalanceTitle: 'ล็อตนี้',
     slocHeader: 'Storage Location',
     materialsEmpty: 'ไม่มีรายการวัตถุดิบ',
+    priceWeight: 'ราคา/น้ำหนัก',
     materialTotalPrice: 'รวมราคาวัตถุดิบ',
     receiptInfoTitle: 'การรับเข้า / ประวัติ',
     receiptNumber: 'เลขที่ใบรับ',

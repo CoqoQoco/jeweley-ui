@@ -90,7 +90,7 @@
 
   ✅ **Material Details Expansion** (data-expand-view.vue → ใช้ shared components)
      - **Layout**: `.expand-container { position: sticky; left: 0 }` + `.expand-grid` (`minmax(0,3fr) minmax(0,2fr)`, ≤1200px ยุบ 1 คอลัมน์) — แทนที่ fixed `width: 750px` เดิม
-     - กล่องซ้าย: `material-table.vue` (`variant="compact"`) — ประเภท/รหัส/ขนาด/แหล่งผลิต/จำนวน/น้ำหนัก/ราคา + รวมราคาวัตถุดิบ
+     - กล่องซ้าย: `material-table.vue` (`variant="compact"`) — ประเภท/รหัส/ขนาด/แหล่งผลิต/จำนวน/น้ำหนัก/ราคา-ต่อน้ำหนัก (priceWeight)/ราคา + รวมราคาวัตถุดิบ
      - กล่องขวา: `balance-panel.vue` — 3 tile ล็อตนี้ (คงเหลือ/จอง/พร้อมขาย) + ตาราง SKU ตาม Storage Location (`slocHeader` ผ่าน i18n แล้ว)
      - **Material Type Display** (ย้ายมาอยู่ที่เดียวใน `material-table.vue`):
        - Gold/Silver: Show master gold type name

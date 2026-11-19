@@ -25,7 +25,14 @@ function priceCandidates(material) {
   return candidates
 }
 
+const explicitPriceWeight = (material) => {
+  const value = Number(material?.priceWeight)
+  return Number.isFinite(value) && value > 0 ? value : 0
+}
+
 function toPricePerGram(material, reference) {
+  const explicit = explicitPriceWeight(material)
+  if (explicit) return { value: explicit, ambiguous: false }
   const candidates = priceCandidates(material)
   if (candidates.length === 0) return { value: 0, ambiguous: false }
   const value = candidates.reduce((best, c) => (Math.abs(c - reference) < Math.abs(best - reference) ? c : best))
@@ -42,6 +49,11 @@ export function resolveBatchReference(materialsList, fallbackGoldPrice) {
   ;(Array.isArray(materialsList) ? materialsList : []).forEach((materials) => {
     ;(Array.isArray(materials) ? materials : []).forEach((material) => {
       if (!isGold(material)) return
+      const explicit = explicitPriceWeight(material)
+      if (explicit) {
+        values.push(explicit)
+        return
+      }
       const candidates = priceCandidates(material)
       if (candidates.length === 1) values.push(candidates[0])
     })
@@ -75,20 +87,20 @@ export function resolvePieceGoldStamp(materials, fallbackGoldPrice, now = new Da
     if (!pricePerGram) return
     const updated = parseUpdateDate(material.updateDate)
     if (!best || (updated && (!best.updated || updated > best.updated))) {
-      best = { pricePerGram, updated, ambiguous }
+      best = { pricePerGram, updated, ambiguous, outOfRange: isPriceOutOfRange(pricePerGram) }
     }
   })
 
   if (best) {
     const date = best.updated ? toThaiLocalDate(best.updated) : now
     const stamp = formatGoldDateStamp(best.pricePerGram, date)
-    if (stamp) return { stamp, source: 'material', pricePerGram: best.pricePerGram, ambiguous: best.ambiguous, date }
+    if (stamp) return { stamp, source: 'material', pricePerGram: best.pricePerGram, ambiguous: best.ambiguous, outOfRange: best.outOfRange, date }
   }
 
   const fallbackStamp = formatGoldDateStamp(fallbackGoldPrice, now)
-  if (fallbackStamp) return { stamp: fallbackStamp, source: 'fallback', pricePerGram: Number(fallbackGoldPrice), ambiguous: false, date: now }
+  if (fallbackStamp) return { stamp: fallbackStamp, source: 'fallback', pricePerGram: Number(fallbackGoldPrice), ambiguous: false, outOfRange: false, date: now }
 
-  return { stamp: '', source: 'none', pricePerGram: 0, ambiguous: false, date: now }
+  return { stamp: '', source: 'none', pricePerGram: 0, ambiguous: false, outOfRange: false, date: now }
 }
 
 // แสดงตราตรงกับที่พิมพ์จริงบนป้าย (ไม่มีเว้นวรรค)

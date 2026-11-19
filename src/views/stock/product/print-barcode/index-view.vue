@@ -537,7 +537,7 @@ export default {
         entry.form.goldDateStamp = resolved.stamp
         entry.stampSource = resolved.source
         entry.stampPrice = resolved.pricePerGram
-        entry.stampAmbiguous = resolved.ambiguous
+        entry.stampAmbiguous = resolved.ambiguous || resolved.outOfRange
       })
     },
 

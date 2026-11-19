@@ -292,6 +292,16 @@
                   </div>
                 </template>
 
+                <template #priceWeightTemplate="{ data }">
+                  <InputTextGeneric
+                    type="number"
+                    :modelValue="data.priceWeight || null"
+                    :min="0"
+                    :step="0.01"
+                    @update:modelValue="(val) => onPriceWeightInput(data, val)"
+                  />
+                </template>
+
                 <template #priceTemplate="{ data }">
                   <InputTextGeneric type="number" v-model="data.price" :placeholder="$t('common.field.price')" :min="0" :step="0.01" />
                 </template>
@@ -340,6 +350,7 @@ import priceCheckConfirm from '@/composables/usePriceCheckConfirm.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { compressOptimalImage } from '@/services/helper/file/compress-image.js'
 import { resolveGoldTypeWord } from '@/services/helper/barcode/gold-type-name.js'
+import { resolvePriceFromPriceWeight, normalizePriceWeight } from '@/services/helper/stock/material-price-weight.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 const imagePreview = defineAsyncComponent(() => import('@/components/prime-vue/ImagePreview.vue'))
@@ -423,11 +434,12 @@ export default {
       return [
         { field: 'type', header: this.$t('view.stock.product.materialType'), sortable: false, width: '110px', minWidth: '110px' },
         { field: 'typeCode', header: this.$t('view.stock.product.materialCode'), sortable: false, width: '140px', minWidth: '140px' },
-        { field: 'grade', header: this.$t('view.stock.product.materialGrade'), sortable: false, width: '150px', minWidth: '150px' },
+        { field: 'grade', header: this.$t('view.stock.product.materialGrade'), sortable: false, width: '110px', minWidth: '110px' },
         { field: 'size', header: this.$t('view.stock.product.size'), sortable: false, width: '80px', minWidth: '80px' },
         { field: 'region', header: this.$t('view.stock.product.origin'), sortable: false, width: '90px', minWidth: '90px' },
-        { field: 'qty', header: this.$t('common.field.quantity'), sortable: false, width: '180px', minWidth: '180px' },
-        { field: 'weight', header: this.$t('common.field.weight'), sortable: false, width: '190px', minWidth: '190px' },
+        { field: 'qty', header: this.$t('common.field.quantity'), sortable: false, width: '150px', minWidth: '150px' },
+        { field: 'weight', header: this.$t('common.field.weight'), sortable: false, width: '160px', minWidth: '160px' },
+        { field: 'priceWeight', header: this.$t('view.stock.product.priceWeight'), sortable: false, width: '100px', minWidth: '100px' },
         { field: 'price', header: this.$t('common.field.price'), sortable: false, width: '110px', minWidth: '110px' },
         { field: 'action', header: '', sortable: false, width: '50px', minWidth: '50px' }
       ]
@@ -555,6 +567,11 @@ export default {
       item.materials.splice(index, 1)
     },
 
+    onPriceWeightInput(material, val) {
+      material.priceWeight = normalizePriceWeight(val)
+      material.price = resolvePriceFromPriceWeight(material, material.priceWeight)
+    },
+
     addMaterialItem(data) {
       data.push({
         type: '',
@@ -562,6 +579,7 @@ export default {
         qtyUnit: 'pc',
         weight: null,
         weightUnit: 'ct.',
+        priceWeight: null,
         description: ''
       })
     },
@@ -829,7 +847,7 @@ export default {
 
   > :first-child {
     flex: 1;
-    min-width: 90px;
+    min-width: 60px;
   }
 
   > :last-child {
