@@ -564,3 +564,91 @@ describe('SaleOrderView — ต้องบันทึกร่างก่อ�
     expect(mockFetchSave.mock.invocationCallOrder[0]).toBeLessThan(mockFetchGet.mock.invocationCallOrder[0])
   })
 })
+
+describe('SaleOrderView — ล็อกเปลี่ยนลูกค้าตาม invoice และ isOrderDirty จากการแก้ลูกค้า', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('มีเลข SO แต่ไม่มี invoice → ไม่ล็อกปุ่มค้นหา/เพิ่มลูกค้า', () => {
+    const { vm } = createWrapper()
+    vm.formSaleOrder.number = 'SO-0001'
+    vm.stockItems = [makeItem('A', { isConfirm: true })]
+    expect(vm.hasActiveInvoice).toBe(false)
+    expect(vm.isCustomerChangeLocked).toBe(false)
+    expect(vm.customerLockTitle).toBe('')
+  })
+
+  it('มีบรรทัดผูก invoice → hasActiveInvoice และล็อกพร้อม tooltip', () => {
+    const { vm } = createWrapper()
+    vm.stockItems = [makeItem('A', { isConfirm: true, invoice: 'INV-1' })]
+    expect(vm.hasActiveInvoice).toBe(true)
+    expect(vm.isCustomerChangeLocked).toBe(true)
+    expect(vm.customerLockTitle).toBe('view.sale.saleOrder.customerLockedByInvoice')
+  })
+
+  it('onCustomerSelected / onCustomerCreated / onCustomerUpdated ตั้ง customerLocallyEdited และ isOrderDirty', () => {
+    const { vm } = createWrapper()
+    expect(vm.isOrderDirty).toBe(false)
+    vm.onCustomerSelected({ code: 'C1', nameTh: 'ก' })
+    expect(vm.isOrderDirty).toBe(true)
+    expect(vm.customerLocallyEdited).toBe(true)
+
+    vm.isOrderDirty = false
+    vm.onCustomerCreated({ code: 'C2', nameTh: 'ข' })
+    expect(vm.isOrderDirty).toBe(true)
+
+    vm.isOrderDirty = false
+    vm.onCustomerUpdated({ nameTh: 'ค' })
+    expect(vm.isOrderDirty).toBe(true)
+  })
+})
+
+describe('SaleOrderView — เปลี่ยนลูกค้าแล้วต้องบันทึกก่อนเปิด invoice modal', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  function prepare(vm) {
+    vm.stockItems = [makeItem('A', { isConfirm: true })]
+    vm.onCustomerSelected({ code: 'C1', nameTh: 'ก' })
+  }
+
+  it('openInvoiceModal: เรียก save ก่อน แล้วเปิด modal เมื่อสำเร็จ', async () => {
+    mockFetchSave.mockResolvedValue('SO-0001')
+    const { vm } = createWrapper()
+    prepare(vm)
+    await vm.openInvoiceModal()
+    expect(mockFetchSave).toHaveBeenCalledTimes(1)
+    expect(vm.isShow.invoiceModal).toBe(true)
+  })
+
+  it('openInvoiceModal: save ล้ม → ไม่เปิด modal', async () => {
+    mockFetchSave.mockResolvedValue(null)
+    const { vm } = createWrapper()
+    prepare(vm)
+    await vm.openInvoiceModal()
+    expect(vm.isShow.invoiceModal).toBe(false)
+  })
+
+  it('openConfirmAndInvoiceModal: save ล้ม → ไม่เปิด, สำเร็จ → เปิด', async () => {
+    const { vm } = createWrapper()
+    prepare(vm)
+    vm.formSaleOrder.customerCode = 'C1'
+    vm.formSaleOrder.customerName = 'ก'
+    mockFetchSave.mockResolvedValue(null)
+    await vm.openConfirmAndInvoiceModal()
+    expect(vm.isShow.confirmAndInvoiceModal).toBe(false)
+    mockFetchSave.mockResolvedValue('SO-0001')
+    await vm.openConfirmAndInvoiceModal()
+    expect(vm.isShow.confirmAndInvoiceModal).toBe(true)
+  })
+
+  it('ไม่มีการแก้ไขค้าง → ไม่เรียก save', async () => {
+    const { vm } = createWrapper()
+    vm.stockItems = [makeItem('A', { isConfirm: true })]
+    await vm.openInvoiceModal()
+    expect(mockFetchSave).not.toHaveBeenCalled()
+    expect(vm.isShow.invoiceModal).toBe(true)
+  })
+})

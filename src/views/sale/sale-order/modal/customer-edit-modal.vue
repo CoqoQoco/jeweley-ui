@@ -8,6 +8,10 @@
             <span>{{ $t('view.sale.saleOrder.editCustomerTitle') }}</span>
           </div>
 
+          <p v-if="hasActiveInvoice" class="invoice-warning mb-3">
+            <i class="bi bi-exclamation-triangle-fill mr-2 invoice-warning-icon"></i>{{ $t('view.sale.saleOrder.editCustomerInvoiceWarning') }}
+          </p>
+
           <div class="form-content">
             <div class="form-col-container mb-2">
               <div>
@@ -173,7 +177,8 @@ export default {
     customerData: {
       type: Object,
       default: () => ({})
-    }
+    },
+    hasActiveInvoice: { type: Boolean, default: false }
   },
 
   emits: ['closeModal', 'customerUpdated'],
@@ -254,7 +259,7 @@ export default {
       const result = await this.customerStore.fetchUpdateCustomer({ formValue })
 
       if (result) {
-        swAlert.success(this.$t('view.sale.saleOrder.success.editMaster'), null, () => {
+        swAlert.success(this.$t('view.sale.saleOrder.success.editMaster') + '<br>' + this.$t('view.sale.saleOrder.success.remindSaveOrder'), null, () => {
           const updatedData = {
             code: this.form.code,
             nameTh: this.form.nameTh,
@@ -314,6 +319,19 @@ export default {
   overflow-y: auto;
 }
 
+
+.invoice-warning {
+  color: var(--base-font-color);
+  background: var(--status-open-bg);
+  border: 1px solid var(--base-warning);
+  border-radius: var(--radius-md);
+  padding: var(--sp-sm) var(--sp-md);
+  font-weight: 600;
+}
+
+.invoice-warning-icon {
+  color: var(--base-warning);
+}
 
 .txt-required {
   color: #dc3545;

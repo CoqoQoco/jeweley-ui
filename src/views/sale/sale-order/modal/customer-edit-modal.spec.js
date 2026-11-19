@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, flushPromises } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 import CustomerEditModal from './customer-edit-modal.vue'
 
@@ -55,6 +55,7 @@ function createWrapper(propsOverride = {}) {
   const wrapper = shallowMount(CustomerEditModal, {
     global: {
       plugins: [pinia],
+      mocks: { $t: (key) => key },
       stubs: {
         modal: {
           template: '<div><slot name="content" /></div>',
@@ -101,6 +102,7 @@ describe('CustomerEditModal', () => {
       const wrapper = shallowMount(CustomerEditModal, {
         global: {
           plugins: [pinia],
+          mocks: { $t: (key) => key },
           stubs: {
             modal: {
               template: '<div><slot name="content" /></div>',
@@ -230,5 +232,26 @@ describe('CustomerEditModal', () => {
       expect(mockFetchUpdateCustomer).not.toHaveBeenCalled()
       expect(wrapper.emitted('customerUpdated')).toBeFalsy()
     })
+  })
+})
+
+describe('CustomerEditModal — คำเตือน invoice และข้อความเตือนบันทึกใบ', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('แสดงคำเตือนเมื่อ hasActiveInvoice = true เท่านั้น', () => {
+    const on = createWrapper({ hasActiveInvoice: true })
+    expect(on.find('.invoice-warning').exists()).toBe(true)
+    const off = createWrapper({ hasActiveInvoice: false })
+    expect(off.find('.invoice-warning').exists()).toBe(false)
+  })
+
+  it('scope document → success ใช้ key editDocument', async () => {
+    const swAlert = (await import('@/services/alert/sweetAlerts.js')).default
+    const wrapper = createWrapper()
+    await wrapper.vm.onSubmit()
+    await flushPromises()
+    expect(swAlert.success.mock.calls[0][0]).toBe('view.sale.saleOrder.success.editDocument')
   })
 })

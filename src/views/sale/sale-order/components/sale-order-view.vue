@@ -194,22 +194,22 @@
               <button
                 :class="[
                   'btn btn-sm mr-2',
-                  `${hasSaleOrderNumber ? 'btn-dark ' : 'btn-green'}`
+                  `${isCustomerChangeLocked ? 'btn-dark ' : 'btn-green'}`
                 ]"
                 type="button"
                 @click="onSearchCustomer"
-                :title="$t('common.btn.search')"
-                :disabled="hasSaleOrderNumber"
+                :title="customerLockTitle || $t('common.btn.search')"
+                :disabled="isCustomerChangeLocked"
               >
                 <i class="bi bi-search mr-1"></i>
                 <span>{{ $t('common.btn.search') }}</span>
               </button>
               <button
-                class="btn btn-sm btn-green mr-2"
+                :class="['btn btn-sm mr-2', isCustomerChangeLocked ? 'btn-dark' : 'btn-green']"
                 type="button"
                 @click="onCreateCustomer"
-                :title="$t('common.btn.add')"
-                :disabled="hasSaleOrderNumber || isViewMode"
+                :title="customerLockTitle || $t('common.btn.add')"
+                :disabled="isCustomerChangeLocked"
               >
                 <i class="bi bi-plus-circle mr-1"></i><span>{{ $t('common.btn.add') }}</span>
               </button>
@@ -218,7 +218,7 @@
                 class="btn btn-sm btn-outline-main ml-2"
                 type="button"
                 @click="onEditCustomer"
-                :title="$t('common.btn.edit')"
+                :title="isViewMode ? $t('view.sale.saleOrder.customerLockedViewMode') : $t('common.btn.edit')"
                 :disabled="isViewMode"
               >
                 <i class="bi bi-pencil mr-1"></i><span>{{ $t('common.btn.edit') }}</span>
@@ -557,7 +557,7 @@
             {{ $t('view.sale.saleOrder.saveDraft') }}
           </button>
           <span v-if="isOrderDirty" class="order-dirty-hint">
-            <i class="bi bi-exclamation-circle mr-1"></i>
+            <i class="bi bi-exclamation-circle mr-1 order-dirty-icon"></i>
             {{ $t('view.sale.saleOrder.orderNotSavedHint') }}
           </span>
         </div>
@@ -600,6 +600,7 @@
   <CustomerEditModal
     :isShow="isShow.editCustomer"
     :customerData="editCustomerData"
+    :hasActiveInvoice="hasActiveInvoice"
     @closeModal="isShow.editCustomer = false"
     @customerUpdated="onCustomerUpdated"
   />
@@ -1091,6 +1092,18 @@ export default {
       return this.validationErrors.length > 0
     },
 
+    hasActiveInvoice() {
+      return [...this.stockItems, ...this.copyItems].some((item) => !!item.invoice)
+    },
+
+    isCustomerChangeLocked() {
+      return this.isViewMode || this.hasActiveInvoice
+    },
+
+    customerLockTitle() {
+      return this.hasActiveInvoice ? this.$t('view.sale.saleOrder.customerLockedByInvoice') : ''
+    },
+
     hasSaleOrderNumber() {
       //return this.formSaleOrder.number === null
       //return this.formSaleOrder.number && this.formSaleOrder.number.trim() !== ''
@@ -1536,6 +1549,7 @@ export default {
         customerEmail: customerData.email,
         customerId: customerData.id
       }
+      this.markCustomerChanged()
       this.isShow.searchCustomer = false
     },
 
@@ -1549,6 +1563,7 @@ export default {
         customerEmail: customerData.email || '',
         customerId: customerData.id
       }
+      this.markCustomerChanged()
       this.isShow.createCustomer = false
     },
 
@@ -1569,8 +1584,13 @@ export default {
         customerPhone: data.telephone1 || '',
         customerEmail: data.email || ''
       }
-      this.customerLocallyEdited = true
+      this.markCustomerChanged()
       this.isShow.editCustomer = false
+    },
+
+    markCustomerChanged() {
+      this.customerLocallyEdited = true
+      this.isOrderDirty = true
     },
 
     // ============================================
@@ -2069,7 +2089,12 @@ export default {
       }
     },
 
-    openInvoiceModal() {
+    async saveBeforeInvoiceIfNeeded() {
+      if (!this.isOrderDirty) return true
+      return await this.fetchSaveSaleOrder()
+    },
+
+    async openInvoiceModal() {
       if (this.confirmedStockItemsCount === 0) {
         warning(this.$t('view.sale.saleOrder.warn.confirmFirstForInvoice'))
         return
@@ -2079,6 +2104,8 @@ export default {
         warning(this.$t('view.sale.saleOrder.warn.noItemsForInvoice'))
         return
       }
+
+      if (!(await this.saveBeforeInvoiceIfNeeded())) return
 
       this.isShow.invoiceModal = true
     },
@@ -2098,6 +2125,8 @@ export default {
         warning(this.$t('view.sale.saleOrder.warn.noItemsToProcess'))
         return
       }
+
+      if (!(await this.saveBeforeInvoiceIfNeeded())) return
 
       this.isShow.confirmAndInvoiceModal = true
     },
@@ -2149,6 +2178,7 @@ export default {
 
     async fetchSaveSaleOrder() {
       this.isOnDraft = true
+      let saved = false
 
       const stockItemsData = this.stockItems.map(stripHeavyItemFields)
 
@@ -2198,6 +2228,7 @@ export default {
         })
         if (res) {
           this.formSaleOrder.number = res
+          saved = true
         }
         this.isOrderDirty = false
       } catch {
@@ -2205,6 +2236,7 @@ export default {
       } finally {
         this.isOnDraft = false
       }
+      return saved
     },
 
     // เงื่อนไข "ย้ายลำดับได้" แหล่งเดียว — ยืนยันแล้ว + ยังไม่ออกใบแจ้งหนี้ + ไม่ใช่บรรทัดรอผลิต/รอแปลง
@@ -3042,8 +3074,15 @@ export default {
   display: inline-flex;
   align-items: center;
   font-size: var(--fs-sm);
-  color: var(--base-warning);
+  color: var(--base-font-color);
+  background: var(--status-open-bg);
+  padding: var(--sp-xs) var(--sp-sm);
+  border-radius: var(--radius-md);
   gap: var(--sp-xs);
+}
+
+.order-dirty-icon {
+  color: var(--base-warning);
 }
 
 /* Quotation table styles */
