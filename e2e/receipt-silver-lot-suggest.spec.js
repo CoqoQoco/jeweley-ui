@@ -148,6 +148,50 @@ test.describe('แนะนำล็อตเงินเดิมตอนร�
   })
 })
 
+test.describe('วัตถุดิบตอนรับสินค้างานนอก', () => {
+  test('payload วัตถุดิบมี weight / weightUnit / price / typeBarcode', async ({ page }) => {
+    const api = await openCreate(page, [])
+    await fillProductNumber(page, 'GD-1')
+    await pickMetal(page, 'Yellow Gold')
+    await page.getByPlaceholder('ชื่อสินค้า EN').fill('Gold Ring')
+    await page.getByPlaceholder('ชื่อสินค้า TH').fill('แหวนทอง')
+
+    await page.locator('.p-row-toggler').first().click()
+    await page.locator('input[type=number][step=any]').first().fill('1000')
+    const addBtn = page.locator('.bi-plus-lg').first()
+    await addBtn.click()
+    await addBtn.click()
+
+    const mat = page.locator('.custom-form-table-material')
+    const pickType = async (row, label) => {
+      await mat.locator('tbody tr').nth(row).locator('.p-dropdown').first().click()
+      await page.getByRole('option', { name: label, exact: true }).last().click()
+    }
+    await pickType(0, 'Gold')
+    await pickType(1, 'Diamond')
+
+    const fillRow = async (row, weight, price) => {
+      const r = mat.locator('tbody tr').nth(row)
+      await r.getByPlaceholder('น้ำหนัก').fill(weight)
+      await r.getByPlaceholder('ราคา').last().fill(price)
+      await r.getByPlaceholder('ราคา').last().blur()
+    }
+    await fillRow(0, '2.5', '100')
+    await fillRow(1, '0.3', '5000')
+
+    const stock = await submit(page, api)
+    const [gold, diamond] = stock.materials
+    expect(gold.weight).toBe(2.5)
+    expect(gold.weightUnit).toBe('g.')
+    expect(gold.price).toBe(250)
+    expect(gold.typeBarcode).toBe('2.5 g. Gold')
+    expect(diamond.weight).toBe(0.3)
+    expect(diamond.price).toBe(1500)
+    expect(diamond.typeBarcode).toContain('Diamond0.3')
+    api.assertNoLeak()
+  })
+})
+
 // ---- หน้ารับสินค้างานผลิต (แผนเงิน) ----
 
 const planStock = (extra = {}) => ({

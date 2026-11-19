@@ -85,6 +85,7 @@ import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { isSilverMetal, resolveProductionType, validateReceiptQty } from '@/services/helper/receipt-lot/receipt-lot.js'
 
+import { buildOutsourceMaterials } from './outsource-materials-payload.js'
 import outsourceHeader from './components/outsource-header-view.vue'
 import ProductFormTable from './components/product-form-table.vue'
 import modalSelectImage from '../new-gr-production/modal/image-select-view.vue'
@@ -327,7 +328,9 @@ export default {
           imagePath: item.imagePath || null,
           remark: item.remark || null,
           topUpStockNumber: item.topUpStockNumber || null,
-          materials: item.materials || []
+          materials: buildOutsourceMaterials(item.materials, {
+            isSilverPlan: isSilverMetal(item.productionType)
+          })
         }))
       }
 

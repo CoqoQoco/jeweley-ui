@@ -117,7 +117,8 @@ import modalSearchProductName from './modal/search-product-name-view.vue'
 import modalEditAllMaterials from './modal/edit-all-materials-view.vue'
 import modalAdjustBreakdown from './modal/adjust-breakdown-view.vue'
 import { isSilverPlanData, validateReceiptQty } from '@/services/helper/receipt-lot/receipt-lot.js'
-import { formatGoldBarcodeText, isGoldOrSilverMaterial } from './gold-barcode-text.js'
+import { isGoldOrSilverMaterial } from './gold-barcode-text.js'
+import { buildMaterialBarcodeText } from './material-barcode-text.js'
 
 const interfaceBarcode = {
   madeIn: 'MADE IN THAILAND',
@@ -743,27 +744,7 @@ export default {
     },
 
     getBarcode(item) {
-      let display = ''
-
-      if (item.type === 'Diamond') {
-        display = `${item.qty ?? ''}${item.type ?? ''}${item.qtyWeight ?? ''}${
-          item.qtyWeightUnit ? ` ${item.qtyWeightUnit}` : ''
-        }${item.typeCode ? `, ${item.typeCode}` : ''}${item.size ? `, ${item.size}` : ''} ${
-          item.region ? `, (${item.region})` : ''
-        }`
-      }
-
-      if (item.type === 'Gold' || item.type === 'Silver') {
-        display = formatGoldBarcodeText(item, this.isSilverPlan)
-      }
-
-      if (item.type === 'Gem') {
-        display = `${item.qty ?? ''}${item.typeCode ?? ''}${item.qtyWeight ?? ''}${
-          item.qtyWeightUnit ? ` ${item.qtyWeightUnit}` : ``
-        }${item.size ? `, ${item.size}` : ''}${item.region ? `, (${item.region})` : ''}`
-      }
-
-      return display
+      return buildMaterialBarcodeText(item, { isSilverPlan: this.isSilverPlan })
     },
 
     async onSubmit(event) {
