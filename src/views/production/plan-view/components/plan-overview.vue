@@ -103,16 +103,7 @@
           </div>
         </template>
       </Column>
-      <Column field="description" header="รายละเอียด" style="min-width: 200px">
-        <template #editor="{ data, field }">
-          <input
-            type="text"
-            :class="data[field] ? `` : `bg-warning`"
-            class="form-control"
-            v-model="data[field]"
-          />
-        </template>
-      </Column>
+      <Column field="description" header="รายละเอียด" style="min-width: 200px" />
     </DataTable>
   </div>
 </template>

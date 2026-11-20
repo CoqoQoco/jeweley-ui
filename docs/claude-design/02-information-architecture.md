@@ -29,7 +29,7 @@ Mobile (/mobile/*) — layout แยกต่างหาก:
 | **Master data** | `/master` | gem, gem-shape, diamond-grade, gold-size, productType, zill |
 | **Stock** | `/stock` | product/list, location, move-location |
 | **Receipt-Stock** | `/receipt-stock` | product GR (production/outsource), gem transaction/pick-return |
-| **Production** | `/production` | dashboard, plan-create, plan-tracking (gold/status/transfer/worker), plan-bom, plan-gold, plan-update, plan-view, pre-plan (list/create/approve), report (gold-loss-tang, plan-completed) |
+| **Production** | `/production` | dashboard, plan-create, plan-tracking (gold/status/transfer/worker), plan-bom, plan-gold, plan-update (ลบแล้ว TK202611200015 — โค้ดตาย ไม่มี route), plan-view, pre-plan (list/create/approve), report (gold-loss-tang, plan-completed) |
 | **Sale** | `/sale` | dashboard, quotation(+list), sale-order(+list), invoice(+detail), delivery-note, production-order, payment-tracking, cost-stock, stock-basket, stock-reservation, document(+catalog-builder) |
 | **Worker** | `/worker` | worker-list, gold-loss-slip-list, worker-daily-wages |
 | **Setting** | `/setting` | user-account, role-permission, edit-account, bill/vat-print-layout |

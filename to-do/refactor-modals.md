@@ -80,7 +80,7 @@
 | mold | `mold/components/create/*` · `mold/mold-list/components/UpdateView.vue` · `production/mold/components/Modal{Create,Update}.vue` | กลาง |
 | catalog | `catalog/modal/{create,update}-view.vue` | ง่าย |
 | production-cost | `production-cost/goldCost/components/Form{Create,Update}.vue` | กลาง |
-| production / plan-update | `production/plan-update/components/{add,update,form-*}/*` | ซับซ้อน (ทำท้าย) |
+| production / plan-update | `production/plan-update/components/{add,update,form-*}/*` | ซับซ้อน (ทำท้าย) | (ลบแล้ว TK202611200015)
 | production / pre-plan | `production/pre-plan/pre-plan-create/modal/item-form-modal.vue` | ซับซ้อน |
 | sale / receipt-stock | form modal ใน `sale/*`, `receipt-stock/gem/*` (CreateView/ConfirmView) | ซับซ้อน |
 
@@ -154,11 +154,11 @@ modal 2 ตัวนี้ **ไม่ใช่ create/update form ล้วน*
 
 > ⚠️ งานนี้ใหญ่กว่า batch ปกติเพราะรวม i18n migration — แยกทำทีละ stage, test ทุกตัว
 
-### 7.4 production/plan-update + pre-plan (Batch 7) — ซับซ้อนสุด, ทำท้าย
+### 7.4 production/plan-update + pre-plan (Batch 7) — ซับซ้อนสุด, ทำท้าย (ลบแล้ว TK202611200015)
 form modal ~19 ตัว (ไม่รวม `view/*` ที่เป็น read-only):
-- `plan-update/components/add/*` (6): PlanScrubbAddView · plan-{casting,gem,material,melt,price}-add-view
-- `plan-update/components/update/*` (8): Plan{Embed,Header,Plate,Scrubb}UpdateView · plan-{casting,gem}-update-view · transfer-{job,product}-view
-- `plan-update/components/{form-header/FormHeaderUpdate, form-material/FormMaterialAdd, form-status/FormStatusAdd, form-status/FormStatusUpdate}` (4)
+- `plan-update/components/add/*` (6): PlanScrubbAddView · plan-{casting,gem,material,melt,price}-add-view (ลบแล้ว TK202611200015)
+- `plan-update/components/update/*` (8): Plan{Embed,Header,Plate,Scrubb}UpdateView · plan-{casting,gem}-update-view · transfer-{job,product}-view (ลบแล้ว TK202611200015)
+- `plan-update/components/{form-header/FormHeaderUpdate, form-material/FormMaterialAdd, form-status/FormStatusAdd, form-status/FormStatusUpdate}` (4) (ลบแล้ว TK202611200015)
 - `pre-plan/pre-plan-create/modal/item-form-modal.vue` (1) — ใช้ child section component (moldSection/material-table/UploadImage) + hardcode ไทย
 
 ลักษณะร่วม (เหมือน §7.3): title `title-text-lg-header` ใน content · editable `DataTable` raw PrimeVue + hardcode ไทย (placeholder "เลือกทอง" ฯลฯ) · `line` divider · manual label `title-text` · บางตัว mix `$t` + hardcode ไทย

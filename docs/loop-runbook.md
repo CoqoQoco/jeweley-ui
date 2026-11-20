@@ -144,6 +144,6 @@ migrate module <ชื่อ module> ตาม loop-runbook
 ## หมายเหตุพิเศษ
 
 - **`sale/sale-order`**: ไฟล์ `sale-order-view.vue` 3,933 บรรทัด → ต้องแตก component ตาม `code-structure` skill ก่อน migrate
-- **`production/plan-update`**: 99 native imports — iteration นี้จะใช้เวลามากกว่าปกติ
+- **`production/plan-update`**: 99 native imports — iteration นี้จะใช้เวลามากกว่าปกติ (ลบแล้ว TK202611200015 — โค้ดตาย ไม่มี route)
 - **`catalog`**: Pilot แรก — ใช้เป็น reference implementation สำหรับ module อื่น
 - Module ที่ native เหลือ = 0 ยังต้องตรวจ design-token + i18n + cleancode

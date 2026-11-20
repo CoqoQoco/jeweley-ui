@@ -88,7 +88,7 @@ export function sumPriceItemsTotal(priceItems) {
 }
 
 // หา planStatus master item ตาม id — ProductionPlan/GetProductionPlanStatus คืน [{id, nameTh, ...}] โดย
-// id ตรงกับค่า status/header.status ของแผน (ไม่ใช่ field "code" — ดู FormStatusView.vue getStatusName)
+// id ตรงกับค่า status/header.status ของแผน (ไม่ใช่ field "code" — ดู src/views/production/plan-view/components/plan-overview.vue getStatusName)
 export function findStatusMasterById(statusMaster, id) {
   return (statusMaster || []).find((item) => item.id === id) || null
 }
