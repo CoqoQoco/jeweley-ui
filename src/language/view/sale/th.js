@@ -302,6 +302,9 @@ export const invoiceDetail = {
     cancelInvoiceUnconfirm: 'ยกเลิก {invoiceNumber} และปลดยืนยันสินค้า {count} รายการออกจาก {soNumber}',
     cancelPaymentWarning: 'ใบนี้มีการรับชำระเงินอยู่ {amount} {currency} จะถูกยกเลิกไปด้วย',
     cancelIrreversible: 'ทำแล้วย้อนกลับไม่ได้',
+    cancelVoidDocs: 'invoice นี้ออกใบรับรองสินค้าไป {cert} ใบ / ใบรับประกัน {guarantee} ครั้ง หลังยกเลิกจะเป็นโมฆะ กรุณาเก็บใบคืนจากลูกค้าครับ',
+    cancelVoidCertNos: 'เลขใบรับรองที่ต้องเก็บคืน:',
+    cancelVoidMore: 'และอีก {count} ใบ',
     deletePayment: 'ลบประวัติการชำระเงิน {amount} {currency}',
     deletePaymentTitle: 'คุณต้องการลบประวัติการชำระเงินนี้หรือไม่?'
   },

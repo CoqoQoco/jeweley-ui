@@ -8,13 +8,14 @@ export const useCertificateApiStore = defineStore('certificate', {
   }),
 
   actions: {
-    async uploadImage({ file, kind }) {
+    async uploadImage({ file, kind }, { skipError = false } = {}) {
       const formData = new FormData()
       formData.append('Image', file)
       formData.append('Kind', kind)
 
       return await api.jewelry.post('Certificate/UploadImage', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        skipError
       })
     },
 
@@ -22,8 +23,8 @@ export const useCertificateApiStore = defineStore('certificate', {
       return await api.jewelry.get('Certificate/CustomerBrand', { customerCode })
     },
 
-    async createCertificates(payload) {
-      return await api.jewelry.post('Certificate/Create', payload)
+    async createCertificates(payload, { skipError = false } = {}) {
+      return await api.jewelry.post('Certificate/Create', payload, { skipError })
     },
 
     async fetchList({ invoiceNumber, certificateNo, stockNumber, customerCode, take, skip } = {}) {
@@ -36,6 +37,16 @@ export const useCertificateApiStore = defineStore('certificate', {
       }
 
       return res
+    },
+
+    // นับ/ดึงใบรับรองของ invoice แบบเงียบ — ไม่เปิด loading, ไม่แสดง error, ไม่เขียนทับ dataList/total ที่ใช้ร่วมกัน
+    async fetchByInvoice({ invoiceNumber, take = 200 }) {
+      const res = await api.jewelry.post(
+        'Certificate/List',
+        { invoiceNumber, take, skip: 0 },
+        { skipLoading: true, skipError: true, timeout: 5000 }
+      )
+      return { data: res?.data || [], total: res?.total || 0 }
     }
   }
 })

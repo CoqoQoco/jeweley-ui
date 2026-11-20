@@ -267,9 +267,9 @@
         <button
           class="mobile-btn mobile-btn-danger"
           @click="handleCancelInvoice"
-          :disabled="cancelling"
+          :disabled="cancelling || checkingVoidDocs"
         >
-          <i class="bi" :class="cancelling ? 'bi-hourglass-split spin-icon' : 'bi-x-octagon'"></i>
+          <i class="bi" :class="cancelling || checkingVoidDocs ? 'bi-hourglass-split spin-icon' : 'bi-x-octagon'"></i>
           {{ cancelling ? $t('view.mobile.sale.invoiceCancellingBtn') : $t('view.mobile.sale.invoiceCancelBtn') }}
         </button>
         <button class="mobile-btn mobile-btn-outline" @click="$router.back()">
@@ -312,6 +312,8 @@ import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-int
 import { loadInvoiceContext, toInvoicePdfData } from '@/services/helper/invoice/build-invoice-pdf-data.js'
 import { success, error } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { fetchVoidDocCounts, formatCertificateNos, buildVoidDocsHtml } from '@/services/helper/invoice/void-docs.js'
+import { useCertificateApiStore } from '@/stores/modules/api/sale/certificate-store.js'
 import { getPaymentStatus } from '@/services/utils/payment-status.js'
 import { computeDocumentTotals } from '@/services/utils/money.js'
 import { PAYMENT_METHOD_BY_CODE, MOBILE_SALE_PAYMENT_LABEL_KEYS } from '@/constants/payment-methods.js'
@@ -337,7 +339,8 @@ export default {
     const invoiceStore = useInvoiceApiStore()
     const saleOrderStore = usrSaleOrderApiStore()
     const authStore = useAuthStore()
-    return { invoiceStore, saleOrderStore, authStore }
+    const certificateStore = useCertificateApiStore()
+    return { invoiceStore, saleOrderStore, authStore, certificateStore }
   },
 
   data() {
@@ -355,6 +358,7 @@ export default {
       exportingPDF: false,
       // Cancel
       cancelling: false,
+      checkingVoidDocs: false,
       // Payment
       showPaymentSheet: false
     }
@@ -553,7 +557,8 @@ export default {
     },
 
     // ==================== Cancel Invoice ====================
-    handleCancelInvoice() {
+    async handleCancelInvoice() {
+      if (this.cancelling || this.checkingVoidDocs) return
       const confirmLines = [
         this.$t('view.mobile.sale.invoiceCancelConfirmMsg', {
           invoiceNumber: this.invoiceNumber,
@@ -568,6 +573,35 @@ export default {
             count: this.paymentCount,
             amount: this.formatCurrency(this.paymentTotalAmount),
             currency: this.displayCurrency
+          })
+        )
+      }
+
+      this.checkingVoidDocs = true
+      let voidCounts
+      try {
+        voidCounts = await fetchVoidDocCounts({
+          certificateStore: this.certificateStore,
+          invoiceStore: this.invoiceStore,
+          invoiceNumber: this.invoiceNumber
+        })
+      } finally {
+        this.checkingVoidDocs = false
+      }
+      if (voidCounts.certificateCount || voidCounts.guaranteeCount) {
+        const certList = voidCounts.certificateCount
+          ? formatCertificateNos(voidCounts.certificateNos, (count) =>
+              this.$t('view.mobile.sale.invoiceCancelConfirmVoidMoreMsg', { count })
+            )
+          : ''
+        confirmLines.push(
+          buildVoidDocsHtml({
+            docsMsg: this.$t('view.mobile.sale.invoiceCancelConfirmVoidDocsMsg', {
+              cert: voidCounts.certificateCount,
+              guarantee: voidCounts.guaranteeCount
+            }),
+            certLabel: this.$t('view.mobile.sale.invoiceCancelConfirmVoidCertNosMsg'),
+            certList
           })
         )
       }
@@ -611,7 +645,10 @@ export default {
             this.cancelling = false
           }
         },
-        { confirmText: this.$t('view.mobile.sale.invoiceCancelConfirmBtn') }
+        {
+          confirmText: this.$t('view.mobile.sale.invoiceCancelConfirmBtn'),
+          cancelText: this.$t('view.mobile.sale.invoiceCancelKeepBtn')
+        }
       )
     },
 

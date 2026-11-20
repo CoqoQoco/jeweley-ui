@@ -311,6 +311,7 @@ import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { error, success, warning } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { isClientRejection, fetchVoidDocCounts, formatCertificateNos, buildVoidDocsHtml } from '@/services/helper/invoice/void-docs.js'
 import { generatePhotoSheetPdf } from '@/services/helper/pdf/photo-sheet/photo-sheet-pdf-integration.js'
 import PhotoSheetDocNoModal from '@/components/modal/photo-sheet-doc-no-modal.vue'
 import { invoicePdfService } from '@/services/helper/pdf/invoice/invoice-pdf-integration.js'
@@ -399,6 +400,7 @@ export default {
       originalInvoiceItems: [],
       currentViewingVersion: null,
       isCancelingInvoice: false,
+      isCheckingVoidDocs: false,
     }
   },
 
@@ -550,7 +552,7 @@ export default {
                 key: 'cancel-invoice',
                 icon: 'bi-x-circle',
                 danger: true,
-                disabled: this.isCancelingInvoice,
+                disabled: this.isCancelingInvoice || this.isCheckingVoidDocs,
                 label: this.$t('view.sale.invoiceDetail.cancelInvoiceOnly'),
                 hint: this.$t('view.sale.invoiceDetail.cancelMaterialInvoiceHint'),
                 command: this.confirmReverseInvoice
@@ -570,7 +572,7 @@ export default {
               key: 'cancel-invoice',
               icon: 'bi-x-circle',
               danger: true,
-              disabled: this.isCancelingInvoice,
+              disabled: this.isCancelingInvoice || this.isCheckingVoidDocs,
               label: this.$t('view.sale.invoiceDetail.cancelInvoiceOnly'),
               hint: this.$t('view.sale.invoiceDetail.cancelInvoiceOnlyHint'),
               command: this.confirmReverseInvoice
@@ -579,7 +581,7 @@ export default {
               key: 'cancel-unconfirm',
               icon: 'bi-x-octagon',
               danger: true,
-              disabled: this.isCancelingInvoice,
+              disabled: this.isCancelingInvoice || this.isCheckingVoidDocs,
               label: this.$t('view.sale.invoiceDetail.cancelInvoiceUnconfirm'),
               hint: this.$t('view.sale.invoiceDetail.cancelInvoiceUnconfirmHint'),
               command: this.confirmCancelAndUnconfirm
@@ -1114,12 +1116,7 @@ export default {
     },
     async handleConfirmGuaranteePrint({ cards, signerTitle }) {
       try {
-        await guaranteeCardPdfService.generateGuaranteeCardPDF(cards, {
-          download: true,
-          signerTitle,
-          invoiceNumber: this.invoiceData.invoiceNumber
-        })
-
+        let logFailed = false
         try {
           await this.invoiceStore.createPrintLog({
             invoiceNumber: this.invoiceData.invoiceNumber,
@@ -1139,16 +1136,42 @@ export default {
                 diamondQuality: c.diamondQuality
               }))
             })
-          })
-        } catch {
-          warning(this.$t('view.sale.guaranteeCard.warn.logFailed'), this.$t('view.sale.guaranteeCard.title'))
+          }, { skipError: true })
+        } catch (logError) {
+          // 4xx = server ปฏิเสธ (เช่น invoice ถูกยกเลิก) — แสดงข้อความ API ครั้งเดียว หยุดโดยไม่ออก PDF
+          if (isClientRejection(logError)) {
+            this.showClientRejection(logError)
+            return
+          }
+          logFailed = true
         }
-        this.guaranteeHistoryVersion++
 
-        success(this.$t('view.sale.guaranteeCard.success.generated'), this.$t('view.sale.guaranteeCard.title'))
+        // ปกติ log บันทึกก่อนสร้าง PDF (เลือกนับเกินดีกว่านับขาด จึงเพิ่ม version แม้ PDF ล้มเหลว) — แต่ถ้า network/5xx (logFailed) ยังสร้าง PDF ต่อโดยไม่มี log แล้วเตือนผู้ใช้
+        try {
+          await guaranteeCardPdfService.generateGuaranteeCardPDF(cards, {
+            download: true,
+            signerTitle,
+            invoiceNumber: this.invoiceData.invoiceNumber
+          })
+        } finally {
+          this.guaranteeHistoryVersion++
+        }
+
+        if (logFailed) {
+          warning(this.$t('view.sale.guaranteeCard.warn.logFailed'), this.$t('view.sale.guaranteeCard.title'))
+        } else {
+          success(this.$t('view.sale.guaranteeCard.success.generated'), this.$t('view.sale.guaranteeCard.title'))
+        }
       } catch (err) {
         error(err.message, this.$t('view.sale.invoiceDetail.error.cannotCreatePDF'))
       }
+    },
+    // ใช้กับ call ที่ส่ง skipError: true — axios ไม่แสดง popup จึงแสดงข้อความ 4xx ของ API เองครั้งเดียว (401 axios จัดการ logout เอง)
+    showClientRejection(err) {
+      if (err?.response?.status === 401) return
+      const data = err?.response?.data
+      const message = data?.message || (data?.errors ? Object.values(data.errors).flat().join('\n') : '')
+      error(message || this.$t('view.sale.invoiceDetail.error.cannotCreatePDF'))
     },
     printCertificate() {
       if (!this.canPrintCertificate) {
@@ -1176,6 +1199,9 @@ export default {
 
     async handleConfirmCertificatePrint({ certificates, signerTitle, brand, saveBrandAsCustomerDefault }) {
       const savedOk = await this.saveCertificateHistory(certificates, signerTitle, brand, saveBrandAsCustomerDefault)
+
+      // 4xx = server ปฏิเสธ (axios-helper แสดงข้อความให้แล้ว) — ห้ามออก PDF
+      if (savedOk === 'rejected') return
 
       if (!savedOk) {
         confirmThenSubmit(
@@ -1213,7 +1239,7 @@ export default {
     },
 
     // อัปโหลดโลโก้/รูปใหม่ (ถ้ามี) แล้วบันทึกประวัติผ่าน Certificate/Create — ห้ามมี base64 หลุดเข้า snapshot
-    // ล้มเหลวข้อไหนก็ตาม (upload หรือ create) ให้ผู้เรียกถามผู้ใช้ว่าจะดาวน์โหลด PDF ต่อโดยไม่มีประวัติหรือไม่
+    // คืน 'rejected' เมื่อ server ปฏิเสธ (4xx) / false เมื่อล้มเหลวอื่น (ผู้เรียกถามว่าจะดาวน์โหลด PDF ต่อโดยไม่มีประวัติหรือไม่)
     async saveCertificateHistory(certificates, signerTitle, brand, saveBrandAsCustomerDefault) {
       try {
         // โหมด dk ไม่มีตราสินค้าลูกค้า — ไม่อัปโหลดโลโก้ (แม้ผู้ใช้เคยเลือกไฟล์ไว้ตอนอยู่โหมด customer แล้วสลับกลับ)
@@ -1222,7 +1248,7 @@ export default {
         let logoPath = isCustomerBrand ? brand.logoPath || null : null
 
         if (isCustomerBrand && brand.logoFile) {
-          const logoRes = await this.certificateStore.uploadImage({ file: brand.logoFile, kind: 'logo' })
+          const logoRes = await this.certificateStore.uploadImage({ file: brand.logoFile, kind: 'logo' }, { skipError: true })
           if (!logoRes?.path) return false
           logoPath = logoRes.path
         }
@@ -1243,7 +1269,7 @@ export default {
             imagePath = certificate.customImagePath || null
 
             if (!imagePath && certificate.newPhotoFile) {
-              const photoRes = await this.certificateStore.uploadImage({ file: certificate.newPhotoFile, kind: 'photo' })
+              const photoRes = await this.certificateStore.uploadImage({ file: certificate.newPhotoFile, kind: 'photo' }, { skipError: true })
               if (!photoRes?.path) return false
               imagePath = photoRes.path
             }
@@ -1271,10 +1297,15 @@ export default {
           brand: brandForSave,
           saveBrandAsCustomerDefault: saveDefault,
           certificates: certificatePayloads
-        })
+        }, { skipError: true })
 
         return !!createRes
-      } catch {
+      } catch (saveError) {
+        // ตั้งใจ: 4xx จาก upload รูปก็หยุดเหมือนกัน (แสดงข้อความ API ครั้งเดียว) ไม่ใช่เฉพาะตอนสร้างใบรับรอง — 5xx/network ไม่มี popup ทั่วไป เหลือแค่ confirm "ดาวน์โหลดต่อไหม"
+        if (isClientRejection(saveError)) {
+          this.showClientRejection(saveError)
+          return 'rejected'
+        }
         return false
       }
     },
@@ -1435,10 +1466,42 @@ export default {
       // Hide broken image or show placeholder
       event.target.style.display = 'none'
     },
-    confirmReverseInvoice() {
-      const message = this.isMaterial
+    async buildVoidDocsLines() {
+      const counts = await fetchVoidDocCounts({
+        certificateStore: this.certificateStore,
+        invoiceStore: this.invoiceStore,
+        invoiceNumber: this.invoiceData.invoiceNumber
+      })
+      if (!counts.certificateCount && !counts.guaranteeCount) return []
+      const certList = counts.certificateCount
+        ? formatCertificateNos(counts.certificateNos, (count) =>
+            this.$t('view.sale.invoiceDetail.confirm.cancelVoidMore', { count })
+          )
+        : ''
+      return [
+        buildVoidDocsHtml({
+          docsMsg: this.$t('view.sale.invoiceDetail.confirm.cancelVoidDocs', {
+            cert: counts.certificateCount,
+            guarantee: counts.guaranteeCount
+          }),
+          certLabel: this.$t('view.sale.invoiceDetail.confirm.cancelVoidCertNos'),
+          certList
+        })
+      ]
+    },
+    async confirmReverseInvoice() {
+      const baseMessage = this.isMaterial
         ? this.$t('view.sale.invoiceDetail.confirm.cancelMaterialInvoice')
         : this.$t('view.sale.invoiceDetail.confirm.cancelInvoice')
+      if (this.isCheckingVoidDocs || this.isCancelingInvoice) return
+      this.isCheckingVoidDocs = true
+      let voidLines
+      try {
+        voidLines = await this.buildVoidDocsLines()
+      } finally {
+        this.isCheckingVoidDocs = false
+      }
+      const message = [baseMessage, ...voidLines].join('<br/>')
 
       confirmThenSubmit(
         message,
@@ -1484,7 +1547,8 @@ export default {
         this.isCancelingInvoice = false
       }
     },
-    confirmCancelAndUnconfirm() {
+    async confirmCancelAndUnconfirm() {
+      if (this.isCheckingVoidDocs || this.isCancelingInvoice) return
       const lines = [
         this.$t('view.sale.invoiceDetail.confirm.cancelInvoiceUnconfirm', {
           invoiceNumber: this.invoiceData.invoiceNumber,
@@ -1500,6 +1564,13 @@ export default {
             currency: this.invoiceData.currencyUnit
           })
         )
+      }
+
+      this.isCheckingVoidDocs = true
+      try {
+        lines.push(...(await this.buildVoidDocsLines()))
+      } finally {
+        this.isCheckingVoidDocs = false
       }
 
       lines.push(this.$t('view.sale.invoiceDetail.confirm.cancelIrreversible'))

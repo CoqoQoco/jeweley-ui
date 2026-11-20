@@ -30,7 +30,14 @@ vi.mock('@/stores/modules/api/sale/invoice-store.js', () => ({
     createPayment: mockCreatePayment,
     deletePayment: mockDeletePayment,
     fetchCancelWithSaleOrder: mockFetchCancelWithSaleOrder,
+    fetchGuaranteePrintCount: vi.fn().mockResolvedValue(0),
     fetchGet: vi.fn()
+  }))
+}))
+
+vi.mock('@/stores/modules/api/sale/certificate-store.js', () => ({
+  useCertificateApiStore: vi.fn(() => ({
+    fetchByInvoice: vi.fn().mockResolvedValue({ data: [], total: 0 })
   }))
 }))
 

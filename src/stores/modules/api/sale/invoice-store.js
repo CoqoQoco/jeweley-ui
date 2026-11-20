@@ -206,13 +206,23 @@ export const useInvoiceApiStore = defineStore('invoice', {
         skipLoading: false
       })
     },
-    async createPrintLog({ invoiceNumber, paperType, data }) {
+    async createPrintLog({ invoiceNumber, paperType, data }, { skipError = false } = {}) {
       const param = { invoiceNumber, paperType, data }
-      return await api.jewelry.post('Invoice/PrintLog/Create', param, { skipLoading: true })
+      return await api.jewelry.post('Invoice/PrintLog/Create', param, { skipLoading: true, skipError })
     },
     async fetchPrintLogList({ invoiceNumber }) {
       const param = { invoiceNumber }
       return await api.jewelry.post('Invoice/PrintLog/List', param, { skipLoading: true })
+    },
+    // นับจำนวนครั้งที่ออกใบรับประกันของ invoice แบบเงียบ — ไม่เปิด loading, ไม่แสดง error
+    async fetchGuaranteePrintCount({ invoiceNumber }) {
+      const res = await api.jewelry.post(
+        'Invoice/PrintLog/List',
+        { invoiceNumber },
+        { skipLoading: true, skipError: true, timeout: 5000 }
+      )
+      const logs = Array.isArray(res?.data) ? res.data : []
+      return logs.filter((log) => log && log.paperType === 'guarantee-card').length
     },
     // Invoice Payment APIs
     async createPayment(formData) {

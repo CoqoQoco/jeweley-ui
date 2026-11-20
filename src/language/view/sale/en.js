@@ -302,6 +302,9 @@ export const invoiceDetail = {
     cancelInvoiceUnconfirm: 'Cancel {invoiceNumber} and unconfirm {count} item(s) from {soNumber}',
     cancelPaymentWarning: 'This invoice has {amount} {currency} in payments that will be cancelled too',
     cancelIrreversible: 'This cannot be undone',
+    cancelVoidDocs: 'This invoice issued {cert} product certificate(s) and {guarantee} guarantee card print(s). They become void after cancellation, please collect them back from the customer.',
+    cancelVoidCertNos: 'Certificate numbers to collect:',
+    cancelVoidMore: 'and {count} more',
     deletePayment: 'Delete payment record {amount} {currency}',
     deletePaymentTitle: 'Do you want to delete this payment record?'
   },
