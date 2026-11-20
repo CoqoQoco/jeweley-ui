@@ -197,3 +197,82 @@ describe('InvoiceConfirmPrintModal - bill VAT default persistence + mismatch', (
     expect(vm.hasMismatchActions).toBe(false)
   })
 })
+
+describe('InvoiceConfirmPrintModal - tax invoice VAT %', () => {
+  beforeEach(() => localStorage.clear())
+
+  async function openTax(invoiceData, paperSize = 'vat-bridge') {
+    const wrapper = await createWrapper(true)
+    const vm = wrapper.vm.$.proxy
+    await wrapper.setProps({ invoiceData: { ...invoiceData } })
+    vm.paperSize = paperSize
+    await wrapper.setProps({ isShowModal: true })
+    await wrapper.vm.$nextTick()
+    return vm
+  }
+
+  it('defaults to 7 for THB invoice with vat 0 and puts it in print data', async () => {
+    const vm = await openTax({ vatPercent: 0, currencyUnit: 'THB' })
+    expect(vm.taxVatPercent).toBe(7)
+    expect(vm.buildPrintData().taxVatPercent).toBe(7)
+  })
+
+  it('defaults to 0 for foreign currency, keeps saved vat otherwise', async () => {
+    expect((await openTax({ vatPercent: 0, currencyUnit: 'US$' })).taxVatPercent).toBe(0)
+    expect((await openTax({ vatPercent: 10, currencyUnit: 'US$' }, 'vat-bridge-v2')).taxVatPercent).toBe(10)
+  })
+
+  it('locks MATERIAL to the invoice vat', async () => {
+    const vm = await openTax({ invoiceType: 'MATERIAL', vatPercent: 7, currencyUnit: 'THB' })
+    vm.taxVatPercent = 3
+    expect(vm.isTaxVatLocked).toBe(true)
+    expect(vm.buildPrintData().taxVatPercent).toBe(7)
+  })
+
+  it('keeps tax % separate from the bill summaryVatPercent and does not persist it', async () => {
+    const vm = await openTax({ vatPercent: 0, currencyUnit: 'THB' })
+    vm.taxVatPercent = 5
+    const data = vm.buildPrintData()
+    expect(data.taxVatPercent).toBe(5)
+    expect(data.summaryVatPercent).toBe(7)
+    vm.onBillFlagChange()
+    expect(localStorage.getItem('bill-print-column-flags-dk') || localStorage.getItem('bill-print-column-flags') || '').not.toContain('taxVatPercent')
+  })
+
+  it('v2 saves its offset under a separate key', async () => {
+    const vm = await openTax({ vatPercent: 0, currencyUnit: 'THB' }, 'vat-bridge-v2')
+    vm.continuousOffset = { x: 1, y: 2 }
+    vm.buildPrintData()
+    expect(JSON.parse(localStorage.getItem('invoice-continuous-offset-v2-dk') || localStorage.getItem('invoice-continuous-offset-v2'))).toEqual({ x: 1, y: 2 })
+    expect(localStorage.getItem('invoice-continuous-offset-dk') || localStorage.getItem('invoice-continuous-offset')).toBeNull()
+  })
+
+  it('blocks preview/print and shows error when VAT % is empty or out of range', async () => {
+    const vm = await openTax({ vatPercent: 0, currencyUnit: 'THB' })
+    const spy = vi.spyOn(vm.$, 'emit')
+    for (const bad of ['', -1, 101]) {
+      vm.taxVatPercent = bad
+      expect(vm.taxVatError).not.toBe('')
+      expect(vm.validatePrintData()).toBe(false)
+      vm.onPreviewPDF()
+    }
+    expect(spy).not.toHaveBeenCalledWith('preview-print', expect.anything())
+  })
+
+  it('accepts VAT % 7 and 0 without error', async () => {
+    const vm = await openTax({ vatPercent: 0, currencyUnit: 'THB' })
+    vm.printData.invoiceNumber = 'INV-1'
+    vm.printData.invoiceDate = new Date()
+    vm.taxVatPercent = 7
+    expect(vm.taxVatError).toBe('')
+    expect(vm.validatePrintData()).toBe(true)
+    vm.taxVatPercent = 0
+    expect(vm.taxVatError).toBe('')
+  })
+
+  it('does not flag MATERIAL-locked VAT %', async () => {
+    const vm = await openTax({ invoiceType: 'MATERIAL', vatPercent: 7, currencyUnit: 'THB' })
+    vm.taxVatPercent = ''
+    expect(vm.taxVatError).toBe('')
+  })
+})

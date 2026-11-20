@@ -1,6 +1,7 @@
 import { convertAmountToThaiText } from '@/services/utils/thai-baht-text.js'
 import { roundHalfUp } from '@/services/utils/money.js'
 import { formatQtyText } from '@/services/helper/pdf/shared/pdf-format.js'
+import { getVatLayoutDefaults, VAT_LAYOUT_KEY } from '@/services/helper/print/vat-layout-defaults.js'
 
 const MM_TO_INCH = 1 / 25.4
 const RIGHT_ALIGN_WIDTH = 0.9
@@ -22,37 +23,44 @@ function formatDate(dateStr) {
   return `${dd}/${mm}/${d.getFullYear()}`
 }
 
-function resolveLayout(layout) {
+function resolveLayout(layout, layoutKey) {
   const L = layout || {}
+  const D = getVatLayoutDefaults(layoutKey)
+  const pos = (name, axis) => Number(L[name]?.[axis] ?? D[name][axis]) || 0
+  const flat = (name) => Number(L[name] ?? D[name]) || 0
+  const hasTotalQty = !!D.totalQty
   return {
-    xInvoiceNo: Number(L.invoiceNo?.x ?? 6.0) || 0,
-    yInvoiceNo: Number(L.invoiceNo?.y ?? 1.8) || 0,
-    xDate: Number(L.date?.x ?? 6.0) || 0,
-    yDate: Number(L.date?.y ?? 2.2) || 0,
-    xCustomerName: Number(L.customerName?.x ?? 1.2) || 0,
-    yCustomerName: Number(L.customerName?.y ?? 1.75) || 0,
-    xCustomerTaxId: Number(L.customerTaxId?.x ?? 1.2) || 0,
-    yCustomerTaxId: Number(L.customerTaxId?.y ?? 1.95) || 0,
-    xCustomerAddress: Number(L.customerAddress?.x ?? 1.2) || 0,
-    yCustomerAddress: Number(L.customerAddress?.y ?? 2.15) || 0,
-    xItemNo: Number(L.itemNoX ?? 0.6) || 0,
-    xItemDesc: Number(L.itemDescX ?? 1.1) || 0,
-    xItemQty: Number(L.itemQtyX ?? 4.15) || 0,
-    xItemPrice: Number(L.itemPriceX ?? 5.15) || 0,
-    xItemAmount: Number(L.itemAmountX ?? 6.48) || 0,
-    yItemsStart: Number(L.itemsStart?.y ?? 3.1) || 0,
-    rowHeight: Number(L.rowHeight ?? 0.17) || 0.17,
-    maxRowsPerPage: Number(L.maxRowsPerPage ?? 25) || 25,
-    headerFontSize: Number(L.headerFontSize ?? 12) || 12,
-    itemFontSize: Number(L.itemFontSize ?? 10) || 10,
-    xSubtotal: Number(L.subtotal?.x ?? 6.5) || 0,
-    ySubtotal: Number(L.subtotal?.y ?? 7.6) || 0,
-    xVat: Number(L.vat?.x ?? 6.5) || 0,
-    yVat: Number(L.vat?.y ?? 7.98) || 0,
-    xTotal: Number(L.total?.x ?? 6.5) || 0,
-    yTotal: Number(L.total?.y ?? 8.3) || 0,
-    xAmountText: Number(L.amountText?.x ?? 1.0) || 0,
-    yAmountText: Number(L.amountText?.y ?? 8.3) || 0,
+    xInvoiceNo: pos('invoiceNo', 'x'),
+    yInvoiceNo: pos('invoiceNo', 'y'),
+    xDate: pos('date', 'x'),
+    yDate: pos('date', 'y'),
+    xCustomerName: pos('customerName', 'x'),
+    yCustomerName: pos('customerName', 'y'),
+    xCustomerTaxId: pos('customerTaxId', 'x'),
+    yCustomerTaxId: pos('customerTaxId', 'y'),
+    xCustomerAddress: pos('customerAddress', 'x'),
+    yCustomerAddress: pos('customerAddress', 'y'),
+    xItemNo: flat('itemNoX'),
+    xItemDesc: flat('itemDescX'),
+    xItemQty: flat('itemQtyX'),
+    xItemPrice: flat('itemPriceX'),
+    xItemAmount: flat('itemAmountX'),
+    yItemsStart: pos('itemsStart', 'y'),
+    rowHeight: Number(L.rowHeight ?? D.rowHeight) || D.rowHeight,
+    maxRowsPerPage: Number(L.maxRowsPerPage ?? D.maxRowsPerPage) || D.maxRowsPerPage,
+    headerFontSize: Number(L.headerFontSize ?? D.headerFontSize) || D.headerFontSize,
+    itemFontSize: Number(L.itemFontSize ?? D.itemFontSize) || D.itemFontSize,
+    xSubtotal: pos('subtotal', 'x'),
+    ySubtotal: pos('subtotal', 'y'),
+    xVat: pos('vat', 'x'),
+    yVat: pos('vat', 'y'),
+    xTotal: pos('total', 'x'),
+    yTotal: pos('total', 'y'),
+    xAmountText: pos('amountText', 'x'),
+    yAmountText: pos('amountText', 'y'),
+    hasTotalQty,
+    xTotalQty: hasTotalQty ? pos('totalQty', 'x') : 0,
+    yTotalQty: hasTotalQty ? pos('totalQty', 'y') : 0,
     offsetXInch: (Number(L.offsetX ?? 0) || 0) * MM_TO_INCH,
     offsetYInch: (Number(L.offsetY ?? 0) || 0) * MM_TO_INCH
   }
@@ -62,11 +70,11 @@ function resolveLayout(layout) {
  * Build a generic print model for the VAT invoice format.
  * @param {object} invoice - invoice data matching the shape used in index-view.vue
  * @param {object|null} layout - saved layout JSON from getVatLayout() (may already have offset applied)
- * @param {object} [options] - { printerName }
+ * @param {object} [options] - { printerName, showDecimals, layoutKey ('vat' | 'vat-v2') }
  * @returns {{ printerName: string|null, paper: object, pages: Array }}
  */
 export function buildVatPrintModel(invoice, layout, options = {}) {
-  const L = resolveLayout(layout)
+  const L = resolveLayout(layout, options?.layoutKey || VAT_LAYOUT_KEY)
   const ox = L.offsetXInch
   const oy = L.offsetYInch
   const hfs = L.headerFontSize
@@ -83,11 +91,10 @@ export function buildVatPrintModel(invoice, layout, options = {}) {
     subtotal += convertedPrice * Number(item.qty)
   }
 
-  const vatPercent = Number(invoice.vatPercent) !== 0 ? Number(invoice.vatPercent) : (Number(invoice.vat) || 0)
+  const rawVatPercent = Number(invoice.vatPercent) !== 0 ? Number(invoice.vatPercent) : (Number(invoice.vat) || 0)
+  const vatPercent = Math.min(100, Math.max(0, rawVatPercent))
   const totalAfterDiscount = subtotal - Number(invoice.specialDiscount || 0) + Number(invoice.specialAddition || 0)
   const totalBeforeVat = totalAfterDiscount + Number(invoice.freightAndInsurance || 0)
-  const vatAmount = totalBeforeVat * vatPercent / 100
-  const totalAmount = totalBeforeVat + vatAmount
 
   const items = invoice.items || []
   const totalPages = Math.max(1, Math.ceil(items.length / L.maxRowsPerPage))
@@ -135,16 +142,21 @@ export function buildVatPrintModel(invoice, layout, options = {}) {
     }
 
     if (currentPage === totalPages - 1) {
-      // ปัดครั้งเดียวตรงนี้ (roundHalfUp) ก่อนพิมพ์ — กัน toLocaleString/Math.round ปัดผิดทิศที่ค่า .xx5 พอดี
-      const totalBeforeVatRounded = roundHalfUp(totalBeforeVat, 2)
-      const vatAmountRounded = roundHalfUp(vatAmount, 2)
-      const totalAmountRounded = roundHalfUp(totalAmount, 2)
+      // ยอดต้องบวกกันลงตัวบนกระดาษ: ปัด subtotal ก่อน แล้ว VAT คิดจากยอดที่ปัดแล้ว ปัดอีกครั้ง รวม = subtotal + VAT
+      const scale = showDecimals ? 2 : 0
+      const totalBeforeVatRounded = roundHalfUp(totalBeforeVat, scale)
+      const vatAmountRounded = roundHalfUp(totalBeforeVatRounded * vatPercent / 100, scale)
+      const totalAmountRounded = roundHalfUp(totalBeforeVatRounded + vatAmountRounded, scale)
 
       right(money(totalBeforeVatRounded), L.xSubtotal, L.ySubtotal, hfs)
       right(money(vatAmountRounded), L.xVat, L.yVat, hfs)
       right(money(totalAmountRounded), L.xTotal, L.yTotal, hfs)
       const bahtText = convertAmountToThaiText(totalAmountRounded)
       left(bahtText, L.xAmountText, L.yAmountText, hfs)
+      if (L.hasTotalQty) {
+        const totalQty = items.reduce((sum, item) => sum + (Number(item.qty) || 0), 0)
+        right(formatQtyText(totalQty), L.xTotalQty, L.yTotalQty, hfs)
+      }
     }
 
     pages.push(primitives)

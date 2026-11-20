@@ -182,9 +182,9 @@ data() {
 
 ---
 
-## กระดาษต่อเนื่อง — Preview (bill / vat-bridge)
+## กระดาษต่อเนื่อง — Preview (bill / vat-bridge / vat-bridge-v2)
 
-ปุ่ม "ดูตัวอย่าง" แสดงทุก `paperSize` แล้ว (เดิมมีเฉพาะ `a4`) โดย `paperSize` ที่เป็น `bill` หรือ `vat-bridge` จะไม่เปิด `InvoicePdfPreviewModal` (pdfmake) แต่เปิด `continuous-print-preview-panel.vue` แทน ซึ่ง render ผลลัพธ์ที่จะพิมพ์จริงผ่าน GDI bridge ด้วย `print-model-preview.vue` (คำนวณตำแหน่ง x/y/fontSize จากนิ้ว → px ตาม contract เดียวกับ `GdiGenericPrinter.cs`)
+ปุ่ม "ดูตัวอย่าง" แสดงทุก `paperSize` แล้ว (เดิมมีเฉพาะ `a4`) โดย `paperSize` ที่เป็น `bill`, `vat-bridge` หรือ `vat-bridge-v2` จะไม่เปิด `InvoicePdfPreviewModal` (pdfmake) แต่เปิด `continuous-print-preview-panel.vue` แทน ซึ่ง render ผลลัพธ์ที่จะพิมพ์จริงผ่าน GDI bridge ด้วย `print-model-preview.vue` (คำนวณตำแหน่ง x/y/fontSize จากนิ้ว → px ตาม contract เดียวกับ `GdiGenericPrinter.cs`)
 
 โมเดลที่ใช้ preview ถูกสร้างผ่าน `buildContinuousPrintModel()` (`src/services/helper/print/continuous-print-payload.js`) — ฟังก์ชันเดียวกับที่ `handleConfirmPrint` ใน `index-view.vue` เรียกตอนพิมพ์จริง จึงรับประกันว่า preview ตรงกับผลพิมพ์จริงเสมอ
 
@@ -201,3 +201,11 @@ data() {
 ### ดาวน์โหลด A4 เพื่อตรวจ
 
 footer ของ `continuous-print-preview-panel.vue` มีปุ่ม "ดาวน์โหลด A4 เพื่อตรวจ" (prop `fileBaseName` = เลขที่ใบแจ้งหนี้) ซึ่งแปลง model เดียวกับที่ preview แสดง เป็น PDF A4 แนวตั้งผ่าน `src/services/helper/pdf/continuous-a4/print-model-a4-pdf.js` (ย่อกระดาษต่อเนื่องให้พอดีความกว้าง A4 พร้อมกรอบขอบกระดาษ + หมายเหตุ "ฉบับตรวจ ไม่ใช่เอกสารจริง") หนึ่งหน้า model = หนึ่งหน้า A4 — ใช้ตรวจตำแหน่งก่อนพิมพ์จริง ไม่ส่งไป bridge และไม่สร้าง print log
+
+
+### ใบกำกับภาษีกระดาษต่อเนื่อง (vat-bridge / vat-bridge-v2)
+
+- `vat-bridge` = ฟอร์มเดิม (layout key `vat`) · `vat-bridge-v2` = ฟอร์มใหม่ (layout key `vat-v2`, มีช่องจำนวนรวม) — config อยู่ที่ `src/services/helper/print/tax-paper.js`, พิกัด default ที่ `vat-layout-defaults.js`
+- ทั้งสองแบบพิมพ์ผ่าน bridge generic print (`POST /print`) ด้วยโมเดลจาก `buildContinuousPrintModel()` ไม่ผ่าน PDF
+- ช่อง `% VAT (ใบกำกับภาษี)` (`taxVatPercent`) default จาก `defaultTaxVatPercent()`: ใช้ `vatPercent` ที่บันทึกในใบถ้าไม่ใช่ 0 · ใบวัตถุดิบ (MATERIAL) ล็อก % ตามใบ · นอกนั้นสกุล THB = 7, สกุลอื่น (เช่น US$) = 0 · ค่าถูก clamp ให้อยู่ 0-100 ตอนสร้างโมเดล
+- ยอดท้ายใบ: ปัด subtotal ก่อน แล้ว VAT = ปัด(subtotal x % / 100) แล้ว รวม = subtotal + VAT; ปิดทศนิยม (`showDecimals=false`) จะปัดเป็นจำนวนเต็มทุกขั้นเพื่อให้ตัวเลขที่พิมพ์บวกกันลงตัว และข้อความบาทอ่านจากยอดรวมนั้น

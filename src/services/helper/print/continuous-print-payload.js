@@ -4,6 +4,7 @@ import { splitBillWeights } from '@/services/helper/print/bill-gem-columns.js'
 
 import { getVatLayout } from '@/services/helper/print/vat-layout-store.js'
 import { buildVatPrintModel } from '@/services/helper/print/vat-print-model-builder.js'
+import { getTaxPaperConfig, defaultTaxVatPercent } from '@/services/helper/print/tax-paper.js'
 import { getBillLayout } from '@/services/helper/print/bill-layout-store.js'
 import { buildBillPrintModel } from '@/services/helper/print/bill-print-model-builder.js'
 
@@ -18,8 +19,9 @@ const BILL_FLAG_KEYS = [
   'unitPriceMode', 'productCodeMode', 'unitVatPercent', 'summaryVatPercent'
 ]
 
-async function buildVatModel({ invoiceData, invoiceItems, printData, invoiceNo, invoiceDate }) {
-  const layout = await getVatLayout()
+async function buildVatModel({ paperSize, invoiceData, invoiceItems, printData, invoiceNo, invoiceDate }) {
+  const taxPaper = getTaxPaperConfig(paperSize)
+  const layout = await getVatLayout(taxPaper.layoutKey)
   const offsetMm = printData.continuousOffset || { x: 0, y: 0 }
   const mergedLayout = layout
     ? { ...layout, offsetX: (layout.offsetX ?? 0) + (offsetMm.x || 0), offsetY: (layout.offsetY ?? 0) + (offsetMm.y || 0) }
@@ -44,11 +46,11 @@ async function buildVatModel({ invoiceData, invoiceItems, printData, invoiceNo, 
     specialDiscount: Number(invoiceData.specialDiscount) || 0,
     specialAddition: Number(invoiceData.specialAddition) || 0,
     freightAndInsurance: Number(invoiceData.freightAndInsurance) || 0,
-    vatPercent: Number(invoiceData.vatPercent) || 0
+    vatPercent: Math.min(100, Math.max(0, Number(printData.taxVatPercent ?? defaultTaxVatPercent(invoiceData)) || 0))
   }
 
-  const model = buildVatPrintModel(vatInvoice, mergedLayout, { printerName: printData.printerName ?? null, showDecimals: printData.showDecimals })
-  const logPayload = { flags: null, billOffset: null, continuousOffset: printData.continuousOffset, printerName: printData.printerName, template: printData.invoiceTemplate, mergeSilverLines: !!printData.mergeSilverLines }
+  const model = buildVatPrintModel(vatInvoice, mergedLayout, { printerName: printData.printerName ?? null, showDecimals: printData.showDecimals, layoutKey: taxPaper.layoutKey })
+  const logPayload = { flags: null, taxVatPercent: vatInvoice.vatPercent, billOffset: null, continuousOffset: printData.continuousOffset, printerName: printData.printerName, template: printData.invoiceTemplate, mergeSilverLines: !!printData.mergeSilverLines }
 
   return { model, logPayload }
 }
@@ -136,17 +138,17 @@ async function buildBillModel({ invoiceData, invoiceItems, printData, invoiceNo,
 }
 
 /**
- * Build the print model + print-log payload for continuous paper (bill / vat-bridge).
+ * Build the print model + print-log payload for continuous paper (bill / vat-bridge / vat-bridge-v2).
  * Mirrors the inline logic previously embedded in invoice-detail index-view.vue handleConfirmPrint —
  * behaviour must stay identical (values/flags/field names).
- * @param {'bill'|'vat-bridge'} paperSize
+ * @param {'bill'|'vat-bridge'|'vat-bridge-v2'} paperSize
  * @param {{ invoiceData: object, invoiceItems: Array, printData: object, invoiceNo: string, invoiceDate: (string|Date|import('dayjs').Dayjs) }} params
  * @returns {Promise<{ model: object, logPayload: object }|null>}
  */
 export async function buildContinuousPrintModel(paperSize, { invoiceData, invoiceItems: rawItems, printData, invoiceNo, invoiceDate }) {
   const invoiceItems = printData?.mergeSilverLines ? groupInvoiceLinesForPrint(rawItems) : rawItems
-  if (paperSize === 'vat-bridge') {
-    return buildVatModel({ invoiceData, invoiceItems, printData, invoiceNo, invoiceDate })
+  if (getTaxPaperConfig(paperSize)) {
+    return buildVatModel({ paperSize, invoiceData, invoiceItems, printData, invoiceNo, invoiceDate })
   }
   if (paperSize === 'bill') {
     return buildBillModel({ invoiceData, invoiceItems, printData, invoiceNo, invoiceDate })

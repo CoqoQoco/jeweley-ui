@@ -119,6 +119,9 @@
                 optionLabel="label"
                 optionValue="value"
               />
+              <small v-if="paperSize === 'vat-bridge-v2'" class="form-text text-muted">
+                {{ $t('view.sale.invoiceDetail.paperTaxV2Hint') }}
+              </small>
             </div>
 
             <div v-if="paperSize === 'a4' && !isMaterial" class="form-group mb-3">
@@ -192,7 +195,7 @@
               />
             </div>
 
-            <div v-if="paperSize === 'bill' || paperSize === 'vat-bridge'" class="form-group mb-3">
+            <div v-if="paperSize === 'bill' || isTaxPaper" class="form-group mb-3">
               <label class="form-label">
                 <i class="bi bi-printer mr-1"></i>{{ $t('view.sale.invoiceDetail.printer') }}
               </label>
@@ -535,7 +538,31 @@
               </div>
             </div>
 
-            <div v-if="paperSize === 'vat-bridge'" class="form-group mb-3">
+            <div v-if="isTaxPaper" class="form-group mb-3">
+              <FormFieldGeneric
+                :label="$t('view.sale.invoiceDetail.taxVatPercentLabel')"
+                inputId="tax-vat-percent"
+                :error="taxVatError"
+              >
+                <InputTextGeneric
+                  id="tax-vat-percent"
+                  v-model="taxVatPercent"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  :disabled="isTaxVatLocked"
+                />
+              </FormFieldGeneric>
+              <small v-if="isTaxVatLocked" class="form-text text-muted">
+                {{ $t('view.sale.invoiceDetail.taxVatPercentLockedHint') }}
+              </small>
+              <small v-else class="form-text text-muted">
+                {{ $t('view.sale.invoiceDetail.taxVatPercentHint') }}
+              </small>
+            </div>
+
+            <div v-if="isTaxPaper" class="form-group mb-3">
               <div class="row">
                 <div class="col-6">
                   <label class="form-label">
@@ -585,12 +612,12 @@
     </template>
 
     <template #action>
-      <button class="btn btn-main mr-2" type="button" @click="onPreviewPDF">
+      <button class="btn btn-main mr-2" type="button" :disabled="!!taxVatError" @click="onPreviewPDF">
         <i class="bi bi-eye mr-1"></i>
         {{ $t('view.sale.invoiceDetail.previewBtn') }}
       </button>
 
-      <button class="btn btn-green mr-2" type="button" @click="onConfirmPrint">
+      <button class="btn btn-green mr-2" type="button" :disabled="!!taxVatError" @click="onConfirmPrint">
         <i class="bi bi-printer mr-1"></i>
         {{ $t('view.sale.invoiceDetail.printBtn') }}
       </button>
@@ -604,6 +631,7 @@
 </template>
 
 <script>
+import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import { storage } from '@/services/storage.js'
 import dayjs from 'dayjs'
@@ -624,11 +652,11 @@ import { getBarcodePrinterName } from '@/services/api/barcode-printer-config.js'
 import { pickDocumentPrinter, isBarcodePrinter, confirmIfBarcodePrinter } from '@/services/helper/print/document-printer-guard.js'
 import { getBillLayout } from '@/services/helper/print/bill-layout-store.js'
 import { getVatLayout } from '@/services/helper/print/vat-layout-store.js'
+import { TAX_PAPER, isTaxContinuousPaper, getTaxPaperConfig, isTaxVatPercentLocked, defaultTaxVatPercent } from '@/services/helper/print/tax-paper.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { isMaterialInvoice } from '@/constants/invoice-types.js'
 import { DRAFT_INVOICE_NUMBER } from '@/services/helper/print/so-draft-bill.js'
 
-const VAT_PRINTER_STORAGE_KEY = 'print-bridge-printer-vat'
 const BILL_PRINTER_STORAGE_KEY = 'print-bridge-printer-bill'
 
 function vatOrDefault(val) {
@@ -642,6 +670,7 @@ export default {
 
   components: {
     DrawerGeneric,
+    FormFieldGeneric,
     CalendarGeneric,
     DropdownGeneric,
     AutoCompleteGeneric,
@@ -717,7 +746,8 @@ export default {
       printerStatus: null,
       selectedPrinter: null,
       defaultBillPrinter: null,
-      defaultVatPrinter: null,
+      defaultTaxPrinters: {},
+      taxVatPercent: 7,
       billElementFlags: {
         // Header
         showInvoiceNo: true,
@@ -785,7 +815,8 @@ export default {
       const options = [
         { value: 'a4', label: this.$t('view.sale.invoiceDetail.paperA4') },
         { value: 'bill', label: this.$t('view.sale.invoiceDetail.paperBill') },
-        { value: 'vat-bridge', label: this.$t('view.sale.invoiceDetail.paperTax') }
+        { value: 'vat-bridge', label: this.$t('view.sale.invoiceDetail.paperTax') },
+        { value: 'vat-bridge-v2', label: this.$t('view.sale.invoiceDetail.paperTaxV2') }
       ]
       return this.isMaterial ? options.filter((o) => o.value !== 'bill') : options
     },
@@ -821,6 +852,24 @@ export default {
 
     billGemTypes() {
       return listBillGemTypes(this.invoiceItems)
+    },
+
+    isTaxPaper() {
+      return isTaxContinuousPaper(this.paperSize)
+    },
+
+    taxVatError() {
+      if (!this.isTaxPaper || this.isTaxVatLocked) return ''
+      const raw = this.taxVatPercent
+      const n = Number(raw)
+      if (raw === '' || raw === null || raw === undefined || !Number.isFinite(n) || n < 0 || n > 100) {
+        return this.$t('view.sale.invoiceDetail.taxVatPercentInvalid')
+      }
+      return ''
+    },
+
+    isTaxVatLocked() {
+      return isTaxVatPercentLocked(this.invoiceData)
     },
 
     invoiceVatPercent() {
@@ -878,6 +927,7 @@ export default {
     previewWatchSnapshot() {
       return {
         paperSize: this.paperSize,
+        taxVatPercent: this.taxVatPercent,
         offsetX: this.continuousOffset.x,
         offsetY: this.continuousOffset.y,
         billOffsetX: this.billOffset.x,
@@ -907,6 +957,7 @@ export default {
           this.prefillGemColumnMap()
           this.fetchPrintLogs()
           this.billVatTouched = false
+          this.taxVatPercent = defaultTaxVatPercent(this.invoiceData)
           this.applyBillVatDefault()
         }
       },
@@ -922,8 +973,9 @@ export default {
       if (newVal === 'bill') {
         this.selectedPrinter = this.defaultBillPrinter
         this.billVatTouched = false
-      } else if (newVal === 'vat-bridge') {
-        this.selectedPrinter = this.defaultVatPrinter
+      } else if (isTaxContinuousPaper(newVal)) {
+        this.selectedPrinter = this.defaultTaxPrinters[newVal] ?? null
+        this.loadContinuousOffset(newVal)
       } else {
         this.selectedPrinter = null
       }
@@ -932,20 +984,7 @@ export default {
   },
 
   async mounted() {
-    const savedContinuous = storage.getItem('invoice-continuous-offset')
-    if (savedContinuous) {
-      try {
-        const parsed = JSON.parse(savedContinuous)
-        if (parsed && typeof parsed === 'object') {
-          this.continuousOffset = {
-            x: Number(parsed.x) || 0,
-            y: Number(parsed.y) || 0
-          }
-        }
-      } catch (e) {
-        this.continuousOffset = { x: 0, y: 0 }
-      }
-    }
+    this.loadContinuousOffset(this.paperSize)
 
     const savedBill = storage.getItem('invoice-bill-offset')
     if (savedBill) {
@@ -1013,15 +1052,23 @@ export default {
 
     await this.loadPrinters()
 
-    const [billLayout, vatLayout] = await Promise.all([getBillLayout(), getVatLayout()])
+    const taxPaperSizes = Object.keys(TAX_PAPER)
+    const [billLayout, ...taxLayouts] = await Promise.all([
+      getBillLayout(),
+      ...taxPaperSizes.map((size) => getVatLayout(TAX_PAPER[size].layoutKey))
+    ])
     const barcodePrinter = getBarcodePrinterName()
     this.defaultBillPrinter = pickDocumentPrinter([storage.getItem(BILL_PRINTER_STORAGE_KEY), billLayout?.printerName], barcodePrinter)
-    this.defaultVatPrinter = pickDocumentPrinter([storage.getItem(VAT_PRINTER_STORAGE_KEY), vatLayout?.printerName], barcodePrinter)
+    const taxPrinters = {}
+    taxPaperSizes.forEach((size, i) => {
+      taxPrinters[size] = pickDocumentPrinter([storage.getItem(TAX_PAPER[size].printerStorageKey), taxLayouts[i]?.printerName], barcodePrinter)
+    })
+    this.defaultTaxPrinters = taxPrinters
 
     if (this.paperSize === 'bill') {
       this.selectedPrinter = this.defaultBillPrinter
-    } else if (this.paperSize === 'vat-bridge') {
-      this.selectedPrinter = this.defaultVatPrinter
+    } else if (this.isTaxPaper) {
+      this.selectedPrinter = this.defaultTaxPrinters[this.paperSize] ?? null
     }
   },
 
@@ -1036,6 +1083,22 @@ export default {
       const result = await fetchPrinterList()
       this.printerStatus = result.status
       this.printerOptions = result.printers
+    },
+
+    loadContinuousOffset(paperSize) {
+      const taxPaper = getTaxPaperConfig(paperSize)
+      if (!taxPaper) return
+      this.continuousOffset = { x: 0, y: 0 }
+      const saved = storage.getItem(taxPaper.offsetStorageKey)
+      if (!saved) return
+      try {
+        const parsed = JSON.parse(saved)
+        if (parsed && typeof parsed === 'object') {
+          this.continuousOffset = { x: Number(parsed.x) || 0, y: Number(parsed.y) || 0 }
+        }
+      } catch (e) {
+        this.continuousOffset = { x: 0, y: 0 }
+      }
     },
 
     onPrinterChange(value) {
@@ -1128,6 +1191,7 @@ export default {
         'a4-summary': this.$t('view.sale.invoiceDetail.paperTypeA4Summary'),
         'bill': this.$t('view.sale.invoiceDetail.paperTypeBill'),
         'vat': this.$t('view.sale.invoiceDetail.paperTypeVat'),
+        'vat-v2': this.$t('view.sale.invoiceDetail.paperTypeVatV2'),
         'guarantee-card': this.$t('view.sale.invoiceDetail.paperTypeGuarantee')
       }
       return map[paperType] || paperType
@@ -1266,8 +1330,8 @@ export default {
       const normalizedDate = new Date(this.printData.invoiceDate)
       normalizedDate.setHours(0, 0, 0, 0)
 
-      if (this.paperSize === 'vat-bridge') {
-        storage.setItem('invoice-continuous-offset', JSON.stringify(this.continuousOffset))
+      if (this.isTaxPaper) {
+        storage.setItem(getTaxPaperConfig(this.paperSize).offsetStorageKey, JSON.stringify(this.continuousOffset))
       } else if (this.paperSize === 'bill') {
         storage.setItem('invoice-bill-offset', JSON.stringify(this.billOffset))
       }
@@ -1287,6 +1351,7 @@ export default {
         invoiceTemplate: this.invoiceTemplate,
         paperSize: this.paperSize,
         continuousOffset: { ...this.continuousOffset },
+        taxVatPercent: this.isTaxVatLocked ? defaultTaxVatPercent(this.invoiceData) : (Number(this.taxVatPercent) || 0),
         billOffset: { ...this.billOffset },
         printerName: this.selectedPrinter,
         customRemark: (this.customRemark || '').trim(),
@@ -1297,6 +1362,8 @@ export default {
     },
 
     validatePrintData() {
+      if (this.taxVatError) return false
+
       if (!this.draftMode && (!this.printData.invoiceNumber || !this.printData.invoiceNumber.trim())) {
         warning(this.$t('view.sale.invoiceDetail.validation.invoiceNumberRequired'), this.$t('common.label.incompleteData'))
         return false

@@ -77,6 +77,7 @@ export const INVOICE_PAGE_MOCKS = {
   'User/List': { data: [], total: 0 },
   'PrintLayout/bill': { layoutJson: null },
   'PrintLayout/vat': { layoutJson: null },
+  'PrintLayout/vat-v2': { layoutJson: null },
   printers: [],
   health: { status: 'ok' }
 }

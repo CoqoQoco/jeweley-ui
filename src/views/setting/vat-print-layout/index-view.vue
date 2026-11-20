@@ -2,6 +2,16 @@
   <div class="app-container">
     <div class="title-text mb-3">ตั้งค่ารูปแบบพิมพ์ VAT (Bridge GDI)</div>
 
+    <div class="mb-3">
+      <ToggleGroupGeneric
+        :modelValue="layoutKey"
+        :options="versionOptions"
+        :ariaLabel="$t('view.setting.vatPrintLayout.versionLabel')"
+        @update:modelValue="onVersionChange"
+      />
+      <small class="form-text text-muted d-block mt-1">{{ $t('view.setting.vatPrintLayout.versionHelper') }}</small>
+    </div>
+
     <div class="row">
       <div class="col-12 col-lg-10 col-xl-8">
 
@@ -181,6 +191,18 @@
             </div>
           </div>
 
+          <div v-if="hasTotalQty" class="form-row">
+            <label class="form-label-col">{{ $t('view.setting.vatPrintLayout.totalQty') }}</label>
+            <div class="form-input-col">
+              <div class="xy-pair">
+                <span class="xy-tag">X</span>
+                <input v-model.number="form.totalQty.x" type="number" step="0.01" class="form-control" />
+                <span class="xy-tag">Y</span>
+                <input v-model.number="form.totalQty.y" type="number" step="0.01" class="form-control" />
+              </div>
+            </div>
+          </div>
+
           <div class="form-row">
             <label class="form-label-col">จำนวนเงิน (ตัวอักษร)</label>
             <div class="form-input-col">
@@ -310,41 +332,23 @@
 
 <script>
 import { getVatLayout, saveVatLayout } from '@/services/helper/print/vat-layout-store.js'
-import { printVat } from '@/services/api/print-bridge-service.js'
+import { buildVatPrintModel } from '@/services/helper/print/vat-print-model-builder.js'
+import { VAT_LAYOUT_KEY, VAT_V2_LAYOUT_KEY, getVatLayoutDefaults } from '@/services/helper/print/vat-layout-defaults.js'
+import { TAX_PAPER } from '@/services/helper/print/tax-paper.js'
+import { printGeneric } from '@/services/api/print-bridge-service.js'
 import { success, error } from '@/services/alert/sweetAlerts.js'
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 import { storage } from '@/services/storage.js'
 import { getBarcodePrinterName } from '@/services/api/barcode-printer-config.js'
 import { isBarcodePrinter, confirmIfBarcodePrinter } from '@/services/helper/print/document-printer-guard.js'
 import { fetchPrinterList, PRINT_BRIDGE_BASE_URL } from '@/services/api/printer-config-service.js'
 
-const PRINTER_STORAGE_KEY = 'print-bridge-printer-vat'
-
-const DEFAULT_LAYOUT = {
-  invoiceNo: { x: 6.0, y: 1.8 },
-  date: { x: 6.0, y: 2.2 },
-  customerName: { x: 1.2, y: 1.75 },
-  customerTaxId: { x: 1.2, y: 1.95 },
-  customerAddress: { x: 1.2, y: 2.15 },
-  itemsStart: { x: 0, y: 3.1 },
-  itemNoX: 0.6,
-  itemDescX: 1.1,
-  itemQtyX: 4.15,
-  itemPriceX: 5.15,
-  itemAmountX: 6.48,
-  subtotal: { x: 6.5, y: 7.6 },
-  vat: { x: 6.5, y: 7.98 },
-  total: { x: 6.5, y: 8.3 },
-  amountText: { x: 1.0, y: 8.3 },
-  rowHeight: 0.17,
-  maxRowsPerPage: 25,
-  headerFontSize: 12,
-  itemFontSize: 10,
-  printerName: '',
-  offsetX: 0,
-  offsetY: 0
-}
+const PRINTER_STORAGE_KEYS = Object.values(TAX_PAPER).reduce((map, cfg) => {
+  map[cfg.layoutKey] = cfg.printerStorageKey
+  return map
+}, {})
 
 function deepClone(obj) {
   return JSON.parse(JSON.stringify(obj))
@@ -353,17 +357,29 @@ function deepClone(obj) {
 export default {
   name: 'VatPrintLayoutView',
 
-  components: { AutoCompleteGeneric, ButtonGeneric },
+  components: { AutoCompleteGeneric, ButtonGeneric, ToggleGroupGeneric },
 
   data() {
     return {
-      form: deepClone(DEFAULT_LAYOUT),
+      layoutKey: VAT_LAYOUT_KEY,
+      form: deepClone(getVatLayoutDefaults(VAT_LAYOUT_KEY)),
       printerOptions: [],
       printerStatus: null
     }
   },
 
   computed: {
+    versionOptions() {
+      return [
+        { value: VAT_LAYOUT_KEY, label: this.$t('view.setting.vatPrintLayout.versionOld') },
+        { value: VAT_V2_LAYOUT_KEY, label: this.$t('view.setting.vatPrintLayout.versionNew') }
+      ]
+    },
+
+    hasTotalQty() {
+      return !!getVatLayoutDefaults(this.layoutKey).totalQty
+    },
+
     printerHealthUrl() {
       return `${PRINT_BRIDGE_BASE_URL}/health`
     },
@@ -380,24 +396,35 @@ export default {
   },
 
   async mounted() {
-    const saved = await getVatLayout()
-    if (saved) {
-      this.form = { ...deepClone(DEFAULT_LAYOUT), ...saved }
-      const nested = ['invoiceNo', 'date', 'customerName', 'customerTaxId', 'customerAddress', 'itemsStart', 'subtotal', 'vat', 'total', 'amountText']
-      nested.forEach(key => {
-        if (saved[key]) this.form[key] = { ...DEFAULT_LAYOUT[key], ...saved[key] }
-      })
-    }
-
-    const storedPrinter = storage.getItem(PRINTER_STORAGE_KEY)
-    if (storedPrinter) {
-      this.form.printerName = storedPrinter
-    }
-
+    await this.loadVersion(VAT_LAYOUT_KEY)
     await this.loadPrinters()
   },
 
   methods: {
+    async loadVersion(layoutKey) {
+      const defaults = getVatLayoutDefaults(layoutKey)
+      const saved = await getVatLayout(layoutKey)
+      this.layoutKey = layoutKey
+      this.form = deepClone(defaults)
+      if (saved) {
+        this.form = { ...deepClone(defaults), ...saved }
+        const nested = ['invoiceNo', 'date', 'customerName', 'customerTaxId', 'customerAddress', 'itemsStart', 'subtotal', 'vat', 'total', 'amountText', 'totalQty']
+        nested.forEach(key => {
+          if (saved[key] && defaults[key]) this.form[key] = { ...defaults[key], ...saved[key] }
+        })
+      }
+
+      const storedPrinter = storage.getItem(PRINTER_STORAGE_KEYS[layoutKey])
+      if (storedPrinter) {
+        this.form.printerName = storedPrinter
+      }
+    },
+
+    async onVersionChange(layoutKey) {
+      if (layoutKey === this.layoutKey) return
+      await this.loadVersion(layoutKey)
+    },
+
     async loadPrinters() {
       const result = await fetchPrinterList()
       this.printerStatus = result.status
@@ -413,19 +440,20 @@ export default {
     },
 
     async onSave() {
+      const printerKey = PRINTER_STORAGE_KEYS[this.layoutKey]
       if (this.form.printerName) {
-        storage.setItem(PRINTER_STORAGE_KEY, this.form.printerName)
+        storage.setItem(printerKey, this.form.printerName)
       } else {
-        storage.removeItem(PRINTER_STORAGE_KEY)
+        storage.removeItem(printerKey)
       }
       const payload = { ...this.form }
       delete payload.printerName
-      await saveVatLayout(payload)
+      await saveVatLayout(payload, this.layoutKey)
       success('บันทึกค่า Layout สำเร็จ', 'VAT Print Layout')
     },
 
     onReset() {
-      this.form = deepClone(DEFAULT_LAYOUT)
+      this.form = deepClone(getVatLayoutDefaults(this.layoutKey))
       success('Reset เป็นค่า default สำเร็จ', 'VAT Print Layout')
     },
 
@@ -444,47 +472,27 @@ export default {
     },
 
     async doTestPrint() {
-      const dummy = {
-        invoice: {
-          invoiceNo: 'TEST-' + Date.now(),
-          invoiceDate: new Date().toISOString().slice(0, 10),
-          customer: { name: 'ทดสอบ พิมพ์', address: '123 ถนนทดสอบ', taxId: '0000000000000' },
-          customerTaxId: '0000000000000',
-          items: [
-            {
-              stockNumber: 'NEW00001',
-              productNumber: 'R-TEST-001',
-              productNameEN: 'Test Ring 1',
-              qty: 2,
-              appraisalPrice: 5000,
-              discountPercent: 10,
-              goldWeight: 1.22,
-              stoneWeight: 0.44,
-              diamondWeight: 0.18
-            },
-            {
-              stockNumber: 'NEW00002',
-              productNumber: 'R-TEST-002',
-              productNameEN: 'Test Ring 2',
-              qty: 3,
-              appraisalPrice: 3000,
-              discountPercent: 5,
-              goldWeight: 0.85,
-              stoneWeight: 0.22,
-              diamondWeight: 0.05
-            }
-          ],
-          currencyRate: 1,
-          specialDiscount: 0,
-          specialAddition: 0,
-          freightAndInsurance: 0,
-          vatPercent: 7
-        },
-        layout: this.form,
-        printerName: this.form.printerName || null
+      const invoice = {
+        invoiceNo: 'TEST-' + Date.now(),
+        invoiceDate: new Date().toISOString().slice(0, 10),
+        customer: { name: 'ทดสอบ พิมพ์', address: '123 ถนนทดสอบ', taxId: '0000000000000' },
+        customerTaxId: '0000000000000',
+        items: [
+          { productNameEN: 'Test Ring 1', qty: 2, appraisalPrice: 5000, discountPercent: 10 },
+          { productNameEN: 'Test Ring 2', qty: 3, appraisalPrice: 3000, discountPercent: 5 }
+        ],
+        currencyRate: 1,
+        specialDiscount: 0,
+        specialAddition: 0,
+        freightAndInsurance: 0,
+        vatPercent: 7
       }
+      const model = buildVatPrintModel(invoice, this.form, {
+        printerName: this.form.printerName || null,
+        layoutKey: this.layoutKey
+      })
       try {
-        await printVat(dummy)
+        await printGeneric(model)
         success('พิมพ์ทดสอบสำเร็จ', 'VAT Print Layout')
       } catch (err) {
         error(err.message || 'ไม่สามารถพิมพ์ทดสอบได้', 'เกิดข้อผิดพลาด')

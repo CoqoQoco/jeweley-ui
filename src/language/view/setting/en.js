@@ -1,4 +1,11 @@
 export default {
+  vatPrintLayout: {
+    versionLabel: 'Tax invoice form',
+    versionOld: 'Old form',
+    versionNew: 'New form',
+    versionHelper: "These positions apply to the paper options 'Tax Invoice' / 'Tax Invoice (new form)' on the invoice print page",
+    totalQty: 'Total quantity (under Quantity column)'
+  },
   companyInfo: {
     pageTitle: 'Company Info Settings',
     pageDescription: 'Central company information used on the header of every PDF document (Material Sale · Invoice Standard 2 · Billing Note) and contact/social media channels',

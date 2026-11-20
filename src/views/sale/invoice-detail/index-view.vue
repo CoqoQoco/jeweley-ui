@@ -311,6 +311,7 @@ import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { error, success, warning } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
+import { isTaxContinuousPaper, getTaxPaperConfig } from '@/services/helper/print/tax-paper.js'
 import { isClientRejection, fetchVoidDocCounts, formatCertificateNos, buildVoidDocsHtml } from '@/services/helper/invoice/void-docs.js'
 import { generatePhotoSheetPdf } from '@/services/helper/pdf/photo-sheet/photo-sheet-pdf-integration.js'
 import PhotoSheetDocNoModal from '@/components/modal/photo-sheet-doc-no-modal.vue'
@@ -593,14 +594,15 @@ export default {
 
     continuousPaperLabel() {
       if (!this.lastPreviewPrintData) return ''
-      return this.lastPreviewPrintData.paperSize === 'vat-bridge'
-        ? this.$t('view.sale.invoiceDetail.paperTax')
+      const taxPaper = getTaxPaperConfig(this.lastPreviewPrintData.paperSize)
+      return taxPaper
+        ? this.$t(taxPaper.labelKey)
         : this.$t('view.sale.invoiceDetail.paperBill')
     },
 
     continuousOffsetLabel() {
       if (!this.lastPreviewPrintData) return ''
-      const offset = this.lastPreviewPrintData.paperSize === 'vat-bridge'
+      const offset = isTaxContinuousPaper(this.lastPreviewPrintData.paperSize)
         ? this.lastPreviewPrintData.continuousOffset
         : this.lastPreviewPrintData.billOffset
       return this.$t('view.sale.invoiceDetail.previewOffsetLabel', { x: offset?.x || 0, y: offset?.y || 0 })
@@ -1689,7 +1691,7 @@ export default {
           itemsPerPage: Number(printData.itemsPerPage) || 10
         }
 
-        if (printData.paperSize === 'vat-bridge' || printData.paperSize === 'bill') {
+        if (isTaxContinuousPaper(printData.paperSize) || printData.paperSize === 'bill') {
           const { printGeneric } = await import('@/services/api/print-bridge-service.js')
           const { buildContinuousPrintModel } = await import('@/services/helper/print/continuous-print-payload.js')
           const { model, logPayload } = await buildContinuousPrintModel(printData.paperSize, {
@@ -1700,13 +1702,14 @@ export default {
             invoiceDate: options.invoiceDate
           })
           await printGeneric(model)
-          const successKey = printData.paperSize === 'vat-bridge'
-            ? 'view.sale.invoiceDetail.success.printVat'
+          const taxPaper = getTaxPaperConfig(printData.paperSize)
+          const successKey = taxPaper
+            ? taxPaper.successKey
             : 'view.sale.invoiceDetail.success.printBill'
           success(this.$t(successKey), 'Bridge GDI')
           this.invoiceStore.createPrintLog({
             invoiceNumber: printData.invoiceNumber,
-            paperType: printData.paperSize === 'vat-bridge' ? 'vat' : 'bill',
+            paperType: taxPaper ? taxPaper.logPaperType : 'bill',
             data: JSON.stringify(logPayload)
           })
           return
