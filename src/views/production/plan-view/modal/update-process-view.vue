@@ -18,7 +18,7 @@
                 v-model="form.worker"
                 :suggestions="workerItemSearch"
                 @complete="onSearchWorker"
-                :class="form.worker ? `` : `-`"
+                :class="{ 'cell-readonly': [500].includes(status) }"
                 optionLabel="nameTh"
                 forceSelection
                 :disabled="[500].includes(status)"
@@ -207,6 +207,7 @@
                     min="0"
                     step="any"
                     :aria-label="$t('view.production.planUpdateCell.wages')"
+                    :class="{ 'cell-readonly': !data.goldQTYCheck }"
                     :disabled="!data.goldQTYCheck"
                     @change="calTotalWages(data)"
                   />
@@ -225,6 +226,7 @@
                     min="0"
                     step="any"
                     :aria-label="$t('view.production.planUpdateCell.totalWages')"
+                    class="cell-readonly"
                     :disabled="true"
                   />
                 </template>
@@ -362,7 +364,7 @@
                     :suggestions="gemItemSearch"
                     :placeholder="$t('view.production.planUpdateCell.placeholderGem')"
                     :aria-label="$t('view.production.planUpdateCell.gem')"
-                    :customClass="data.gem ? '' : 'bg-warning'"
+                    :customClass="checkOutbound(data) ? 'cell-readonly' : ''"
                     optionLabel="name"
                     :forceSelection="true"
                     :minLength="4"
@@ -385,6 +387,7 @@
                     type="number"
                     step="any"
                     :aria-label="$t('common.field.quantity')"
+                    :class="{ 'cell-readonly': checkOutbound(data) }"
                     :disabled="checkOutbound(data)"
                   />
                 </template>
@@ -396,6 +399,7 @@
                     type="number"
                     step="any"
                     :aria-label="$t('common.field.weight')"
+                    :class="{ 'cell-readonly': checkOutbound(data) }"
                     :disabled="checkOutbound(data)"
                   />
                 </template>
@@ -1107,15 +1111,6 @@ export default {
 .worker-name {
   display: block;
   font-size: var(--fs-sm);
-  color: var(--base-sub-color);
-}
-:deep(.p-autocomplete.p-disabled) {
-  opacity: 1;
-}
-:deep(.p-autocomplete.p-disabled .p-autocomplete-input),
-:deep(input.form-control:disabled) {
-  opacity: 1;
-  background: var(--status-closed-bg);
   color: var(--base-sub-color);
 }
 .custom-input {

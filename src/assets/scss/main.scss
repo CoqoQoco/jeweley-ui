@@ -183,3 +183,33 @@ textarea {
 .text-main {
   color: $base-font-color;
 }
+
+// ** ------ Editable Table Cell (docs/design-system.md#editable-table-cell) ------
+// ซ้ำ class 2 ครั้งโดยเจตนา: ต้องชนะ Bootstrap .form-control(:disabled) ที่โหลดหลัง และ scoped input.form-control[data-v] (0,2,1)
+// ช่องบังคับที่ยังว่าง: กรอบ 1px เส้นประ สี --base-sub-color (contrast กับขาว ~11:1) — เส้นประต่างจากกรอบ focus ที่เป็นเส้นทึบ
+input.form-control.cell-required-empty.cell-required-empty,
+.p-dropdown.cell-required-empty.cell-required-empty,
+.p-autocomplete.cell-required-empty.cell-required-empty .p-autocomplete-input {
+  border: 1px dashed var(--base-sub-color);
+}
+
+// focus ต้องเห็นต่างจากช่องบังคับว่าง: เส้นทึบ + วงนอก
+input.form-control.cell-required-empty.cell-required-empty:focus,
+.p-dropdown.cell-required-empty.cell-required-empty.p-focus,
+.p-autocomplete.cell-required-empty.cell-required-empty .p-autocomplete-input:focus {
+  border-style: solid;
+  outline: 2px solid var(--base-sub-color);
+  outline-offset: 1px;
+}
+
+// ช่อง disabled/readonly: อ่านออกชัด ไม่จาง
+input.form-control.cell-readonly.cell-readonly:disabled,
+input.form-control.cell-readonly.cell-readonly:read-only,
+.p-dropdown.cell-readonly.cell-readonly.p-disabled,
+.p-dropdown.cell-readonly.cell-readonly.p-disabled .p-dropdown-label,
+.p-autocomplete.cell-readonly.cell-readonly.p-disabled,
+.p-autocomplete.cell-readonly.cell-readonly.p-disabled .p-autocomplete-input {
+  opacity: 1;
+  background: var(--status-closed-bg);
+  color: var(--base-sub-color);
+}

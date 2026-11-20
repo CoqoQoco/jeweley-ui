@@ -15,7 +15,6 @@
             <input
               type="text"
               class="form-control"
-              :class="form.moldCode ? `` : `bg-warning`"
               v-model="form.moldCode"
               required
             />
@@ -146,7 +145,6 @@
                   <InputTextGeneric
                     v-model="data.size"
                     type="text"
-                    :class="data.size ? '' : 'bg-warning'"
                     :aria-label="$t('view.mold.createDesign.colSize')"
                   />
                 </template>
@@ -157,7 +155,6 @@
                     v-model.number="data.qty"
                     type="number"
                     min="1"
-                    :class="data.qty ? '' : 'bg-warning'"
                     :aria-label="$t('view.mold.createDesign.colQty')"
                   />
                 </template>

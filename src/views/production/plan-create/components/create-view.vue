@@ -219,7 +219,7 @@
               dataKey="id"
               :pt="{ table: { style: 'min-width: 50rem' } }"
             >
-              <Column style="min-width: 60px">
+              <Column frozen style="min-width: 60px">
                 <template #body="{ data }">
                   <ButtonGeneric
                     variant="red"
@@ -231,7 +231,7 @@
                   />
                 </template>
               </Column>
-              <Column :field="'gold'" :header="$t('view.production.planCreate.colGoldColor')" style="min-width: 130px">
+              <Column frozen :field="'gold'" :header="$t('view.production.planCreate.colGoldColor')" style="min-width: 130px">
                 <template #body="{ data }">
                   <DropdownGeneric
                     v-model="data.gold"
@@ -261,7 +261,6 @@
                     v-model.number="data.goldQty"
                     type="number"
                     min="1"
-                    :class="data.goldQty ? '' : 'bg-warning'"
                     :aria-label="$t('view.production.planCreate.colGoldQty')"
                   />
                 </template>
@@ -295,7 +294,6 @@
                   <InputTextGeneric
                     v-model="data.gemSize"
                     type="text"
-                    :class="data.gemSize ? '' : 'bg-warning'"
                     :aria-label="$t('view.production.planCreate.colGemSize')"
                   />
                 </template>
@@ -306,7 +304,6 @@
                     v-model.number="data.gemQty"
                     type="number"
                     min="1"
-                    :class="data.gemQty ? '' : 'bg-warning'"
                     :aria-label="$t('view.production.planCreate.colGemQty')"
                   />
                 </template>
@@ -316,7 +313,6 @@
                   <InputTextGeneric
                     v-model="data.gemUnit"
                     type="text"
-                    :class="data.gemUnit ? '' : 'bg-warning'"
                     :aria-label="$t('view.production.planCreate.colGemUnit')"
                   />
                 </template>
@@ -326,7 +322,6 @@
                   <InputTextGeneric
                     v-model="data.gemWeight"
                     type="text"
-                    :class="data.gemWeight ? '' : 'bg-warning'"
                     :aria-label="$t('view.production.planCreate.colGemWeight')"
                   />
                 </template>
@@ -336,7 +331,6 @@
                   <InputTextGeneric
                     v-model="data.gemWeightUnit"
                     type="text"
-                    :class="data.gemWeightUnit ? '' : 'bg-warning'"
                     :aria-label="$t('view.production.planCreate.colGemWeightUnit')"
                   />
                 </template>
@@ -347,7 +341,6 @@
                     v-model.number="data.diamondQty"
                     type="number"
                     min="1"
-                    :class="data.diamondQty ? '' : 'bg-warning'"
                     :aria-label="$t('view.production.planCreate.colDiamondQty')"
                   />
                 </template>
@@ -357,7 +350,6 @@
                   <InputTextGeneric
                     v-model="data.diamondUnit"
                     type="text"
-                    :class="data.diamondUnit ? '' : 'bg-warning'"
                     :aria-label="$t('view.production.planCreate.colDiamondUnit')"
                   />
                 </template>
@@ -367,7 +359,6 @@
                   <InputTextGeneric
                     v-model="data.diamondSize"
                     type="text"
-                    :class="data.diamondSize ? '' : 'bg-warning'"
                     :aria-label="$t('view.production.planCreate.colDiamondSize')"
                   />
                 </template>
@@ -377,7 +368,6 @@
                   <InputTextGeneric
                     v-model="data.diamondWeight"
                     type="text"
-                    :class="data.diamondWeight ? '' : 'bg-warning'"
                     :aria-label="$t('view.production.planCreate.colDiamondWeight')"
                   />
                 </template>
@@ -387,7 +377,6 @@
                   <InputTextGeneric
                     v-model="data.diamondWeightUnit"
                     type="text"
-                    :class="data.diamondWeightUnit ? '' : 'bg-warning'"
                     :aria-label="$t('view.production.planCreate.colDiamondWeightUnit')"
                   />
                 </template>
@@ -397,7 +386,6 @@
                   <InputTextGeneric
                     v-model="data.diamondQuality"
                     type="text"
-                    :class="data.diamondQuality ? '' : 'bg-warning'"
                     :aria-label="$t('view.production.planCreate.colDiamondQuality')"
                   />
                 </template>
@@ -936,6 +924,16 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+
+:deep(.p-datatable td.p-frozen-column) {
+  background: var(--color-card-bg);
+  z-index: 1;
+}
+
+:deep(.p-datatable tr:hover > td.p-frozen-column),
+:deep(.p-datatable tr.p-highlight > td.p-frozen-column) {
+  background: var(--color-highlight-bg);
+}
 
 :deep(.p-datatable-wrapper) {
   overflow-x: scroll !important;

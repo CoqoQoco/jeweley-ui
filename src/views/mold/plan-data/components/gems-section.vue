@@ -71,8 +71,8 @@
               <InputTextGeneric
                 type="text"
                 :modelValue="data.size"
-                :class="!isMelted && !data.size ? 'bg-warning' : ''"
                 :aria-label="$t('view.mold.gems.colSize')"
+                :class="{ 'cell-readonly': isMelted }"
                 :disabled="isMelted"
                 @update:modelValue="onFieldUpdate(data, 'size', $event)"
               />
@@ -84,8 +84,8 @@
                 type="number"
                 min="1"
                 :modelValue="data.qty"
-                :class="!isMelted && !data.qty ? 'bg-warning' : ''"
                 :aria-label="$t('common.field.quantity')"
+                :class="{ 'cell-readonly': isMelted }"
                 :disabled="isMelted"
                 @update:modelValue="onFieldUpdate(data, 'qty', toNum($event))"
               />
