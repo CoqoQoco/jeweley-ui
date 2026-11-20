@@ -78,9 +78,32 @@ describe('buildBarcodeModel — ข้อมูลป้าย 80×14', () => {
       productionType: 'Silver',
       materials: [{ type: 'Silver', typeCode: 'SV', typeBarcode: '3.52 g. Silver' }]
     })
-    expect(model.goldColorCode).toBe('')
+    expect(model.goldColorCode).toBe('SV')
     expect(model.goldKarat).toBe('')
     expect(model.goldWeight).toBe('3.52')
+  })
+
+  it.each([
+    ['Silver', 'Silver'],
+    ['Silver', null],
+    ['silver', undefined],
+    [' SILVER ', 'x']
+  ])('เงิน productionType=%j size=%j -> SV', (productionType, productionTypeSize) => {
+    expect(buildBarcodeModel({ productionType, productionTypeSize }).goldColorCode).toBe('SV')
+  })
+
+  it('เงินที่มี material ทอง PG -> ยัง SV', () => {
+    const model = buildBarcodeModel({
+      productionType: 'Silver',
+      productionTypeSize: 'Silver',
+      materials: [{ type: 'Gold', typeCode: 'PG', typeBarcode: '1 g. Gold' }]
+    })
+    expect(model.goldColorCode).toBe('SV')
+  })
+
+  it.each(['WG', 'YG', 'PG'])('ทอง %s ไม่เปลี่ยน', (code) => {
+    const model = buildBarcodeModel({ productionTypeSize: '18K', materials: [{ type: 'Gold', typeCode: code, typeBarcode: '1 g. Gold' }] })
+    expect(model.goldColorCode).toBe(code)
   })
 
   it('ไม่มีข้อมูลทอง -> ว่างทั้งหมด', () => {

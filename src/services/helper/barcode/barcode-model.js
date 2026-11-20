@@ -4,15 +4,18 @@ const LABEL_GOLD_COLOR_CODES = ['WG', 'YG', 'PG']
 const LABEL_GOLD_COLOR_BY_NAME = { 'WHITE GOLD': 'WG', 'YELLOW GOLD': 'YG', 'PINK GOLD': 'PG' }
 const LABEL_KARATS = ['18K', '14K', '9K']
 
-// สีทองบนป้ายเล็ก: typeCode ของ material ทองก่อน ไม่มีค่อยดูชื่อ productionType — ได้เฉพาะ WG/YG/PG (เงิน/สีอื่น = '')
+// สีทอง/โลหะบนป้ายเล็ก: เช็คเงินก่อน (productionType/productionTypeSize = SILVER -> 'SV' ไม่ดู material)
+// ไม่ใช่เงินค่อยดู typeCode ของ material ทอง แล้วชื่อ productionType — ได้ WG/YG/PG (สีอื่น = '')
 export function resolveLabelGoldColor(stock) {
+  const isSilver = [stock?.productionType, stock?.productionTypeSize].some((v) => String(v ?? '').trim().toUpperCase() === 'SILVER')
+  if (isSilver) return 'SV'
   const goldMaterial = (stock?.materials || []).find((m) => m.type === 'Gold' && m.typeCode)
   const fromCode = String(goldMaterial?.typeCode ?? '').trim().toUpperCase()
   if (LABEL_GOLD_COLOR_CODES.includes(fromCode)) return fromCode
   return LABEL_GOLD_COLOR_BY_NAME[String(stock?.productionType ?? '').trim().toUpperCase()] || ''
 }
 
-// กะรัตบนป้ายเล็ก: จาก productionTypeSize เท่านั้น (18K/14K/9K) — Silver/ค่าอื่น = ''
+// กะรัตบนป้ายเล็ก: จาก productionTypeSize เท่านั้น (18K/14K/9K) — Silver/ค่าอื่น = '' (เงินใช้ SV จาก resolveLabelGoldColor แทน)
 export function resolveLabelKarat(stock) {
   const normalized = String(stock?.productionTypeSize ?? '').trim().toUpperCase().replace(/\s+/g, '')
   return LABEL_KARATS.includes(normalized) ? normalized : ''

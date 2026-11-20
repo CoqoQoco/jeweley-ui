@@ -1072,6 +1072,23 @@ describe('ป้าย 80×14 มม. มีหางป้าย (GT800)', () =
       expect(buildGt800SmallLine2({ ...base, goldColorCode: '', goldKarat: '' })).toBe('040950  11.78g')
     })
 
+    describe('เงิน (SV)', () => {
+      const silver = { salePrice: base.salePrice, goldColorCode: 'SV', goldKarat: '', goldWeight: '4.0', size: '59' }
+      const code = buildGt800SmallLine2({ ...base, goldColorCode: '', goldKarat: '' }).replace(/\s.*$/, '')
+
+      it('โหมดรหัสราคา -> รหัสราคาต่อ SV', () => {
+        expect(buildGt800SmallLine2(silver)).toBe(`${code}SV  4.0g  #59`)
+      })
+
+      it('ซ่อนราคา -> SV  4.0g  #59', () => {
+        expect(buildGt800SmallLine2({ ...silver, hidePrice: true })).toBe('SV  4.0g  #59')
+      })
+
+      it('โหมดราคาเต็ม -> $250 SV  4.0g  #59', () => {
+        expect(buildGt800SmallLine2({ ...silver, labelPriceText: '$250' })).toBe('$250 SV  4.0g  #59')
+      })
+    })
+
     it('ซ่อนราคา + ไม่มีข้อมูลทอง -> เหลือแต่น้ำหนัก', () => {
       expect(buildGt800SmallLine2({ ...base, hidePrice: true, goldColorCode: '', goldKarat: '' })).toBe('11.78g')
     })

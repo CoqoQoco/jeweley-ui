@@ -944,7 +944,7 @@ export function formatLabelSize(size) {
   return `#${value}`
 }
 
-// ข้อความบรรทัด 2: {รหัสราคา}{สีทอง}{กะรัต}  {น้ำหนัก}g  #{ไซซ์} — ส่วนที่ไม่มีข้อมูลข้ามไป (เงิน/ไม่มีข้อมูลทอง = ไม่ต่อสี/กะรัต)
+// ข้อความบรรทัด 2: {รหัสราคา}{สีทอง}{กะรัต}  {น้ำหนัก}g  #{ไซซ์} — ส่วนที่ไม่มีข้อมูลข้ามไป (เงินพิมพ์ SV ต่อท้ายรหัสราคาเหมือนทอง เช่น 0205SV · ไม่มีข้อมูลโลหะ = ไม่ต่อสี/กะรัต)
 export function buildGt800SmallLine2(formValue, { withSize = true } = {}) {
   // โหมดราคาเต็ม: caller ส่ง labelPriceText ('$250') มา — เว้น 1 ช่องก่อนสีทอง · ไม่ส่ง = โหมดรหัสราคาเดิม
   const fullPriceMode = typeof formValue?.labelPriceText === 'string'
