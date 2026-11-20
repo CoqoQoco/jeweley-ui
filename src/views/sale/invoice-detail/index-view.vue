@@ -325,6 +325,7 @@ import { SaleSummaryPdfBuilder } from '@/services/helper/pdf/sale-summary/sale-s
 import { SaleSummaryExcelBuilder } from '@/services/helper/excel/sale-summary/sale-summary-excel-builder.js'
 import { buildProductTypeLabelMap } from '@/services/helper/sale-summary/sale-summary-data.js'
 import dayjs from 'dayjs'
+import { computeInvoiceTotalExSpecial } from '@/services/helper/print/so-draft-bill.js'
 import { formatDocCurrency } from '@/services/utils/decimal.js'
 import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
 import { ensureLineKey } from '@/services/utils/line-key.js'
@@ -442,8 +443,7 @@ export default {
     },
 
     invoiceTotalExSpecial() {
-      const sub = Number(this.documentTotals.subTotal) || 0
-      return sub + (sub * (Number(this.invoiceData?.vatPercent) || 0)) / 100
+      return computeInvoiceTotalExSpecial(this.documentTotals?.subTotal, this.invoiceData?.vatPercent)
     },
 
     grandTotalRaw() {

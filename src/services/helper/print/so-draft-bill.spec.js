@@ -42,4 +42,15 @@ describe('so-draft-bill', () => {
   it('exposes DRAFT constant', () => {
     expect(DRAFT_INVOICE_NUMBER).toBe('DRAFT')
   })
+
+  it('computeInvoiceTotalExSpecial matches the legacy inline formula', () => {
+    const legacy = (sub, vat) => {
+      const s = Number(sub) || 0
+      return s + (s * (Number(vat) || 0)) / 100
+    }
+    const cases = [[1000, 7], [1234.56, 7], ['1000', '7'], [1000, null], [1000, undefined], [null, 7], ['abc', 7], [0, 7], [99999.99, 10]]
+    cases.forEach(([sub, vat]) => {
+      expect(computeInvoiceTotalExSpecial(sub, vat)).toBe(legacy(sub, vat))
+    })
+  })
 })
