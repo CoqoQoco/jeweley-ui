@@ -204,7 +204,7 @@
                   <InputTextGeneric
                     v-model.number="data.wages"
                     type="number"
-                    min="1"
+                    min="0"
                     step="any"
                     :aria-label="$t('view.production.planUpdateCell.wages')"
                     :disabled="!data.goldQTYCheck"
@@ -222,7 +222,7 @@
                   <InputTextGeneric
                     v-model.number="data.totalWages"
                     type="number"
-                    min="1"
+                    min="0"
                     step="any"
                     :aria-label="$t('view.production.planUpdateCell.totalWages')"
                     :disabled="true"

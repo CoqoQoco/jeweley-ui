@@ -79,3 +79,42 @@ test('แก้น้ำหนักรับทอง + กรอกควา�
 
   api.assertNoLeak()
 })
+
+test('ค่าแรงต่อชิ้นต่ำกว่า 1 (0.50) กรอกได้ ไม่ติด min และรวมค่าแรง = จำนวน × 0.5', async ({ page }) => {
+  const api = await installApiMocks(page, {
+    'ProductionPlan/ProductionPlanGet': PLAN,
+    'ProductionPlan/ProductionPlanMateriaGet': [],
+    'ProductionPlan/GetProductionPlanStatus': [{ code: 50, description: 'แต่ง' }],
+    'ProductionPlanCost/ListGoldCostItem': { data: [], total: 0 },
+    'Production/Bom/Get': {},
+    'Production/Bom/Transaction': {},
+    'Master/MasterProductType': [],
+    'Master/MasterCustomerType': [],
+    'Master/MasterGold': [{ code: 'YG', description: 'ทองเหลือง E2E' }],
+    'Master/MasterGoldSize': [],
+    'Master/MasterGem': [],
+    'Master/MasterGemShape': [],
+    'Worker/Search': { data: [{ code: 'W1', nameTh: 'ช่าง E2E' }], total: 1 },
+    'StockGem/Search': [{ id: 55, code: 'G55', name: 'Ruby E2E' }],
+    'ProductionPlan/ProductionPlanUpdateStatusDetail': { success: true }
+  })
+  await seedAuth(page, { permissions: ['dashboard', 'production:view', 'production:edit'] })
+  await page.goto('/plan-order-tracking-update/701')
+
+  await page.getByRole('menuitem', { name: 'แต่ง' }).first().click()
+  await page.locator('button[title="เเก้ไข"]').click()
+
+  const qty = page.locator('input[aria-label="จำนวนรับ"]').first()
+  await qty.fill('42')
+  await qty.blur()
+
+  const wages = page.locator('input[aria-label="ค่าแรงต่อชิ้น"]')
+  await expect(wages).toBeEnabled()
+  await wages.fill('0.5')
+  await wages.blur()
+
+  await expect(wages).toHaveJSProperty('validity.valid', true)
+  await expect(page.locator('input[aria-label="รวมค่าแรง"]')).toHaveValue('21')
+
+  api.assertNoLeak()
+})
