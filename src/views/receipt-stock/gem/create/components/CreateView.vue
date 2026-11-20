@@ -16,7 +16,6 @@
               <input
                 type="text"
                 class="form-control"
-                :class="form.code ? `` : `bg-warning`"
                 v-model="form.code"
                 required
               />
