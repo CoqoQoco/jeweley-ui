@@ -708,6 +708,15 @@
             </div>
 
             <div class="ml-4 mt-4 pb-2">
+              <ButtonGeneric
+                variant="outline"
+                icon="bi-printer"
+                class="mr-2"
+                :label="$t('view.sale.invoiceDetail.draftBillBtn')"
+                :disabled="selectedItemsCount === 0"
+                @click="openDraftPrint"
+              />
+
               <button
                 class="btn btn-main mr-2"
                 type="button"
@@ -728,6 +737,30 @@
         </div>
       </template>
     </modal>
+
+    <InvoiceConfirmPrintModal
+      v-if="isShowDraftPrint || isShowDraftPreview"
+      :draftMode="true"
+      :isShowModal="isShowDraftPrint"
+      :invoiceData="draftBillInvoiceData"
+      :invoiceItems="selectedStockItemsForTotals"
+      :invoiceTotalExSpecial="draftBillTotalExSpecial"
+      :isPreviewOpen="isShowDraftPreview"
+      @close-modal="closeDraftPrint"
+      @confirm-print="handleDraftConfirmPrint"
+      @preview-print="handleDraftPreview"
+    />
+
+    <ContinuousPrintPreviewPanel
+      v-if="isShowDraftPreview"
+      :isShowModal="isShowDraftPreview"
+      :model="draftPreviewModel"
+      :paperLabel="$t('view.sale.invoiceDetail.paperBill')"
+      :offsetLabel="draftOffsetLabel"
+      :fileBaseName="draftBillInvoiceData.soNumber"
+      @close-modal="closeDraftPreview"
+      @print-now="handleDraftPrintNow"
+    />
   </div>
 </template>
 
@@ -746,6 +779,7 @@ import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
+import useDraftBillPrint from '@/composables/useDraftBillPrint.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { usrSaleOrderApiStore } from '@/stores/modules/api/sale/sale-order-store.js'
 import { useSaleChannelApiStore } from '@/stores/modules/api/sale/sale-channel-store.js'
@@ -767,6 +801,8 @@ const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.v
 
 export default {
   name: 'ConfirmAndInvoiceModal',
+
+  mixins: [useDraftBillPrint],
 
   components: {
     modal,

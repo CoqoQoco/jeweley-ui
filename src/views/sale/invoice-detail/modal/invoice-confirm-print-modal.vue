@@ -1,23 +1,23 @@
 <template>
   <DrawerGeneric
     :show="isShowModal"
-    :title="$t('view.sale.invoiceDetail.confirmPrintTitle')"
+    :title="titleText"
     width="480px"
     :isShowActionPart="true"
     headerVariant="main"
-    :sideShow="showHistory"
+    :sideShow="showHistory && !draftMode"
     sideWidth="280px"
     @close="closeModal"
   >
     <template #title>
       <span class="drawer-print-title">
         <i class="bi bi-printer mr-2"></i>
-        {{ $t('view.sale.invoiceDetail.confirmPrintTitle') }}
+        {{ titleText }}
       </span>
     </template>
 
     <template #side>
-      <div class="print-history-panel">
+      <div v-if="!draftMode" class="print-history-panel">
         <div class="print-history-header">
           <i class="bi bi-clock-history mr-2"></i>
           {{ $t('view.sale.invoiceDetail.printHistory') }}
@@ -50,7 +50,14 @@
             <i class="bi bi-file-text mr-2"></i>{{ $t('view.sale.invoiceDetail.docInfo') }}
           </div>
           <div class="p-3">
-            <div class="form-group mb-3">
+            <div v-if="draftMode" class="draft-bill-note mb-3">
+              <div class="draft-bill-note__title">
+                <i class="bi bi-file-earmark-text mr-1"></i>{{ $t('view.sale.invoiceDetail.draftBillBadge') }}
+              </div>
+              <div class="draft-bill-note__text">{{ $t('view.sale.invoiceDetail.draftBillNote') }}</div>
+            </div>
+
+            <div v-if="!draftMode" class="form-group mb-3">
               <label class="form-label">
                 <i class="bi bi-hash mr-1"></i>Invoice Number
               </label>
@@ -64,7 +71,7 @@
               </small>
             </div>
 
-            <div class="form-group mb-3">
+            <div v-if="!draftMode" class="form-group mb-3">
               <label class="form-label">
                 <i class="bi bi-calendar-event mr-1"></i>Invoice Date
               </label>
@@ -92,7 +99,7 @@
               />
             </div>
 
-            <div class="form-group mb-3">
+            <div v-if="!draftMode" class="form-group mb-3">
               <div class="d-flex justify-content-between align-items-center">
                 <label class="form-label mb-0">
                   <i class="bi bi-file-earmark mr-1"></i>{{ $t('view.sale.invoiceDetail.paperSize') }}
@@ -285,6 +292,7 @@
                 <div class="bill-element-group-title">{{ $t('view.sale.invoiceDetail.billGroupHeader') }}</div>
                 <div class="bill-column-toggles">
                   <CheckboxGeneric
+                    v-if="!draftMode"
                     v-model="billElementFlags.showInvoiceNo"
                     :label="$t('view.sale.invoiceDetail.billElemInvoiceNo')"
                     @update:modelValue="onBillFlagChange"
@@ -618,6 +626,7 @@ import { getBillLayout } from '@/services/helper/print/bill-layout-store.js'
 import { getVatLayout } from '@/services/helper/print/vat-layout-store.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { isMaterialInvoice } from '@/constants/invoice-types.js'
+import { DRAFT_INVOICE_NUMBER } from '@/services/helper/print/so-draft-bill.js'
 
 const VAT_PRINTER_STORAGE_KEY = 'print-bridge-printer-vat'
 const BILL_PRINTER_STORAGE_KEY = 'print-bridge-printer-bill'
@@ -667,6 +676,10 @@ export default {
     invoiceTotalExSpecial: {
       type: Number,
       default: null
+    },
+    draftMode: {
+      type: Boolean,
+      default: false
     }
   },
 
@@ -697,7 +710,7 @@ export default {
         itemsPerPage: 10
       },
       invoiceTemplate: 'standard',
-      paperSize: 'vat-bridge',
+      paperSize: this.draftMode ? 'bill' : 'vat-bridge',
       continuousOffset: { x: 0, y: 0 },
       billOffset: { x: 0, y: 0 },
       printerOptions: [],
@@ -749,6 +762,12 @@ export default {
   },
 
   computed: {
+    titleText() {
+      return this.draftMode
+        ? this.$t('view.sale.invoiceDetail.draftBillTitle')
+        : this.$t('view.sale.invoiceDetail.confirmPrintTitle')
+    },
+
     // MATERIAL: ไม่มี A4 standard/bill กระดาษต่อเนื่อง/summary เท่านั้น (D5 ในแผน)
     isMaterial() {
       return isMaterialInvoice(this.invoiceData)
@@ -1034,13 +1053,18 @@ export default {
       if (!this.isPreviewOpen) return
 
       this.autoPreviewTimer = setTimeout(() => {
-        if (!this.printData.invoiceNumber || !this.printData.invoiceNumber.trim() || !this.printData.invoiceDate) return
+        if (!this.draftMode && (!this.printData.invoiceNumber || !this.printData.invoiceNumber.trim())) return
+        if (!this.printData.invoiceDate) return
         this.$emit('preview-print', this.buildPrintData())
       }, 250)
     },
 
     async fetchPrintLogs() {
       this.printLogs = []
+      if (this.draftMode) {
+        this.customRemark = ''
+        return
+      }
       if (!this.invoiceData || !this.invoiceData.invoiceNumber) return
       const res = await this.invoiceStore.fetchPrintLogList({ invoiceNumber: this.invoiceData.invoiceNumber })
       if (res && res.data) {
@@ -1142,7 +1166,7 @@ export default {
       const showImages = storage.getItem('invoice-print-show-images') !== 'false'
 
       this.printData = {
-        invoiceNumber: this.invoiceData.invoiceNumber || '',
+        invoiceNumber: this.draftMode ? DRAFT_INVOICE_NUMBER : (this.invoiceData.invoiceNumber || ''),
         invoiceDate: new Date(),
         sellerName: this.sellerName || '',
         showCifLabel: true,
@@ -1154,7 +1178,10 @@ export default {
         itemsPerPage: 10
       }
 
-      if (this.isMaterial) {
+      if (this.draftMode) {
+        this.paperSize = 'bill'
+        this.invoiceTemplate = 'standard'
+      } else if (this.isMaterial) {
         // MATERIAL: ไม่มีตัวเลือกกระดาษต่อเนื่อง 'bill' และ template อื่นนอกจาก summary
         if (this.paperSize === 'bill') this.paperSize = 'vat-bridge'
         this.invoiceTemplate = 'summary'
@@ -1164,6 +1191,7 @@ export default {
     },
 
     onShowDecimalsChange(val) {
+      if (this.draftMode) return
       storage.setItem('invoice-print-show-decimals-v2', String(val))
     },
 
@@ -1222,6 +1250,7 @@ export default {
       this.applyBillVatDefault()
       const toSave = { ...this.billElementFlags }
       if (this.billVatOverridden) toSave.showVat = this.billVatSavedShowVat
+      if (this.draftMode) return
       storage.setItem('bill-print-column-flags', JSON.stringify(toSave))
     },
 
@@ -1262,12 +1291,13 @@ export default {
         printerName: this.selectedPrinter,
         customRemark: (this.customRemark || '').trim(),
         gemColumnMap: { ...this.gemColumnMap },
-        ...this.billElementFlags
+        ...this.billElementFlags,
+        ...(this.draftMode ? { showInvoiceNo: true } : {})
       }
     },
 
     validatePrintData() {
-      if (!this.printData.invoiceNumber || !this.printData.invoiceNumber.trim()) {
+      if (!this.draftMode && (!this.printData.invoiceNumber || !this.printData.invoiceNumber.trim())) {
         warning(this.$t('view.sale.invoiceDetail.validation.invoiceNumberRequired'), this.$t('common.label.incompleteData'))
         return false
       }
@@ -1319,6 +1349,20 @@ export default {
   font-size: var(--fs-lg);
   font-weight: 700;
   color: #ffffff;
+}
+
+.draft-bill-note {
+  padding: var(--sp-md);
+  border: 1px solid var(--base-warning);
+  border-radius: var(--radius-md);
+  background: var(--status-open-bg);
+  font-size: var(--fs-sm);
+
+  &__title {
+    font-weight: 700;
+    color: var(--base-font-color);
+    margin-bottom: var(--sp-xs);
+  }
 }
 
 .info-icon {
