@@ -508,6 +508,23 @@ export default {
     defaultUnit: 'pcs'
   },
 
+  planUpdateCell: {
+    gold: 'Gold',
+    selectGold: 'Select gold',
+    goldQtySend: 'Qty issued',
+    goldWeightSend: 'Weight issued',
+    goldQtyCheck: 'Qty received',
+    goldWeightCheck: 'Weight received',
+    worker: 'Worker',
+    workerSub: 'Sub worker',
+    placeholderWorker: 'Enter worker code/name....',
+    gem: 'Gem',
+    placeholderGem: 'Enter gem code....',
+    length: 'Length',
+    lengthUnit: 'Length unit',
+    wages: 'Wages per piece',
+    totalWages: 'Total wages'
+  },
   planGold: {
     pageTitle: 'Create Gold Mixing Request',
     pageDesc: 'Create gold mixing request — specify gold withdrawal, casting, melting, body and other details',

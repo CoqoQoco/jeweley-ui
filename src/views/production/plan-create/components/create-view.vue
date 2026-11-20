@@ -214,244 +214,204 @@
             <DataTable
               class="p-datatable-sm"
               showGridlines
-              v-model:editingRows="editingRows"
               :value="form.material"
-              editMode="row"
+              scrollable
               dataKey="id"
-              @row-edit-save="onRowEditSave"
-              :pt="{
-                table: { style: 'min-width: 50rem' },
-                column: {
-                  bodycell: ({ state }) => ({
-                    style: state['d_editing'] && 'padding-top: 0.6rem; padding-bottom: 0.6rem'
-                  })
-                }
-              }"
+              :pt="{ table: { style: 'min-width: 50rem' } }"
             >
-              <Column :rowEditor="true" style="min-width: 100px" bodyStyle="text-align:center">
-              </Column>
               <Column style="min-width: 60px">
-                <template #body="prop">
-                  <div
-                    class="btn btn-sm btn-danger text-center w-100"
-                    @click="onDelMaterial(prop.data)"
-                  >
-                    <i class="bi bi-trash-fill"></i>
-                  </div>
+                <template #body="{ data }">
+                  <ButtonGeneric
+                    variant="red"
+                    type="button"
+                    icon="bi-trash-fill"
+                    class="w-100"
+                    :title="$t('common.btn.delete')"
+                    @click="onDelMaterial(data)"
+                  />
                 </template>
               </Column>
-              <Column :field="'gold'" :header="$t('view.production.planCreate.colGoldColor')" style="min-width: 150px">
-                <template #body="slotProps">
-                  <span>{{ slotProps.data.gold?.description }}</span>
-                </template>
-                <template #editor="{ data, field }">
-                  <Dropdown
-                    v-model="data[field]"
+              <Column :field="'gold'" :header="$t('view.production.planCreate.colGoldColor')" style="min-width: 130px">
+                <template #body="{ data }">
+                  <DropdownGeneric
+                    v-model="data.gold"
                     :options="masterGold"
                     optionLabel="description"
-                    class="w-full md:w-14rem"
                     :placeholder="$t('view.production.planCreate.placeholderSelectGold')"
-                    :showClear="data[field] ? true : false"
-                  >
-                  </Dropdown>
+                    :ariaLabel="$t('view.production.planCreate.colGoldColor')"
+                    :showClear="data.gold ? true : false"
+                  />
                 </template>
               </Column>
-              <Column :field="'goldSize'" :header="$t('view.production.planCreate.colGoldPercent')" style="min-width: 150px">
-                <template #body="slotProps">
-                  <span>{{ slotProps.data.goldSize?.description }}</span>
-                </template>
-                <template #editor="{ data, field }">
-                  <Dropdown
-                    v-model="data[field]"
+              <Column :field="'goldSize'" :header="$t('view.production.planCreate.colGoldPercent')" style="min-width: 130px">
+                <template #body="{ data }">
+                  <DropdownGeneric
+                    v-model="data.goldSize"
                     :options="masterGoldSize"
                     optionLabel="description"
                     :placeholder="$t('view.production.planCreate.placeholderSelectGoldPercent')"
-                    class="w-full md:w-14rem"
-                    :showClear="data[field] ? true : false"
-                  >
-                  </Dropdown>
-                </template>
-              </Column>
-              <Column :field="'goldQty'" :header="$t('view.production.planCreate.colGoldQty')" style="min-width: 100px">
-                <template #editor="{ data, field }">
-                  <input
-                    type="number"
-                    min="1"
-                    :class="data[field] ? `` : `bg-warning`"
-                    class="form-control"
-                    v-model="data[field]"
+                    :ariaLabel="$t('view.production.planCreate.colGoldPercent')"
+                    :showClear="data.goldSize ? true : false"
                   />
                 </template>
               </Column>
-              <Column :field="'gem'" :header="$t('view.production.planCreate.colGemType')" style="min-width: 150px">
-                <template #body="slotProps">
-                  <span>{{ slotProps.data.gem?.description }}</span>
+              <Column :field="'goldQty'" :header="$t('view.production.planCreate.colGoldQty')" style="min-width: 80px">
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model.number="data.goldQty"
+                    type="number"
+                    min="1"
+                    :class="data.goldQty ? '' : 'bg-warning'"
+                    :aria-label="$t('view.production.planCreate.colGoldQty')"
+                  />
                 </template>
-                <template #editor="{ data, field }">
-                  <Dropdown
-                    v-model="data[field]"
+              </Column>
+              <Column :field="'gem'" :header="$t('view.production.planCreate.colGemType')" style="min-width: 130px">
+                <template #body="{ data }">
+                  <DropdownGeneric
+                    v-model="data.gem"
                     :options="masterGem"
                     optionLabel="description"
-                    class="w-full md:w-14rem"
                     :placeholder="$t('view.production.planCreate.placeholderSelectGem')"
-                    :showClear="data[field] ? true : false"
-                  >
-                  </Dropdown>
+                    :ariaLabel="$t('view.production.planCreate.colGemType')"
+                    :showClear="data.gem ? true : false"
+                  />
                 </template>
               </Column>
-              <Column :field="'gemShape'" :header="$t('view.production.planCreate.colGemShape')" style="min-width: 150px">
-                <template #body="slotProps">
-                  <span>{{ slotProps.data.gemShape?.description }}</span>
-                </template>
-                <template #editor="{ data, field }">
-                  <Dropdown
-                    v-model="data[field]"
+              <Column :field="'gemShape'" :header="$t('view.production.planCreate.colGemShape')" style="min-width: 130px">
+                <template #body="{ data }">
+                  <DropdownGeneric
+                    v-model="data.gemShape"
                     :options="masterGemShape"
                     optionLabel="description"
-                    class="w-full md:w-14rem"
                     :placeholder="$t('view.production.planCreate.placeholderSelectGemShape')"
-                    :showClear="data[field] ? true : false"
-                  >
-                  </Dropdown>
-                </template>
-              </Column>
-              <!-- <Column field="gemSize" header="ขนาดพลอย" style="min-width: 150px">
-              <template #body="slotProps">
-                <span>{{ slotProps.data.gemSize?.description }}</span>
-              </template>
-              <template #editor="{ data, field }">
-                <Dropdown
-                  v-model="data[field]"
-                  :options="masterGemShape"
-                  optionLabel="description"
-                  class="w-full md:w-14rem"
-                  placeholder="เลือกรูปร่าง"
-                  :showClear="data[field] ? true : false"
-                >
-                </Dropdown>
-              </template>
-            </Column> -->
-              <Column :field="'gemSize'" :header="$t('view.production.planCreate.colGemSize')" style="min-width: 100px">
-                <template #editor="{ data, field }">
-                  <input
-                    type="text"
-                    :class="data[field] ? `` : `bg-warning`"
-                    class="form-control"
-                    v-model="data[field]"
+                    :ariaLabel="$t('view.production.planCreate.colGemShape')"
+                    :showClear="data.gemShape ? true : false"
                   />
                 </template>
               </Column>
-              <Column :field="'gemQty'" :header="$t('view.production.planCreate.colGemQty')" style="min-width: 100px">
-                <template #editor="{ data, field }">
-                  <input
+              <Column :field="'gemSize'" :header="$t('view.production.planCreate.colGemSize')" style="min-width: 90px">
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model="data.gemSize"
+                    type="text"
+                    :class="data.gemSize ? '' : 'bg-warning'"
+                    :aria-label="$t('view.production.planCreate.colGemSize')"
+                  />
+                </template>
+              </Column>
+              <Column :field="'gemQty'" :header="$t('view.production.planCreate.colGemQty')" style="min-width: 80px">
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model.number="data.gemQty"
                     type="number"
                     min="1"
-                    :class="data[field] ? `` : `bg-warning`"
-                    class="form-control"
-                    v-model="data[field]"
+                    :class="data.gemQty ? '' : 'bg-warning'"
+                    :aria-label="$t('view.production.planCreate.colGemQty')"
                   />
                 </template>
               </Column>
-              <Column :field="'gemUnit'" :header="$t('view.production.planCreate.colGemUnit')" style="min-width: 100px">
-                <template #editor="{ data, field }">
-                  <input
+              <Column :field="'gemUnit'" :header="$t('view.production.planCreate.colGemUnit')" style="min-width: 90px">
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model="data.gemUnit"
                     type="text"
-                    :class="data[field] ? `` : `bg-warning`"
-                    class="form-control"
-                    v-model="data[field]"
+                    :class="data.gemUnit ? '' : 'bg-warning'"
+                    :aria-label="$t('view.production.planCreate.colGemUnit')"
                   />
                 </template>
               </Column>
-              <Column :field="'gemWeight'" :header="$t('view.production.planCreate.colGemWeight')" style="min-width: 100px">
-                <template #editor="{ data, field }">
-                  <input
+              <Column :field="'gemWeight'" :header="$t('view.production.planCreate.colGemWeight')" style="min-width: 90px">
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model="data.gemWeight"
                     type="text"
-                    :class="data[field] ? `` : `bg-warning`"
-                    class="form-control"
-                    v-model="data[field]"
+                    :class="data.gemWeight ? '' : 'bg-warning'"
+                    :aria-label="$t('view.production.planCreate.colGemWeight')"
                   />
                 </template>
               </Column>
-              <Column :field="'gemWeightUnit'" :header="$t('view.production.planCreate.colGemWeightUnit')" style="min-width: 100px">
-                <template #editor="{ data, field }">
-                  <input
+              <Column :field="'gemWeightUnit'" :header="$t('view.production.planCreate.colGemWeightUnit')" style="min-width: 90px">
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model="data.gemWeightUnit"
                     type="text"
-                    :class="data[field] ? `` : `bg-warning`"
-                    class="form-control"
-                    v-model="data[field]"
+                    :class="data.gemWeightUnit ? '' : 'bg-warning'"
+                    :aria-label="$t('view.production.planCreate.colGemWeightUnit')"
                   />
                 </template>
               </Column>
-              <Column :field="'diamondQty'" :header="$t('view.production.planCreate.colDiamondQty')" style="min-width: 100px">
-                <template #editor="{ data, field }">
-                  <input
+              <Column :field="'diamondQty'" :header="$t('view.production.planCreate.colDiamondQty')" style="min-width: 80px">
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model.number="data.diamondQty"
                     type="number"
                     min="1"
-                    :class="data[field] ? `` : `bg-warning`"
-                    class="form-control"
-                    v-model="data[field]"
+                    :class="data.diamondQty ? '' : 'bg-warning'"
+                    :aria-label="$t('view.production.planCreate.colDiamondQty')"
                   />
                 </template>
               </Column>
-              <Column :field="'diamondUnit'" :header="$t('view.production.planCreate.colDiamondUnit')" style="min-width: 100px">
-                <template #editor="{ data, field }">
-                  <input
+              <Column :field="'diamondUnit'" :header="$t('view.production.planCreate.colDiamondUnit')" style="min-width: 90px">
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model="data.diamondUnit"
                     type="text"
-                    :class="data[field] ? `` : `bg-warning`"
-                    class="form-control"
-                    v-model="data[field]"
+                    :class="data.diamondUnit ? '' : 'bg-warning'"
+                    :aria-label="$t('view.production.planCreate.colDiamondUnit')"
                   />
                 </template>
               </Column>
-              <Column :field="'diamondSize'" :header="$t('view.production.planCreate.colDiamondSize')" style="min-width: 100px">
-                <template #editor="{ data, field }">
-                  <input
+              <Column :field="'diamondSize'" :header="$t('view.production.planCreate.colDiamondSize')" style="min-width: 90px">
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model="data.diamondSize"
                     type="text"
-                    :class="data[field] ? `` : `bg-warning`"
-                    class="form-control"
-                    v-model="data[field]"
+                    :class="data.diamondSize ? '' : 'bg-warning'"
+                    :aria-label="$t('view.production.planCreate.colDiamondSize')"
                   />
                 </template>
               </Column>
-              <Column :field="'diamondWeight'" :header="$t('view.production.planCreate.colDiamondWeight')" style="min-width: 100px">
-                <template #editor="{ data, field }">
-                  <input
+              <Column :field="'diamondWeight'" :header="$t('view.production.planCreate.colDiamondWeight')" style="min-width: 90px">
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model="data.diamondWeight"
                     type="text"
-                    :class="data[field] ? `` : `bg-warning`"
-                    class="form-control"
-                    v-model="data[field]"
+                    :class="data.diamondWeight ? '' : 'bg-warning'"
+                    :aria-label="$t('view.production.planCreate.colDiamondWeight')"
                   />
                 </template>
               </Column>
-              <Column :field="'diamondWeightUnit'" :header="$t('view.production.planCreate.colDiamondWeightUnit')" style="min-width: 100px">
-                <template #editor="{ data, field }">
-                  <input
+              <Column :field="'diamondWeightUnit'" :header="$t('view.production.planCreate.colDiamondWeightUnit')" style="min-width: 90px">
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model="data.diamondWeightUnit"
                     type="text"
-                    :class="data[field] ? `` : `bg-warning`"
-                    class="form-control"
-                    v-model="data[field]"
+                    :class="data.diamondWeightUnit ? '' : 'bg-warning'"
+                    :aria-label="$t('view.production.planCreate.colDiamondWeightUnit')"
                   />
                 </template>
               </Column>
-              <Column :field="'diamondQuality'" :header="$t('view.production.planCreate.colDiamondQuality')" style="min-width: 200px">
-                <template #editor="{ data, field }">
-                  <input
+              <Column :field="'diamondQuality'" :header="$t('view.production.planCreate.colDiamondQuality')" style="min-width: 160px">
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model="data.diamondQuality"
                     type="text"
-                    :class="data[field] ? `` : `bg-warning`"
-                    class="form-control"
-                    v-model="data[field]"
+                    :class="data.diamondQuality ? '' : 'bg-warning'"
+                    :aria-label="$t('view.production.planCreate.colDiamondQuality')"
                   />
                 </template>
               </Column>
               <template #footer>
                 <div class="d-flex justify-content-between">
                   <div>{{ $t('view.production.planCreate.materialTotal', { count: form.material.length }) }}</div>
-                  <div class="btn btn-sm btn-dark" @click="onAddMaterial">
-                    <span class="text-center">
-                      <i class="bi bi-plus"></i>
-                    </span>
-                    <!-- <span>เพิ่ม</span> -->
-                  </div>
+                  <ButtonGeneric
+                    variant="dark"
+                    type="button"
+                    icon="bi-plus"
+                    :title="$t('common.btn.add')"
+                    @click="onAddMaterial"
+                  />
                 </div>
               </template>
             </DataTable>
@@ -488,17 +448,17 @@
 <script>
 import pageTitle from '@/components/custom/page-title.vue'
 
-// eslint-disable-next-line no-restricted-imports -- DataTable+editMode="row" exception
+// eslint-disable-next-line no-restricted-imports -- DataTable ตรง: ตารางกรอกได้ในเซลล์ ใช้ DataTableWithPaging ไม่ได้ (TK202611180001)
 import DataTable from 'primevue/datatable'
-// eslint-disable-next-line no-restricted-imports -- DataTable+editMode="row" exception
+// eslint-disable-next-line no-restricted-imports -- DataTable ตรง: ตารางกรอกได้ในเซลล์ ใช้ DataTableWithPaging ไม่ได้ (TK202611180001)
 import Column from 'primevue/column'
-// eslint-disable-next-line no-restricted-imports -- Dropdown inside DataTable editor exception
-import Dropdown from 'primevue/dropdown'
 
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
 import CheckboxGeneric from '@/components/prime-vue/CheckboxGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 import api from '@/axios/axios-helper.js'
 import { success, confirmSubmit } from '@/services/alert/sweetAlerts.js'
@@ -584,7 +544,8 @@ export default {
     CalendarGeneric,
     CheckboxGeneric,
     DropdownGeneric,
-    Dropdown,
+    ButtonGeneric,
+    InputTextGeneric,
     DataTable,
     Column,
     modifyPlanView,
@@ -658,10 +619,7 @@ export default {
       masterGold: [],
       masterGoldSize: [],
       masterGem: [],
-      masterGemShape: [],
-
-      // ---- datatable ---- //
-      editingRows: []
+      masterGemShape: []
     }
   },
 
@@ -746,8 +704,8 @@ export default {
       this.form.productQtyUnit = item.productQtyUnit || this.$t('view.production.planCreate.defaultUnit')
       this.form.productDetail = item.productDetail || ''
       this.form.gold = this.masterGold.find((x) => x.code === item.goldType) || null
-      this.form.material = (item.materials || []).map((m, idx) => ({
-        id: idx + 1,
+      this.form.material = (item.materials || []).map((m) => ({
+        id: ++this.autoId,
         gold: this.masterGold.find((x) => x.code === m.gold) || null,
         goldSize: this.masterGoldSize.find((x) => x.code === m.goldSize) || null,
         goldQty: m.goldQty,
@@ -771,12 +729,11 @@ export default {
     },
 
     // --- datatable --- //
-    onRowEditSave(event) {
-      let { newData, index } = event
-      this.form.material[index] = newData
-    },
     onDelMaterial(item) {
-      const index = this.form.material.indexOf(item)
+      const byRef = this.form.material.indexOf(item)
+      const index =
+        byRef >= 0 ? byRef : item?.id != null ? this.form.material.findIndex((x) => x.id === item.id) : -1
+      if (index < 0) return
       this.form.material.splice(index, 1)
     },
     onAddMaterial() {
@@ -979,6 +936,10 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form.scss';
+
+:deep(.p-datatable-wrapper) {
+  overflow-x: scroll !important;
+}
 
 .image-container {
   display: grid;
@@ -1191,8 +1152,8 @@ export default {
   // Table Scrollbar
   :deep(.p-datatable-wrapper) {
     &::-webkit-scrollbar {
-      width: 6px !important;
-      height: 6px !important;
+      width: 10px !important;
+      height: 10px !important;
     }
 
     &::-webkit-scrollbar-thumb {

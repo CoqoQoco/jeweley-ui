@@ -21,106 +21,87 @@
         <DataTable
           class="p-datatable-sm"
           showGridlines
-          v-model:editingRows="editingRows"
           :value="gems"
-          :editMode="!isMelted ? 'row' : ''"
           dataKey="id"
-          @row-edit-save="onRowEditSave"
-          :pt="{
-            table: { style: 'min-width: 50rem' },
-            column: {
-              bodycell: ({ state }) => ({
-                style: state['d_editing'] && 'padding-top: 0.6rem; padding-bottom: 0.6rem'
-              })
-            }
-          }"
+          :pt="{ table: { style: 'min-width: 50rem' } }"
         >
-          <!-- eslint-disable-next-line no-restricted-imports -->
-          <Column
-            v-if="!isMelted"
-            :rowEditor="true"
-            style="width: 100px"
-            bodyStyle="text-align:center"
-          />
-          <!-- eslint-disable-next-line no-restricted-imports -->
           <Column v-if="!isMelted" style="width: 60px">
-            <template #body="prop">
-              <div class="btn btn-red text-center w-100" @click="onDelGems(prop.data)">
-                <i class="bi bi-trash-fill"></i>
-              </div>
+            <template #body="{ data }">
+              <ButtonGeneric
+                variant="red"
+                type="button"
+                icon="bi-trash-fill"
+                class="w-100"
+                :title="$t('common.btn.delete')"
+                @click="onDelGems(data)"
+              />
             </template>
           </Column>
 
-          <!-- eslint-disable-next-line no-restricted-imports -->
           <Column :field="'gem'" :header="$t('view.mold.gems.colGem')" style="min-width: 150px">
-            <template #body="slotProps">
-              <span>{{ slotProps.data.gem?.description }}</span>
-            </template>
-            <template #editor="{ data, field }">
-              <!-- eslint-disable-next-line no-restricted-imports -->
-              <Dropdown
-                v-model="data[field]"
+            <template #body="{ data }">
+              <DropdownGeneric
+                :modelValue="data.gem"
                 :options="masterGem"
                 optionLabel="description"
-                class="w-full md:w-14rem"
                 :placeholder="$t('view.mold.gems.selectGem')"
-                :showClear="data[field] ? true : false"
+                :ariaLabel="$t('view.mold.gems.colGem')"
+                :showClear="data.gem && !isMelted ? true : false"
+                :disabled="isMelted"
+                @update:modelValue="onFieldUpdate(data, 'gem', $event)"
               />
             </template>
           </Column>
-          <!-- eslint-disable-next-line no-restricted-imports -->
           <Column :field="'gemShape'" :header="$t('view.mold.gems.colGemShape')" style="min-width: 150px">
-            <template #body="slotProps">
-              <span>{{ slotProps.data.gemShape?.description }}</span>
-            </template>
-            <template #editor="{ data, field }">
-              <!-- eslint-disable-next-line no-restricted-imports -->
-              <Dropdown
-                v-model="data[field]"
+            <template #body="{ data }">
+              <DropdownGeneric
+                :modelValue="data.gemShape"
                 :options="masterGemShape"
                 optionLabel="description"
-                class="w-full md:w-14rem"
                 :placeholder="$t('view.mold.gems.selectShape')"
-                :showClear="data[field] ? true : false"
+                :ariaLabel="$t('view.mold.gems.colGemShape')"
+                :showClear="data.gemShape && !isMelted ? true : false"
+                :disabled="isMelted"
+                @update:modelValue="onFieldUpdate(data, 'gemShape', $event)"
               />
             </template>
           </Column>
-          <!-- eslint-disable-next-line no-restricted-imports -->
           <Column :field="'size'" :header="$t('view.mold.gems.colSize')" style="width: 200px">
-            <template #editor="{ data, field }">
-              <input
+            <template #body="{ data }">
+              <InputTextGeneric
                 type="text"
-                min="1"
-                :class="data[field] ? `` : `bg-warning`"
-                class="form-control"
-                v-model="data[field]"
+                :modelValue="data.size"
+                :class="!isMelted && !data.size ? 'bg-warning' : ''"
+                :aria-label="$t('view.mold.gems.colSize')"
+                :disabled="isMelted"
+                @update:modelValue="onFieldUpdate(data, 'size', $event)"
               />
             </template>
           </Column>
-          <!-- eslint-disable-next-line no-restricted-imports -->
           <Column :field="'qty'" :header="$t('common.field.quantity')" style="width: 200px">
-            <template #editor="{ data, field }">
-              <input
+            <template #body="{ data }">
+              <InputTextGeneric
                 type="number"
                 min="1"
-                :class="data[field] ? `` : `bg-warning`"
-                class="form-control"
-                v-model="data[field]"
+                :modelValue="data.qty"
+                :class="!isMelted && !data.qty ? 'bg-warning' : ''"
+                :aria-label="$t('common.field.quantity')"
+                :disabled="isMelted"
+                @update:modelValue="onFieldUpdate(data, 'qty', toNum($event))"
               />
             </template>
           </Column>
           <template #footer>
             <div class="d-flex justify-content-between">
               <div>{{ $t('view.mold.gems.totalItems', { count: gems.length }) }}</div>
-              <div
+              <ButtonGeneric
                 v-if="!isMelted"
-                class="btn btn-sm btn-main"
+                variant="main"
+                type="button"
+                icon="bi-plus"
+                :title="$t('common.btn.add')"
                 @click="onAddGems"
-              >
-                <span class="text-center">
-                  <i class="bi bi-plus"></i>
-                </span>
-              </div>
+              />
             </div>
           </template>
         </DataTable>
@@ -136,8 +117,10 @@ import { confirmSubmit, warning } from '@/services/alert/sweetAlerts.js'
 import DataTable from 'primevue/datatable'
 // eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
-// eslint-disable-next-line no-restricted-imports
-import Dropdown from 'primevue/dropdown'
+
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 const interfaceGem = {
   gem: null,
@@ -152,7 +135,9 @@ export default {
   components: {
     DataTable,
     Column,
-    Dropdown
+    DropdownGeneric,
+    ButtonGeneric,
+    InputTextGeneric
   },
 
   props: {
@@ -188,7 +173,6 @@ export default {
 
   data() {
     return {
-      editingRows: [],
       autoId: 0
     }
   },
@@ -200,16 +184,29 @@ export default {
   },
 
   methods: {
-    onRowEditSave(event) {
-      const { newData, index } = event
+    findRowIndex(item) {
+      const byRef = this.gems.indexOf(item)
+      if (byRef >= 0) return byRef
+      return item?.id != null ? this.gems.findIndex((x) => x.id === item.id) : -1
+    },
+
+    toNum(value) {
+      return value === '' ? value : Number(value)
+    },
+
+    onFieldUpdate(item, field, value) {
+      if (this.isMelted) return
+      const index = this.findRowIndex(item)
+      if (index < 0) return
       const updatedGems = [...this.gems]
-      updatedGems[index] = newData
+      updatedGems[index] = { ...updatedGems[index], [field]: value }
       this.$emit('update:gems', updatedGems)
     },
 
     onDelGems(item) {
+      const index = this.findRowIndex(item)
+      if (index < 0) return
       const updatedGems = [...this.gems]
-      const index = updatedGems.indexOf(item)
       updatedGems.splice(index, 1)
       this.$emit('update:gems', updatedGems)
     },

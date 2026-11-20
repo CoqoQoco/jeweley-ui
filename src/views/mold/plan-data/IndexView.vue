@@ -102,8 +102,9 @@ export default {
       if (res) {
         this.data = {
           ...res,
-          gems: (res.gems || []).map((item) => ({
+          gems: (res.gems || []).map((item, idx) => ({
             ...item,
+            id: item.id ?? `api-${idx}`,
             gem: this.masterGem.find((gem) => gem.code === item.gemCode),
             gemShape: this.masterGemShape.find((shape) => shape.code === item.gemShapeCode)
           }))

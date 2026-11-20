@@ -508,6 +508,23 @@ export default {
     defaultUnit: 'ชิ้น'
   },
 
+  planUpdateCell: {
+    gold: 'ทอง',
+    selectGold: 'เลือกทอง',
+    goldQtySend: 'จำนวนจ่าย',
+    goldWeightSend: 'น้ำหนักจ่าย',
+    goldQtyCheck: 'จำนวนรับ',
+    goldWeightCheck: 'น้ำหนักรับ',
+    worker: 'ช่างรับงาน',
+    workerSub: 'ช่างรอง',
+    placeholderWorker: 'กรอกรหัส/ชื่อช่าง....',
+    gem: 'พลอย',
+    placeholderGem: 'กรอกรหัสพลอย....',
+    length: 'ความยาว',
+    lengthUnit: 'หน่วยความยาว',
+    wages: 'ค่าแรงต่อชิ้น',
+    totalWages: 'รวมค่าแรง'
+  },
   planGold: {
     pageTitle: 'สร้างใบเบิกผสมทอง',
     pageDesc: 'สร้างใบเบิกผสมทอง ระบุข้อมูลทองเบิก ทองหล่อ ทองหลอม ตัวเรือน เเละคำอธิบายอื่นๆ',

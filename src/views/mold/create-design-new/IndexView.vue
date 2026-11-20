@@ -85,98 +85,78 @@
             <DataTable
               class="p-datatable-sm"
               showGridlines
-              v-model:editingRows="editingRows"
               :value="form.gems"
-              editMode="row"
               dataKey="id"
-              @row-edit-save="onRowEditSave"
-              :pt="{
-                table: { style: 'min-width: 50rem' },
-                column: {
-                  bodycell: ({ state }) => ({
-                    style: state['d_editing'] && 'padding-top: 0.6rem; padding-bottom: 0.6rem'
-                  })
-                }
-              }"
+              :pt="{ table: { style: 'min-width: 50rem' } }"
             >
-              <!-- eslint-disable-next-line no-restricted-imports -->
-              <Column :rowEditor="true" style="width: 100px" bodyStyle="text-align:center">
-              </Column>
-              <!-- eslint-disable-next-line no-restricted-imports -->
               <Column style="width: 60px">
-                <template #body="prop">
-                  <div class="btn btn-red text-center w-100" @click="onDelGems(prop.data)">
-                    <i class="bi bi-trash-fill"></i>
-                  </div>
+                <template #body="{ data }">
+                  <ButtonGeneric
+                    variant="red"
+                    type="button"
+                    icon="bi-trash-fill"
+                    class="w-100"
+                    :title="$t('common.btn.delete')"
+                    @click="onDelGems(data)"
+                  />
                 </template>
               </Column>
 
-              <!-- eslint-disable-next-line no-restricted-imports -->
               <Column :field="'gem'" :header="$t('view.mold.createDesign.colGemType')" style="min-width: 150px">
-                <template #body="slotProps">
-                  <span>{{ slotProps.data.gem?.description }}</span>
-                </template>
-                <template #editor="{ data, field }">
-                  <!-- eslint-disable-next-line no-restricted-imports -->
-                  <Dropdown
-                    v-model="data[field]"
+                <template #body="{ data }">
+                  <DropdownGeneric
+                    v-model="data.gem"
                     :options="masterGem"
                     optionLabel="description"
-                    class="w-full md:w-14rem"
                     :placeholder="$t('view.mold.gems.selectGem')"
-                    :showClear="data[field] ? true : false"
+                    :ariaLabel="$t('view.mold.createDesign.colGemType')"
+                    :showClear="data.gem ? true : false"
                   />
                 </template>
               </Column>
-              <!-- eslint-disable-next-line no-restricted-imports -->
               <Column :field="'gemShape'" :header="$t('view.mold.createDesign.colGemShape')" style="min-width: 150px">
-                <template #body="slotProps">
-                  <span>{{ slotProps.data.gemShape?.description }}</span>
-                </template>
-                <template #editor="{ data, field }">
-                  <!-- eslint-disable-next-line no-restricted-imports -->
-                  <Dropdown
-                    v-model="data[field]"
+                <template #body="{ data }">
+                  <DropdownGeneric
+                    v-model="data.gemShape"
                     :options="masterGemShape"
                     optionLabel="description"
-                    class="w-full md:w-14rem"
                     :placeholder="$t('view.mold.gems.selectShape')"
-                    :showClear="data[field] ? true : false"
+                    :ariaLabel="$t('view.mold.createDesign.colGemShape')"
+                    :showClear="data.gemShape ? true : false"
                   />
                 </template>
               </Column>
-              <!-- eslint-disable-next-line no-restricted-imports -->
               <Column :field="'size'" :header="$t('view.mold.createDesign.colSize')" style="width: 200px">
-                <template #editor="{ data, field }">
-                  <input
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model="data.size"
                     type="text"
-                    min="1"
-                    :class="data[field] ? `` : `bg-warning`"
-                    class="form-control"
-                    v-model="data[field]"
+                    :class="data.size ? '' : 'bg-warning'"
+                    :aria-label="$t('view.mold.createDesign.colSize')"
                   />
                 </template>
               </Column>
-              <!-- eslint-disable-next-line no-restricted-imports -->
               <Column :field="'qty'" :header="$t('view.mold.createDesign.colQty')" style="width: 200px">
-                <template #editor="{ data, field }">
-                  <input
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model.number="data.qty"
                     type="number"
                     min="1"
-                    :class="data[field] ? `` : `bg-warning`"
-                    class="form-control"
-                    v-model="data[field]"
+                    :class="data.qty ? '' : 'bg-warning'"
+                    :aria-label="$t('view.mold.createDesign.colQty')"
                   />
                 </template>
               </Column>
               <template #footer>
                 <div class="d-flex justify-content-between">
                   <div>{{ $t('view.mold.gems.totalItems', { count: form.gems.length }) }}</div>
-                  <div class="btn btn-sm btn-main" @click="onAddGems">
-                    <span class="text-center">
-                      <i class="bi bi-plus"></i>
-                    </span>
-                  </div>
+                  <ButtonGeneric
+                    variant="main"
+                    type="button"
+                    icon="bi-plus"
+                    :title="$t('common.btn.add')"
+                    @click="onAddGems"
+                  />
                 </div>
               </template>
             </DataTable>
@@ -209,10 +189,9 @@ const uploadImages = defineAsyncComponent(() => import('@/components/prime-vue/U
 import DataTable from 'primevue/datatable'
 // eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
-// eslint-disable-next-line no-restricted-imports
-import Dropdown from 'primevue/dropdown'
-
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 
 import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import api from '@/axios/axios-helper.js'
@@ -244,7 +223,8 @@ export default {
     DropdownGeneric,
     DataTable,
     Column,
-    Dropdown
+    ButtonGeneric,
+    InputTextGeneric
   },
   watch: {
     'form.category'() {
@@ -264,7 +244,6 @@ export default {
       masterGem: [],
       masterGemShape: [],
 
-      editingRows: [],
       autoId: 0
     }
   },
@@ -300,12 +279,11 @@ export default {
       return true
     },
 
-    onRowEditSave(event) {
-      let { newData, index } = event
-      this.form.gems[index] = newData
-    },
     onDelGems(item) {
-      const index = this.form.gems.indexOf(item)
+      const byRef = this.form.gems.indexOf(item)
+      const index =
+        byRef >= 0 ? byRef : item?.id != null ? this.form.gems.findIndex((x) => x.id === item.id) : -1
+      if (index < 0) return
       this.form.gems.splice(index, 1)
     },
     onAddGems() {

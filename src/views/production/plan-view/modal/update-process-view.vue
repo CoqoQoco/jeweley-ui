@@ -42,230 +42,171 @@
               scrollable
               stripedRows
               columnResizeMode="fit"
-              v-model:editingRows="editingRows"
               :value="matAssign"
-              editMode="row"
-              @row-edit-save="onRowEditSave"
-              :pt="{
-                table: { style: 'min-width: 50rem' },
-                column: {
-                  bodycell: ({ state }) => ({
-                    style: state['d_editing'] && 'padding-top: 0.6rem; padding-bottom: 0.6rem'
-                  })
-                }
-              }"
+              :pt="{ table: { style: 'min-width: 50rem' } }"
             >
               <Column style="width: 30px">
-                <template #body="prop">
-                  <button type="button" class="btn btn-sm btn-red text-center" @click="onDelGold(prop.data)">
-                    <i class="bi bi-trash-fill"></i>
-                  </button>
+                <template #body="{ data }">
+                  <ButtonGeneric
+                    variant="red"
+                    type="button"
+                    icon="bi-trash-fill"
+                    class="w-100"
+                    :title="$t('common.btn.delete')"
+                    @click="onDelGold(data)"
+                  />
                 </template>
               </Column>
 
-              <Column field="gold" header="ทอง" style="width: 80px">
-                <template #editor="{ data, field }">
-                  <Dropdown
-                    v-model="data[field]"
+              <Column field="gold" header="ทอง" style="width: 70px">
+                <template #body="{ data }">
+                  <DropdownGeneric
+                    v-model="data.gold"
                     :options="masterGold"
                     optionLabel="code"
                     optionValue="code"
-                    class="w-full md:w-14rem"
-                    placeholder="เลือกทอง"
-                  >
-                  </Dropdown>
+                    :placeholder="$t('view.production.planUpdateCell.selectGold')"
+                    :ariaLabel="$t('view.production.planUpdateCell.gold')"
+                  />
                 </template>
               </Column>
-              <Column field="requestDate" header="วันที่" style="width: 210px">
-                <template #editor="{ data, field }">
-                  <div>
-                    <Calendar
-                      class="w-100"
-                      v-model="data[field]"
-                      dateFormat="dd/mm/yy"
-                      showIcon
-                      :showTime="status !== 70"
-                      hourFormat="24"
-                      showButtonBar
-                    />
-                  </div>
-                </template>
-                <template #body="slotProps">
-                  <div v-if="slotProps.data.requestDate">
-                    {{
-                      status === 70
-                        ? formatDate(slotProps.data.requestDate)
-                        : formatDateTime(slotProps.data.requestDate)
-                    }}
-                  </div>
+              <Column field="requestDate" header="วันที่" style="width: 240px">
+                <template #body="{ data }">
+                  <CalendarGeneric
+                    v-model="data.requestDate"
+                    dateFormat="dd/mm/yy"
+                    :showButtonBar="true"
+                    :manualInput="true"
+                    :showTime="status !== 70"
+                    hourFormat="24"
+                  />
                 </template>
               </Column>
               <Column
                 field="goldQTYSend"
                 :header="status === 80 ? 'จำนวนจ่าย [ชิ้น]' : 'จำนวนจ่าย'"
-                style="width: 100px"
+                style="width: 80px"
               >
-                <template #editor="{ data, field }">
-                  <input
-                    type="number"
-                    :class="data[field] ? `` : `-`"
-                    class="form-control"
-                    v-model="data[field]"
-                  />
-                </template>
-                <template #body="slotProps" v-if="status === 70">
-                  {{
-                    slotProps.data && slotProps.data.goldQTYSend
-                      ? Number(slotProps.data.goldQTYSend).toFixed(3).toLocaleString()
-                      : '0.000'
-                  }}
-                </template>
-              </Column>
-              <Column field="goldWeightSend" header="น้ำหนักจ่าย" style="width: 100px">
-                <template #editor="{ data, field }">
-                  <input
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model.number="data.goldQTYSend"
                     type="number"
                     step="any"
-                    :class="data[field] ? `` : `-`"
-                    class="form-control"
-                    v-model="data[field]"
+                    :aria-label="$t('view.production.planUpdateCell.goldQtySend')"
                   />
                 </template>
-                <template #body="slotProps" v-if="status === 70">
-                  {{
-                    slotProps.data && slotProps.data.goldWeightSend
-                      ? Number(slotProps.data.goldWeightSend).toFixed(3).toLocaleString()
-                      : '0.000'
-                  }}
+              </Column>
+              <Column field="goldWeightSend" header="น้ำหนักจ่าย" style="width: 80px">
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model.number="data.goldWeightSend"
+                    type="number"
+                    step="any"
+                    :aria-label="$t('view.production.planUpdateCell.goldWeightSend')"
+                  />
                 </template>
               </Column>
               <Column
                 field="goldQTYCheck"
                 :header="status === 80 ? 'จำนวนฝัง [เม็ด]' : status === 70 ? 'จำนวน' : 'จำนวนรับ'"
-                style="width: 100px"
+                style="width: 80px"
               >
-                <template #editor="{ data, field }">
-                  <input
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model.number="data.goldQTYCheck"
                     type="number"
-                    :class="data[field] ? `` : `-`"
-                    class="form-control"
-                    v-model="data[field]"
+                    step="any"
+                    :aria-label="$t('view.production.planUpdateCell.goldQtyCheck')"
                     @change="calTotalWages(data)"
                   />
                 </template>
-                <template #body="slotProps" v-if="status === 70">
-                  {{
-                    slotProps.data && slotProps.data.goldQTYCheck
-                      ? Number(slotProps.data.goldQTYCheck).toFixed(3).toLocaleString()
-                      : '0.000'
-                  }}
-                </template>
               </Column>
-              <Column field="goldWeightCheck" header="น้ำหนักรับ" style="width: 100px">
-                <template #editor="{ data, field }">
-                  <input
+              <Column field="goldWeightCheck" header="น้ำหนักรับ" style="width: 80px">
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model.number="data.goldWeightCheck"
                     type="number"
                     step="any"
-                    :class="data[field] ? `` : `-`"
-                    class="form-control"
-                    v-model="data[field]"
+                    :aria-label="$t('view.production.planUpdateCell.goldWeightCheck')"
                   />
-                </template>
-                <template #body="slotProps" v-if="status === 70">
-                  {{
-                    slotProps.data && slotProps.data.goldWeightCheck
-                      ? Number(slotProps.data.goldWeightCheck).toFixed(3).toLocaleString()
-                      : '0.000'
-                  }}
                 </template>
               </Column>
               <Column
                 field="description"
                 header="รายละเอียด"
-                style="width: 120px"
+                style="width: 110px"
                 v-if="status !== 70"
               >
-                <template #editor="{ data, field }">
-                  <input
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model="data.description"
                     type="text"
-                    :class="data[field] ? `` : `-`"
-                    class="form-control"
-                    v-model="data[field]"
+                    :aria-label="$t('common.field.description')"
                   />
                 </template>
               </Column>
               <Column
                 field="workers"
                 :header="status === 90 ? `ช่างขัด` : status === 70 ? 'ช่างคัดพลอย' : `ช่างรับงาน`"
-                style="width: 150px"
+                style="width: 140px"
               >
-                <template #editor="{ data, field }">
-                  <AutoComplete
-                    v-model="data[field]"
+                <template #body="{ data }">
+                  <AutoCompleteGeneric
+                    v-model="data.workers"
                     :suggestions="workerItemSearch"
-                    @complete="onSearchWorker"
-                    :class="data[field] ? `` : `-`"
-                    placeholder="กรอกรหัส/ชื่อช่าง...."
+                    :placeholder="$t('view.production.planUpdateCell.placeholderWorker')"
+                    :aria-label="$t('view.production.planUpdateCell.worker')"
                     optionLabel="code"
-                    forceSelection
+                    :forceSelection="true"
+                    @complete="onSearchWorker"
                   >
-                    <template #option="slotProps">
+                    <template #option="{ option }">
                       <div class="flex align-options-center">
-                        <div>{{ `${slotProps.option.code} - ${slotProps.option.nameTh}` }}</div>
+                        <div>{{ `${option.code} - ${option.nameTh}` }}</div>
                       </div>
                     </template>
-                  </AutoComplete>
-                </template>
-                <template #body="slotProps">
-                  <div v-if="slotProps.data.workers">
-                    <span>{{ truncateName(slotProps.data.workers.nameTh, 10) }}</span>
-                  </div>
+                  </AutoCompleteGeneric>
+                  <small v-if="data.workers?.nameTh" class="worker-name">{{ data.workers.nameTh }}</small>
                 </template>
               </Column>
               <Column
-                :field="status === 70 ? 'workersSub' : 'workersSub'"
+                field="workersSub"
                 :header="status === 90 ? `ช่างชุบ` : status === 70 ? 'ช่างคัดเพชร' : ''"
-                style="width: 150px"
+                style="width: 140px"
                 v-if="status === 90 || status === 70"
               >
-                <template #editor="{ data, field }">
-                  <AutoComplete
-                    v-model="data[field]"
+                <template #body="{ data }">
+                  <AutoCompleteGeneric
+                    v-model="data.workersSub"
                     :suggestions="workerItemSearch"
-                    @complete="onSearchWorker"
-                    placeholder="กรอกรหัส/ชื่อช่าง...."
-                    :class="data[field] ? `` : `-`"
+                    :placeholder="$t('view.production.planUpdateCell.placeholderWorker')"
+                    :aria-label="$t('view.production.planUpdateCell.workerSub')"
                     optionLabel="code"
-                    forceSelection
+                    :forceSelection="true"
+                    @complete="onSearchWorker"
                   >
-                    <template #option="slotProps">
+                    <template #option="{ option }">
                       <div class="flex align-options-center">
-                        <div>{{ `${slotProps.option.code} - ${slotProps.option.nameTh}` }}</div>
+                        <div>{{ `${option.code} - ${option.nameTh}` }}</div>
                       </div>
                     </template>
-                  </AutoComplete>
-                </template>
-                <template #body="slotProps">
-                  <div v-if="slotProps.data.workersSub">
-                    <div v-if="slotProps.data.workers">
-                      <span>{{ truncateName(slotProps.data.workers.nameTh, 10) }}</span>
-                    </div>
-                  </div>
+                  </AutoCompleteGeneric>
+                  <small v-if="data.workersSub?.nameTh" class="worker-name">{{ data.workersSub.nameTh }}</small>
                 </template>
               </Column>
               <Column
                 field="wages"
                 header="ค่าเเรงต่อชิ้น"
-                style="min-width: 100px"
+                style="min-width: 90px"
                 v-if="status !== 70"
               >
-                <template #editor="{ data, field }">
-                  <input
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model.number="data.wages"
                     type="number"
                     min="1"
                     step="any"
-                    class="form-control"
-                    v-model="data[field]"
+                    :aria-label="$t('view.production.planUpdateCell.wages')"
                     :disabled="!data.goldQTYCheck"
                     @change="calTotalWages(data)"
                   />
@@ -274,27 +215,30 @@
               <Column
                 field="totalWages"
                 header="รวมค่าแรง"
-                style="min-width: 120px"
+                style="min-width: 100px"
                 v-if="status !== 70"
               >
-                <template #editor="{ data, field }">
-                  <input
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model.number="data.totalWages"
                     type="number"
                     min="1"
                     step="any"
-                    class="form-control"
-                    v-model="data[field]"
-                    disabled
+                    :aria-label="$t('view.production.planUpdateCell.totalWages')"
+                    :disabled="true"
                   />
                 </template>
               </Column>
-              <Column :rowEditor="true" bodyStyle="text-align:center"> </Column>
               <template #footer>
                 <div class="d-flex justify-content-between">
                   <div>ทั้งหมด {{ this.matAssign.length }} รายการ</div>
-                  <div @click="addMat">
-                    <i class="bi bi-plus-square-fill"></i>
-                  </div>
+                  <ButtonGeneric
+                    variant="dark"
+                    type="button"
+                    icon="bi-plus-square-fill"
+                    :title="$t('common.btn.add')"
+                    @click="addMat"
+                  />
                 </div>
               </template>
             </DataTable>
@@ -393,137 +337,110 @@
             <DataTable
               class="p-datatable-sm"
               showGridlines
-              v-model:editingRows="editingGemRows"
               :value="gemAssign"
-              editMode="row"
               dataKey="id"
-              @row-edit-save="onRowGemEditSave"
-              :pt="{
-                table: { style: 'min-width: 50rem' },
-                column: {
-                  bodycell: ({ state }) => ({
-                    style: state['d_editing'] && 'padding-top: 0.6rem; padding-bottom: 0.6rem'
-                  })
-                }
-              }"
+              :pt="{ table: { style: 'min-width: 50rem' } }"
             >
               <Column style="width: 30px">
-                <template #body="prop">
-                  <div class="btn btn-sm btn-danger text-center w-100" @click="onDelGem(prop.data)">
-                    <i class="bi bi-trash-fill"></i>
-                  </div>
+                <template #body="{ data }">
+                  <ButtonGeneric
+                    variant="red"
+                    type="button"
+                    icon="bi-trash-fill"
+                    class="w-100"
+                    :title="$t('common.btn.delete')"
+                    @click="onDelGem(data)"
+                  />
                 </template>
               </Column>
               <Column field="outboundRunning" header="เลขที่เบิก" style="min-width: 200px">
               </Column>
               <Column field="gem" header="พลอย" style="min-width: 200px">
-                <template #editor="{ data, field }">
-                  <AutoComplete
-                    v-model="data[field]"
+                <template #body="{ data }">
+                  <AutoCompleteGeneric
+                    v-model="data.gem"
                     :suggestions="gemItemSearch"
-                    @complete="onSearchGem"
-                    placeholder="กรอกรหัสพลอย...."
-                    :class="data[field] ? `` : `bg-warning`"
+                    :placeholder="$t('view.production.planUpdateCell.placeholderGem')"
+                    :aria-label="$t('view.production.planUpdateCell.gem')"
+                    :customClass="data.gem ? '' : 'bg-warning'"
                     optionLabel="name"
-                    forceSelection
+                    :forceSelection="true"
                     :minLength="4"
                     :disabled="checkOutbound(data)"
+                    @complete="onSearchGem"
                     @item-select="onGemSelect($event, data)"
                   >
-                    <template #option="slotProps">
+                    <template #option="{ option }">
                       <div class="flex align-options-center">
-                        <div>{{ `${slotProps.option.name}` }}</div>
+                        <div>{{ `${option.name}` }}</div>
                       </div>
                     </template>
-                  </AutoComplete>
-                </template>
-                <template #body="slotProps">
-                  <div v-if="slotProps.data.gem">
-                    {{ `${slotProps.data.gem.name}` }}
-                  </div>
+                  </AutoCompleteGeneric>
                 </template>
               </Column>
               <Column field="qty" header="จำนวน" style="width: 100px">
-                <template #editor="{ data, field }">
-                  <input
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model.number="data.qty"
                     type="number"
                     step="any"
-                    class="form-control"
-                    v-model="data[field]"
+                    :aria-label="$t('common.field.quantity')"
                     :disabled="checkOutbound(data)"
                   />
-                </template>
-                <template #body="slotProps">
-                  {{
-                    slotProps.data && slotProps.data.qty
-                      ? Number(slotProps.data.qty).toFixed(3).toLocaleString()
-                      : '0.000'
-                  }}
                 </template>
               </Column>
               <Column field="weight" header="น้ำหนัก" style="width: 100px">
-                <template #editor="{ data, field }">
-                  <input
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model.number="data.weight"
                     type="number"
                     step="any"
-                    class="form-control"
-                    v-model="data[field]"
+                    :aria-label="$t('common.field.weight')"
                     :disabled="checkOutbound(data)"
                   />
-                </template>
-                <template #body="slotProps">
-                  {{
-                    slotProps.data && slotProps.data.weight
-                      ? Number(slotProps.data.weight).toFixed(3).toLocaleString()
-                      : '0.000'
-                  }}
                 </template>
               </Column>
 
               <Column field="length" header="ความยาว" style="width: 100px">
-                <template #editor="{ data, field }">
-                  <input type="number" step="any" class="form-control" v-model="data[field]" />
-                </template>
-                <template #body="slotProps">
-                  {{
-                    slotProps.data && slotProps.data.length
-                      ? Number(slotProps.data.length).toFixed(3).toLocaleString()
-                      : '0.000'
-                  }}
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model.number="data.length"
+                    type="number"
+                    step="any"
+                    :aria-label="$t('view.production.planUpdateCell.length')"
+                  />
                 </template>
               </Column>
               <Column field="lengthUnit" header="หน่วยความยาว" style="width: 100px">
-                <template #editor="{ data, field }">
-                  <input type="text" class="form-control" v-model="data[field]" />
-                </template>
-                <template #body="slotProps">
-                  {{ slotProps.data.lengthUnit }}
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model="data.lengthUnit"
+                    type="text"
+                    :aria-label="$t('view.production.planUpdateCell.lengthUnit')"
+                  />
                 </template>
               </Column>
 
               <Column field="price" header="ราคา" style="width: 100px">
-                <template #editor="{ data, field }">
-                  <input type="number" step="any" class="form-control" v-model="data[field]" />
-                </template>
-                <template #body="slotProps">
-                  {{
-                    slotProps.data && slotProps.data.price
-                      ? Number(slotProps.data.price).toFixed(3).toLocaleString()
-                      : '0.000'
-                  }}
+                <template #body="{ data }">
+                  <InputTextGeneric
+                    v-model.number="data.price"
+                    type="number"
+                    step="any"
+                    :aria-label="$t('common.field.price')"
+                  />
                 </template>
               </Column>
-              <Column
-                :rowEditor="true"
-                style="width: 10%; min-width: 8rem"
-                bodyStyle="text-align:center"
-              ></Column>
               <template #footer>
                 <div class="d-flex justify-content-between">
                   <div>ทั้งหมด {{ this.gemAssign.length }} รายการ</div>
-                  <div @click="addGem">
-                    <i class="bi bi-plus-square-fill"></i>
-                  </div>
+                  <ButtonGeneric
+                    variant="dark"
+                    type="button"
+                    icon="bi-plus-square-fill"
+                    :title="$t('common.btn.add')"
+                    @click="addGem"
+                  />
                 </div>
               </template>
             </DataTable>
@@ -574,8 +491,6 @@
 <script>
 /* eslint-disable no-restricted-imports */
 import AutoComplete from 'primevue/autocomplete'
-import Calendar from 'primevue/calendar'
-import Dropdown from 'primevue/dropdown'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 /* eslint-enable no-restricted-imports */
@@ -583,12 +498,15 @@ import Column from 'primevue/column'
 import { defineAsyncComponent } from 'vue'
 import _ from 'lodash'
 
-import moment from 'dayjs'
 import api from '@/axios/axios-helper.js'
 import { confirmSubmit, success, warning } from '@/services/alert/sweetAlerts.js'
-import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
+import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
+import CalendarGeneric from '@/components/prime-vue/CalendarGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
+import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
 import planOverview from '../components/plan-overview.vue'
 import { calculateWeightDifference } from '@/services/helper/match.js'
 
@@ -618,12 +536,15 @@ export default {
   components: {
     modal,
     AutoComplete,
-    Calendar,
-    Dropdown,
     DataTable,
     Column,
     planOverview,
-    BaseDataTable
+    BaseDataTable,
+    ButtonGeneric,
+    InputTextGeneric,
+    AutoCompleteGeneric,
+    DropdownGeneric,
+    CalendarGeneric
   },
 
   props: {
@@ -759,9 +680,7 @@ export default {
 
       tempMatAssign: [],
       matAssign: [],
-      editingRows: [],
       gemAssign: [],
-      editingGemRows: [],
       workerItemSearch: [],
       gemItemSearch: [],
 
@@ -790,9 +709,6 @@ export default {
 
   methods: {
     // ------ helper ------//
-    fmt3(val) {
-      return val != null ? Number(val).toFixed(3) : '0.000'
-    },
     fmt2(val) {
       return val != null ? Number(val).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '0.00'
     },
@@ -804,23 +720,8 @@ export default {
     calculateWeightDifference(weightSend, weightReceived) {
       return calculateWeightDifference(weightSend ?? 0, weightReceived ?? 0)
     },
-    formatDateTime(date) {
-      return date ? formatDateTime(date) : ''
-    },
-    formatDate(date) {
-      return date ? formatDate(date) : ''
-    },
-    showDate(date) {
-      return date ? moment(date).format('DD/MM/yyyy') : ''
-    },
     calTotalWages(data) {
       data.totalWages = data.wages * (data.goldQTYCheck ?? 0)
-    },
-    truncateName(name, maxLength) {
-      if (!name || name.length <= maxLength) {
-        return name
-      }
-      return name.slice(0, maxLength) + '...'
     },
     checkOutbound(data) {
       return !_.isEmpty(data.outboundRunning) ? true : false
@@ -925,21 +826,18 @@ export default {
     },
 
     // ----- event
-    onRowEditSave(event) {
-      let { newData, index } = event
-      this.matAssign[index] = newData
-    },
-    onRowGemEditSave(event) {
-      let { newData, index } = event
-      this.gemAssign[index] = newData
+    findRowIndex(list, item) {
+      const byRef = list.indexOf(item)
+      if (byRef >= 0) return byRef
+      return item?.id != null ? list.findIndex((x) => x.id === item.id) : -1
     },
     onDelGold(item) {
-      const index = this.matAssign.indexOf(item)
+      const index = this.findRowIndex(this.matAssign, item)
       if (index < 0) return
       this.matAssign.splice(index, 1)
     },
     onDelGem(item) {
-      const index = this.gemAssign.indexOf(item)
+      const index = this.findRowIndex(this.gemAssign, item)
       if (index < 0) return
       this.gemAssign.splice(index, 1)
     },
@@ -1206,6 +1104,20 @@ export default {
 @import '@/assets/scss/custom-style/standard-form.scss';
 
 // ** ------ overide primevue style ------
+.worker-name {
+  display: block;
+  font-size: var(--fs-sm);
+  color: var(--base-sub-color);
+}
+:deep(.p-autocomplete.p-disabled) {
+  opacity: 1;
+}
+:deep(.p-autocomplete.p-disabled .p-autocomplete-input),
+:deep(input.form-control:disabled) {
+  opacity: 1;
+  background: var(--status-closed-bg);
+  color: var(--base-sub-color);
+}
 .custom-input {
   margin-top: 5px !important;
 }
