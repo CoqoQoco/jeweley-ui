@@ -459,16 +459,11 @@ export default {
       return payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
     },
 
-    remainingBalance() {
-      return this.grandTotalRounded - (this.invoiceData?.deposit || 0) - this.paidAmount
-    },
-
     canPrintGuarantee() {
       return (
         !this.isMaterial &&
         !!this.invoiceData &&
         this.invoiceItems.length > 0 &&
-        this.remainingBalance <= 0 &&
         this.invoiceData.statusName !== 'Cancelled'
       )
     },
@@ -478,7 +473,6 @@ export default {
         !this.isMaterial &&
         !!this.invoiceData &&
         this.invoiceItems.length > 0 &&
-        this.remainingBalance <= 0 &&
         this.invoiceData.statusName !== 'Cancelled'
       )
     },
@@ -496,7 +490,7 @@ export default {
           icon: 'bi-patch-check',
           label: this.$t('view.sale.invoiceDetail.printGuarantee'),
           disabled: !this.canPrintGuarantee,
-          hint: this.canPrintGuarantee ? '' : this.$t('view.sale.invoiceDetail.guaranteeNeedPaid'),
+          hint: this.canPrintGuarantee ? '' : this.$t('view.sale.invoiceDetail.guaranteeNotAvailable'),
           command: this.printGuaranteeCard
         },
         {
@@ -504,7 +498,7 @@ export default {
           icon: 'bi-award',
           label: this.$t('view.sale.invoiceDetail.printCertificate'),
           disabled: !this.canPrintCertificate,
-          hint: this.canPrintCertificate ? '' : this.$t('view.sale.invoiceDetail.certificateNeedPaid'),
+          hint: this.canPrintCertificate ? '' : this.$t('view.sale.invoiceDetail.certificateNotAvailable'),
           command: this.printCertificate
         },
         {
@@ -1098,7 +1092,7 @@ export default {
     },
     printGuaranteeCard() {
       if (!this.canPrintGuarantee) {
-        warning(this.$t('view.sale.invoiceDetail.guaranteeNeedPaid'), this.$t('common.label.incompleteData'))
+        warning(this.$t('view.sale.invoiceDetail.guaranteeNotAvailable'), this.$t('common.label.incompleteData'))
         return
       }
       this.showGuaranteeModal = true
@@ -1158,7 +1152,7 @@ export default {
     },
     printCertificate() {
       if (!this.canPrintCertificate) {
-        warning(this.$t('view.sale.invoiceDetail.certificateNeedPaid'), this.$t('common.label.incompleteData'))
+        warning(this.$t('view.sale.invoiceDetail.certificateNotAvailable'), this.$t('common.label.incompleteData'))
         return
       }
       this.showCertificateModal = true
