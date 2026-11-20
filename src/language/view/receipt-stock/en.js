@@ -427,7 +427,22 @@ export default {
       pdfPeriod: 'Receipt date',
       modeProduction: 'Production',
       modeOutsource: 'Outsource',
-      btnPdf: 'Print PDF'
+      btnPdf: 'Print PDF',
+      expandCurrentHint: 'Current product data (not a snapshot at receipt)',
+      expandProductTitle: 'Product',
+      expandNoImage: 'No image',
+      expandMaterialsTitle: 'Materials in piece ({count})',
+      expandSummaryTitle: 'Summary',
+      expandStatus: 'Status',
+      expandReceiptNumber: 'Receipt no.',
+      expandQtyReceived: 'Qty received',
+      expandGoldTotal: 'Total gold',
+      expandColorStone: 'Colored stones',
+      expandCarat: 'ct',
+      expandGram: 'g',
+      expandPieceUnit: 'pcs',
+      expandCurrency: 'THB',
+      expandViewDetail: 'View product details'
     },
     reportGrOutsource: {
       title: 'Goods Receipt Report – Outsource',

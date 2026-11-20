@@ -78,6 +78,14 @@ describe('goods-receipt-report helper', () => {
     expect(byKey.goldType).toBeUndefined()
   })
 
+  it('grand total cells: leadingCols widens label colspan to cover the expander column', () => {
+    const columns = buildReportColumns(t, 'production')
+    const base = buildGrandTotalCells(columns, aggregates, 'GT')
+    const cells = buildGrandTotalCells(columns, aggregates, 'GT', { leadingCols: 1 })
+    expect(cells[0].colspan).toBe(base[0].colspan + 1)
+    expect(cells.reduce((acc, c) => acc + c.colspan, 0)).toBe(columns.length + 1)
+  })
+
   it('rows + totals normalize missing values to 0', () => {
     const rows = buildReportRows(items, 'outsource')
     expect(rows[1]).toMatchObject({ vendor: 'V1', poNumber: 'PO9', goldWeight: 0, rubyQty: 0 })

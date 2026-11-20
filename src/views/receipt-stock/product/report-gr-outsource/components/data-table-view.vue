@@ -4,6 +4,9 @@
       :items="receiptOutsourceStore.dataReceiptHistory.data"
       :totalRecords="receiptOutsourceStore.dataReceiptHistory.total"
       :columns="columns"
+      dataKey="receiptNumber"
+      :expandable="true"
+      class="base-data-table"
       :perPage="take"
       :scrollHeight="'calc(100vh - 310px)'"
       @page="handlePageChange"
@@ -14,6 +17,10 @@
         <span v-if="data.isTopUp" class="topup-tag">
           {{ $t('view.receiptStock.product.receiptLot.topUpTag') }}
         </span>
+      </template>
+
+      <template #expansion="{ data }">
+        <grReportExpand :row="data" mode="outsource" />
       </template>
 
       <template #footerGroup>
@@ -42,6 +49,7 @@ import Row from 'primevue/row'
 // eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
 
+import grReportExpand from '../../components/gr-report-expand.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 
@@ -58,6 +66,7 @@ export default {
 
   components: {
     BaseDataTable,
+    grReportExpand,
     ColumnGroup,
     Row,
     Column
@@ -102,7 +111,7 @@ export default {
       return buildGrandTotalCells(
         this.columns,
         this.aggregates,
-        this.$t('view.receiptStock.product.reportGr.grandTotal')
+        this.$t('view.receiptStock.product.reportGr.grandTotal'), { leadingCols: 1 }
       )
     }
   },
@@ -127,7 +136,7 @@ export default {
         skip: this.skip,
         take: this.take,
         sort: this.sort,
-        formValue: this.form,
+        formValue: { ...this.form, includeMaterials: true },
         skipLoading: false
       })
     },
@@ -161,6 +170,13 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-data-table';
+
+.base-data-table {
+  // แถวขยาย: td ต้อง overflow visible — ไม่งั้น position: sticky ของ .expand-container ติดผิด ancestor
+  :deep(.p-datatable-row-expansion > td) {
+    overflow: visible;
+  }
+}
 
 .topup-tag {
   display: inline-block;

@@ -153,15 +153,15 @@ export function buildReportColumns(t, mode) {
 }
 
 // แถว Grand Total สำหรับ footer ของตาราง — คืน cells ที่รวมช่องหน้า (ก่อนคอลัมน์ตัวเลขแรก) เป็น colspan เดียว
-export function buildGrandTotalCells(columns, aggregates, label) {
+export function buildGrandTotalCells(columns, aggregates, label, { leadingCols = 0 } = {}) {
   const firstIndex = columns.findIndex((col) => TOTAL_FIELDS[col.field])
   if (firstIndex < 0) {
-    return [{ key: 'label', colspan: columns.length, text: label, align: 'left' }]
+    return [{ key: 'label', colspan: columns.length + leadingCols, text: label, align: 'left' }]
   }
 
   const cells = []
-  if (firstIndex > 0) {
-    cells.push({ key: 'label', colspan: firstIndex, text: label, align: 'left' })
+  if (firstIndex + leadingCols > 0) {
+    cells.push({ key: 'label', colspan: firstIndex + leadingCols, text: label, align: 'left' })
   }
   columns.slice(firstIndex).forEach((col) => {
     const def = TOTAL_FIELDS[col.field]

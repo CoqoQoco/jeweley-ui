@@ -4,6 +4,9 @@
       :items="receiptProductionStore.dataReceiptHistory.data"
       :totalRecords="receiptProductionStore.dataReceiptHistory.total"
       :columns="columns"
+      dataKey="receiptNumber"
+      :expandable="true"
+      class="base-data-table"
       :perPage="take"
       :scrollHeight="'calc(100vh - 310px)'"
       @page="handlePageChange"
@@ -18,6 +21,10 @@
         <div>
           {{ getStudEarring(data.studEarring) }}
         </div>
+      </template>
+
+      <template #expansion="{ data }">
+        <grReportExpand :row="data" mode="production" />
       </template>
 
       <template #footerGroup>
@@ -46,6 +53,7 @@ import Row from 'primevue/row'
 // eslint-disable-next-line no-restricted-imports
 import Column from 'primevue/column'
 
+import grReportExpand from '../../components/gr-report-expand.vue'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import dataTablePaging from '@/composables/useDataTablePaging.js'
 
@@ -60,6 +68,7 @@ import { GoodsReceiptReportPdfBuilder } from '@/services/helper/pdf/goods-receip
 export default {
   components: {
     BaseDataTable,
+    grReportExpand,
     ColumnGroup,
     Row,
     Column
@@ -101,7 +110,7 @@ export default {
       return this.receiptProductionStore.dataReceiptHistory.aggregates || {}
     },
     grandTotalCells() {
-      return buildGrandTotalCells(this.columns, this.aggregates, this.$t('view.receiptStock.product.reportGr.grandTotal'))
+      return buildGrandTotalCells(this.columns, this.aggregates, this.$t('view.receiptStock.product.reportGr.grandTotal'), { leadingCols: 1 })
     },
     masterStud() {
       return [
@@ -132,7 +141,7 @@ export default {
         skip: this.skip,
         take: this.take,
         sort: this.sort,
-        formValue: this.form,
+        formValue: { ...this.form, includeMaterials: true },
         skipLoading: false
       })
     },
@@ -171,4 +180,11 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-data-table';
+
+.base-data-table {
+  // แถวขยาย: td ต้อง overflow visible — ไม่งั้น position: sticky ของ .expand-container ติดผิด ancestor
+  :deep(.p-datatable-row-expansion > td) {
+    overflow: visible;
+  }
+}
 </style>

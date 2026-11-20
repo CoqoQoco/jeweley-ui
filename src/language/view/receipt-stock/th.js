@@ -427,7 +427,22 @@ export default {
       pdfPeriod: 'วันที่รับสินค้า',
       modeProduction: 'งานผลิต',
       modeOutsource: 'งานนอก',
-      btnPdf: 'พิมพ์ PDF'
+      btnPdf: 'พิมพ์ PDF',
+      expandCurrentHint: 'ข้อมูลปัจจุบันของสินค้า (ไม่ใช่ข้อมูล ณ วันรับ)',
+      expandProductTitle: 'ข้อมูลสินค้า',
+      expandNoImage: 'ไม่มีรูป',
+      expandMaterialsTitle: 'วัตถุดิบในชิ้นงาน ({count} รายการ)',
+      expandSummaryTitle: 'สรุป',
+      expandStatus: 'สถานะ',
+      expandReceiptNumber: 'เลขที่ใบรับ',
+      expandQtyReceived: 'จำนวนรับ',
+      expandGoldTotal: 'ทองรวม',
+      expandColorStone: 'พลอยสี',
+      expandCarat: 'ct',
+      expandGram: 'กรัม',
+      expandPieceUnit: 'ชิ้น',
+      expandCurrency: 'บาท',
+      expandViewDetail: 'ดูรายละเอียดสินค้า'
     },
     reportGrOutsource: {
       title: 'รายงานรับสินค้า – งานนอก',
