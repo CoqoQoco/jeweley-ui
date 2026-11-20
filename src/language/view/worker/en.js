@@ -1,9 +1,9 @@
 export default {
   workerList: {
     searchTitle: 'Worker Information',
-    searchDescription: 'Worker information — inspect | add | edit details',
+    searchDescription: "Worker information — inspect {'|'} add {'|'} edit details",
     fieldSearch: 'Search',
-    fieldSearchPlaceholder: 'EX: Worker name | Worker code ...',
+    fieldSearchPlaceholder: "EX: Worker name {'|'} Worker code ...",
     fieldDept: 'Department',
     fieldDeptPlaceholder: 'Select department',
     confirmCreate: 'Confirm Add Worker',

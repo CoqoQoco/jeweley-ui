@@ -392,7 +392,7 @@ export default {
     btnSubmit: 'Create Issue/Return Receipt',
     confirmCreate: 'Confirm Create Issue/Return Receipt',
     createSuccess: 'Issue/Return Receipt Created Successfully',
-    modifyPlanSearchTitle: 'Search Issue/Return Receipt | Specify mold to create style',
+    modifyPlanSearchTitle: "Search Issue/Return Receipt {'|'} Specify mold to create style",
     modifyPlanPlaceholder: 'Enter mold code to search',
     colWo: 'W.O.',
     colMold: 'Mold',

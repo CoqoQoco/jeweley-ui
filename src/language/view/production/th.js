@@ -392,7 +392,7 @@ export default {
     btnSubmit: 'สร้างใบจ่าย-รับคืนงาน',
     confirmCreate: 'ยืนยันสร้างใบจ่าย-รับคืน',
     createSuccess: 'สร้างใบจ่าย-รับคืน สำเร็จ',
-    modifyPlanSearchTitle: 'ค้นหาใบจา่ย-รับคืน | ระบุเเม่พิมพ์เพื่อสร้างเเบบงาน',
+    modifyPlanSearchTitle: "ค้นหาใบจา่ย-รับคืน {'|'} ระบุเเม่พิมพ์เพื่อสร้างเเบบงาน",
     modifyPlanPlaceholder: 'พิมพ์รหัสเเม่พิมพ์ที่ต้องการค้นหา',
     colWo: 'W.O.',
     colMold: 'เเม่พิมพ์',

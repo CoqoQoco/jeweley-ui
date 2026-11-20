@@ -75,8 +75,8 @@ export default {
     priceRangeInvalid: 'Min price must not exceed max price',
     filterBadgeTooltip: 'Number of active advanced filters',
     placeholderProductNameTh: 'EX: Gold Ring #66',
-    editTitle: 'Edit Product | Production No.: {stockNumber}',
-    printTitle: 'Print Label | Production No.: {stockNumber}',
+    editTitle: "Edit Product {'|'} Production No.: {stockNumber}",
+    printTitle: "Print Label {'|'} Production No.: {stockNumber}",
     confirmSave: 'Confirm save?',
     selectTypeFirst: 'Please select type',
     imageName: 'Name',
@@ -538,7 +538,7 @@ export default {
       imgTemp: 'Create temporary SLOC form'
     },
     historyBtn: 'Move History',
-    historyTitle: 'Storage Location Move History | Production No.: {stockNumber}'
+    historyTitle: "Storage Location Move History {'|'} Production No.: {stockNumber}"
   },
   storageMoveReport: {
     searchTitle: 'Storage Location Move Report',
@@ -579,7 +579,7 @@ export default {
     typeCheckQtyProcess: 'Has Borrowed Qty',
     typeCheckWeightRemain: 'Has Stock Weight',
     typeCheckWeightProcess: 'Has Borrowed Weight',
-    barcodeModalTitle: 'Print Gem Barcode | Code: {barcode}',
+    barcodeModalTitle: "Print Gem Barcode {'|'} Code: {barcode}",
     printBtn: 'Print',
     printLabel: 'Print Label',
     printLabelPDF: 'Print Label PDF',

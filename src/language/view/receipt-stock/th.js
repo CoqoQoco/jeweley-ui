@@ -309,7 +309,7 @@ export default {
       imageNameLabel: 'ชื่อรูปภาพ',
       imageNamePlaceholder: 'ชื่อรูปภาพ',
       uploadAndUseBtn: 'อัปโหลดและใช้รูปนี้',
-      barcodePrintTitle: 'บันทึกสินค้าสำเร็จ | เลือกสินค้าเพื่อพิมพ์ Barcode',
+      barcodePrintTitle: "บันทึกสินค้าสำเร็จ {'|'} เลือกสินค้าเพื่อพิมพ์ Barcode",
       barcodeTypeOriginal: 'แบบที่ 1',
       barcodeTypeCostNoGold: 'แบบที่ 2',
       lotBadge: 'ล็อต {count} ชิ้น'

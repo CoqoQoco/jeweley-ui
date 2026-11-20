@@ -1,9 +1,9 @@
 export default {
   workerList: {
     searchTitle: 'ข้อมูลช่าง',
-    searchDescription: 'ข้อมูลช่าง ตรวจสอบ | เพิ่ม | แก้ไข รายละเอียดต่างๆ',
+    searchDescription: "ข้อมูลช่าง ตรวจสอบ {'|'} เพิ่ม {'|'} แก้ไข รายละเอียดต่างๆ",
     fieldSearch: 'ค้นหา',
-    fieldSearchPlaceholder: 'EX: ชื่อช่าง | รหัสช่าง ...',
+    fieldSearchPlaceholder: "EX: ชื่อช่าง {'|'} รหัสช่าง ...",
     fieldDept: 'แผนกช่าง',
     fieldDeptPlaceholder: 'เลือกประเภทช่าง',
     confirmCreate: 'ยืนยันเพิ่มข้อมูลช่าง',

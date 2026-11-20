@@ -75,8 +75,8 @@ export default {
     priceRangeInvalid: 'ราคาต่ำสุดต้องไม่มากกว่าราคาสูงสุด',
     filterBadgeTooltip: 'จำนวนตัวกรองเพิ่มเติมที่กำลังใช้งาน',
     placeholderProductNameTh: 'EX: แหวนทอง ขนาด #66',
-    editTitle: 'แก้ไขสินค้า | เลขที่ผลิต: {stockNumber}',
-    printTitle: 'พิมพ์ป้ายสินค้า | เลขที่ผลิต: {stockNumber}',
+    editTitle: "แก้ไขสินค้า {'|'} เลขที่ผลิต: {stockNumber}",
+    printTitle: "พิมพ์ป้ายสินค้า {'|'} เลขที่ผลิต: {stockNumber}",
     confirmSave: 'ยืนยันการบันทึกข้อมูล?',
     selectTypeFirst: 'กรุณาเลือกประเภท',
     imageName: 'ชื่อ',
@@ -538,7 +538,7 @@ export default {
       imgTemp: 'ฟอร์มสร้าง SLOC ชั่วคราว'
     },
     historyBtn: 'ประวัติการย้าย',
-    historyTitle: 'ประวัติการย้าย Storage Location | เลขที่ผลิต: {stockNumber}'
+    historyTitle: "ประวัติการย้าย Storage Location {'|'} เลขที่ผลิต: {stockNumber}"
   },
   storageMoveReport: {
     searchTitle: 'รายงานการย้าย Storage Location',
@@ -579,7 +579,7 @@ export default {
     typeCheckQtyProcess: 'มีจำนวนยืมคลัง',
     typeCheckWeightRemain: 'มีน้ำหนักคงคลัง',
     typeCheckWeightProcess: 'มีน้ำหนักยืมคลัง',
-    barcodeModalTitle: 'พิมพ์ป้ายบาร์โค้ดพลอย | รหัส: {barcode}',
+    barcodeModalTitle: "พิมพ์ป้ายบาร์โค้ดพลอย {'|'} รหัส: {barcode}",
     printBtn: 'พิมพ์',
     printLabel: 'พิมพ์ป้าย',
     printLabelPDF: 'พิมพ์ป้าย PDF',

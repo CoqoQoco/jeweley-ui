@@ -1163,7 +1163,7 @@ export const costStock = {
   updateBy: 'Updated By',
   updateDate: 'Update Date',
   selectPlan: 'Select This Plan',
-  editTitle: 'Edit Product | Production No: {stockNumber}',
+  editTitle: "Edit Product {'|'} Production No: {stockNumber}",
   uploadImage: 'Upload Image',
   selectFromGallery: 'Select from Gallery',
   updateBtn: 'Update',
@@ -1661,7 +1661,7 @@ export const saleDashboard = {
   howTo2Title: 'Confirm Sale Order',
   howTo2Desc: 'Select items, fill in all details, then click "Confirm Sale Order" to reveal next step buttons',
   howTo3Title: 'Process by Item Type',
-  howTo3Desc: 'Manufactured items → Create production order | Inventory items → Reserve stock',
+  howTo3Desc: "Manufactured items → Create production order {'|'} Inventory items → Reserve stock",
   howTo4Title: 'Deliver and Invoice',
   howTo4Desc: 'Create delivery note → Create invoice → Track payment',
   comingSoon: 'Coming Soon'

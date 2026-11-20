@@ -309,7 +309,7 @@ export default {
       imageNameLabel: 'Image Name',
       imageNamePlaceholder: 'Image name',
       uploadAndUseBtn: 'Upload & Use This Image',
-      barcodePrintTitle: 'Product saved | Select products to print barcode',
+      barcodePrintTitle: "Product saved {'|'} Select products to print barcode",
       barcodeTypeOriginal: 'Type 1',
       barcodeTypeCostNoGold: 'Type 2',
       lotBadge: 'Lot of {count}'
