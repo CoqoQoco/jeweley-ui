@@ -27,7 +27,7 @@ Location: `src/services/alert/sweetAlerts.js`
 |---|---|---|
 | `success(message, title?)` | เขียว | บันทึกสำเร็จ, ดำเนินการเสร็จ |
 | `error(message, title?)` | แดง | เกิด error, API fail |
-| `warning(message, title?)` | เหลือง | validation fail, ข้อมูลไม่ครบ |
+| `warning(message, title?)` | เหลือง | สรุปเสริมเมื่อ validation fail / ข้อมูลไม่ครบ — **ตัวหลักคือข้อความใต้ช่อง** (`FormFieldGeneric :error` ตาม `docs/design-system.md` #17 Required Field Feedback) ห้ามใช้ popup แทน; เซลล์ในตารางใช้ popup สรุปใบเดียวได้ |
 | `info(message, title?)` | น้ำเงิน | แจ้งข้อมูลทั่วไป |
 | `confirmSubmit(message, title, callback)` | - | ยืนยันก่อนดำเนินการ |
 

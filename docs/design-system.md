@@ -35,6 +35,7 @@
 | 14 | **ห้ามแถบสีหนาด้านซ้าย** | กล่องสถานะ / callout / แถบแจ้งเตือน ห้ามใช้ `border-left` หนาหรือเทคนิคใดๆ ที่สร้างแถบสีด้านซ้ายเป็นตัวเน้น — สื่อสถานะด้วย **ไอคอน + สีตัวอักษร + กรอบบาง 1px เท่ากันทุกด้าน** (หรือพื้นอ่อนจาก token) เท่านั้น — user สั่งถอดแบบนี้มาหลายครั้ง (slide-menu, SourceStripGeneric, setting/barcode-printer) |
 | 15 | **ตัวกรองที่มีค่าเริ่มต้น** | ค่าเริ่มต้นของ filter ยังคงเป็นว่าง (#11 + Decision Log 2026-06-24) — ถ้าจะตั้งค่าเริ่มต้นไม่ว่างต้องบันทึกเหตุผลใน Decision Log และต้องทำครบ: (a) มี `defaultFilter()` ตัวเดียวที่ `data()` และ `onClear()` เรียกใช้ร่วมกัน (b) tooltip ปุ่มล้างเขียนว่า "คืนค่าเริ่มต้น" ไม่ใช่ "ล้าง" (c) ค่าเริ่มต้นต้องมองเห็นได้ (MultiSelect แสดง chip ตั้งแต่โหลดหน้า) (d) ตารางว่างขณะกรองอยู่ใช้ `emptyMessage` ที่อิงตัวกรองของการค้นหาครั้งล่าสุด (`searchedStatus`) ไม่ใช่ค่าที่กำลังแก้ใน input (e) ห้ามซ่อนรายการที่ counter/notification ชี้ถึง (เช่น badge unread) — badge อาจนับ system comment (เปลี่ยนสถานะ) ด้วย จึงต้องเช็คว่า counter นับอะไรบ้างก่อนเลือกค่าเริ่มต้น — ref: `src/views/ticket/manage/index-view.vue` |
 | 16 | **Editable Table Cell** | ช่องกรอกในเซลล์ตาราง: `*` + กรอบ token เฉพาะช่องที่ save บังคับกรอกจริง · ช่องไม่บังคับห้ามไฮไลต์ (ห้าม `bg-warning` เต็มช่อง) · disabled/readonly ใช้ `.cell-readonly` · ทุกช่องมี aria-label · ความกว้างรวม ≤ ~1050px ไม่งั้น freeze คอลัมน์แรก+ลบ — ดู [Editable Table Cell](#editable-table-cell) |
+| 17 | **Required Field Feedback** | ฟอร์มเดี่ยวนอกตาราง: `*` เฉพาะช่องที่ save ตรวจจริง · ตรวจตอนกด save เท่านั้น · ช่องที่ขาด = ข้อความ i18n ใต้ช่อง (`FormFieldGeneric :error`) + กรอบแดง `--base-red` · focus+scroll ช่องแรกที่ขาด · popup `warning()` เป็นตัวเสริมเท่านั้น — ดู [Required Field Feedback](#required-field-feedback) |
 
 ---
 
@@ -335,9 +336,37 @@ Section cards inside modals should use the legend header style (`headerStyle="le
 4. **aria-label บังคับทุกช่อง**: `InputTextGeneric :aria-label` · `DropdownGeneric :ariaLabel` · `AutoCompleteGeneric :aria-label` — ห้ามเปลี่ยนข้อความ aria-label เดิม (e2e golden เลือกด้วย aria-label)
 5. **งบความกว้าง**: ผลรวม min-width ของคอลัมน์ ≤ ~1050px (พื้นที่เนื้อหาที่ viewport 1366 หลังหัก sidebar) — ถ้าเกิน อนุญาตเลื่อนแนวนอนได้เฉพาะเมื่อ freeze (`frozen`) คอลัมน์ระบุตัวแถวคอลัมน์แรก + คอลัมน์ลบ/action หรือใช้ `showColumnSettings` + `columnPrefsKey` (UX debt #6) · cell ที่ frozen ต้องมีพื้นทึบ (`td.p-frozen-column { background: var(--color-card-bg) }` เฉพาะ td ห้ามโดน th หัวตาราง — ตั้งใน scoped style ของหน้า ไม่ใช่ global) กันเนื้อหาทะลุ และต้องตามสี hover/highlight ของแถว (`var(--color-highlight-bg)`) ไม่ให้แถวดูขาดครึ่ง · คอลัมน์ frozen ต้องรวมคอลัมน์ที่ระบุตัวแถว และคอลัมน์บังคับ/สถานะควรเห็นตลอดเท่าที่ทำได้ (UX debt #6)
 
-**หมายเหตุ**: กฎนี้ใช้กับเซลล์ในตารางเท่านั้น — ช่องกรอกเดี่ยวนอกตารางใช้ pattern `*` ที่ label ของฟอร์ม (FormFieldGeneric / `txt-required`) ไม่ใช่กฎนี้ · ตอนนี้ยังไม่มีหน้าใดใช้ `.cell-required-empty` (ไม่มีเซลล์ที่ save ตรวจจริง) แต่คง class ไว้เป็นมาตรฐานของเซลล์ที่จะบังคับกรอกในอนาคต
+6. **หลังกด save แล้วมีเซลล์บังคับที่ยังว่าง** (#17 ข้อ 7): ก่อนกด save ช่องบังคับคง `cell-required-empty` (เส้นประเทา) · หลังกด save ที่ตรวจไม่ผ่าน → เซลล์ที่ขาดแต่ละช่องเพิ่ม class `cell-invalid` (กรอบทึบ 1px `--base-red` — class กลางใน main.scss ซ้ำชื่อ 2 ครั้งเหมือน `cell-readonly`; ใช้ได้กับ `InputTextGeneric`/`DropdownGeneric`/`AutoCompleteGeneric` แบบเดียวกับ `cell-readonly`) แล้วเด้ง popup `warning()` **ใบเดียว** สรุปว่าแถวไหน/คอลัมน์ไหนขาด (ยอมให้ใช้ popup เพราะเซลล์ไม่มีที่ใส่ข้อความ) + focus เซลล์ที่ขาดช่องแรก · แก้ช่องไหนแล้วถอด `cell-invalid` ของช่องนั้นทันที
+
+**หมายเหตุ**: กฎนี้ใช้กับเซลล์ในตารางเท่านั้น — ช่องกรอกเดี่ยวนอกตารางใช้ [Required Field Feedback](#required-field-feedback) (#17: `*` ที่ label ของ `FormFieldGeneric` + ข้อความใต้ช่อง + กรอบแดง) ไม่ใช่กฎนี้ · เซลล์ที่ไม่มีที่ให้ข้อความใช้ข้อ 6 ด้านบน · ตอนนี้ยังไม่มีหน้าใดใช้ `.cell-required-empty` (ไม่มีเซลล์ที่ save ตรวจจริง) แต่คง class ไว้เป็นมาตรฐานของเซลล์ที่จะบังคับกรอกในอนาคต
 
 **Reference implementation**: `src/views/production/plan-create/components/create-view.vue` (frozen) · `src/views/production/plan-view/modal/update-process-view.vue` (`cell-readonly`)
+
+---
+
+## Required Field Feedback
+
+กติกาแจ้งช่องบังคับที่ยังไม่กรอกในฟอร์มเดี่ยว (หน้า create/edit, modal/drawer) — Core Principle #17 · กรอบแดงอยู่ใน `FormFieldGeneric` (class `form-field--invalid` + CSS กลางใน `src/assets/scss/main.scss`) ไม่ต้องเขียน scoped rule เอง
+
+1. **`*` เฉพาะช่องที่ save ตรวจจริง** — สอดคล้องกับ #16 (ห้ามใส่ `*` ช่องที่ไม่ได้ตรวจ)
+2. **ตรวจ "ช่องบังคับที่ว่าง" ตอนกด save เท่านั้น** — ห้ามแสดง error ว่างก่อนผู้ใช้กด save ครั้งแรก (ห้ามตรวจตอน blur / ตอนเปิดหน้า) · ข้อยกเว้น: error ด้านรูปแบบ/ช่วงค่าที่คำนวณสดอยู่แล้ว (เช่น `PriceInputGroupGeneric`, อีเมลใน company-info) แสดงระหว่างพิมพ์ได้ และได้กรอบแดงเหมือนกัน — สองข้อนี้ไม่ขัดกัน
+3. **ช่องที่ขาด = ข้อความใต้ช่อง + กรอบแดง**: ส่งข้อความ i18n ผ่าน `FormFieldGeneric :error` → ได้ข้อความใต้ช่อง + กรอบ `--base-red` (#ff4d4d, contrast กับพื้นขาว ~3.3:1 ผ่านเกณฑ์ ≥3:1 ของกรอบ UI) ให้เองทุกชนิดช่อง (`InputTextGeneric`, `TextareaGeneric`, `DropdownGeneric`, `AutoCompleteGeneric`, `MultiSelectGeneric`, `CalendarGeneric`) · หลังกด save ครั้งแรกแล้ว **แก้ช่องไหน error ของช่องนั้นหายทันที** (ไม่ต้องรอกด save ใหม่)
+4. **focus ช่องแรกที่ขาด + scroll เข้าสายตา** (รวมใน modal/drawer ที่เลื่อนได้ — `scrollIntoView({ block: 'center' })` หลัง `$nextTick`)
+5. **popup สรุป (`warning()`) เป็นตัวเสริมเท่านั้น** — ห้ามใช้แทนข้อความใต้ช่อง (popup ปิดแล้วผู้ใช้จำไม่ได้ว่าช่องไหนขาด)
+6. **หน้า legacy ที่ใช้ `required` native + `<form @submit.prevent>`**: เมื่อ migrate ต้องใส่ `novalidate` ที่ `<form>` หรือเอา `required` ออก ไม่งั้น bubble ของเบราว์เซอร์ดักก่อน submit แล้ว validation ของแอปไม่ทำงาน — ห้ามพึ่ง bubble ของเบราว์เซอร์
+7. **เซลล์บังคับในแถวตาราง** (ไม่มีที่ใส่ข้อความ): ดู [Editable Table Cell](#editable-table-cell) ข้อ 6 — ก่อน save คง `cell-required-empty` (เส้นประเทา #16) · หลังกด save ไม่ผ่าน → `cell-invalid` (กรอบทึบ `--base-red`) ทุกเซลล์ที่ขาด + popup สรุปใบเดียวบอกแถว/คอลัมน์ + focus เซลล์แรกที่ขาด
+8. **Reference**: `src/views/production/plan-gold` อ้างได้เฉพาะ pattern `errors` object + `:error` binding — **ยังไม่ทำ** focus, live-clear และ popup แบบเสริม (ต้องเติมเมื่อแตะหน้านั้น)
+
+**a11y (ใน FormFieldGeneric)**: ข้อความ error มี `id` + `role="alert"` · control แรกใน slot (`input`/`textarea`/`[role=combobox]`) ได้ `aria-invalid="true"` + `aria-describedby` ผ่าน DOM ใน `mounted`/`updated` (ต่อท้าย `aria-describedby` เดิมถ้ามี และถอดเฉพาะ id ของ error เมื่อ error หาย) — **ข้อจำกัด**: ตั้งให้ control แรกเท่านั้น (ฟิลด์ที่มี control หลายตัวใน slot ต้องใส่ aria เองที่ตัวที่เหลือ)
+
+**✅ Good:**
+```vue
+<FormFieldGeneric :label="$t('common.field.name')" :required="true" :error="errors.name">
+  <InputTextGeneric v-model="form.name" @update:modelValue="errors.name = ''" />
+</FormFieldGeneric>
+```
+
+**❌ Bad:** `warning('กรุณากรอกข้อมูลให้ครบ')` อย่างเดียว · แสดง error ตั้งแต่เปิดหน้า · `<form>` ที่มี `required` โดยไม่มี `novalidate`
 
 ---
 
@@ -429,3 +458,4 @@ Section cards inside modals should use the legend header style (`headerStyle="le
 | 2026-10-18 | executive / production insight — 3 ระดับแท็บใช้ look เดียวกัน (segmented เขียว) แยกลำดับชั้นด้วย "ขนาด" | ระดับ 1 (ผลิต/ขายและเงิน/คลัง/การไหลของงาน) `TabViewGeneric` เพิ่ม prop `variant` ('underline' default = ทุกหน้าอื่นไม่เปลี่ยน | 'segmented' = ปุ่มต่อกัน พื้น `var(--base-green)` เมื่อเลือก, `fs-lg` ตัวหนา, padding `sp-sm`/`sp-xl`; ซ่อน groupLabel) opt-in เฉพาะ `views/report/executive/index-view.vue`; ระดับ 2 (หมวด insight) `ToggleGroupGeneric` ขนาดเดิม (`fs-base`); ระดับ 3 (ปัญหา/คาดการณ์/วิธีแก้ + แท็บข้อมูล) `components/insight/insight-sub-tabs.vue` = `ToggleGroupGeneric size="sm"` 2 ชุด (`fs-sm`, padding `sp-xs`/`sp-md`) คั่นด้วยคำบรรยายกลุ่ม (aria-hidden, ไม่ใช่ปุ่ม); `ToggleGroupGeneric` เพิ่ม prop `size` ('md' default), `options[].icon`, และ `:focus-visible` ring (ไม่แสดงกรอบ focus ตอนคลิกเมาส์) — แถวห่างกัน `var(--sp-lg)` |
 | 2026-11-17 | ticket manage + my-ticket (global: กฎตัวกรองที่มีค่าเริ่มต้น = Core Principle #15) | ตัวกรองสถานะมีค่าเริ่มต้นไม่ว่างได้เมื่อมีเหตุผล (เดิม #11 บังคับ `[]` ไม่มีข้อยกเว้น) — หน้า manage ตั้ง `[1,2]` (เปิด/กำลังดำเนินการ) ตรงกับ `CountOpen` (status 1,2); หน้า my-ticket ลอง `[1,2,3]` ใน TK202611170017 แล้วย้อนกลับเป็น `[]` เพราะ `CountMyUnread` นับทุก comment ที่ไม่ใช่ user รวม system comment "เปลี่ยนสถานะ" ตอนปิด/ยกเลิก ticket — ค่าเริ่มต้นไม่ว่างจะซ่อน ticket ที่ badge ชี้ถึง (ตัวอย่างของกฎข้อ (e)); manage ใช้ `defaultFilter()` ระดับ module เรียกจาก `data()` และ `onClear()`, tooltip ปุ่มล้าง `view.ticket.btn.resetFilter` ("คืนค่าเริ่มต้น"), `searchedStatus` ตั้งใน `fetchData()` ตามสถานะที่ส่งจริง, computed `emptyMessage` = `view.ticket.emptyFiltered` เมื่อ `searchedStatus` มีค่า — ที่มา: TK202611170015, TK202611170017, TK202611170018 — ไฟล์: `src/views/ticket/manage/index-view.vue`, `src/views/ticket/my-ticket-view.vue` |
 | 2026-11-20 | Editable Table Cell (global) | **#16**: สถาปนากติกาช่องกรอกในตาราง (TK202611200002 จาก UX debt #14 / TK202611180001) — เลิก `bg-warning` เต็มช่องบนช่องที่ save ไม่ตรวจ (create-view, update-process-view, mold create-design x2, gems-section), เพิ่ม `.cell-required-empty` (กรอบ `--base-sub-color`) + `.cell-readonly` กลางใน main.scss แทน scoped rule ของ update-process-view, freeze คอลัมน์ลบ+ชนิดทองใน plan-create |
+| 2026-11-20 | Required Field Feedback (global) | **#17**: สถาปนากติกาแจ้งช่องบังคับที่ยังไม่กรอก (TK202611200016 จาก UX debt #17 / TK202611200013) — ตรวจเมื่อกด save เท่านั้น, ข้อความใต้ช่องผ่าน `FormFieldGeneric :error` + กรอบแดง `--base-red` (~3.3:1) ที่ FormFieldGeneric ใส่ให้เอง (class `form-field--invalid`, specificity ซ้ำ class 2 ครั้งใน main.scss), clear ทันทีเมื่อแก้, focus+scroll ช่องแรก, popup เป็นตัวเสริม, legacy `required` native ต้อง `novalidate`, เซลล์ตารางหลัง save ใช้ `.cell-invalid` + popup สรุปใบเดียว (ผูกกับ #16) — ไฟล์: `docs/design-system.md`, `src/components/generic/FormFieldGeneric.vue`, `src/assets/scss/main.scss` |

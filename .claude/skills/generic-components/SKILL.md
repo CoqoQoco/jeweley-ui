@@ -18,7 +18,7 @@ description: Generic wrapper components ทั้งหมด — ตรวจ�
 | `InputTextGeneric` | `InputTextGeneric.vue` | wrap `<input class="form-control">` — padding sync กับ DropdownGeneric; props: `modelValue`, `type`, `placeholder`, `disabled`, `readonly`, `required`, `trim`, `bgInput`, `step`(null), `min`(null), `max`(null), `maxlength`(null), `icon`('')(Bootstrap icon class เช่น `'bi-telephone-fill'` — leading icon ฝังในช่อง), `iconPosition`('left'); emits: `update:modelValue`, `blur`, `focus` |
 | `TextareaGeneric` | `TextareaGeneric.vue` | wrap `<textarea class="form-control">` — resize: vertical; props: `modelValue`, `rows`(3), `placeholder`, `disabled`, `required`, `maxlength`; emits: `update:modelValue` |
 | `ButtonGeneric` | `ButtonGeneric.vue` | wrap `<button class="btn btn-sm btn-*">` — variant map: main/outline/green/red/dark/sub-main/plain; props: `variant`, `icon`, `label`, `type`, `disabled`, `loading`, `block`; emits: `click` |
-| `FormFieldGeneric` | `FormFieldGeneric.vue` | label + required marker + error msg + slot; props: `label`, `required`, `error`, `inputId`(''  — เมื่อส่งมา render `<label :for="inputId">` แทน `<span>`, ต้องส่ง `id` ตรงกันให้ input ลูกเอง), `tip`('' — เมื่อส่งมา เรนเดอร์ `InfoTipGeneric` ต่อท้าย label — คำอธิบายเสริม ไม่นับเป็น label ซ้ำ) |
+| `FormFieldGeneric` | `FormFieldGeneric.vue` | label + required marker + error msg + slot; เมื่อ `error` ไม่ว่าง → wrapper มี class `form-field--invalid` (กรอบแดง `--base-red` ที่ control ข้างใน ทุกชนิดช่อง — CSS กลางใน main.scss), `<small>` มี `role="alert"`, control แรกใน slot ได้ `aria-invalid`/`aria-describedby` (Core Principle #17); props: `label`, `required`, `error`, `inputId`(''  — เมื่อส่งมา render `<label :for="inputId">` แทน `<span>`, ต้องส่ง `id` ตรงกันให้ input ลูกเอง), `tip`('' — เมื่อส่งมา เรนเดอร์ `InfoTipGeneric` ต่อท้าย label — คำอธิบายเสริม ไม่นับเป็น label ซ้ำ) |
 | `InfoTipGeneric` | `InfoTipGeneric.vue` | ไอคอน ⓘ (`bi-info-circle`, สีจาง token) เปิด tooltip เมื่อ hover/โฟกัสคีย์บอร์ด — CSS-only ล้วน (ไม่มี tooltip library/PrimeVue Tooltip directive ในโปรเจกต์); ใช้แปะข้างหัวข้อ/แถวข้อมูล/ปุ่มที่ต้องการคำอธิบายสั้นๆ โดยไม่กินพื้นที่ถาวรบนจอ — **ไม่ได้ผูกกับ `SectionCardGeneric` อัตโนมัติ** วางเองผ่าน slot/inline ที่ต้องการ หรือใช้ผ่าน `SectionCardGeneric :titleTip` / `FormFieldGeneric :tip` / `ToggleGroupGeneric options[].title`/`RangePresetGeneric :helpText`; props: `text`(String, required — ขึ้นบรรทัดใหม่ได้ด้วย `\n`, ให้สั้น ≤2 บรรทัด), `position`('top'\|'bottom'\|'left'\|'right', default 'top') |
 | `PageHeaderGeneric` | `PageHeaderGeneric.vue` | back btn วงกลม + title + border-bottom; props: `title`, `backRoute`; slot: `#actions` (ปุ่มฝั่งขวา เช่นหน้า detail/edit — ถ้าไม่ส่ง layout เหมือนเดิม); emits: `back` |
 | `SearchBarGeneric` | `SearchBarGeneric.vue` | search bar 4-section (pageTitle + fields + actions); props: `title`, `description`, `icon`; slots: `#header-actions` (ปุ่มมุมขวาบน filled header — หลายปุ่ม, width เท่ากัน grid 1fr, default btn-green; ปุ่มมี label ได้), `#fields`, `#actions-left`, `#actions-right`; emits: `search`, `clear` |
@@ -301,6 +301,12 @@ Import:
 ```javascript
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 ```
+
+**Required Field Feedback (Core Principle #17)**:
+- ✅ ช่องบังคับในฟอร์มเดี่ยว: ส่งข้อความ i18n ผ่าน `FormFieldGeneric :error` — ได้ข้อความใต้ช่อง + กรอบแดงอัตโนมัติ (ห้ามเขียน scoped rule กรอบแดงเอง)
+- ✅ ตรวจตอนกด save เท่านั้น · แก้ช่องแล้ว clear error ของช่องนั้นทันที · focus + scroll ช่องแรกที่ขาด · `warning()` เป็นตัวเสริม ไม่ใช่ตัวหลัก
+- ✅ เซลล์ในตาราง: หลัง save ไม่ผ่านใช้ class `cell-invalid` + popup สรุปใบเดียว (ดู `docs/design-system.md` Editable Table Cell ข้อ 6)
+- ❌ `<form>` ที่มี `required` native โดยไม่มี `novalidate` (bubble เบราว์เซอร์ดัก submit ก่อน validation ของแอป)
 
 ---
 

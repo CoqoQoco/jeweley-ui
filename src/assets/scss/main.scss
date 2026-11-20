@@ -184,6 +184,27 @@ textarea {
   color: $base-font-color;
 }
 
+// ** ------ Required Field Feedback (docs/design-system.md#required-field-feedback) ------
+// FormFieldGeneric ใส่ .form-field--invalid เมื่อมี :error — กรอบแดงที่ control ข้างใน
+// ซ้ำ class 2 ครั้งโดยเจตนา (0,3,x): ชนะ Bootstrap .form-control และ scoped input.form-control[data-v] (0,2,1)
+// .p-inputtext ยกเว้น label ภายใน Dropdown/MultiSelect (กันกรอบซ้อน — กรอบอยู่ที่ root .p-dropdown/.p-multiselect แล้ว)
+.form-field--invalid.form-field--invalid input.form-control,
+.form-field--invalid.form-field--invalid textarea.form-control,
+.form-field--invalid.form-field--invalid .p-inputtext:not(.p-dropdown-label):not(.p-multiselect-label),
+.form-field--invalid.form-field--invalid .p-dropdown,
+.form-field--invalid.form-field--invalid .p-multiselect {
+  border: 1px solid var(--base-red);
+}
+
+.form-field--invalid.form-field--invalid input.form-control:focus,
+.form-field--invalid.form-field--invalid textarea.form-control:focus,
+.form-field--invalid.form-field--invalid .p-inputtext:not(.p-dropdown-label):not(.p-multiselect-label):focus,
+.form-field--invalid.form-field--invalid .p-dropdown.p-focus,
+.form-field--invalid.form-field--invalid .p-multiselect.p-focus {
+  border-color: var(--base-red);
+  box-shadow: 0 0 0 1px var(--base-red);
+}
+
 // ** ------ Editable Table Cell (docs/design-system.md#editable-table-cell) ------
 // ซ้ำ class 2 ครั้งโดยเจตนา: ต้องชนะ Bootstrap .form-control(:disabled) ที่โหลดหลัง และ scoped input.form-control[data-v] (0,2,1)
 // ช่องบังคับที่ยังว่าง: กรอบ 1px เส้นประ สี --base-sub-color (contrast กับขาว ~11:1) — เส้นประต่างจากกรอบ focus ที่เป็นเส้นทึบ
@@ -200,6 +221,23 @@ input.form-control.cell-required-empty.cell-required-empty:focus,
   border-style: solid;
   outline: 2px solid var(--base-sub-color);
   outline-offset: 1px;
+}
+
+// .cell-invalid = เซลล์ในตารางหลังกด save แล้วยังไม่กรอก (ไม่มีที่ให้ข้อความ) — กรอบทึบ 1px แดง
+// ต้องอยู่ท้ายบล็อก cell-required-empty: ใส่ทับคู่กันได้ (specificity เท่ากัน ตัวหลังชนะ) ทั้งสภาพปกติและ focus
+input.form-control.cell-invalid.cell-invalid,
+.p-dropdown.cell-invalid.cell-invalid,
+.p-autocomplete.cell-invalid.cell-invalid .p-autocomplete-input {
+  border: 1px solid var(--base-red);
+}
+
+input.form-control.cell-invalid.cell-invalid:focus,
+.p-dropdown.cell-invalid.cell-invalid.p-focus,
+.p-autocomplete.cell-invalid.cell-invalid .p-autocomplete-input:focus {
+  border-style: solid;
+  border-color: var(--base-red);
+  box-shadow: 0 0 0 1px var(--base-red);
+  outline: none;
 }
 
 // ช่อง disabled/readonly: อ่านออกชัด ไม่จาง
