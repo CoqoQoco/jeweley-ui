@@ -308,6 +308,11 @@ import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 - ✅ เซลล์ในตาราง: หลัง save ไม่ผ่านใช้ class `cell-invalid` + popup สรุปใบเดียว (ดู `docs/design-system.md` Editable Table Cell ข้อ 6)
 - ❌ `<form>` ที่มี `required` native โดยไม่มี `novalidate` (bubble เบราว์เซอร์ดัก submit ก่อน validation ของแอป)
 
+**ค่าที่ระบบเติม / ค่าที่ผู้ใช้แก้ทับ (Core Principle #18)**:
+- ✅ ป้าย = ไอคอน (`bi-magic` ระบบเติม · `bi-pencil` แก้เอง) + ข้อความ i18n บอกแหล่ง วางใต้ control ใน slot ของ `FormFieldGeneric` (ตาราง = ในเซลล์เดียวกัน) · ข้อความล้วนไม่มีพื้นหลัง `--fs-base` สี `--base-sub-color` / `--base-font-color`
+- ✅ แก้ทับ → ปุ่มคืนค่า `ButtonGeneric variant="plain"` icon-only `bi-arrow-counterclockwise` + `:title` + `aria-label`
+- ❌ ใช้ `:error` / กรอบแดง / `:required` กับค่าที่ระบบเติม (ไม่ใช่ error ไม่ใช่ช่องบังคับ) · ป้ายพื้นสี / `--fs-sm` — ดู `docs/design-system.md` หัวข้อ System-filled Value
+
 ---
 
 ## CheckboxGeneric

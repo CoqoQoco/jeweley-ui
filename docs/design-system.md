@@ -36,6 +36,7 @@
 | 15 | **ตัวกรองที่มีค่าเริ่มต้น** | ค่าเริ่มต้นของ filter ยังคงเป็นว่าง (#11 + Decision Log 2026-06-24) — ถ้าจะตั้งค่าเริ่มต้นไม่ว่างต้องบันทึกเหตุผลใน Decision Log และต้องทำครบ: (a) มี `defaultFilter()` ตัวเดียวที่ `data()` และ `onClear()` เรียกใช้ร่วมกัน (b) tooltip ปุ่มล้างเขียนว่า "คืนค่าเริ่มต้น" ไม่ใช่ "ล้าง" (c) ค่าเริ่มต้นต้องมองเห็นได้ (MultiSelect แสดง chip ตั้งแต่โหลดหน้า) (d) ตารางว่างขณะกรองอยู่ใช้ `emptyMessage` ที่อิงตัวกรองของการค้นหาครั้งล่าสุด (`searchedStatus`) ไม่ใช่ค่าที่กำลังแก้ใน input (e) ห้ามซ่อนรายการที่ counter/notification ชี้ถึง (เช่น badge unread) — badge อาจนับ system comment (เปลี่ยนสถานะ) ด้วย จึงต้องเช็คว่า counter นับอะไรบ้างก่อนเลือกค่าเริ่มต้น — ref: `src/views/ticket/manage/index-view.vue` |
 | 16 | **Editable Table Cell** | ช่องกรอกในเซลล์ตาราง: `*` + กรอบ token เฉพาะช่องที่ save บังคับกรอกจริง · ช่องไม่บังคับห้ามไฮไลต์ (ห้าม `bg-warning` เต็มช่อง) · disabled/readonly ใช้ `.cell-readonly` · ทุกช่องมี aria-label · ความกว้างรวม ≤ ~1050px ไม่งั้น freeze คอลัมน์แรก+ลบ — ดู [Editable Table Cell](#editable-table-cell) |
 | 17 | **Required Field Feedback** | ฟอร์มเดี่ยวนอกตาราง: `*` เฉพาะช่องที่ save ตรวจจริง · ตรวจตอนกด save เท่านั้น · ช่องที่ขาด = ข้อความ i18n ใต้ช่อง (`FormFieldGeneric :error`) + กรอบแดง `--base-red` · focus+scroll ช่องแรกที่ขาด · popup `warning()` เป็นตัวเสริมเท่านั้น — ดู [Required Field Feedback](#required-field-feedback) |
+| 18 | **ค่าที่ระบบเติม / ค่าที่ผู้ใช้แก้ทับ** | ค่าที่ระบบเติมหรือแนะนำให้ และค่าที่ผู้ใช้แก้ทับค่าที่ระบบคำนวณ ต้องมีป้าย **ไอคอน + ข้อความ i18n บอกที่มา** ติดกับค่านั้น · ข้อความล้วนไม่มีพื้นหลัง ≥ `--fs-base` contrast ≥ 4.5:1 · ห้ามกรอบแดง/`*`/ไฮไลต์เต็มช่อง · เปลี่ยนหรือล้างค่าได้เสมอ และระบบห้ามเติมทับค่าที่ผู้ใช้ใส่เอง — ดู [System-filled Value](#system-filled-value) |
 
 ---
 
@@ -370,6 +371,61 @@ Section cards inside modals should use the legend header style (`headerStyle="le
 
 ---
 
+## System-filled Value
+
+กติกาบอกผู้ใช้ว่าค่าไหน "ระบบใส่ให้" — Core Principle #18 (TK202611240002 จาก UX debt #9 + #19) · ใช้กับ 2 สถานะในตระกูลเดียวกัน:
+
+| สถานะ | ตัวอย่าง | ไอคอน | ข้อความ (i18n) | สีตัวอักษร |
+|---|---|---|---|---|
+| **(ก) ระบบเติม / แนะนำให้** | รูปจากสินค้าเดิม, ล็อตแนะนำ, ค่าขั้นต่ำอัตโนมัติ | `bi-magic` | บอกแหล่งเสมอ เช่น "เติมจากสินค้า {source}" — มีเลข/ชื่อแหล่งต้องใส่เป็น param | `--base-sub-color` (#393939 · 11.5:1 บนขาว) |
+| **(ข) ผู้ใช้แก้ทับค่าที่ระบบคำนวณ** | ราคาบนป้ายที่แก้รายชิ้น, ขั้นต่ำที่ตั้งเอง | `bi-pencil` | "แก้เอง" (หรือคำของหน้านั้น เช่น "ตั้งเอง") | `--base-font-color` (#921313 · 9.0:1 บนขาว) |
+
+1. **ป้าย = ไอคอน + ข้อความเสมอ** — ห้ามสื่อด้วยสีหรือไอคอนอย่างเดียว (ผู้ใช้ต้องอ่านออกว่าค่ามาจากไหน) · ข้อความผ่าน `$t()` ห้าม hardcode
+2. **รูปแบบเดียวทุกที่: ข้อความล้วน ไม่มีพื้นหลัง ไม่มีกรอบ** — ทั้งในฟอร์มและในเซลล์ตาราง · ห้ามทำเป็น pill/badge พื้นสี (กันสับสนกับป้ายสถานะ — UX debt #7)
+3. **ขนาด ≥ `--fs-base`** (ห้าม `--fs-sm`) · **contrast ≥ 4.5:1** ด้วย token ในตารางข้างบนเท่านั้น — ห้ามใช้ `--base-warning` / `--status-open` เป็นสีตัวอักษร (1.7:1) · ห้าม `color-mix()` ผสมสีเอง
+4. **ตำแหน่ง: ติดกับค่านั้น** — ฟอร์ม = บรรทัดใต้ช่อง (ใน slot ของ `FormFieldGeneric` ต่อจาก control) · ตาราง = ในเซลล์เดียวกับค่า · ห้ามรวมไว้ในแถบสรุปด้านบนแทนป้ายรายช่อง
+5. **ไม่ใช่ error / ไม่ใช่ช่องบังคับ** — ห้ามกรอบแดง (สงวนให้ค่าไม่ผ่าน #17) · ห้ามใส่ `*` · ห้ามไฮไลต์พื้นเต็มช่อง (#16) · ห้ามแถบสีด้านซ้าย (#14)
+6. **ทางเปลี่ยน / ล้าง**:
+   - (ก) ผู้ใช้เปลี่ยนค่าเองได้ (อัปโหลดทับ / เลือกใหม่ / พิมพ์ทับ) และล้างได้ (ปุ่มลบ/ไม่ใช้ค่านี้ ที่มีอยู่ของช่องนั้น) · เปลี่ยนหรือล้างแล้ว **ป้ายหายทันที** · **ระบบห้ามเติมทับค่าที่ผู้ใช้ใส่เองหรือเพิ่งล้าง** (จำสถานะไว้ เช่น flag `imageSuggestAuto`, `suggestDismissedFor`)
+   - (ข) มีปุ่มคืนค่าระบบติดป้าย: `ButtonGeneric variant="plain"` icon-only `bi-arrow-counterclockwise` + `:title` + `aria-label` เป็นคำเต็ม (เช่น "คืนราคาที่ระบบคำนวณ") · เป้ากด ≥ 28px · กดแล้วป้ายหาย
+7. **flag ที่ใช้คุมป้ายเป็น state ของ UI** — **ร่าง (draft) ต้องเก็บ flag ไว้** เพื่อให้โหลดร่างกลับมาแล้วยังจำได้ว่าผู้ใช้ล้าง/เปลี่ยนค่าไหน (ไม่งั้นระบบเติมทับ ขัดข้อ 6) · ตัดออกจาก payload **ตอนยืนยันบันทึกจริงเท่านั้น** (ตัวอย่าง `stripAllSuggestFields`, `stripImageSuggestFields`)
+
+**✅ Good:**
+```vue
+<!-- '<feature>.image' = key ของหน้านั้น (ไม่มี common.field.image) -->
+<FormFieldGeneric :label="$t('<feature>.image')">
+  <UploadImage :compact="true" ... />
+  <span v-if="row.imageSuggestAuto && row.imagePath" class="system-filled-note">
+    <i class="bi bi-magic" aria-hidden="true"></i>
+    {{ $t('view.receiptStock.product.grProduction.imageSuggestNote', { source: row.imageSuggestSource || '-' }) }}
+  </span>
+</FormFieldGeneric>
+```
+```scss
+.system-filled-note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  margin-top: var(--sp-xs);
+  font-size: var(--fs-base);
+  color: var(--base-sub-color); // (ข) ใช้ var(--base-font-color)
+}
+```
+
+**❌ Bad:** ป้ายพื้น `--base-warning` / `--status-open-bg` · ตัวอักษร `--fs-sm` · ไอคอนอย่างเดียวไม่มีข้อความ · "เติมอัตโนมัติ" โดยไม่บอกแหล่ง · กรอบแดงรอบค่าที่ระบบเติม · ระบบเติมกลับหลังผู้ใช้กดล้าง
+
+**Reference (จุดที่มีอยู่ — ยังไม่ตรงกติกาเต็ม แก้เมื่อมีใบแตะหน้านั้นตาม migration loop):**
+
+| จุด | ไฟล์ | ไม่ตรงข้อ |
+|---|---|---|
+| รูปเติมจากสินค้าเดิม (ก) | `src/views/receipt-stock/product/new-gr-production/components/expansion/product-image.vue` `.image-suggest-note` | 3 (สี `color-mix` เขียว ไม่ใช่ token) · 4 (ไม่ได้อยู่ใน `FormFieldGeneric`) · 6ก (ไม่มีปุ่มล้างรูป ล้างได้ทางเดียวคือลบรหัสสินค้า) · ไอคอนไม่มี `aria-hidden` · ปุ่มเลือกรูปเป็น `<button>` ดิบ (#7) — ขนาด/การไม่เติมทับ ตรงแล้ว |
+| รูปเติมจากสินค้าเดิม ในตาราง (ก) | `src/views/receipt-stock/product/new-gr-production/components/product-form-table.vue` คอลัมน์รูป | 1 + 4 (บอกที่มาด้วย `:title` บนรูปเล็กอย่างเดียว ไม่มีป้ายในเซลล์) |
+| ล็อตแนะนำ / เติมล็อตอัตโนมัติ (ก) | `new-gr-production` + `new-gr-outsource` `components/product-form-table.vue` `.topup-note` `.topup-badge`, `src/views/receipt-stock/product/components/lot-topup-picker.vue` | 1 (note ไม่มีไอคอน) · 2 (badge พื้น `--base-warning`) · 3 (`--fs-sm`) |
+| ราคาบนป้าย "แก้เอง" (ข) | `src/views/stock/product/print-barcode/components/data-table-view.vue`, `src/views/stock/product/list/modal/barcode-view.vue` `.label-price-edited` | 1 (ไม่มีไอคอน) · 2 (พื้น `--status-open-bg`) · 3 (`--fs-sm`) · 6ข (ปุ่มคืนราคาไม่มี `aria-label` · เป้ากดยังไม่ได้วัด ≥ 28px) |
+| ขั้นต่ำวัตถุดิบ อัตโนมัติ/ตั้งเอง/ค่าพื้น (ก+ข) | `src/views/report/executive/material/material-min-modal.vue` | ใช้เป็นแบบอย่างของ "ที่มา 3 ค่า" + ปุ่มคืนค่าแบบมี label ในหน้ารายละเอียดได้ (modal อ่านค่า ไม่ใช่ป้ายติดช่อง) — ไม่ต้องแก้ |
+
+---
+
 ## Design Decision Log
 
 > บันทึกทุกครั้งที่ออกแบบ/เปลี่ยน design pattern ใหม่ (บังคับโดย hook `remind-on-change.sh`)
@@ -459,3 +515,4 @@ Section cards inside modals should use the legend header style (`headerStyle="le
 | 2026-11-17 | ticket manage + my-ticket (global: กฎตัวกรองที่มีค่าเริ่มต้น = Core Principle #15) | ตัวกรองสถานะมีค่าเริ่มต้นไม่ว่างได้เมื่อมีเหตุผล (เดิม #11 บังคับ `[]` ไม่มีข้อยกเว้น) — หน้า manage ตั้ง `[1,2]` (เปิด/กำลังดำเนินการ) ตรงกับ `CountOpen` (status 1,2); หน้า my-ticket ลอง `[1,2,3]` ใน TK202611170017 แล้วย้อนกลับเป็น `[]` เพราะ `CountMyUnread` นับทุก comment ที่ไม่ใช่ user รวม system comment "เปลี่ยนสถานะ" ตอนปิด/ยกเลิก ticket — ค่าเริ่มต้นไม่ว่างจะซ่อน ticket ที่ badge ชี้ถึง (ตัวอย่างของกฎข้อ (e)); manage ใช้ `defaultFilter()` ระดับ module เรียกจาก `data()` และ `onClear()`, tooltip ปุ่มล้าง `view.ticket.btn.resetFilter` ("คืนค่าเริ่มต้น"), `searchedStatus` ตั้งใน `fetchData()` ตามสถานะที่ส่งจริง, computed `emptyMessage` = `view.ticket.emptyFiltered` เมื่อ `searchedStatus` มีค่า — ที่มา: TK202611170015, TK202611170017, TK202611170018 — ไฟล์: `src/views/ticket/manage/index-view.vue`, `src/views/ticket/my-ticket-view.vue` |
 | 2026-11-20 | Editable Table Cell (global) | **#16**: สถาปนากติกาช่องกรอกในตาราง (TK202611200002 จาก UX debt #14 / TK202611180001) — เลิก `bg-warning` เต็มช่องบนช่องที่ save ไม่ตรวจ (create-view, update-process-view, mold create-design x2, gems-section), เพิ่ม `.cell-required-empty` (กรอบ `--base-sub-color`) + `.cell-readonly` กลางใน main.scss แทน scoped rule ของ update-process-view, freeze คอลัมน์ลบ+ชนิดทองใน plan-create |
 | 2026-11-20 | Required Field Feedback (global) | **#17**: สถาปนากติกาแจ้งช่องบังคับที่ยังไม่กรอก (TK202611200016 จาก UX debt #17 / TK202611200013) — ตรวจเมื่อกด save เท่านั้น, ข้อความใต้ช่องผ่าน `FormFieldGeneric :error` + กรอบแดง `--base-red` (~3.3:1) ที่ FormFieldGeneric ใส่ให้เอง (class `form-field--invalid`, specificity ซ้ำ class 2 ครั้งใน main.scss), clear ทันทีเมื่อแก้, focus+scroll ช่องแรก, popup เป็นตัวเสริม, legacy `required` native ต้อง `novalidate`, เซลล์ตารางหลัง save ใช้ `.cell-invalid` + popup สรุปใบเดียว (ผูกกับ #16) — ไฟล์: `docs/design-system.md`, `src/components/generic/FormFieldGeneric.vue`, `src/assets/scss/main.scss` |
+| 2026-11-24 | System-filled Value (global) | **#18**: สถาปนากติกาป้ายค่าที่ระบบเติม/แนะนำ (ก) และค่าที่ผู้ใช้แก้ทับค่าที่ระบบคำนวณ (ข) (TK202611240002 จาก UX debt #9 / TK202611170012 + #19 / TK202611230001) — ไอคอน + ข้อความ i18n บอกแหล่ง ติดกับค่า, ข้อความล้วนไม่มีพื้นหลังทั้งฟอร์มและตาราง (user เลือกแบบเดียวทุกที่ ไม่ทำ pill), ≥ `--fs-base`, สี (ก) `--base-sub-color` / (ข) `--base-font-color` ผ่าน 4.5:1, ห้ามกรอบแดง/`*`, เปลี่ยน/ล้างได้และห้ามเติมทับค่าที่ผู้ใช้ใส่, (ข) ปุ่มคืนค่า icon-only `bi-arrow-counterclockwise` — ไม่แก้โค้ดในใบนี้ 3 จุดเดิม (image-suggest-note, topup-note/badge, label-price-edited) ปรับเมื่อมีใบแตะ |
