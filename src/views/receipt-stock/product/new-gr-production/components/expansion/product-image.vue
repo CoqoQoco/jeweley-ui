@@ -23,6 +23,11 @@
         />
       </div>
 
+      <span v-if="data.imageSuggestAuto && data.imagePath" class="image-suggest-note">
+        <i class="bi bi-magic"></i>
+        {{ $t('view.receiptStock.product.grProduction.imageSuggestNote', { source: data.imageSuggestSource || '-' }) }}
+      </span>
+
       <!-- Image controls -->
       <div class="image-controls mt-1">
         <button
@@ -107,6 +112,13 @@ export default {
       transform: translateY(-1px);
     }
   }
+}
+
+.image-suggest-note {
+  margin-top: var(--sp-xs);
+  font-size: var(--fs-base);
+  font-weight: 500;
+  color: color-mix(in srgb, var(--base-green) 65%, black);
 }
 
 .image-body {

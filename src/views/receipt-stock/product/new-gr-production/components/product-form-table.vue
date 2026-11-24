@@ -35,6 +35,7 @@
           :width="40"
           :height="40"
           :preview="false"
+          :title="data.imageSuggestAuto ? $t('view.receiptStock.product.grProduction.imageSuggestNote', { source: data.imageSuggestSource || '-' }) : null"
         />
         <div v-else class="image-column-placeholder">
           <i class="bi bi-image"></i>

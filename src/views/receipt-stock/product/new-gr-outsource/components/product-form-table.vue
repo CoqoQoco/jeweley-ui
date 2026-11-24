@@ -31,7 +31,7 @@
           v-model.trim="data.productNumber"
           placeholder="รหัสสินค้า"
           :style="getFieldBg(data.productNumber)"
-          @change="onSuggestInputChanged(data)"
+          @change="onProductNumberChange(data)"
         />
         <span v-if="data.topUpStockNumber" class="topup-badge">
           {{ $t('view.receiptStock.product.receiptLot.topUpBadge', { stockNumber: data.topUpStockNumber }) }}
@@ -369,10 +369,16 @@ export default {
     'addMaterial',
     'removeMaterial',
     'updateTypeBarcode',
-    'editAllMaterials'
+    'editAllMaterials',
+    'productNumberChange'
   ],
 
   methods: {
+    onProductNumberChange(row) {
+      this.onSuggestInputChanged(row)
+      this.$emit('productNumberChange', row)
+    },
+
     isSilverRow(row) {
       return isSilverMetal(resolveProductionType(row))
     },

@@ -270,6 +270,7 @@ export default {
       selectedCountFooter: 'Selected: {count} item(s)',
       adjustBreakdownBtn: 'Adjust Breakdown',
       selectProductImage: 'Select Product Image',
+      imageSuggestNote: 'Image from existing product {source}',
       regionFromPlan: 'From plan: {region}',
       saveChanges: 'Save Changes',
       editAllDesc: 'Changes here will affect all selected items ({count} item(s))',

@@ -31,7 +31,7 @@
           @loadFromBreakdown="onLoadFromBreakdown"
           @editAllMaterials="onEditAllMaterials"
           @fetchDraft="fetchDraft"
-          @productNumberChange="onSuggestInputChanged"
+          @productNumberChange="onProductNumberChanged"
           @submit="onSubmit"
           @adjustBreakdown="onAdjustBreakdown"
           @selectImageBulk="onSelectImageBulk"
@@ -108,6 +108,8 @@ import priceCheckConfirm from '@/composables/usePriceCheckConfirm.js'
 import { summarizeMaterials } from '@/services/helper/price-check/price-check.js'
 import PriceOutlierConfirmModal from '@/components/modal/price-outlier-confirm-modal.vue'
 import lotSuggest, { stripAllSuggestFields, stripSuggestFields } from '../components/lot-suggest-mixin.js'
+import imageSuggest from '../components/image-suggest-mixin.js'
+import { clearImageSuggestFlag, stripImageSuggestFields } from '../components/image-suggest.js'
 
 import headerView from './components/production-header-view.vue'
 import ProductFormTable from './components/product-form-table.vue'
@@ -149,7 +151,7 @@ export default {
     modalAdjustBreakdown
   },
 
-  mixins: [priceCheckConfirm, lotSuggest],
+  mixins: [priceCheckConfirm, lotSuggest, imageSuggest],
 
   provide() {
     return { onSuggestInputChanged: this.onSuggestInputChanged }
@@ -568,6 +570,7 @@ export default {
         item.imageName = image.name
         item.imageYear = image.year
         item.imagePath = image.path
+        clearImageSuggestFlag(item)
       })
 
       if (targets.length > 1) {
@@ -601,6 +604,7 @@ export default {
             item.imageName = image.name
             item.imageYear = image.year
             item.imagePath = image.path
+            clearImageSuggestFlag(item)
           }
 
           if (data) {
@@ -624,6 +628,7 @@ export default {
               this.form[indexForm].imageName = image.name
               this.form[indexForm].imageYear = image.year
               this.form[indexForm].imagePath = image.path
+              clearImageSuggestFlag(this.form[indexForm])
             }
 
             if (data) {
@@ -755,7 +760,7 @@ export default {
       }
 
       const stocksWithMaterials = confirm.map((item) => ({
-        ...stripAllSuggestFields(item),
+        ...stripImageSuggestFields(stripAllSuggestFields(item)),
         qty: Number(item.qty),
         topUpStockNumber: item.topUpStockNumber || null,
         materials: (item.materials || []).map((m) => {
@@ -847,6 +852,8 @@ export default {
         barcodeGems: [],
         suggestAuto: item.suggestAuto === true,
         suggestDismissedFor: item.suggestDismissedFor || '',
+        imageSuggestAuto: item.imageSuggestAuto === true,
+        imageSuggestSource: item.imageSuggestSource || '',
         materials: (item.materials || []).map((m) => ({
           ...m,
           typeBarcode:
@@ -866,6 +873,20 @@ export default {
       this.updateFormBarcodeAll()
 
       if (this.isSilverPlan) this.runSuggest()
+      this.runImageSuggest(this.imageSuggestRows(), { onlyEmpty: true })
+    },
+
+    imageSuggestRows() {
+      return this.form.filter((item) => !item.isReceipt)
+    },
+
+    imageSuggestKey(row) {
+      return row.stockReceiptNumber
+    },
+
+    onProductNumberChanged(row) {
+      this.onSuggestInputChanged(row)
+      this.onImageSuggestProductChanged(row)
     },
 
     suggestRows() {

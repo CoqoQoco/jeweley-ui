@@ -97,6 +97,18 @@ export const stockProductImageApiStor = defineStore('stockProductImage', {
       } catch (error) {
         console.error('Error fetching create bulk stock product image:', error)
       }
+    },
+    async fetchSuggestByProduct({ items }) {
+      try {
+        const res = await api.jewelry.post(
+          'StockProductImage/SuggestByProduct',
+          { items },
+          { skipLoading: true, skipError: true }
+        )
+        return Array.isArray(res) ? res : []
+      } catch {
+        return []
+      }
     }
   }
 })

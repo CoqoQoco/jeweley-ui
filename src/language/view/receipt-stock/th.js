@@ -270,6 +270,7 @@ export default {
       selectedCountFooter: 'จำนวนรายการที่เลือก: {count}',
       adjustBreakdownBtn: 'ปรับปรุง Breakdown',
       selectProductImage: 'เลือกรูปสินค้า',
+      imageSuggestNote: 'รูปจากสินค้าเดิม {source}',
       regionFromPlan: 'จากแผน: {region}',
       saveChanges: 'บันทึกการเปลี่ยนแปลง',
       editAllDesc: 'การเปลี่ยนแปลงในหน้านี้จะส่งผลต่อสินค้าทั้งหมดที่เลือก ({count} รายการ)',

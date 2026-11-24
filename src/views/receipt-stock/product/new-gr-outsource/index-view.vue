@@ -40,6 +40,7 @@
         @removeMaterial="removeMaterialItem"
         @updateTypeBarcode="updateTypeBarcode"
         @editAllMaterials="onEditAllMaterials"
+        @productNumberChange="onImageSuggestProductChanged"
       />
     </form>
 
@@ -85,6 +86,8 @@ import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import swAlert from '@/services/alert/sweetAlerts.js'
 import { isSilverMetal, resolveProductionType, validateReceiptQty } from '@/services/helper/receipt-lot/receipt-lot.js'
 
+import imageSuggest from '../components/image-suggest-mixin.js'
+import { clearImageSuggestFlag, stripImageSuggestFields } from '../components/image-suggest.js'
 import { buildOutsourceMaterials } from './outsource-materials-payload.js'
 import outsourceHeader from './components/outsource-header-view.vue'
 import ProductFormTable from './components/product-form-table.vue'
@@ -115,6 +118,8 @@ export default {
     modalSearchProductName,
     modalEditAllMaterials
   },
+
+  mixins: [imageSuggest],
 
   setup() {
     const receiptOutsourceStore = useReceiptOutsourceApiStore()
@@ -212,11 +217,21 @@ export default {
         location: 'MAIN',
         imageName: null,
         imagePath: null,
+        imageSuggestAuto: false,
+        imageSuggestSource: '',
         remark: '',
         topUpStockNumber: '',
         preTopUp: null,
         materials: []
       }
+    },
+
+    imageSuggestRows() {
+      return this.form
+    },
+
+    imageSuggestKey(row) {
+      return row.dataKey
     },
 
     addRow() {
@@ -311,7 +326,7 @@ export default {
       const payload = {
         vendor: this.vendor,
         poNumber: this.poNumber || null,
-        stocks: this.form.map((item) => ({
+        stocks: this.form.map(stripImageSuggestFields).map((item) => ({
           productNumber: item.productNumber,
           productNameTH: item.productNameTH,
           productNameEN: item.productNameEN,
@@ -375,6 +390,7 @@ export default {
       if (index > -1) {
         this.form[index].imageName = image.name
         this.form[index].imagePath = image.path
+        clearImageSuggestFlag(this.form[index])
       }
     },
 
