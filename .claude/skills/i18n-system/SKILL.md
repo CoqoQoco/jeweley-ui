@@ -186,3 +186,4 @@ export default {
 - ❌ ห้าม hardcode ข้อความไทยในโค้ดใหม่ — ใช้ `$t()` เสมอ
 - ❌ ห้ามเพิ่ม key เฉพาะ th โดยไม่เพิ่ม en คู่กัน (fallback ยังได้ แต่ไม่ถูก convention)
 - ❌ ห้ามใช้ `localStorage` ตรงๆ สำหรับ lang — `setLocale()` จัดการผ่าน `storage` service
+- ❌ ห้ามใช้ `|` `@` `{` `}` ดิบในข้อความ i18n (vue-i18n ตีเป็น plural / linked / placeholder) — เขียน `{'|'}` / `{'@'}` / `{'{'}` / `{'}'}` ครอบด้วย double quote เช่น `remarkAt: "แอท ({'@'})"` · `{name}` ที่เป็น placeholder จริงใช้ได้ปกติ ห้ามแค่ `{` `}` ที่ไม่ใช่ placeholder (`%{` ก็ถูกตีเป็น placeholder แบบเก่า) · `src/language/i18n-pipe.spec.js` ตรวจ `|` และ `@` อยู่

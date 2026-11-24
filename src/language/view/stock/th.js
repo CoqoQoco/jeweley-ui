@@ -113,7 +113,7 @@ export default {
     remarkStar: 'ดาว (*)',
     remarkHash: 'แฮช (#)',
     remarkPlus: 'บวก (+)',
-    remarkAt: 'แอท (@)',
+    remarkAt: "แอท ({'@'})",
     remarkCircleFilled: 'วงกลมทึบ',
     remarkCircleOutline: 'วงกลมโปร่ง',
     remarkSquareFilled: 'สี่เหลี่ยมทึบ',

@@ -113,7 +113,7 @@ export default {
     remarkStar: 'Star (*)',
     remarkHash: 'Hash (#)',
     remarkPlus: 'Plus (+)',
-    remarkAt: 'At (@)',
+    remarkAt: "At ({'@'})",
     remarkCircleFilled: 'Filled circle',
     remarkCircleOutline: 'Outline circle',
     remarkSquareFilled: 'Filled square',
