@@ -3,6 +3,7 @@ const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 // ---- executive overview (boss-only) ----
 const ExecutiveOverview = () => import('@/views/report/executive/index-view.vue')
 const ExecutivePlanDetail = () => import('@/views/report/executive/plan-detail/index-view.vue')
+const ExecutiveAiConnect = () => import('@/views/report/executive/ai-connect/index-view.vue')
 
 // ---- production reports ----
 const reportPlanCompletedWithAllGold = () =>
@@ -54,6 +55,31 @@ const WagesMonthlyTrendReport = () =>
 import { PERMISSIONS } from '@/services/permission/config.js'
 
 const routes = [
+  // ------------------ AI Connector (boss-only) -------------------
+  // ไม่อยู่ในเมนู (ไม่มี majorShow) — เข้าจากปุ่มในหน้า /executive; แยก parent เพื่อไม่ให้กระทบ children ของ report-executive
+  {
+    path: '/report-ai-connect',
+    component: Layout,
+    redirect: '/executive/ai-connect',
+    name: 'report-ai-connect',
+    meta: {
+      Displayname: { en: 'AI Connector', th: 'เชื่อมต่อ AI' },
+      permissions: [PERMISSIONS.AI_CONNECT]
+    },
+    children: [
+      {
+        path: '/executive/ai-connect',
+        name: 'executive-ai-connect',
+        component: ExecutiveAiConnect,
+        meta: {
+          Displayname: { en: 'AI Connector', th: 'เชื่อมต่อ AI' },
+          minorShow: false,
+          noMobileTwin: true,
+          permissions: [PERMISSIONS.AI_CONNECT]
+        }
+      }
+    ]
+  },
   // ------------------ executive overview (boss-only) -------------------
   // แยก parent ของตัวเองไม่ผูกกับ report:view — ผู้บริหารที่มีสิทธิ์แค่ executive:view (ไม่มี report:view)
   // ต้องยังเห็นเมนูนี้ (side-bar.vue ซ่อน parent ที่ user ไม่มีสิทธิ์ตาม meta.permissions ของ parent เอง)

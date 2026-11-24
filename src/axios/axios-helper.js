@@ -4,6 +4,7 @@ import swAlert from '@/services/alert/sweetAlerts.js'
 import { useLoadingStore } from '@/stores/modules/master/loading-store.js'
 import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
 import router from '@/router'
+import { buildLoginLocation } from '@/router/device-redirect.js'
 
 // Load API URLs from environment variables
 const jewelryUrl = import.meta.env.VITE_JEWELRY_API_URL || 'https://localhost:7001/'
@@ -163,8 +164,9 @@ const configureInterceptors = (instance) => {
               msg,
               `${error ?? `Unauthorise`}`,
               async () => {
+                const loginLocation = buildLoginLocation(router.currentRoute.value)
                 await authStore.logout()
-                router.push('/login')
+                router.push(loginLocation)
               },
               stacktrace
             )

@@ -40,6 +40,7 @@ description: ตารางกฎ "ห้ามเรียกตรงๆ → 
 | segmented toggle เขียนเอง (`role="tablist"` + ปุ่มมือ) | `ToggleGroupGeneric` | `@/components/generic/ToggleGroupGeneric.vue` |
 | html5-qrcode camera เขียนเอง | `CameraScanGeneric` | `@/components/generic/CameraScanGeneric.vue` |
 | drag & drop JPG upload zone เขียนเอง | `JpgDropZoneGeneric` | `@/components/generic/JpgDropZoneGeneric.vue` |
+| `navigator.clipboard.writeText` + ปุ่มคัดลอกเขียนเอง | `CopyButtonGeneric` | `@/components/generic/CopyButtonGeneric.vue` |
 
 ---
 

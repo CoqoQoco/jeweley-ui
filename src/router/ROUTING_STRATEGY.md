@@ -295,6 +295,16 @@ router.beforeEach((to, from, next) => {
 })
 ```
 
+**ตัวช่วยใน `src/router/device-redirect.js`** (มี spec คู่กัน)
+
+| ฟังก์ชัน / meta | หน้าที่ |
+|---|---|
+| `resolveMobileRedirect({ shouldUseMobile, to, mobileRouteExists })` | ตัดสินว่า route เว็บนี้ต้องเด้งไป `/mobile/*` พร้อม query เดิมหรือไม่ (guard ใน `router/index.js` เรียกใช้ตัวนี้) |
+| `meta.skipDeviceRedirect` | ติดที่ route ที่ต้องเปิดด้วย path เดิมทุกอุปกรณ์ (เช่น `/oauth/authorize` ที่ query ของ OAuth ห้ามหาย) — `resolveMobileRedirect` คืน null และ guard ไม่เด้งไป `/mobile/dashboard` ให้ |
+| `meta.returnAfterLogin` + `buildLoginLocation(route)` | 401 กลางหน้า (axios-helper) ให้ไป `/login?redirect=<fullPath>` แล้วกลับมาหน้าเดิมพร้อม query แทนที่จะไป `/login` เปล่า |
+
+route ที่ติด `skipDeviceRedirect` ยังผ่าน auth guard ปกติ (ยังไม่ login → `/login?redirect=` แล้ววนกลับ) — ตัวอย่าง: `src/router/web/oauth/oauth-routes.js`
+
 ```vue
 <!-- components/layout/ViewModeToggle.vue -->
 <template>

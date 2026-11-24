@@ -7,6 +7,8 @@ import { PermissionService } from '@/services/permission/permission.js'
 import authenRoutes from './web/authen-routes.js'
 import landingRoutes from './web/landing-route.js'
 import publicRoutes from './web/public-routes.js'
+import oauthRoutes from './web/oauth/oauth-routes.js'
+import { resolveMobileRedirect, shouldLookupMobileTwin, shouldSkipDeviceRedirect } from './device-redirect.js'
 
 // Mobile routes
 import mobileAuthenRoutes from './mobile/authen-routes.js'
@@ -17,7 +19,8 @@ const routes = [
   ...authenRoutes,
   ...mobileLandingRoutes,
   ...mobileAuthenRoutes,
-  ...publicRoutes
+  ...publicRoutes,
+  ...oauthRoutes
 ]
 
 const router = createRouter({
@@ -33,6 +36,7 @@ const checkRoutePermission = (user, route) => {
     'user-account',
     'mobile-dashboard',
     'mobile-profile',
+    'oauth-authorize',
     'ticket-create',
     'ticket-create-group',
     'ticket-my',
@@ -70,17 +74,20 @@ router.beforeEach(async (to, from, next) => {
   const isMobileRoute = to.path.startsWith('/mobile')
 
   // Mobile device พยายามเข้า web route → redirect to mobile (ถ้ามี mobile route)
-  if (shouldUseMobile && isWebRoute && to.name !== 'routes-login') {
-    const mobilePath = `/mobile${to.path}`
-    const mobileRouteExists = router.resolve(mobilePath).matched.length > 0
-
-    if (mobileRouteExists) {
-      return next({
-        path: mobilePath,
-        query: to.query // รักษา query parameters
-      })
-    }
-    // ถ้าไม่มี mobile route ให้ไปหน้า dashboard
+  const mobileRedirect = resolveMobileRedirect({
+    shouldUseMobile,
+    to,
+    mobileRouteExists:
+      shouldUseMobile && isWebRoute && shouldLookupMobileTwin(to) && router.resolve(`/mobile${to.path}`).matched.length > 0
+  })
+  if (mobileRedirect) {
+    return next({
+      path: mobileRedirect.path,
+      query: mobileRedirect.query // รักษา query parameters
+    })
+  }
+  // ถ้าไม่มี mobile route ให้ไปหน้า dashboard (ยกเว้นหน้าที่ติด skipDeviceRedirect)
+  if (shouldUseMobile && isWebRoute && to.name !== 'routes-login' && !shouldSkipDeviceRedirect(to)) {
     if (isAuthenticated) {
       return next('/mobile/dashboard')
     }

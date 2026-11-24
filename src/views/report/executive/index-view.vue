@@ -10,6 +10,7 @@
           @update:modelValue="onMetalChange"
         />
         <ButtonGeneric variant="green" icon="bi-file-earmark-excel" :label="$t('view.executive.excel.exportAllBtn')" @click="onExportExcel" />
+        <ButtonGeneric v-if="canAiConnect" variant="outline" class="ml-2" icon="bi-robot" :label="$t('view.aiConnector.openBtn')" @click="$router.push({ name: 'executive-ai-connect' })" />
       </template>
     </DashboardHeaderGeneric>
 
@@ -48,6 +49,9 @@ import dayjs from 'dayjs'
 import { useExecutiveReportApiStore } from '@/stores/modules/api/report/executive-report-api.js'
 import { useProductionInsightApiStore } from '@/stores/modules/api/production/production-insight-api.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
+import { useAuthStore } from '@/stores/modules/authen/authen-store.js'
+import { PermissionService } from '@/services/permission/permission.js'
+import { PERMISSIONS } from '@/services/permission/config.js'
 import { formatDateTime, formatISOString } from '@/services/utils/dayjs.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
 import { METAL_SCOPE_VALUES, parseMetalQuery, metalToQuery, resolveGoldTabMetal } from '@/services/utils/metal-scope.js'
@@ -206,6 +210,11 @@ export default {
   },
 
   computed: {
+    canAiConnect() {
+      const authStore = useAuthStore()
+      return new PermissionService(authStore.getUser, authStore.permissions).hasPermission(PERMISSIONS.AI_CONNECT)
+    },
+
     asOfSubtitle() {
       if (!this.summary.asOf) return ''
       return `${this.$t('view.executive.asOf', { date: formatDateTime(this.summary.asOf) })} · ${this.metalLabel(this.metal)}`

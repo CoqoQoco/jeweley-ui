@@ -11,6 +11,7 @@ export default {
     confirm: 'ยืนยัน',
     export: 'ส่งออก',
     create: 'สร้าง',
+    copied: 'คัดลอกแล้ว',
     back: 'กลับ',
     advancedSearch: 'ค้นหาเพิ่มเติม',
     view: 'ดูรายละเอียด',

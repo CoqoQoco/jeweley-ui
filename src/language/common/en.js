@@ -11,6 +11,7 @@ export default {
     confirm: 'Confirm',
     export: 'Export',
     create: 'Create',
+    copied: 'Copied',
     back: 'Back',
     advancedSearch: 'Advanced Search',
     view: 'View Detail',

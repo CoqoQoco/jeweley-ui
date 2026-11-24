@@ -66,6 +66,9 @@ export const PERMISSIONS = {
   // Executive overview (boss-only dashboard)
   EXECUTIVE_VIEW: 'executive:view',
 
+  // AI Connector (เชื่อมแอป AI อ่านรายงานบริหาร — boss-only)
+  AI_CONNECT: 'ai:connect',
+
   //master
   MASTER_VIEW: 'master:view',
 
@@ -315,5 +318,10 @@ export const ROLE_PERMISSIONS = {
 
   SaleManager: [PERMISSIONS.SALE_VIEW_MARGIN],
 
-  Executive: [PERMISSIONS.EXECUTIVE_VIEW, PERMISSIONS.PRODUCTION_STANDARD_EDIT]
+  Executive: [
+    PERMISSIONS.EXECUTIVE_VIEW,
+    PERMISSIONS.AI_CONNECT,
+    PERMISSIONS.SALE_VIEW_MARGIN,
+    PERMISSIONS.PRODUCTION_STANDARD_EDIT
+  ]
 }
