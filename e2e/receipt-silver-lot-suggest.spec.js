@@ -30,7 +30,8 @@ const MASTERS = {
   'Master/MasterGoldSize': [],
   'Master/MasterGem': [],
   'Master/MasterProductType': [],
-  'Master/MasterDiamondGrade': []
+  'Master/MasterDiamondGrade': [],
+  'StockProductImage/SuggestByProduct': []
 }
 
 async function openCreate(page, lots) {
