@@ -56,4 +56,26 @@ test.describe('บิลกระดาษต่อเนื่อง VAT ท้
     expect(fixed.totals).toEqual({ subtotal: 1500, vat: 0, grandTotal: 1500 })
     api.assertNoLeak()
   })
+
+  test('ราคาต่อชิ้นแบบ subVat 7% + VAT 7%: ตัดทศนิยม 2 ตำแหน่ง (ไม่ปัด) รายการบวกเครื่องคิดเลขได้เท่ายอดท้ายบิล', async ({ page }) => {
+    const fx = buildInvoiceFixture({
+      vat: 7,
+      lines: [
+        { stockNumber: 'E2E-T1', price: 1424 },
+        { stockNumber: 'E2E-T2', price: 3008 },
+        { stockNumber: 'E2E-T3', price: 1616 }
+      ]
+    })
+    const { api, drawer } = await openBillPrintDrawer(page, fx)
+    await drawer.getByText('−VAT', { exact: true }).click()
+
+    const model = await printAndCaptureBridge(page, api)
+    expect(model.totals).toEqual({ subtotal: 5652.33, vat: 395.66, grandTotal: 6047.99 })
+
+    const texts = model.pages.at(-1).map((p) => p.text)
+    for (const v of ['1,330.84', '2,811.21', '1,510.28', '5,652.33', '395.66', '6,047.99']) {
+      expect(texts).toContain(v)
+    }
+    api.assertNoLeak()
+  })
 })

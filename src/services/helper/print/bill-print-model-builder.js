@@ -1,4 +1,5 @@
 import { convertAmountToThaiText } from '@/services/utils/thai-baht-text.js'
+import { roundHalfUp } from '@/services/utils/money.js'
 
 const MM_TO_INCH = 1 / 25.4
 const RIGHT_ALIGN_WIDTH = 0.9
@@ -91,25 +92,35 @@ function finiteOr(val, fallback) {
   return Number.isFinite(num) ? num : fallback
 }
 
+function trunc2(value) {
+  const num = roundHalfUp(value, 6)
+  if (!Number.isFinite(num) || num === 0) return 0
+  const abs = Math.abs(num)
+  const cut = Math.floor(Number(`${abs}e2`)) / 100
+  return num < 0 ? -cut : cut
+}
+
 function resolveUnitPriceFor(item, L, rate) {
   const base = Number(item.appraisalPrice) * (1 - Number(item.discountPercent) / 100)
   let factor = 1
   if (L.unitPriceMode === 'addVat') factor = 1 + L.unitVatPercent / 100
   else if (L.unitPriceMode === 'subVat') factor = 1 / (1 + L.unitVatPercent / 100)
-  return base * factor / rate
+  return trunc2(base * factor / rate)
 }
 
 function computeTotalsFromResolved(items, L, rate) {
-  let subtotal = 0
+  let sum = 0
   for (const item of items) {
-    subtotal += resolveUnitPriceFor(item, L, rate) * Number(item.qty)
+    sum += trunc2(resolveUnitPriceFor(item, L, rate) * Number(item.qty))
   }
-  const vat = L.showVat ? subtotal * L.summaryVatPercent / 100 : 0
-  return { subtotal, vat, grandTotal: subtotal + vat }
+  const subtotal = roundHalfUp(sum, 2)
+  const vat = L.showVat ? trunc2(subtotal * L.summaryVatPercent / 100) : 0
+  return { subtotal, vat, grandTotal: roundHalfUp(subtotal + vat, 2) }
 }
 
 /**
- * Pure totals of the continuous bill (invoice/foreign currency, unrounded) — same logic the builder prints.
+ * Pure totals of the continuous bill (invoice/foreign currency) — same logic the builder prints.
+ * Every figure is truncated (cut, not rounded) to 2 decimals so the printed rows add up exactly.
  */
 export function computeBillTotals(invoice, layout) {
   const L = resolveLayout(layout)
@@ -293,9 +304,9 @@ export function buildBillPrintModel(invoice, layout, options = {}) {
     let itemNo = currentPage * L.maxRowsPerPage + 1
 
     for (const item of pageItems) {
-      const tagAfterDisc = Number(item.appraisalPrice) * (1 - Number(item.discountPercent) / 100)
+      const tagAfterDisc = trunc2(Number(item.appraisalPrice) * (1 - Number(item.discountPercent) / 100))
       const unitPrice = resolveUnitPrice(item)
-      const lineAmount = unitPrice * Number(item.qty)
+      const lineAmount = trunc2(unitPrice * Number(item.qty))
 
       if (L.showItemNo) left(String(itemNo), L.xItemNo, y, ifs)
       if (L.showDescription) left(item.productNameEN || '', L.xItemDesc, y, ifs)
@@ -307,7 +318,7 @@ export function buildBillPrintModel(invoice, layout, options = {}) {
 
       // priceBeforeDiscount column = appraisalPrice (cost price, unchanged)
       if (L.showPriceBeforeDiscount) {
-        right(money(item.appraisalPrice), L.xPriceBeforeDiscount, y, ifs)
+        right(money(trunc2(item.appraisalPrice)), L.xPriceBeforeDiscount, y, ifs)
       }
 
       // priceIncludingVat column = tagAfterDisc (stable tag price after discount)
