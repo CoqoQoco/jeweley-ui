@@ -741,7 +741,7 @@ export function generateGt800ZPLVertical(formValue, dpiScale = 1, options = {}) 
 // GT800: ป้ายเล็ก 80×14 มม. = 640×112 dots ที่ 203 dpi — รูปทรงเดียวกับป้าย GT800 เดิม (มีหางป้าย) แต่ยาวขึ้น
 // หางป้ายซ้าย x≈0–250 (ยาวเท่าป้ายเดิม มีแค่ MADE IN THAILAND) · หัวป้ายสีขาว x≈250–640 ไม่มีแถบส้ม ใช้ได้เต็มความสูง
 // หัวป้ายพับครึ่งที่ x=445: หน้า (x 256–440) บรรทัด 1 แม่พิมพ์ - เลขที่ผลิต / บรรทัด 2 รหัสราคา+สีทอง+กะรัต น้ำหนักทอง ไซซ์ท้ายบรรทัด / บรรทัด 3 บาร์โค้ด
-// หลัง (x 450–628) รายการพลอยเรียงตามลำดับ master (labelSort) — เว้นขอบขวา ~12 dots เพราะยังไม่ได้วัดขอบกระดาษจริง
+// หลัง (x 450–628) รายการพลอยเรียงตามลำดับ master (labelSort) 1 พลอยต่อแถวเสมอ — เว้นขอบขวา ~12 dots เพราะยังไม่ได้วัดขอบกระดาษจริง
 // ข้อความทุกบรรทัดต้องไม่ข้ามแนวพับ (เว้นขอบ ~5 dots ทั้งสองฝั่ง) — ย่อฟอนต์อัตโนมัติเมื่อยาว
 // ─────────────────────────────────────────────────────────────
 
@@ -775,11 +775,7 @@ const GT800_S_LINE_HEIGHT_RATIO = 1.3 // สูง/กว้าง สูงส�
 const GT800_S_GEM_TOP = 8
 const GT800_S_GEM_BOTTOM = 104
 const GT800_S_GEM_FONT = 18 // สูงสูงสุด
-const GT800_S_GEM_MIN_W = 10
-const GT800_S_GEM_MIN_H = 10
-const GT800_S_GEM_ABSOLUTE_MIN_W = 8
 const GT800_S_GEM_CHAR_W = 0.46
-const GT800_S_GEM_MAX_PER_ROW = 4
 
 // ลำดับพลอยสำรอง (ใช้เมื่อ API ยังไม่ส่ง labelSort) — DI, RU, SA, EM, PS, YS, AM, BT, CI, GA, PE
 const GT800_S_GEM_FALLBACK_ORDER = ['DI', 'RU', 'SA', 'EM', 'PS', 'YS', 'AM', 'BT', 'CI', 'GA', 'PE']
@@ -906,34 +902,16 @@ function fitGt800SmallLine(text, budget) {
   return { font: [height, size], overflow: false }
 }
 
-function joinGemRows(texts, perRow) {
-  const rows = []
-  for (let i = 0; i < texts.length; i += perRow) {
-    rows.push(texts.slice(i, i + perRow).join(GT800_GEM_PAIR_SEPARATOR))
-  }
-  return rows
-}
-
-// จัดแถวพลอยหลังป้าย: เริ่ม 1 ต่อแถว (≥5 รายการ = 2 ต่อแถว) แล้วเพิ่มจำนวนต่อแถวจนฟอนต์ไม่เล็กเกินขั้นต่ำ
+// จัดแถวพลอยหลังป้าย: 1 พลอยต่อแถวเสมอ (ไม่จับคู่) · สูง = min(18, พื้นที่/จำนวนแถว) · กว้างบีบให้แถวยาวสุดไม่เกินขอบขวา
 function layoutGt800SmallGems(texts) {
   if (texts.length === 0) return { rows: [], font: [GT800_S_GEM_FONT, GT800_S_GEM_FONT], lineHeight: GT800_S_GEM_FONT }
 
   const budget = GT800_S_BACK_RIGHT - GT800_S_BACK_X
   const stack = GT800_S_GEM_BOTTOM - GT800_S_GEM_TOP
-  const start = texts.length >= GT800_GEM_PAIR_THRESHOLD ? 2 : 1
-
-  let result = null
-  for (let perRow = start; perRow <= GT800_S_GEM_MAX_PER_ROW; perRow++) {
-    const rows = joinGemRows(texts, perRow)
-    const height = Math.min(GT800_S_GEM_FONT, Math.floor(stack / rows.length))
-    const width = Math.min(GT800_S_GEM_FONT, Math.floor(budget / (longestLength(rows) * GT800_S_GEM_CHAR_W)))
-    result = { rows, height, width }
-    if (height >= GT800_S_GEM_MIN_H && width >= GT800_S_GEM_MIN_W) break
-  }
-
-  const width = Math.max(GT800_S_GEM_ABSOLUTE_MIN_W, result.width)
-  const height = Math.max(GT800_S_GEM_MIN_H, result.height)
-  return { rows: result.rows, font: [height, width], lineHeight: height }
+  const rows = texts
+  const height = Math.max(1, Math.min(GT800_S_GEM_FONT, Math.floor(stack / rows.length)))
+  const width = Math.max(1, Math.min(height, GT800_S_GEM_FONT, Math.floor(budget / (longestLength(rows) * GT800_S_GEM_CHAR_W))))
+  return { rows, font: [height, width], lineHeight: height }
 }
 
 // ไซซ์สินค้า (เบอร์แหวน/ความยาวสร้อย) -> '#54' — ตัด # ซ้ำ, ว่าง/0/ไม่มีตัวเลข = ''

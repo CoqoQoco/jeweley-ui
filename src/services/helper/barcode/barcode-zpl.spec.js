@@ -1253,6 +1253,34 @@ describe('ป้าย 80×14 มม. มีหางป้าย (GT800)', () =
       })
     })
 
+    const fiveGems = ['17 Diamond 0.074 ct., G,VS1', '5 Ruby 0.15 ct., 1.5 SQ', '6 Sapphire 0.24 ct., 1.5 SQ', '4 Emerald 0.15 ct., 1.5 SQ', '2 Yellow Sapphire 0.14 ct., 1.5 SQ']
+
+    it.each([true, false])('พลอย 5 รายการ abbreviateGems=%s -> 1 พลอยต่อแถว สูง 18 ไม่ล้นขอบขวา', (abbreviateGems) => {
+      const layout = layoutGt800Small({ ...base, gems: fiveGems, abbreviateGems })
+      expect(layout.gemRows.length).toBe(5)
+      expect(layout.gemLineHeight).toBe(18)
+      layout.gemRows.forEach((row) => {
+        expect(row).not.toContain('  ')
+        expect(row.length * layout.gemFont[1] * 0.46).toBeLessThanOrEqual(178)
+      })
+    })
+
+    it.each([9, 11])('พลอย %i รายการ ชื่อเต็ม -> แถว = จำนวน ไม่เกิน 96 dots ไม่ล้นขอบขวา', (count) => {
+      const gems = Array.from({ length: count }, (_, i) => `${i + 1}Diamond 0.${i + 10} ct., G,VS1`)
+      const layout = layoutGt800Small({ ...base, gems, abbreviateGems: false })
+      expect(layout.gemRows.length).toBe(count)
+      expect(layout.gemRows.length * layout.gemLineHeight).toBeLessThanOrEqual(96)
+      layout.gemRows.forEach((row) => {
+        expect(row.length * layout.gemFont[1] * 0.46).toBeLessThanOrEqual(178)
+      })
+    })
+
+    it('พลอย 10 รายการ ย่อ -> ความกว้างฟอนต์ไม่เกินความสูง', () => {
+      const gems = Array.from({ length: 10 }, (_, i) => `${i + 1}Diamond 0.${i + 10} ct., G,VS1`)
+      const layout = layoutGt800Small({ ...base, gems, abbreviateGems: true })
+      expect(layout.gemFont[1]).toBeLessThanOrEqual(layout.gemFont[0])
+    })
+
     it('ZPL: ^LL112, บรรทัดข้อความ, บาร์โค้ด, พลอยเริ่ม x=450 เรียงตาม labelSort', () => {
       const meta = buildGemLabelMeta([
         { code: 'RU', labelCode: 'RU', labelSort: 1 },
