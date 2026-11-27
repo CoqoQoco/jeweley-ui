@@ -101,6 +101,24 @@
         </span>
       </template>
 
+      <template #tagTemplate="{ data }">
+        <template v-if="tagBadge(data).kind !== 'none'">
+          <router-link
+            v-if="tagBadge(data).kind !== 'bound' && canBindTag"
+            :to="bindLocation(data.stockNumber, data.productCode)"
+            class="tag-chip tag-chip--link"
+            :class="`tag-chip--${tagBadge(data).kind}`"
+            :title="$t('view.stock.product.tag.goBindTitle', { stockNumber: data.stockNumber })"
+          >
+            <i class="bi" :class="tagIcon(data)" aria-hidden="true"></i>{{ tagBadgeText(data) }}
+          </router-link>
+          <span v-else class="tag-chip" :class="`tag-chip--${tagBadge(data).kind}`">
+            <i class="bi" :class="tagIcon(data)" aria-hidden="true"></i>{{ tagBadgeText(data) }}
+          </span>
+        </template>
+        <span v-else>—</span>
+      </template>
+
       <template #expansion="slotProps">
         <div>
           <dataExpand :modelForm="slotProps"></dataExpand>
@@ -124,6 +142,8 @@ import { getPieceQty, getPieceQtyReserved, getPieceQtyAvailable } from '@/servic
 import { mergeBalanceIntoItems } from '@/composables/useStockBalanceMerge.js'
 import { formatDate } from '@/services/utils/dayjs.js'
 import { stripStockNumberDash } from '@/services/helper/stock-number.js'
+import { hasRfidBindAccess, hasRfidViewAccess } from '@/services/permission/stock-rfid-access.js'
+import { bindLocation, tagBadgeState } from '../stock-tag-logic.js'
 import { formatWoText } from '@/views/stock/price-review/price-review-helpers.js'
 import {
   formatMoney2,
@@ -180,6 +200,12 @@ export default {
     form() {
       return this.modelForm || {}
     },
+    canViewTag() {
+      return hasRfidViewAccess()
+    },
+    canBindTag() {
+      return hasRfidBindAccess()
+    },
     columns() {
       return [
         {
@@ -209,6 +235,18 @@ export default {
           sortable: true,
           minWidth: '180px'
         },
+        ...(this.canViewTag
+          ? [
+              {
+                field: 'tag',
+                header: this.$t('view.stock.product.tag.column'),
+                sortable: false,
+                minWidth: '150px',
+                align: 'center',
+                bodyTemplate: 'tagTemplate'
+              }
+            ]
+          : []),
         {
           field: 'productNumber',
           header: this.$t('view.stock.product.productNumber'),
@@ -362,6 +400,22 @@ export default {
     },
 
     stripStockNumberDash,
+    bindLocation,
+
+    tagIcon(data) {
+      const { kind } = tagBadgeState(data)
+      if (kind === 'bound') return 'bi-check-circle'
+      return kind === 'partial' ? 'bi-dash-circle' : 'bi-link-45deg'
+    },
+
+    tagBadge(data) {
+      return tagBadgeState(data)
+    },
+
+    tagBadgeText(data) {
+      const { kind, bound, total } = tagBadgeState(data)
+      return this.$t(`view.stock.product.tag.badge${kind === 'bound' ? 'Bound' : kind === 'partial' ? 'Partial' : 'Unbound'}`, { bound, total })
+    },
 
     formatDecimal,
     getPieceQty,
@@ -401,7 +455,8 @@ export default {
         take: this.take,
         sort: this.sort,
         formValue: this.form,
-        skipLoading: false
+        // โหมดอ่านแท็กยิงซ้ำระหว่างอ่าน — ไม่บังจอด้วย loading overlay
+        skipLoading: !!this.form.pieces
       })
       await this.mergeBalanceIntoItems()
     },
@@ -492,6 +547,39 @@ export default {
   &--stale {
     border-color: var(--base-warning);
     color: var(--base-sub-color);
+  }
+
+  &--bound,
+  &--partial,
+  &--unbound {
+    gap: var(--sp-xs);
+    align-items: center;
+    font-size: var(--fs-sm);
+  }
+
+  &--bound {
+    border-color: var(--base-green);
+    color: var(--base-green);
+  }
+
+  &--partial {
+    border-color: var(--base-warning);
+    color: var(--base-font-color);
+  }
+
+  &--unbound {
+    color: var(--base-sub-color);
+  }
+
+  &--link {
+    gap: var(--sp-xs);
+    align-items: center;
+    text-decoration: none;
+
+    &:hover {
+      border-color: var(--base-font-color);
+      color: var(--base-font-color);
+    }
   }
 }
 </style>

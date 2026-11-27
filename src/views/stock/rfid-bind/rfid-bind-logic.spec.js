@@ -24,6 +24,7 @@ import {
   mergePlanUnits,
   normalizePlanSearch,
   blockEpcsOnTray,
+  settleBlockEpcs,
   planTextOf,
   isPlanQueued,
   epcsNeedingCheck,
@@ -227,6 +228,17 @@ describe('buildListRequest', () => {
     expect(body.receiptDateFrom).toMatch(/\+07:00$/)
     expect(body.receiptDateTo).toMatch(/\+07:00$/)
     expect(receiptRange('').receiptDateFrom).toBeUndefined()
+  })
+})
+
+describe('settle window', () => {
+  const batch = [{ epc: 'A' }, { epc: 'B' }]
+  it('ในช่วง settle บล็อกทุก EPC ที่อ่านได้', () => {
+    expect(settleBlockEpcs(batch, 5000, 4000)).toEqual(['A', 'B'])
+  })
+  it('หมดช่วงหรือไม่ได้ตั้งไว้ = ไม่บล็อก', () => {
+    expect(settleBlockEpcs(batch, 5000, 5000)).toEqual([])
+    expect(settleBlockEpcs(batch, 0, 1)).toEqual([])
   })
 })
 

@@ -157,6 +157,38 @@
         <materialTable :items="item.materials || []" variant="full" />
       </SectionCardGeneric>
 
+      <SectionCardGeneric
+        v-if="canViewTag"
+        :title="$t('view.stock.product.tag.detail.title')"
+        headerStyle="legend"
+        icon="bi-broadcast"
+        accent="main"
+      >
+        <div class="tag-summary">
+          <div class="tag-summary__text">
+            <strong>{{ $t('view.stock.product.tag.detail.summary', { bound: tagBound, total: tagActiveUnits.length }) }}</strong>
+            <span v-if="tagSoldCount" class="tag-note">{{ $t('view.stock.product.tag.detail.soldNote', { count: tagSoldCount }) }}</span>
+          </div>
+          <ButtonGeneric
+            v-if="canBindTag && tagBound < tagActiveUnits.length"
+            variant="main"
+            icon="bi-tag"
+            :label="$t('view.stock.product.tag.detail.goBind')"
+            @click="goBind"
+          />
+        </div>
+        <DataTableWithPaging
+          v-if="tagUnits.length"
+          :items="tagRows"
+          :totalRecords="tagRows.length"
+          dataKey="unitId"
+          :columns="tagColumns"
+          :paginator="false"
+          :perPage="tagRows.length"
+        />
+        <p v-else class="tag-empty">{{ $t('view.stock.product.tag.detail.empty') }}</p>
+      </SectionCardGeneric>
+
       <div class="detail-bottom">
         <SectionCardGeneric :title="$t('view.stock.product.balanceTitle')" headerStyle="legend" icon="bi-box-seam" accent="main">
           <balancePanel :item="item" />
@@ -253,10 +285,15 @@ import { getPieceQty } from '@/services/utils/stock-piece-qty.js'
 import { hasQuickPriceAccess } from '@/services/permission/quick-price-access.js'
 import { hasMarginAccess } from '@/services/permission/margin-access.js'
 import { normalizeCostVersions } from '@/services/helper/cost-version.js'
+import { hasRfidBindAccess, hasRfidViewAccess } from '@/services/permission/stock-rfid-access.js'
+import { pieceStatusLabel } from '@/views/stock/rfid-basket/rfid-basket-status.js'
+import { bindLocation } from '../list/stock-tag-logic.js'
+import { useStockRfidApiStore } from '@/stores/modules/api/stock/rfid-api.js'
 
 import PageHeaderGeneric from '@/components/generic/PageHeaderGeneric.vue'
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import SectionCardGeneric from '@/components/generic/SectionCardGeneric.vue'
+import DataTableWithPaging from '@/components/prime-vue/DataTableWithPaging.vue'
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import LocationSummary from '@/components/stock/location-summary.vue'
 import productShareDialog from '@/components/public/product-share-dialog.vue'
@@ -272,6 +309,8 @@ import barcode from '../list/modal/barcode-view.vue'
 import costDetailModal from '../list/components/cost-detail-modal.vue'
 import costHistoryModal from '../list/components/cost-history-modal.vue'
 
+const isSold = (unit) => unit.status === 'SOLD'
+
 const interfaceShow = {
   isUpdate: false,
   isBarcode: false
@@ -285,6 +324,7 @@ export default {
     ButtonGeneric,
     LocationSummary,
     SectionCardGeneric,
+    DataTableWithPaging,
     imagePreview,
     materialTable,
     balancePanel,
@@ -304,7 +344,8 @@ export default {
     const balanceStore = useStockBalanceApiStore()
     const locationStore = useStockLocationApiStore()
     const masterStore = useMasterApiStore()
-    return { productStore, balanceStore, locationStore, masterStore }
+    const rfidStore = useStockRfidApiStore()
+    return { productStore, balanceStore, locationStore, masterStore, rfidStore }
   },
 
   data() {
@@ -318,7 +359,8 @@ export default {
       costDetailVisible: false,
       costHistoryVisible: false,
       shareVisible: false,
-      quickPriceVisible: false
+      quickPriceVisible: false,
+      tagUnits: []
     }
   },
 
@@ -333,6 +375,51 @@ export default {
 
     canQuickPrice() {
       return hasQuickPriceAccess()
+    },
+
+    canViewTag() {
+      return hasRfidViewAccess()
+    },
+
+    canBindTag() {
+      return hasRfidBindAccess()
+    },
+
+    tagColumns() {
+      const t = (key) => this.$t(`view.stock.product.tag.detail.${key}`)
+      return [
+        { field: 'unitNo', header: t('unitNo'), sortable: false, minWidth: '80px' },
+        { field: 'location', header: t('location'), sortable: false, minWidth: '140px' },
+        { field: 'statusText', header: t('status'), sortable: false, minWidth: '120px' },
+        { field: 'epcText', header: t('epc'), sortable: false, minWidth: '260px' },
+        { field: 'boundAt', header: t('boundAt'), sortable: false, minWidth: '140px' },
+        { field: 'boundBy', header: t('boundBy'), sortable: false, minWidth: '120px' }
+      ]
+    },
+
+    tagRows() {
+      return this.tagUnits.map((unit) => ({
+        unitId: unit.unitId,
+        unitNo: unit.unitNo,
+        location: unit.locationName || unit.locationCode || '—',
+        statusText: this.unitStatusText(unit),
+        epcText: this.unitEpcText(unit),
+        boundAt: !isSold(unit) && unit.boundDate ? formatDate(unit.boundDate) : '—',
+        boundBy: (!isSold(unit) && unit.boundBy) || '—'
+      }))
+    },
+
+    // ชิ้นที่ยังอยู่ในคลัง (ชิ้นที่ขายแล้วถูกถอดแท็กตอนขาย จึงไม่นับในผูกแล้ว x/y)
+    tagActiveUnits() {
+      return this.tagUnits.filter((unit) => unit.status === 'IN_STOCK' || unit.status === 'RESERVED')
+    },
+
+    tagSoldCount() {
+      return this.tagUnits.filter((unit) => unit.status === 'SOLD').length
+    },
+
+    tagBound() {
+      return this.tagActiveUnits.filter((unit) => !!unit.epc).length
     },
 
     showCost() {
@@ -418,7 +505,35 @@ export default {
       this.notFound = false
       this.item = res
       await mergeBalanceIntoItems([this.item], { balanceStore: this.balanceStore, locationStore: this.locationStore })
-      await Promise.all([this.loadQuickPriceHistory(), this.loadNormalPriceHistory()])
+      await Promise.all([this.loadQuickPriceHistory(), this.loadNormalPriceHistory(), this.loadTags()])
+    },
+
+    async loadTags() {
+      this.tagUnits = []
+      if (!this.canViewTag || !this.item?.productCode) return
+      const res = await this.rfidStore.fetchByStock(
+        { stockNumber: this.item.stockNumber || this.stockNumber, productCode: this.item.productCode },
+        { skipLoading: true }
+      )
+      const units = Array.isArray(res?.units) ? res.units : []
+      // ล็อตที่ไม่มีแถวชิ้น (unit) แต่มีแท็กระดับล็อต -> แสดงเป็นแถวเดียวจากข้อมูลล็อต
+      this.tagUnits =
+        !units.length && res?.found && res.epc
+          ? [{ unitId: 0, unitNo: 1, status: this.item.status, locationCode: '', epc: res.epc, boundDate: res.boundDate, boundBy: null }]
+          : units
+    },
+
+    unitEpcText(unit) {
+      if (isSold(unit)) return this.$t('view.stock.product.tag.detail.removed')
+      return unit.epc || this.$t('view.stock.product.tag.detail.unbound')
+    },
+
+    unitStatusText(unit) {
+      return pieceStatusLabel({ unitId: unit.unitId, unitStatus: unit.status }, (key) => this.$t(key)) || '—'
+    },
+
+    goBind() {
+      this.$router.push(bindLocation(this.item.stockNumber || this.stockNumber, this.item.productCode))
     },
 
     async loadNormalPriceHistory() {
@@ -575,6 +690,31 @@ export default {
     background: var(--color-border);
     color: var(--base-sub-color);
   }
+}
+
+.tag-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-md);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-md);
+}
+
+.tag-summary__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+}
+
+.tag-note {
+  font-size: var(--fs-sm);
+  color: var(--base-sub-color);
+}
+
+.tag-empty {
+  margin: 0;
+  color: var(--base-sub-color);
 }
 
 .not-found-box {

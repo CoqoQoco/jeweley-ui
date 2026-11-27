@@ -268,6 +268,20 @@
                   />
                 </div>
 
+                <!-- tag status -->
+                <div v-if="showTag && canViewTag">
+                  <span class="title-text">{{ $t('view.stock.product.tag.filterLabel') }}</span>
+                  <DropdownGeneric
+                    :modelValue="form.tagStatus"
+                    :options="tagStatusOptions"
+                    optionLabel="description"
+                    optionValue="value"
+                    :placeholder="$t('common.label.all')"
+                    :showClear="true"
+                    @update:modelValue="form.tagStatus = $event"
+                  />
+                </div>
+
                 <!-- piece status -->
                 <div>
                   <span class="title-text">{{ $t('view.stock.product.pieceStatus') }}</span>
@@ -289,7 +303,17 @@
         </dialogView>
 
         <div class="btn-submit-container-between">
-          <div></div>
+          <div>
+            <ButtonGeneric
+              v-if="showTag && canViewTag"
+              variant="outline"
+              icon="bi-broadcast"
+              :label="$t('view.stock.product.tag.readBtn')"
+              :disabled="tagMode"
+              :title="tagMode ? $t('view.stock.product.tag.readingTitle') : null"
+              @click="$emit('readTags')"
+            />
+          </div>
           <div>
             <ButtonGeneric variant="main" icon="bi-search" type="submit" :title="$t('common.btn.search')" />
             <div class="btn-badge-wrap ml-2">
@@ -337,6 +361,7 @@ import { usrStockProductApiStore } from '@/stores/modules/api/stock/product-api.
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { useStockLocationApiStore } from '@/stores/modules/api/stock/stock-location-api.js'
 import { warning } from '@/services/alert/sweetAlerts.js'
+import { hasRfidViewAccess } from '@/services/permission/stock-rfid-access.js'
 
 import MultiSelectGeneric from '@/components/prime-vue/MultiSelectGeneric.vue'
 import DropdownGeneric from '@/components/prime-vue/DropdownGeneric.vue'
@@ -383,8 +408,18 @@ export default {
     showExport: {
       type: Boolean,
       default: true
+    },
+    showTag: {
+      type: Boolean,
+      default: false
+    },
+    tagMode: {
+      type: Boolean,
+      default: false
     }
   },
+
+  emits: ['search', 'clear', 'export', 'readTags'],
 
   computed: {
     isExportData() {
@@ -440,7 +475,8 @@ export default {
         f.hasCostDetail !== null && f.hasCostDetail !== undefined,
         !!f.pieceStatus,
         f.materials?.length > 0,
-        hasPriceRange
+        hasPriceRange,
+        this.showTag && this.canViewTag && !!f.tagStatus
       ]
       return checks.filter(Boolean).length
     },
@@ -453,6 +489,16 @@ export default {
       return [
         { value: true, description: this.$t('view.stock.product.hasCost') },
         { value: false, description: this.$t('view.stock.product.noCost') }
+      ]
+    },
+    canViewTag() {
+      return hasRfidViewAccess()
+    },
+    tagStatusOptions() {
+      return [
+        { value: 'bound', description: this.$t('view.stock.product.tag.filterBound') },
+        { value: 'unbound', description: this.$t('view.stock.product.tag.filterUnbound') },
+        { value: 'partial', description: this.$t('view.stock.product.tag.filterPartial') }
       ]
     },
     priceStatusOptions() {

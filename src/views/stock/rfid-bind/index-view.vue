@@ -150,6 +150,8 @@ import {
   markBound,
   markUnbound,
   blockEpcsOnTray,
+  SETTLE_MS,
+  settleBlockEpcs,
   mergePlanUnits,
   mergeQueue,
   nextStreak,
@@ -266,7 +268,10 @@ export default {
 
     'tray.state.value'(state, previous) {
       if (state === 'connected' && !this.userStopped) this.tray.start()
-      if (state === 'reading') this.$nextTick(() => this.focusScan())
+      if (state === 'reading') {
+        this.$nextTick(() => this.focusScan())
+        this.armSettle()
+      }
       if (state === 'disconnected' || state === 'error') this.userStopped = false
       if (previous === 'reading' && state !== 'reading') this.refresh(false)
     },
@@ -284,6 +289,8 @@ export default {
     this.ignore = new Set()
     this.pending = new Set()
     this.checkBackoff = new Map()
+    this.settleUntil = 0
+    this.settlePending = false
     this.streak = { epc: '', count: 0 }
     this.tickTimer = null
     this.flashTimer = null
@@ -298,6 +305,7 @@ export default {
     if (this.tray.supportedKinds.length) this.tray.autoReconnect()
     this.tickTimer = setInterval(() => this.refresh(false), TICK_MS)
     this.focusScan()
+    this.openFromQuery()
   },
 
   beforeUnmount() {
@@ -328,6 +336,8 @@ export default {
     },
 
     applyBatch(batch) {
+      const settled = settleBlockEpcs(batch, this.settleUntil, Date.now())
+      if (settled.length) this.blocked = blockEpcsOnTray(this.blocked, settled)
       this.trayMap = updateTray(this.trayMap, batch)
       this.refresh(true)
     },
@@ -519,6 +529,47 @@ export default {
       } else {
         this.onManualBind()
       }
+    },
+
+    // มาจากหน้าตรวจคลัง (?stock=<เลขที่ผลิต>&productCode=<ล็อต>) — ใส่ชิ้นนั้นเข้าคิวแล้วกระโดดไป
+    async openFromQuery() {
+      const code = String(this.$route.query.stock || '').trim()
+      if (!code) return
+      const productCode = String(this.$route.query.productCode || '')
+      this.$router.replace({ query: {} })
+      if (this.restoreCount > 0) await this.restoreQueue()
+      const res = await this.rfidStore.fetchResolveLabel(code)
+      const items = (res?.items || []).filter((unit) => !productCode || unit.productCode === productCode)
+      const result = decideLabelResult(items, this.queue)
+      if (result.kind === 'notFound' || result.kind === 'allBound') {
+        this.sound(playWarning)
+        this.setNotice(this.$t(`view.stock.rfidBind.scan.${result.kind}`, { code }), 'warn')
+      } else if (result.kind === 'multi') {
+        this.pickLots = result.lots.map((lot) => ({
+          key: lot.key,
+          unit: lot.unit,
+          line: this.$t('view.stock.rfidBind.scan.pickLine', {
+            no: labelNumber(lot.unit),
+            name: productName(lot.unit, this.$i18n.locale),
+            count: lot.freeCount
+          })
+        }))
+        this.pickIndex = 0
+      } else {
+        const previousId = this.currentUnit?.unitId
+        this.applyScanResult(result, code)
+        this.guardTrayOnSwitch(previousId)
+        this.settlePending = true
+        this.armSettle()
+      }
+      this.focusScan()
+    },
+
+    // เริ่มนับช่วง settle เมื่อเครื่องอ่านเริ่มอ่านจริง (แท็กที่ค้างบนถาดจากหน้าก่อนจะถูกบล็อก)
+    armSettle() {
+      if (!this.settlePending || this.tray.state.value !== 'reading') return
+      this.settlePending = false
+      this.settleUntil = Date.now() + SETTLE_MS
     },
 
     async resolveScan(code) {

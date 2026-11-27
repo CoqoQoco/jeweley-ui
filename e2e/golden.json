@@ -16,6 +16,10 @@
     "ticket-deploy-badge.spec.js": {
       "reason": "ไม่กระทบเงิน/สต็อก เป็นเครื่องมือภายในทีมพัฒนา",
       "reviewBy": "2027-02-06"
+    },
+    "stock-product-tag-mode.spec.js": {
+      "reason": "แสดงผล/กรองแบบอ่านอย่างเดียว ไม่เขียนข้อมูล ไม่กระทบเงินหรือสต็อก และการสลับ unit ที่ขายแล้ว (heal ฝั่ง server ใน GetByEpcs) ทดสอบบน mock ไม่ได้ การผูกจริงอยู่ใน rfid-bind.spec.js ที่อยู่ golden แล้ว",
+      "reviewBy": "2027-02-27"
     }
   }
 }

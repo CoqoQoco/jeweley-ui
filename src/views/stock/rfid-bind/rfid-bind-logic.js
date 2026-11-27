@@ -376,6 +376,14 @@ export function blockEpcsOnTray(blocked, onTray) {
   return next
 }
 
+// หลังกระโดดมาจากหน้าอื่น (?stock=) แท็กที่ค้างบนถาดอ่านครั้งแรกในช่วง settle ห้ามผูก — มีแต่แท็กที่วางหลังจากนั้นเท่านั้น
+export const SETTLE_MS = 2000
+
+export function settleBlockEpcs(batch, settleUntil, now) {
+  if (!settleUntil || now >= settleUntil) return []
+  return batch.map((item) => item.epc)
+}
+
 // "6906025/21" จากชิ้น (มี wo + woNumber) ไม่มีคืนค่าว่าง
 export function planTextOf(unit) {
   if (!unit || !unit.wo || unit.woNumber === null || unit.woNumber === undefined || unit.woNumber === '') return ''
