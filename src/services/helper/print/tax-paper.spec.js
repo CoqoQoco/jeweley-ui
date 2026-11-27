@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isTaxContinuousPaper, getTaxPaperConfig, defaultTaxVatPercent, isTaxVatPercentLocked } from './tax-paper.js'
+import { isTaxContinuousPaper, getTaxPaperConfig, defaultTaxVatPercent, isTaxVatPercentLocked, defaultTaxVatMode, isTaxVatModeLocked } from './tax-paper.js'
 import { buildContinuousPrintModel } from './continuous-print-payload.js'
 import { vi } from 'vitest'
 
@@ -60,12 +60,18 @@ describe('buildContinuousPrintModel - tax VAT %', () => {
 
   it('uses taxVatPercent and logs it (v1 and v2)', async () => {
     for (const paper of ['vat-bridge', 'vat-bridge-v2']) {
-      const { model, logPayload } = await run(paper, { taxVatPercent: 7 })
+      const { model, logPayload } = await run(paper, { taxVatPercent: 7, taxVatMode: 'exclude' })
       const texts = model.pages[0].map((p) => p.text)
       expect(texts).toContain('1,041.23')
       expect(texts).toContain('15,915.99')
       expect(logPayload.taxVatPercent).toBe(7)
     }
+  })
+
+  it('defaults to include for THB vat 0 invoice and logs taxVatMode', async () => {
+    const { model, logPayload } = await run('vat-bridge', { taxVatPercent: 7 })
+    expect(model.pages[0].map((p) => p.text)).toContain('13,901.64')
+    expect(logPayload.taxVatMode).toBe('include')
   })
 
   it('taxVatPercent 0 prints 0.00 VAT', async () => {
@@ -82,5 +88,24 @@ describe('buildContinuousPrintModel - tax VAT %', () => {
     expect(vat.logPayload.taxVatPercent).toBe(7)
     expect(printData.summaryVatPercent).toBe(3)
     expect(printData.taxVatPercent).toBe(7)
+  })
+})
+
+describe('defaultTaxVatMode (TK202611250002)', () => {
+  it('THB product invoice saved with vat 0 => include', () => {
+    expect(defaultTaxVatMode({ vatPercent: 0, currencyUnit: 'THB' })).toBe('include')
+    expect(defaultTaxVatMode({ vatPercent: 0 })).toBe('include')
+  })
+  it('saved vat 7 => exclude', () => {
+    expect(defaultTaxVatMode({ vatPercent: 7, currencyUnit: 'THB' })).toBe('exclude')
+  })
+  it('US$ => exclude', () => {
+    expect(defaultTaxVatMode({ vatPercent: 0, currencyUnit: 'US$' })).toBe('exclude')
+  })
+  it('MATERIAL => exclude and locked', () => {
+    const inv = { invoiceType: 'MATERIAL', vatPercent: 0, currencyUnit: 'THB' }
+    expect(defaultTaxVatMode(inv)).toBe('exclude')
+    expect(isTaxVatModeLocked(inv)).toBe(true)
+    expect(isTaxVatModeLocked({ invoiceType: 'PRODUCT' })).toBe(false)
   })
 })

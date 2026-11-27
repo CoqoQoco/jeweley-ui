@@ -40,3 +40,19 @@ export function defaultTaxVatPercent(invoiceData) {
   const unit = String(invoiceData?.currencyUnit || 'THB').trim().toUpperCase()
   return unit === 'THB' ? 7 : 0
 }
+
+export const TAX_VAT_MODE_INCLUDE = 'include'
+export const TAX_VAT_MODE_EXCLUDE = 'exclude'
+
+// MATERIAL (INVM): ราคาในใบยังไม่รวม VAT เสมอ จึงล็อกวิธีคิดเป็น exclude
+export function isTaxVatModeLocked(invoiceData) {
+  return isMaterialInvoice(invoiceData)
+}
+
+// ใบสินค้า THB ที่บันทึก vatPercent=0 = ราคาในใบรวม VAT แล้ว → ถอด VAT ก่อนแล้วบวกท้ายบิล
+export function defaultTaxVatMode(invoiceData) {
+  if (isTaxVatModeLocked(invoiceData)) return TAX_VAT_MODE_EXCLUDE
+  const unit = String(invoiceData?.currencyUnit || 'THB').trim().toUpperCase()
+  if (unit === 'THB' && Number(invoiceData?.vatPercent) === 0) return TAX_VAT_MODE_INCLUDE
+  return TAX_VAT_MODE_EXCLUDE
+}

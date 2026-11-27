@@ -70,7 +70,7 @@ function resolveLayout(layout, layoutKey) {
  * Build a generic print model for the VAT invoice format.
  * @param {object} invoice - invoice data matching the shape used in index-view.vue
  * @param {object|null} layout - saved layout JSON from getVatLayout() (may already have offset applied)
- * @param {object} [options] - { printerName, showDecimals, layoutKey ('vat' | 'vat-v2') }
+ * @param {object} [options] - { printerName, showDecimals, layoutKey ('vat' | 'vat-v2'), vatMode ('include' | 'exclude', default 'exclude') }
  * @returns {{ printerName: string|null, paper: object, pages: Array }}
  */
 export function buildVatPrintModel(invoice, layout, options = {}) {
@@ -84,17 +84,22 @@ export function buildVatPrintModel(invoice, layout, options = {}) {
 
   const currencyRate = Number(invoice.currencyRate) || 1
 
-  let subtotal = 0
-  for (const item of invoice.items || []) {
-    const priceAfterDisc = Number(item.appraisalPrice) * (1 - Number(item.discountPercent) / 100)
-    const convertedPrice = priceAfterDisc / currencyRate
-    subtotal += convertedPrice * Number(item.qty)
-  }
-
   const rawVatPercent = Number(invoice.vatPercent) !== 0 ? Number(invoice.vatPercent) : (Number(invoice.vat) || 0)
   const vatPercent = Math.min(100, Math.max(0, rawVatPercent))
-  const totalAfterDiscount = subtotal - Number(invoice.specialDiscount || 0) + Number(invoice.specialAddition || 0)
-  const totalBeforeVat = totalAfterDiscount + Number(invoice.freightAndInsurance || 0)
+  const isInclude = options?.vatMode === 'include' && vatPercent > 0
+  const divisor = isInclude ? 1 + vatPercent / 100 : 1
+
+  const unitNet = (item) => Number(item.appraisalPrice) * (1 - Number(item.discountPercent) / 100) / currencyRate / divisor
+
+  let subtotal = 0
+  for (const item of invoice.items || []) {
+    subtotal += unitNet(item) * Number(item.qty)
+  }
+
+  const adjustments = -Number(invoice.specialDiscount || 0) + Number(invoice.specialAddition || 0) + Number(invoice.freightAndInsurance || 0)
+  const totalBeforeVat = isInclude
+    ? subtotal + adjustments / divisor
+    : subtotal - Number(invoice.specialDiscount || 0) + Number(invoice.specialAddition || 0) + Number(invoice.freightAndInsurance || 0)
 
   const items = invoice.items || []
   const totalPages = Math.max(1, Math.ceil(items.length / L.maxRowsPerPage))
@@ -132,9 +137,11 @@ export function buildVatPrintModel(invoice, layout, options = {}) {
       left(item.productNameEN || '', L.xItemDesc, y, ifs)
 
       right(formatQtyText(item.qty), L.xItemQty, y, ifs)
-      right(money(item.appraisalPrice), L.xItemPrice, y, ifs)
+      right(money(isInclude ? unitNet(item) : item.appraisalPrice), L.xItemPrice, y, ifs)
 
-      const lineAmount = Number(item.appraisalPrice) * (1 - Number(item.discountPercent) / 100) / currencyRate * Number(item.qty)
+      const lineAmount = isInclude
+        ? unitNet(item) * Number(item.qty)
+        : Number(item.appraisalPrice) * (1 - Number(item.discountPercent) / 100) / currencyRate * Number(item.qty)
       right(money(lineAmount), L.xItemAmount, y, ifs)
 
       y += L.rowHeight
@@ -142,6 +149,9 @@ export function buildVatPrintModel(invoice, layout, options = {}) {
     }
 
     if (currentPage === totalPages - 1) {
+      // กติกาปัดทศนิยมของใบกำกับภาษี = ร้านเป็นผู้ตัดสินใจเลือก (TK202611250002) ไม่ใช่ dev
+      // ปัดจากยอดเต็มครั้งเดียว ยอดอาจต่างจากใบส่งของ (บิลต่อเนื่องที่ตัดทศนิยม) 1 สตางค์ ห้ามแก้จนกว่าร้านสั่ง
+      // โหมด include: แถวที่พิมพ์อาจบวกกันไม่เท่ายอด subtotal ที่พิมพ์ (เช่น INV261112012 แถวรวม 5,652.33 แต่พิมพ์ 5,652.34) — เป็นส่วนหนึ่งของกติกาที่ร้านเลือก ห้ามแก้
       // ยอดต้องบวกกันลงตัวบนกระดาษ: ปัด subtotal ก่อน แล้ว VAT คิดจากยอดที่ปัดแล้ว ปัดอีกครั้ง รวม = subtotal + VAT
       const scale = showDecimals ? 2 : 0
       const totalBeforeVatRounded = roundHalfUp(totalBeforeVat, scale)

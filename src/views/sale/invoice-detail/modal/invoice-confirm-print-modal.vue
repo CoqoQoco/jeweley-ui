@@ -563,6 +563,27 @@
             </div>
 
             <div v-if="isTaxPaper" class="form-group mb-3">
+              <FormFieldGeneric :label="$t('view.sale.invoiceDetail.taxVatModeLabel')">
+                <RadioGroupGeneric
+                  v-model="taxVatMode"
+                  :options="taxVatModeOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  :disabled="isTaxVatModeLocked"
+                />
+              </FormFieldGeneric>
+              <small v-if="isTaxVatModeLocked" class="form-text text-muted">
+                {{ $t('view.sale.invoiceDetail.taxVatModeLockedHint') }}
+              </small>
+              <small v-else-if="taxVatMode === 'include' && Number(taxVatPercent) > 0" class="form-text text-muted">
+                {{ $t('view.sale.invoiceDetail.taxVatModeIncludeHint') }}
+              </small>
+              <small v-else-if="taxVatMode === 'exclude'" class="form-text text-muted">
+                {{ $t('view.sale.invoiceDetail.taxVatModeExcludeHint') }}
+              </small>
+            </div>
+
+            <div v-if="isTaxPaper" class="form-group mb-3">
               <div class="row">
                 <div class="col-6">
                   <label class="form-label">
@@ -652,7 +673,7 @@ import { getBarcodePrinterName } from '@/services/api/barcode-printer-config.js'
 import { pickDocumentPrinter, isBarcodePrinter, confirmIfBarcodePrinter } from '@/services/helper/print/document-printer-guard.js'
 import { getBillLayout } from '@/services/helper/print/bill-layout-store.js'
 import { getVatLayout } from '@/services/helper/print/vat-layout-store.js'
-import { TAX_PAPER, isTaxContinuousPaper, getTaxPaperConfig, isTaxVatPercentLocked, defaultTaxVatPercent } from '@/services/helper/print/tax-paper.js'
+import { TAX_PAPER, isTaxContinuousPaper, getTaxPaperConfig, isTaxVatPercentLocked, defaultTaxVatPercent, defaultTaxVatMode, isTaxVatModeLocked } from '@/services/helper/print/tax-paper.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
 import { isMaterialInvoice } from '@/constants/invoice-types.js'
 import { DRAFT_INVOICE_NUMBER } from '@/services/helper/print/so-draft-bill.js'
@@ -748,6 +769,7 @@ export default {
       defaultBillPrinter: null,
       defaultTaxPrinters: {},
       taxVatPercent: 7,
+      taxVatMode: 'exclude',
       billElementFlags: {
         // Header
         showInvoiceNo: true,
@@ -827,6 +849,17 @@ export default {
         { value: 'addVat', label: this.$t('view.sale.invoiceDetail.priceModeAddVat') },
         { value: 'subVat', label: this.$t('view.sale.invoiceDetail.priceModeSubVat') }
       ]
+    },
+
+    taxVatModeOptions() {
+      return [
+        { value: 'include', label: this.$t('view.sale.invoiceDetail.taxVatModeInclude') },
+        { value: 'exclude', label: this.$t('view.sale.invoiceDetail.taxVatModeExclude') }
+      ]
+    },
+
+    isTaxVatModeLocked() {
+      return isTaxVatModeLocked(this.invoiceData)
     },
 
     productCodeModeOptions() {
@@ -928,6 +961,7 @@ export default {
       return {
         paperSize: this.paperSize,
         taxVatPercent: this.taxVatPercent,
+        taxVatMode: this.taxVatMode,
         offsetX: this.continuousOffset.x,
         offsetY: this.continuousOffset.y,
         billOffsetX: this.billOffset.x,
@@ -958,6 +992,7 @@ export default {
           this.fetchPrintLogs()
           this.billVatTouched = false
           this.taxVatPercent = defaultTaxVatPercent(this.invoiceData)
+          this.taxVatMode = defaultTaxVatMode(this.invoiceData)
           this.applyBillVatDefault()
         }
       },
@@ -1352,6 +1387,7 @@ export default {
         paperSize: this.paperSize,
         continuousOffset: { ...this.continuousOffset },
         taxVatPercent: this.isTaxVatLocked ? defaultTaxVatPercent(this.invoiceData) : (Number(this.taxVatPercent) || 0),
+        taxVatMode: this.isTaxVatModeLocked ? 'exclude' : this.taxVatMode,
         billOffset: { ...this.billOffset },
         printerName: this.selectedPrinter,
         customRemark: (this.customRemark || '').trim(),

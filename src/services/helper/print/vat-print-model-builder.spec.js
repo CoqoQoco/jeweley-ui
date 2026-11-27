@@ -102,3 +102,39 @@ describe('buildVatPrintModel - showDecimals=false and VAT clamp', () => {
     expect(texts).toContain('200.00')
   })
 })
+
+describe('buildVatPrintModel - vatMode include (TK202611250002)', () => {
+  const rows = [3560, 7520, 4040].map((p) => ({ productNameEN: 'X', qty: 1, appraisalPrice: p, discountPercent: 60 }))
+
+  it('INV261112012 include @7% => rows ex-VAT, 5,652.34 / 395.66 / 6,048.00', () => {
+    const inv = invoiceWith(0, 7, { items: rows })
+    const texts = summaryTexts(buildVatPrintModel(inv, null, { vatMode: 'include' }))
+    for (const t of ['1,330.84', '2,811.21', '1,510.28', '5,652.34', '395.66', '6,048.00']) {
+      expect(texts).toContain(t)
+    }
+  })
+
+  it('exclude keeps the old behaviour (adds VAT on top)', () => {
+    const inv = invoiceWith(0, 7, { items: rows })
+    const texts = summaryTexts(buildVatPrintModel(inv, null, { vatMode: 'exclude' }))
+    expect(texts).toContain('6,048.00')
+    expect(texts).toContain('423.36')
+    expect(texts).toContain('6,471.36')
+  })
+
+  it('include with qty > 1 => unit 934.58, amount 2,803.74, VAT 196.26, total 3,000.00', () => {
+    const inv = invoiceWith(0, 7, { items: [{ productNameEN: 'X', qty: 3, appraisalPrice: 1000, discountPercent: 0 }] })
+    const texts = summaryTexts(buildVatPrintModel(inv, null, { vatMode: 'include' }))
+    for (const t of ['934.58', '2,803.74', '196.26', '3,000.00']) expect(texts).toContain(t)
+  })
+
+  it('include with showDecimals=false => 1,000 / 70 / 1,070', () => {
+    const texts = summaryTexts(buildVatPrintModel(invoiceWith(1070, 7), null, { vatMode: 'include', showDecimals: false }))
+    for (const t of ['1,000', '70', '1,070']) expect(texts).toContain(t)
+  })
+
+  it('include with 0% VAT behaves like exclude', () => {
+    const texts = summaryTexts(buildVatPrintModel(invoiceWith(500, 0), null, { vatMode: 'include' }))
+    expect(texts.filter((t) => t === '500.00').length).toBeGreaterThanOrEqual(3)
+  })
+})

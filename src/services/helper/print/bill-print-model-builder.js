@@ -92,6 +92,7 @@ function finiteOr(val, fallback) {
   return Number.isFinite(num) ? num : fallback
 }
 
+// กติกาตัดทศนิยม 2 ตำแหน่งไม่ปัด = ร้านเป็นผู้ตัดสินใจเลือก (TK202611240006 comment 1041) ไม่ใช่ dev — ห้ามแก้จนกว่าร้านสั่ง
 function trunc2(value) {
   const num = roundHalfUp(value, 6)
   if (!Number.isFinite(num) || num === 0) return 0

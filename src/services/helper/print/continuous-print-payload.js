@@ -4,7 +4,7 @@ import { splitBillWeights } from '@/services/helper/print/bill-gem-columns.js'
 
 import { getVatLayout } from '@/services/helper/print/vat-layout-store.js'
 import { buildVatPrintModel } from '@/services/helper/print/vat-print-model-builder.js'
-import { getTaxPaperConfig, defaultTaxVatPercent } from '@/services/helper/print/tax-paper.js'
+import { getTaxPaperConfig, defaultTaxVatPercent, defaultTaxVatMode, isTaxVatModeLocked, TAX_VAT_MODE_EXCLUDE } from '@/services/helper/print/tax-paper.js'
 import { getBillLayout } from '@/services/helper/print/bill-layout-store.js'
 import { buildBillPrintModel } from '@/services/helper/print/bill-print-model-builder.js'
 
@@ -49,8 +49,10 @@ async function buildVatModel({ paperSize, invoiceData, invoiceItems, printData, 
     vatPercent: Math.min(100, Math.max(0, Number(printData.taxVatPercent ?? defaultTaxVatPercent(invoiceData)) || 0))
   }
 
-  const model = buildVatPrintModel(vatInvoice, mergedLayout, { printerName: printData.printerName ?? null, showDecimals: printData.showDecimals, layoutKey: taxPaper.layoutKey })
-  const logPayload = { flags: null, taxVatPercent: vatInvoice.vatPercent, billOffset: null, continuousOffset: printData.continuousOffset, printerName: printData.printerName, template: printData.invoiceTemplate, mergeSilverLines: !!printData.mergeSilverLines }
+  const vatMode = isTaxVatModeLocked(invoiceData) ? TAX_VAT_MODE_EXCLUDE : (printData.taxVatMode ?? defaultTaxVatMode(invoiceData))
+
+  const model = buildVatPrintModel(vatInvoice, mergedLayout, { printerName: printData.printerName ?? null, showDecimals: printData.showDecimals, layoutKey: taxPaper.layoutKey, vatMode })
+  const logPayload = { flags: null, taxVatPercent: vatInvoice.vatPercent, taxVatMode: vatMode, billOffset: null, continuousOffset: printData.continuousOffset, printerName: printData.printerName, template: printData.invoiceTemplate, mergeSilverLines: !!printData.mergeSilverLines }
 
   return { model, logPayload }
 }
