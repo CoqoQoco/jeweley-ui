@@ -6,24 +6,48 @@ export const useStockRfidApiStore = defineStore('stockRfidApi', {
   actions: {
     // { epc, tid?, stockNumber, productCode, unitId? } -> { id, epc, tid, stockNumber, productCode, unitId, unitNo, unitStatus, unitLocationCode, unitLocationName, lotQty }
     // ไม่ส่ง unitId = server เลือกชิ้นว่างเลขต่ำสุดให้
-    async fetchBind({ epc, tid, stockNumber, productCode, unitId }) {
-      return await api.jewelry.post('StockRfid/Bind', {
-        epc,
-        tid: tid || undefined,
-        stockNumber,
-        productCode,
-        unitId: unitId || undefined
-      })
+    // options: { skipError, skipLoading } — หน้าผูกต่อเนื่องแสดง error ในหน้าเอง และไม่บังด้วย loading overlay
+    async fetchBind({ epc, tid, stockNumber, productCode, unitId }, options) {
+      return await api.jewelry.post(
+        'StockRfid/Bind',
+        {
+          epc,
+          tid: tid || undefined,
+          stockNumber,
+          productCode,
+          unitId: unitId || undefined
+        },
+        options
+      )
     },
 
     // { epc?, unitId?, stockNumber?, productCode? } -> { unbound } (ล็อตที่มีแท็กหลายชิ้นต้องระบุ epc หรือ unitId)
-    async fetchUnbind({ epc, unitId, stockNumber, productCode }) {
-      return await api.jewelry.post('StockRfid/Unbind', {
-        epc: epc || undefined,
-        unitId: unitId || undefined,
-        stockNumber,
-        productCode
-      })
+    async fetchUnbind({ epc, unitId, stockNumber, productCode }, options) {
+      return await api.jewelry.post(
+        'StockRfid/Unbind',
+        {
+          epc: epc || undefined,
+          unitId: unitId || undefined,
+          stockNumber,
+          productCode
+        },
+        options
+      )
+    },
+
+    // body (ดู buildListRequest ใน rfid-bind-logic.js) -> { total, items: [{ unitId, unitNo, lotQty, unitStatus, stockNumber, stockNumberOrigin, productCode, productNumber, productNameTh, productNameEn, productType, productTypeName, locationCode, locationName, imagePath, receiptNumber, receiptDate, epc, boundDate }] }
+    async fetchListUnits(body, options) {
+      return await api.jewelry.post('StockRfid/ListUnits', body, options)
+    },
+
+    // { search?, receiptDateFrom?, receiptDateTo?, onlyIncomplete, skip, take } -> { total, items: [{ wo, woNumber, woText, productNameTh, productNameEn, imagePath, mold, lotCount, totalUnits, unboundUnits, lastReceiptDate }] }
+    async fetchListPlans(body, options) {
+      return await api.jewelry.post('StockRfid/ListPlans', body, options)
+    },
+
+    // code (URL QR / เลขผลิตใหม่ / เลขผลิตเก่า) -> { items: [รูปแบบเดียวกับ ListUnits item] } ทุกชิ้น IN_STOCK+RESERVED ของล็อตที่ตรง ไม่เจอ = items ว่าง
+    async fetchResolveLabel(code, options) {
+      return await api.jewelry.post('StockRfid/ResolveLabel', { code }, options)
     },
 
     // epc -> { found, epc, tid, stockNumber, productCode, productName, productNumber, status, locationCode, imagePath,
@@ -33,8 +57,8 @@ export const useStockRfidApiStore = defineStore('stockRfidApi', {
     },
 
     // epcs[] -> { items: [GetByEpc shape], notFound: string[] }
-    async fetchByEpcs(epcs) {
-      return await api.jewelry.post('StockRfid/GetByEpcs', { epcs })
+    async fetchByEpcs(epcs, options) {
+      return await api.jewelry.post('StockRfid/GetByEpcs', { epcs }, options)
     },
 
     // { stockNumber, productCode } -> { found, epc, tid, boundDate, lotQty,

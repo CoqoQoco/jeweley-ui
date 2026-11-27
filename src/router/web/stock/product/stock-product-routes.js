@@ -28,6 +28,7 @@ const ShowcaseScan = () => import('@/views/showcase-scan/index-view.vue')
 const RfidTracking = () => import('@/views/receipt-stock/product/rfid-tracking/index-view.vue')
 
 const RfidBasket = () => import('@/views/stock/rfid-basket/index-view.vue')
+const RfidBind = () => import('@/views/stock/rfid-bind/index-view.vue')
 
 import { PERMISSIONS } from '@/services/permission/config.js'
 
@@ -298,6 +299,20 @@ const routes = [
           },
           minorShow: true,
           permissions: [PERMISSIONS.STOCK_RFID_VIEW]
+        }
+      },
+
+      {
+        path: '/stock/rfid-bind',
+        name: 'rfid-bind',
+        component: RfidBind,
+        meta: {
+          Displayname: {
+            en: 'Bind RFID Tags',
+            th: 'ผูกแท็ก RFID'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_RFID_BIND]
         }
       }
     ]

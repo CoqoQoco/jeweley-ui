@@ -8,6 +8,7 @@
     "plan-gold-return-weight.spec.js",
     "plan-update-process-editable.spec.js",
     "receipt-silver-lot-suggest.spec.js",
+    "rfid-bind.spec.js",
     "stock-label-full-price.spec.js",
     "ticket-my-list.spec.js"
   ],

@@ -186,6 +186,7 @@ export default {
       stockBalanceSummary: { ...stock.stockBalanceSummary },
       stockRfidTracking: { ...stock.stockRfidTracking },
       rfidBasket: { ...stock.rfidBasket },
+      rfidBind: { ...stock.rfidBind },
       convert: { ...stock.convert },
       gold: { ...stock.gold },
       gem: {
