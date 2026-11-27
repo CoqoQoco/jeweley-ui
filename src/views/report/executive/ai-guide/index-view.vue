@@ -13,6 +13,7 @@
         <div class="info-box__title">{{ $t('view.aiConnector.guide.startTitle') }}</div>
         <p class="info-box__intro">{{ $t('view.aiConnector.guide.startIntro') }}</p>
         <ul class="info-box__list">
+          <li class="info-box__emphasis">{{ $t('view.aiConnector.guide.startFreeForm') }}</li>
           <li v-for="app in appKeys" :key="app">{{ $t(`view.aiConnector.guide.app${capitalize(app)}`) }}</li>
           <li>{{ $t('view.aiConnector.guide.startAsOf') }}</li>
           <li>{{ $t('view.aiConnector.guide.startReadOnly') }}</li>
@@ -158,6 +159,11 @@ export default {
 
   &__intro {
     margin: 0 0 var(--sp-xs);
+  }
+
+  &__emphasis {
+    font-weight: 600;
+    color: var(--base-font-color);
   }
 
   &__list {

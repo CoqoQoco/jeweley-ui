@@ -64,6 +64,7 @@ describe('ai-guide-content', () => {
       ...GUIDE_NOT_YET_KEYS.map((k) => `guide.notYet.${k}`),
       ...GUIDE_TIP_KEYS.map((k) => `guide.tips.${k}`),
       'guide.tips.masked',
+      'guide.startFreeForm',
       ...GUIDE_APP_KEYS.map((k) => `guide.app${k.charAt(0).toUpperCase()}${k.slice(1)}`)
     ]
     for (const lang of [thGuide, enGuide]) {

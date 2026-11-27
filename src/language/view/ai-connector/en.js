@@ -170,6 +170,8 @@ export default {
     appClaude: 'Claude: turn on the system connector in the chat (the + button or tools menu), then ask as usual.',
     appChatgpt: 'ChatGPT: enable the system connector in the chat, then ask as usual.',
     appGemini: "Gemini: type {'@'} and pick Dk Jewelry from the list, then type your question after it.",
+    startFreeForm:
+      'These are only examples — feel free to ask anything else in your own words. If the data is in the executive report the AI can answer; if not, it will say the data is not available yet.',
     startAsOf: 'Numbers are as of the moment you ask (may lag by about 1 minute). You cannot pick a date range.',
     startReadOnly: 'The AI is read-only. It cannot edit or delete anything in the system.',
     cat: {
