@@ -3,6 +3,7 @@ const Layout = () => import('@/layout/web/LayoutDashboard.vue')
 // ---- executive overview (boss-only) ----
 const ExecutiveOverview = () => import('@/views/report/executive/index-view.vue')
 const ExecutivePlanDetail = () => import('@/views/report/executive/plan-detail/index-view.vue')
+const ExecutiveAiGuide = () => import('@/views/report/executive/ai-guide/index-view.vue')
 const ExecutiveAiConnect = () => import('@/views/report/executive/ai-connect/index-view.vue')
 
 // ---- production reports ----
@@ -115,6 +116,17 @@ const routes = [
           // router-view (LayoutDashboard.vue) remount ทั้งหน้าตอน query เปลี่ยนเฉยๆ ไม่งั้นทุก endpoint
           // (รวม ExecutiveReport/Summary ที่ไม่เกี่ยวกับช่วงเวลาเลย) ยิงซ้ำ 2 รอบทุกครั้งที่สลับช่วง/ตัวกรอง
           queryStableKey: true
+        }
+      },
+      {
+        path: '/executive/ai-guide',
+        name: 'executive-ai-guide',
+        component: ExecutiveAiGuide,
+        meta: {
+          Displayname: { en: 'AI Question Guide', th: 'คู่มือถาม AI' },
+          minorShow: true,
+          noMobileTwin: true,
+          permissions: [PERMISSIONS.EXECUTIVE_VIEW]
         }
       },
       {

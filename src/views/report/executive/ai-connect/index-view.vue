@@ -1,6 +1,10 @@
 <template>
   <div class="app-container ai-connect-page">
-    <PageHeaderGeneric :title="$t('view.aiConnector.title')" backRoute="executive" />
+    <PageHeaderGeneric :title="$t('view.aiConnector.title')" backRoute="executive">
+      <template #actions>
+        <ButtonGeneric variant="outline" icon="bi-chat-quote" :label="$t('view.aiConnector.guide.openBtn')" @click="$router.push({ name: 'executive-ai-guide' })" />
+      </template>
+    </PageHeaderGeneric>
     <p class="ai-connect-page__subtitle">{{ $t('view.aiConnector.subtitle') }}</p>
 
     <TabViewGeneric :modelValue="activeTab" :tabs="tabsConfig" variant="segmented" @update:modelValue="activeTab = $event">
@@ -29,6 +33,7 @@ import { useAiConnectorStore } from '@/stores/modules/api/ai-connector/ai-connec
 import { success } from '@/services/alert/sweetAlerts.js'
 
 import PageHeaderGeneric from '@/components/generic/PageHeaderGeneric.vue'
+import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import TabViewGeneric from '@/components/generic/TabViewGeneric.vue'
 
 import connectTab from './components/connect-tab.vue'
@@ -41,7 +46,7 @@ const TAB_VALUES = ['connect', 'connections', 'log']
 export default {
   name: 'ExecutiveAiConnect',
 
-  components: { PageHeaderGeneric, TabViewGeneric, connectTab, connectionsTab, logTab, createPatModal },
+  components: { PageHeaderGeneric, ButtonGeneric, TabViewGeneric, connectTab, connectionsTab, logTab, createPatModal },
 
   setup() {
     return { store: useAiConnectorStore() }

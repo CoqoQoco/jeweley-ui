@@ -67,3 +67,11 @@ export function formatScopeName(code, translate) {
 export function resolveLogResult(row) {
   return row?.success ? 'success' : 'error'
 }
+
+export const CONNECT_APPS = ['claude', 'chatgpt', 'gemini', 'other']
+const CONNECT_STEP_COUNT = { claude: 3, chatgpt: 3, gemini: 5, other: 3 }
+
+export function buildConnectStepKeys(app) {
+  const count = CONNECT_STEP_COUNT[app] || CONNECT_STEP_COUNT.other
+  return Array.from({ length: count }, (_, i) => `view.aiConnector.connect.${CONNECT_STEP_COUNT[app] ? app : 'other'}Step${i + 1}`)
+}

@@ -8,7 +8,9 @@ import {
   buildAccessLogParams,
   isLogFilterDefault,
   formatScopeName,
-  resolveLogResult
+  resolveLogResult,
+  buildConnectStepKeys,
+  CONNECT_APPS
 } from './ai-connect-helpers.js'
 
 const NOW = new Date('2026-11-24T10:00:00+07:00')
@@ -85,5 +87,18 @@ describe('formatScopeName / resolveLogResult', () => {
   it('maps success flag to result', () => {
     expect(resolveLogResult({ success: true })).toBe('success')
     expect(resolveLogResult({ success: false })).toBe('error')
+  })
+})
+
+describe('buildConnectStepKeys', () => {
+  it('gemini has its own 5 OAuth steps', () => {
+    expect(CONNECT_APPS).toContain('gemini')
+    expect(buildConnectStepKeys('gemini')).toEqual([1, 2, 3, 4, 5].map((n) => `view.aiConnector.connect.geminiStep${n}`))
+  })
+
+  it('claude / chatgpt have 3 steps and unknown apps fall back to other', () => {
+    expect(buildConnectStepKeys('claude')).toHaveLength(3)
+    expect(buildConnectStepKeys('chatgpt')[0]).toBe('view.aiConnector.connect.chatgptStep1')
+    expect(buildConnectStepKeys('zzz')[0]).toBe('view.aiConnector.connect.otherStep1')
   })
 })

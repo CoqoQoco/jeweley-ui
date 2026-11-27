@@ -58,6 +58,8 @@ import FormFieldGeneric from '@/components/generic/FormFieldGeneric.vue'
 import ToggleGroupGeneric from '@/components/generic/ToggleGroupGeneric.vue'
 import CopyButtonGeneric from '@/components/generic/CopyButtonGeneric.vue'
 
+import { buildConnectStepKeys } from '../ai-connect-helpers.js'
+
 export default {
   name: 'ConnectTab',
 
@@ -77,12 +79,13 @@ export default {
       return [
         { value: 'claude', label: this.$t('view.aiConnector.connect.appClaude') },
         { value: 'chatgpt', label: this.$t('view.aiConnector.connect.appChatgpt') },
+        { value: 'gemini', label: this.$t('view.aiConnector.connect.appGemini') },
         { value: 'other', label: this.$t('view.aiConnector.connect.appOther') }
       ]
     },
 
     steps() {
-      return [1, 2, 3].map((n) => this.$t(`view.aiConnector.connect.${this.app === 'other' ? 'other' : this.app}Step${n}`))
+      return buildConnectStepKeys(this.app).map((key) => this.$t(key))
     }
   },
 

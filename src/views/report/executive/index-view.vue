@@ -11,6 +11,7 @@
         />
         <ButtonGeneric variant="green" icon="bi-file-earmark-excel" :label="$t('view.executive.excel.exportAllBtn')" @click="onExportExcel" />
         <ButtonGeneric v-if="canAiConnect" variant="outline" class="ml-2" icon="bi-robot" :label="$t('view.aiConnector.openBtn')" @click="$router.push({ name: 'executive-ai-connect' })" />
+        <ButtonGeneric variant="outline" class="ml-2" icon="bi-chat-quote" :label="$t('view.aiConnector.guide.openBtn')" @click="$router.push({ name: 'executive-ai-guide' })" />
       </template>
     </DashboardHeaderGeneric>
 

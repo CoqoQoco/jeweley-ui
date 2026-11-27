@@ -31,13 +31,22 @@ describe('report-routes — executive overview', () => {
   })
 
   it('has a read-only plan-detail child route, not shown in the menu, gated by executive:view only', () => {
-    expect(executiveParent.children).toHaveLength(2)
+    expect(executiveParent.children).toHaveLength(3)
 
     const child = executiveParent.children.find((r) => r.name === 'executive-plan-detail')
     expect(child).toBeTruthy()
     expect(child.path).toBe('/executive/plan-detail/:id')
     expect(child.meta.minorShow).toBe(false)
     expect(child.meta.permissions).toEqual([PERMISSIONS.EXECUTIVE_VIEW])
+  })
+
+  it('has an AI question guide child route gated by executive:view only', () => {
+    const child = executiveParent.children.find((r) => r.name === 'executive-ai-guide')
+    expect(child).toBeTruthy()
+    expect(child.path).toBe('/executive/ai-guide')
+    expect(child.meta.permissions).toEqual([PERMISSIONS.EXECUTIVE_VIEW])
+    expect(child.meta.noMobileTwin).toBe(true)
+    expect(child.meta.queryStableKey).toBeUndefined()
   })
 
   it('redirects the parent path straight to /executive', () => {
