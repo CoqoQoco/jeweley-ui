@@ -29,6 +29,7 @@
         :icon="cat.icon"
         headerStyle="legend"
       >
+        <p v-if="cat.requires" class="cat-requires"><i class="bi bi-arrow-repeat"></i>{{ $t(categoryRequiresKey(cat.key)) }}</p>
         <ul class="question-list">
           <li v-for="item in cat.questions" :key="item.key" class="question-row">
             <div class="question-row__body">
@@ -87,6 +88,7 @@ import {
   GUIDE_APP_KEYS,
   questionTextKey,
   categoryTitleKey,
+  categoryRequiresKey,
   needsKey
 } from './ai-guide-content.js'
 
@@ -114,6 +116,7 @@ export default {
   methods: {
     questionTextKey,
     categoryTitleKey,
+    categoryRequiresKey,
     needsKey,
 
     capitalize(text) {
@@ -227,6 +230,15 @@ export default {
   border-radius: var(--radius-md);
   background: var(--status-open-bg);
   color: var(--base-font-color);
+  font-size: var(--fs-base);
+}
+
+.cat-requires {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  margin: 0 0 var(--sp-sm);
+  color: var(--base-sub-color);
   font-size: var(--fs-base);
 }
 

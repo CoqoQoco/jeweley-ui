@@ -1,9 +1,10 @@
-export const GUIDE_TOOLS = ['get_executive_summary', 'get_executive_digest', 'get_glossary']
+export const GUIDE_TOOLS = ['get_executive_summary', 'get_executive_digest', 'get_glossary', 'get_customer_production_status']
 export const GUIDE_SENSITIVE_VALUES = ['receivables', 'cost', 'customerNames', 'workerNames']
 
 const summary = 'get_executive_summary'
 const digest = 'get_executive_digest'
 const glossary = 'get_glossary'
+const customerProd = 'get_customer_production_status'
 
 // ต้องตรงกับ seed tbm_ai_glossary (20261124_01_ai_connector.sql ข้อ 9)
 export const GLOSSARY_METRIC_CODES = [
@@ -15,7 +16,9 @@ export const GLOSSARY_METRIC_CODES = [
   'weight_actual',
   'stock_gold_negative',
   'production_receipt_legacy',
-  'bottleneck'
+  'bottleneck',
+  'customer_open_plan',
+  'melted_plan'
 ]
 
 const q = (key, tool, fields, sensitive = []) => ({ key, tool, fields, sensitive })
@@ -74,6 +77,17 @@ export const GUIDE_CATEGORIES = [
     ]
   },
   {
+    key: 'customerOrders',
+    requires: true,
+    icon: 'bi-person-lines-fill',
+    questions: [
+      q('custOpenByName', customerProd, ['customerName', 'openPlanCount', 'stageCounts', 'plans'], ['customerNames']),
+      q('custOpenByCode', customerProd, ['customerCode', 'openPlanCount', 'plans']),
+      q('custOldest', customerProd, ['plans.daysSinceMove', 'plans.lastMoveDate'], ['customerNames']),
+      q('custMelted', customerProd, ['meltedCount'], ['customerNames'])
+    ]
+  },
+  {
     key: 'watch',
     icon: 'bi-binoculars',
     questions: [
@@ -96,9 +110,10 @@ export const GUIDE_CATEGORIES = [
 ]
 
 export const GUIDE_NOT_YET_KEYS = ['people', 'dateRange', 'product', 'edit']
-export const GUIDE_TIP_KEYS = ['metal', 'unpaidScope', 'followUp']
+export const GUIDE_TIP_KEYS = ['metal', 'unpaidScope', 'followUp', 'reconnect', 'reconnectTick', 'reconnectName', 'reconnectPat']
 export const GUIDE_APP_KEYS = ['claude', 'chatgpt', 'gemini']
 
 export const questionTextKey = (key) => `view.aiConnector.guide.q.${key}`
+export const categoryRequiresKey = (key) => `view.aiConnector.guide.catRequires.${key}`
 export const categoryTitleKey = (key) => `view.aiConnector.guide.cat.${key}`
 export const needsKey = (value) => `view.aiConnector.guide.needs.${value}`

@@ -32,7 +32,9 @@ const GLOSSARY_CODES = [
   'weight_actual',
   'stock_gold_negative',
   'production_receipt_legacy',
-  'bottleneck'
+  'bottleneck',
+  'customer_open_plan',
+  'melted_plan'
 ]
 
 describe('ai-guide-content', () => {
@@ -42,8 +44,8 @@ describe('ai-guide-content', () => {
     for (const q of glossaryQs) for (const f of q.fields) expect(GLOSSARY_CODES).toContain(f)
   })
 
-  it('has 7 categories with unique question keys', () => {
-    expect(GUIDE_CATEGORIES).toHaveLength(7)
+  it('has 8 categories with unique question keys', () => {
+    expect(GUIDE_CATEGORIES).toHaveLength(8)
     const keys = questions.map((q) => q.key)
     expect(new Set(keys).size).toBe(keys.length)
   })
@@ -59,6 +61,7 @@ describe('ai-guide-content', () => {
   it('every i18n key exists in both th and en, and no text has unescaped @ or |', () => {
     const paths = [
       ...GUIDE_CATEGORIES.map((c) => `guide.cat.${c.key}`),
+      ...GUIDE_CATEGORIES.filter((c) => c.requires).map((c) => `guide.catRequires.${c.key}`),
       ...questions.map((q) => `guide.q.${q.key}`),
       ...questions.flatMap((q) => q.sensitive.map((s) => `guide.needs.${s}`)),
       ...GUIDE_NOT_YET_KEYS.map((k) => `guide.notYet.${k}`),

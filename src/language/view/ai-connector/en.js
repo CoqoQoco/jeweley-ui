@@ -12,6 +12,7 @@ export default {
 
   scope: {
     module_executive: 'Executive overview reports',
+    module_production: 'Production plans by work order',
     data_customer_names: 'Customer names',
     data_worker_names: 'Worker names',
     data_cost: 'Cost and margin',
@@ -180,8 +181,12 @@ export default {
       sales: 'Sales and invoices',
       stock: 'Stock',
       loss: 'Gold/silver loss',
+      customerOrders: 'Customer orders',
       watch: 'Watch list',
       glossary: 'What the numbers mean'
+    },
+    catRequires: {
+      customerOrders: 'Reconnect, then tick "Production plans by work order"'
     },
     needs: {
       receivables: 'Requires: receivables',
@@ -191,7 +196,7 @@ export default {
     },
     notYetTitle: 'Not available yet (in development)',
     notYet: {
-      people: 'Individual customer or worker names',
+      people: 'Individual worker names or the full customer list',
       dateRange: 'Looking back over a custom date range',
       product: 'Sales by design or product',
       edit: 'Editing data in the system'
@@ -201,6 +206,10 @@ export default {
       metal: 'Say clearly whether you mean gold or silver. If you do not, the AI combines both.',
       unpaidScope: 'Outstanding amounts count only bills with no payment received at all. Partially paid bills are not included.',
       followUp: 'You can follow up on an answer, for example "only the overdue ones" or "show it as a table".',
+      reconnect: 'Reconnect the AI app or create a new PAT to use customer orders (older connections do not have this access)',
+      reconnectTick: 'Tick "Production plans by work order" on the consent page',
+      reconnectName: 'Also tick "customer names" if you search by name',
+      reconnectPat: 'A PAT without customer-name access can search only by a customer code or the exact value written in the work order, and the name stays hidden',
       masked:
         'If the AI says data is hidden, reconnect and tick that data category when you press Allow (cost also needs the view-profit permission on the web, and PAT connection codes cannot open sensitive data).'
     },
@@ -228,6 +237,10 @@ export default {
       lossOverAllowed: 'How many grams of gold loss went over the allowance in the latest month, across how many issue slips?',
       lossCompare: 'Compare gold loss with silver loss',
       lossSilver: 'What was the latest monthly silver loss percentage?',
+      custOpenByName: 'How many production jobs does customer ABC Jewelry have open, and what stage are they at?',
+      custOpenByCode: 'How many open jobs does customer code C001 have?',
+      custOldest: 'Which of customer ABC Jewelry\'s jobs has been idle the longest?',
+      custMelted: 'How many of customer ABC Jewelry\'s jobs were melted?',
       watchList: 'What should I keep an eye on right now?',
       watchCritical: 'Which area is in critical status?',
       watchSales: 'What issues in sales need attention soon?',
