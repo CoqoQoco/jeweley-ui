@@ -128,19 +128,18 @@ const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-ti
 
 ### SCSS Import (จำเป็น)
 
-ทุก component ที่ใช้ search bar 4-section ต้อง import 2 ไฟล์นี้ใน scoped style — ห้ามเขียน class ซ้ำใหม่:
+หน้าที่ใช้ `SearchBarGeneric` import **เฉพาะ** `standard-form.scss` (ให้ `.title-text`, `.form-col-container`, `.flex-group`) — ห้ามเขียน class ซ้ำใหม่:
 
 ```scss
 <style lang="scss" scoped>
-@import '@/assets/scss/custom-style/standard-search-bar';
 @import '@/assets/scss/custom-style/standard-form.scss';
 </style>
 ```
 
-- `standard-search-bar` — ให้ class `.filter-container-searchBar`, `.form-col-container`, `.flex-group`, `.btn-submit-container-between`
-- `standard-form.scss` — ให้ typography `.title-text` สำหรับ label form
+- ❌ **ห้าม import `standard-search-bar`** ในหน้าที่ใช้ `SearchBarGeneric` — กฎ `.filter-container-searchBar` (padding 10px + bg เทา) รั่วไปโดน root ของ SearchBarGeneric ผ่าน scoped data-v ทำให้ header แดงถูกบีบเข้าในกล่องเทา (TK202611270003)
+- `standard-search-bar` ใช้ต่อเฉพาะ search bar ที่เขียนมือแบบ legacy (`.filter-container-searchBar` เอง) เท่านั้น
 
-**กฎ**: ห้าม **modify** ไฟล์ทั้งสอง (legacy) — แต่ **import เพื่อ reuse** ได้เสมอ
+**กฎ**: ห้าม **modify** ไฟล์ legacy ทั้งสอง — แต่ `standard-form.scss` import เพื่อ reuse ได้
 
 ### กฎสำคัญ
 
@@ -161,7 +160,6 @@ const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-ti
 
 ```scss
 <style lang="scss" scoped>
-@import '@/assets/scss/custom-style/standard-search-bar';
 @import '@/assets/scss/custom-style/standard-form.scss';
 
 :deep(.form-col-container) {
@@ -182,11 +180,11 @@ const pageTitle = defineAsyncComponent(() => import('@/components/custom/page-ti
 
 ### SCSS Classes (มีอยู่แล้ว — reuse เสมอ)
 
-อยู่ใน `src/assets/scss/custom-style/standard-search-bar.scss`:
+อยู่ใน `standard-form.scss` (`.form-col-container`, `.flex-group`) และ `standard-search-bar.scss` (legacy hand-built เท่านั้น):
 
 | Class | หน้าที่ |
 |---|---|
-| `.filter-container-searchBar` | Wrapper: border + shadow + bg #f7f7f7 + padding 10px |
+| `.filter-container-searchBar` (legacy เท่านั้น ห้ามใช้กับ SearchBarGeneric) | Wrapper: border + shadow + bg #f7f7f7 + padding 10px |
 | `.form-col-container` | Grid auto-fit minmax(250px, 1fr), gap 10px |
 | `.flex-group` | Flex space-between (สำหรับ date range) |
 | `.btn-submit-container-between` | Flex space-between + border-top + padding-top |

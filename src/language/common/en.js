@@ -58,6 +58,7 @@ export default {
     notSpecified: 'Not specified',
     loading: 'Loading...',
     all: 'All',
+    selectedCount: '{count} selected',
     hidePrice: 'Hide price',
     labelNoDashNotice:
       'Labels now print the stock number without dashes (e.g. DK-20G-123 prints as DK20G123) to keep labels short. System data is unchanged, and existing labels with dashes still scan normally.',

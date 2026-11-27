@@ -247,7 +247,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/custom-style/standard-search-bar';
 @import '@/assets/scss/custom-style/standard-form.scss';
 
 .missing-list__summary {

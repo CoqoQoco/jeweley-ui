@@ -60,7 +60,7 @@ description: Generic wrapper components ทั้งหมด — ตรวจ�
 | `DateRangeGeneric` | `DateRangeGeneric.vue` | ช่วงวันที่เริ่มต้น-สิ้นสุด (CalendarGeneric ×2 + `.flex-group`) พร้อม validate start ≤ end + จำกัด maxRangeDays; props: `startDate`, `endDate`, `startPlaceholder`, `endPlaceholder`, `disabled`(false), `showButtonBar`(true), `maxRangeDays`(0=ไม่จำกัด); emits: `update:startDate`, `update:endDate`, `change` |
 | `AutoCompleteGeneric` | `AutoCompleteGeneric.vue` | Autocomplete รองรับ API mode + static list; props เพิ่ม `inputId`(null — forward ไป PrimeVue AutoComplete prop `inputId` ตรงๆ, ใส่ id ให้ `<input>` จริงข้างในแทน wrapper) |
 | `DropdownGeneric` | `DropdownGeneric.vue` | Dropdown select รองรับ options list + showClear; props เพิ่ม `inputId`(null — forward ไป PrimeVue Dropdown prop `inputId`, PrimeVue ใส่ id นี้ที่ `<span role="combobox">` ไม่ใช่ `<input>` จริง — **ห้ามคู่กับ `FormFieldGeneric :inputId`** เพราะ `<label for>` ชี้ `<span>` ไม่ได้ตามสเปค HTML ให้ปล่อย `FormFieldGeneric` ไม่มี `inputId` แล้วใช้ `ariaLabel` แทน), `ariaLabel`(null — forward ไป PrimeVue Dropdown prop `ariaLabel` → `aria-label` บน `<span role="combobox">`) |
-| `MultiSelectGeneric` | `MultiSelectGeneric.vue` | Multi-select พร้อม chip display + filter; props: `modelValue`, `options`, `optionLabel`('label'), `optionValue`(null), `placeholder`, `showClear`, `filter`(true), `disabled`; emits: `update:modelValue` |
+| `MultiSelectGeneric` | `MultiSelectGeneric.vue` | Multi-select พร้อม chip display + filter; props: `modelValue`, `options`, `optionLabel`('label'), `optionValue`(null), `placeholder`, `showClear`, `filter`(true), `disabled`, `maxSelectedLabels`(2 — เลือกเกินนี้ยุบเป็น chip สรุป "เลือก N รายการ"; `0` = ไม่ยุบ), `selectedItemsLabel`('' → i18n `common.label.selectedCount`; ใช้ `{count}` แทนจำนวน); chip สรุปมี `title` แสดงชื่อรายการที่เลือกทั้งหมด; emits: `update:modelValue` |
 | `CheckboxGeneric` | `CheckboxGeneric.vue` | Checkbox รองรับ binary (default) และ array mode; props: `modelValue`, `value`, `binary`(true), `label`, `disabled`; emits: `update:modelValue` |
 | `RadioGroupGeneric` | `RadioGroupGeneric.vue` | Radio button group options-based; props: `modelValue`, `options`(array), `optionLabel`('label'), `optionValue`(null=whole option), `inline`(false=stacked/true=row), `disabled`; emits: `update:modelValue` |
 | `ImagePreview` | `ImagePreview.vue` | แสดงรูปจาก Azure Blob (direct URL) |
@@ -250,6 +250,9 @@ Props สำคัญ:
 - `optionValue` — field ที่ใช้เป็น value (default: `null` = full object)
 - `filter` — แสดง search filter (default: `true`)
 - `showClear` — ปุ่มล้างค่า (default: `false`)
+- `maxSelectedLabels` — เลือกเกินจำนวนนี้ยุบเป็น chip เดียว "เลือก N รายการ" (default: `2`; `0` = ไม่ยุบ แสดงทุก chip)
+- `selectedItemsLabel` — ข้อความ chip สรุปเอง ใช้ `{count}` แทนจำนวน (default: i18n `common.label.selectedCount`)
+- chip สรุปมี `title` (native tooltip) แสดงชื่อรายการที่เลือกทั้งหมดคั่นด้วย `, ` (resolve จาก `optionLabel`/`optionValue`)
 - แสดงผลแบบ `display="chip"` อัตโนมัติ
 
 **กฎ List Page Filter (Core Principle #11)**:

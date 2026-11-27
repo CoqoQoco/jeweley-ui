@@ -28,6 +28,9 @@
     showClear   — show clear button (default: false)
     filter      — show filter input (default: true)
     disabled    — disable component
+    maxSelectedLabels — เกินจำนวนนี้ยุบเหลือ chip สรุป "เลือก N รายการ" (default: 2, 0 = ไม่ยุบ แสดงทุก chip)
+    selectedItemsLabel — ข้อความสรุปเอง ใช้ {count} แทนจำนวน (default: i18n common.label.selectedCount)
+    chip สรุปมี title (native tooltip) แสดงชื่อรายการที่เลือกทั้งหมดคั่นด้วย ", "
 
   Emits: update:modelValue
 -->
@@ -42,7 +45,13 @@
     :filter="filter"
     :disabled="disabled"
     display="chip"
-  />
+  >
+    <template v-if="isOverflow" #value>
+      <div class="p-multiselect-token" :title="selectedTitle">
+        <span class="p-multiselect-token-label">{{ summaryLabel }}</span>
+      </div>
+    </template>
+  </MultiSelect>
 </template>
 
 <script>
@@ -86,6 +95,14 @@ export default {
     disabled: {
       type: Boolean,
       default: false
+    },
+    maxSelectedLabels: {
+      type: Number,
+      default: 2
+    },
+    selectedItemsLabel: {
+      type: String,
+      default: ''
     }
   },
 
@@ -94,6 +111,35 @@ export default {
   data() {
     return {
       localValue: this.modelValue
+    }
+  },
+
+  computed: {
+    selectedCount() {
+      return Array.isArray(this.localValue) ? this.localValue.length : 0
+    },
+    isOverflow() {
+      return this.maxSelectedLabels > 0 && this.selectedCount > this.maxSelectedLabels
+    },
+    selectedTitle() {
+      if (!Array.isArray(this.localValue)) return ''
+      return this.localValue.map((v) => this.resolveLabel(v)).join(', ')
+    },
+    summaryLabel() {
+      if (this.selectedItemsLabel) {
+        return this.selectedItemsLabel.split('{count}').join(String(this.selectedCount))
+      }
+      return this.$t('common.label.selectedCount', { count: this.selectedCount })
+    }
+  },
+
+  methods: {
+    resolveLabel(value) {
+      if (!this.optionValue) {
+        return value && typeof value === 'object' ? (value[this.optionLabel] ?? '') : String(value)
+      }
+      const opt = this.options.find((o) => o[this.optionValue] === value)
+      return opt ? String(opt[this.optionLabel]) : String(value)
     }
   },
 

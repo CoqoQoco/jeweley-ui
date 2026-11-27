@@ -84,7 +84,7 @@
 | `src/components/custom/page-title.vue` | ⚠️ **อย่าแก้ตรงๆ ทั้งไฟล์** — pageTitle ใช้ร่วมกับ SectionCardGeneric ด้วย; เพิ่ม **variant/prop** (เช่น `filled`) หรือ scope ผ่าน `:deep()` ใน SearchBarGeneric เพื่อให้ header filled main เฉพาะ context search bar |
 | `src/components/generic/SearchBarGeneric.vue` | scoped style: header filled main (`:deep(.page-title-container)`), action bar segmented + primary search, focus ring, chip teal |
 | pages ที่ hand-roll search bar (เช่น `search-view.vue` ของ plan-tracking) | **migrate มาใช้ `SearchBarGeneric`** เพื่อ inherit ดีไซน์ใหม่ (ปัจจุบันเขียน `filter-container-searchBar` เอง) |
-| `standard-search-bar.scss` / `standard-form.scss` | ❌ legacy — ห้ามแก้ (import reuse เท่านั้น) |
+| `standard-search-bar.scss` / `standard-form.scss` | ❌ legacy — ห้ามแก้ · หน้าที่ใช้ SearchBarGeneric import เฉพาะ `standard-form.scss` ห้าม import `standard-search-bar` (กฎ `.filter-container-searchBar` รั่วโดน root ผ่าน scoped data-v — TK202611270003) |
 
 - delegate: **@ui-implementer** · verify: `npm run lint` + `npm run build` + chrome-mcp (`/plan-order-tracking`, catalog)
 - Design Decision Log (`docs/design-system.md`): บันทึก "search bar header → filled main + action จัดกลุ่ม"

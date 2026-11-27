@@ -162,4 +162,33 @@ padding: var(--sp-lg) var(--sp-lg) var(--sp-lg); /* ← เปลี่ยนเ
     color: var(--base-green);
   }
 }
+
+// Chip compact — ให้ MultiSelect ที่มี chip สูงเท่า input ปกติ (35px รวมขอบ ตาม overide-primeng) และสูงเท่ากันทั้งสถานะว่าง/เลือกแล้ว
+:deep(.p-multiselect) {
+  min-height: 35px;
+
+  .p-multiselect-label {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    white-space: nowrap;
+    gap: var(--sp-xs);
+    padding: 0 var(--sp-sm) !important;
+    height: 33px;
+    min-height: 33px;
+  }
+
+  .p-multiselect-label.p-placeholder {
+    height: 33px !important;
+  }
+
+  .p-multiselect-token {
+    margin: 0;
+    padding: 0 var(--sp-sm);
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+    border-radius: var(--radius-sm);
+  }
+}
 </style>
