@@ -2,6 +2,7 @@ import { initPdfMake } from '@/services/utils/pdf-make'
 import dayjs from 'dayjs'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 import { calculateGoldLossMetrics } from '@/services/utils/gold-loss-calc.js'
+import { purityKey, splitNetWeightByMetal } from '@/services/utils/gold-loss/net-weight-by-metal.js'
 
 export class WorkerWagesSuccessPdfBuilder {
   constructor(worker, dateRange, items, mode, slip = null) {
@@ -191,12 +192,6 @@ export class WorkerWagesSuccessPdfBuilder {
 
   computeTypeSummaries() {
     const map = {}
-    const purityKey = (gold, goldSize) => {
-      if (gold === 'SV') return 'SILVER'
-      if (goldSize && String(goldSize).toLowerCase() === 'silver') return 'SILVER'
-      return goldSize || gold || ''
-    }
-
     const items = this.slip ? (this.slip.items || this.items) : this.items
     for (const item of items) {
       const key = purityKey(item.gold, item.goldSize)
@@ -289,12 +284,6 @@ export class WorkerWagesSuccessPdfBuilder {
   buildGoldReturnTableContent() {
     const returnItems = (this.slip && this.slip.goldReturnItems) ? this.slip.goldReturnItems : []
     if (returnItems.length === 0) return null
-
-    const purityKey = (gold, goldSize) => {
-      if (gold === 'SV') return 'SILVER'
-      if (goldSize && String(goldSize).toLowerCase() === 'silver') return 'SILVER'
-      return goldSize || gold || ''
-    }
 
     const headerRow = [
       { text: 'Gold Size', style: 'tableHeader' },
@@ -412,14 +401,14 @@ export class WorkerWagesSuccessPdfBuilder {
 
     const returnItems = (this.slip.goldReturnItems || []).filter((r) => r.countInCalc !== false)
     const totalGoldReturnAmount = returnItems.reduce((sum, r) => sum + (r.amount ?? ((r.weight || 0) * (r.pricePerGram || 0))), 0)
-    const totalReturnWeight = returnItems.reduce((sum, r) => sum + (r.weight || 0), 0)
     const totalMoneyLoss = this.slip.totalLossAmount != null
       ? this.slip.totalLossAmount
       : (this.items || []).reduce((sum, i) => sum + (i.moneyDiff || 0), 0)
     const netPayAmount = this.slip.netPayAmount != null
       ? this.slip.netPayAmount
       : totalMoneyLoss + totalGoldReturnAmount
-    const netWeightLoss = (this.slip.totalWeightLoss || 0) + totalReturnWeight
+    const summaries = this.slip.typeSummaries?.length ? this.slip.typeSummaries : this.computeTypeSummaries()
+    const netByMetal = splitNetWeightByMetal(summaries)
 
     const returnTableContent = this.buildGoldReturnTableContent()
 
@@ -479,14 +468,16 @@ export class WorkerWagesSuccessPdfBuilder {
         fontSize: 11,
         margin: [0, 2, 0, 4]
       },
-      {
-        columns: [
-          { text: 'น้ำหนัก loss สุทธิ', alignment: 'right', bold: true, width: '*' },
-          { text: `: ${this.fmtSign2(netWeightLoss)} กรัม`, bold: true, width: 140, alignment: 'right' }
-        ],
-        fontSize: 10,
-        margin: [0, 2, 0, 0]
-      }
+      ...[['ทอง', netByMetal.gold], ['เงิน', netByMetal.silver]]
+        .filter(([, v]) => v !== null)
+        .map(([label, v]) => ({
+          columns: [
+            { text: `น้ำหนัก loss สุทธิ (${label})`, alignment: 'right', bold: true, width: '*' },
+            { text: `: ${this.fmtSign2(v)} กรัม`, bold: true, width: 140, alignment: 'right' }
+          ],
+          fontSize: 10,
+          margin: [0, 2, 0, 0]
+        }))
     )
 
     return result

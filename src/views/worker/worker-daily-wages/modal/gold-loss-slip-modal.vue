@@ -195,16 +195,16 @@
         <div class="section-card mb-3">
           <h6>{{ $t('common.field.total') }}</h6>
           <div class="summary-row">
-            <span class="summary-label">{{ $t('view.worker.workerDailyWages.colTotalWages') }}</span>
+            <span class="summary-label">{{ $t('view.worker.goldLossSlipModal.totalMoneyLoss') }}</span>
             <span class="summary-value">{{ fmt2(totalMoneyLoss) }}</span>
           </div>
           <div class="summary-row">
-            <span class="summary-label">(+) {{ $t('view.worker.goldLossSlipList.colGoldReturn') }}</span>
+            <span class="summary-label">{{ $t('view.worker.goldLossSlipModal.returnAmountLabel') }}</span>
             <span class="summary-value text-teal">+ {{ fmt2(totalGoldReturnAmount) }}</span>
           </div>
           <hr class="my-2" />
           <div class="summary-row">
-            <span class="summary-label fw-bold">{{ $t('common.btn.confirm') }}</span>
+            <span class="summary-label fw-bold">{{ $t('view.worker.goldLossSlipModal.netPay') }}</span>
             <span class="summary-value" :class="netPayAmount < 0 ? 'loss-negative' : netPayAmount > 0 ? 'loss-positive' : ''">
               {{ fmtSign(netPayAmount) }}
             </span>
@@ -217,15 +217,22 @@
             </span>
           </div>
           <div class="summary-row">
-            <span class="summary-label">{{ $t('view.worker.goldLossSlipList.colGoldReturn') }}</span>
+            <span class="summary-label">{{ $t('view.worker.goldLossSlipModal.returnWeightLabel') }}</span>
             <span class="summary-value">{{ fmt2(totalReturnWeight) }}</span>
           </div>
-          <div class="summary-row">
-            <span class="summary-label">{{ $t('view.worker.goldLossSlipList.colNetWeightLoss') }}</span>
+          <div v-if="netWeightByMetal.gold !== null" class="summary-row">
+            <span class="summary-label">{{ $t('view.worker.goldLossSlipModal.netWeightGold') }}</span>
             <span
               class="summary-value"
-              :class="netWeightLoss > 0 ? 'loss-positive' : netWeightLoss < 0 ? 'loss-negative' : ''"
-            >{{ fmtSign(netWeightLoss) }}</span>
+              :class="netWeightByMetal.gold > 0 ? 'loss-positive' : netWeightByMetal.gold < 0 ? 'loss-negative' : ''"
+            >{{ fmtSign(netWeightByMetal.gold) }}</span>
+          </div>
+          <div v-if="netWeightByMetal.silver !== null" class="summary-row">
+            <span class="summary-label">{{ $t('view.worker.goldLossSlipModal.netWeightSilver') }}</span>
+            <span
+              class="summary-value"
+              :class="netWeightByMetal.silver > 0 ? 'loss-positive' : netWeightByMetal.silver < 0 ? 'loss-negative' : ''"
+            >{{ fmtSign(netWeightByMetal.silver) }}</span>
           </div>
         </div>
 
@@ -259,6 +266,7 @@
 <script>
 import { defineAsyncComponent } from 'vue'
 import dayjs from 'dayjs'
+import { purityKey, splitNetWeightByMetal } from '@/services/utils/gold-loss/net-weight-by-metal.js'
 import api from '@/axios/axios-helper.js'
 import { formatISOString } from '@/services/utils/dayjs'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
@@ -398,8 +406,8 @@ export default {
         .reduce((sum, r) => sum + (r.weight || 0), 0)
     },
 
-    netWeightLoss() {
-      return this.totalWeightLoss + this.totalReturnWeight
+    netWeightByMetal() {
+      return splitNetWeightByMetal(this.typeSummaries)
     },
 
     totalMoneyLoss() {
@@ -417,11 +425,6 @@ export default {
     },
 
     typeSummaries() {
-      const purityKey = (gold, goldSize) => {
-        if (gold === 'SV') return 'SILVER'
-        if (goldSize && String(goldSize).toLowerCase() === 'silver') return 'SILVER'
-        return goldSize || gold || ''
-      }
       const map = {}
 
       for (const item of this.selectedItems) {
