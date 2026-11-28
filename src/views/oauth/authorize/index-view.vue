@@ -42,9 +42,9 @@
           <span>{{ $t('view.aiConnector.authorize.readOnlyNote') }}</span>
         </div>
 
-        <section v-if="scopeGroups.module.length" class="scope-group">
+        <section v-if="moduleScopes.length" class="scope-group">
           <h3 class="scope-group__title">{{ $t('view.aiConnector.authorize.scopesTitle') }}</h3>
-          <div v-for="scope in scopeGroups.module" :key="scope.code" class="scope-item">
+          <div v-for="scope in moduleScopes" :key="scope.code" class="scope-item">
             <CheckboxGeneric
               :modelValue="checked[scope.code]"
               :disabled="scope.required || !scope.available"
@@ -59,21 +59,25 @@
           </div>
         </section>
 
-        <section v-if="scopeGroups.data.length" class="scope-group">
+        <section class="scope-group">
           <h3 class="scope-group__title">{{ $t('view.aiConnector.authorize.dataScopesTitle') }}</h3>
-          <div v-for="scope in scopeGroups.data" :key="scope.code" class="scope-item">
-            <CheckboxGeneric
-              :modelValue="checked[scope.code]"
-              :disabled="scope.required || !scope.available"
-              :label="scope.nameTh"
-              @update:modelValue="checked[scope.code] = $event"
-            />
-            <div class="scope-item__desc">{{ scope.descriptionTh }}</div>
-            <div v-if="!scope.available" class="scope-item__unavailable">
-              <i class="bi bi-slash-circle"></i> {{ scope.unavailableReasonTh || $t('view.aiConnector.authorize.unavailableScope') }}
-            </div>
-          </div>
+          <ul class="data-list">
+            <li v-for="row in dataRows" :key="row.code" class="data-list__item">
+              <i :class="['bi', row.enabled ? 'bi-check-circle-fill' : 'bi-dash-circle']" aria-hidden="true"></i>
+              <span class="data-list__name">{{ dataCategoryName(row.code) }}</span>
+              <span class="data-list__state">
+                {{ row.enabled ? $t('view.aiConnector.authorize.dataCategoryOn') : $t('view.aiConnector.authorize.dataCategoryOff') }}
+              </span>
+            </li>
+          </ul>
+          <p v-if="!hasOpenData" class="data-note">{{ $t('view.aiConnector.authorize.dataNoneOpen') }}</p>
+          <p class="data-note">{{ $t('view.aiConnector.authorize.dataChangeContact') }}</p>
         </section>
+
+        <div v-if="consent.externalProviderWarningTh" class="notice notice--warn" role="note">
+          <i class="bi bi-exclamation-triangle-fill notice__icon"></i>
+          <span>{{ consent.externalProviderWarningTh }}</span>
+        </div>
 
         <div class="authorize-actions">
           <ButtonGeneric
@@ -141,7 +145,7 @@ import {
   resolveFinishResult,
   getRedirectHosts,
   resolveErrorState,
-  splitScopesByKind
+  buildDataCategoryRows
 } from './oauth-authorize-helpers.js'
 
 export default {
@@ -158,7 +162,7 @@ export default {
       state: 'loading',
       errorKey: 'invalid',
       request: buildConsentRequest(this.$route.query),
-      consent: { clientName: '', clientId: '', clientVerified: false, redirectUri: '', redirectUris: [], redirectHost: '', userDisplayName: '', denyReasonTh: '', scopes: [] },
+      consent: { clientName: '', clientId: '', clientVerified: false, redirectUri: '', redirectUris: [], redirectHost: '', userDisplayName: '', denyReasonTh: '', scopes: [], grantedCategories: [], externalProviderWarningTh: '' },
       checked: {},
       submitting: '',
       redirectUrl: ''
@@ -175,8 +179,16 @@ export default {
       return resolveDoneMessageKey(this.state, this.redirectUrl)
     },
 
-    scopeGroups() {
-      return splitScopesByKind(this.consent.scopes)
+    moduleScopes() {
+      return this.consent.scopes.filter((scope) => String(scope.kind || '').toUpperCase() !== 'DATA')
+    },
+
+    dataRows() {
+      return buildDataCategoryRows(this.consent.grantedCategories)
+    },
+
+    hasOpenData() {
+      return this.dataRows.some((row) => row.enabled)
     }
   },
 
@@ -198,12 +210,16 @@ export default {
       this.state = 'loading'
       try {
         const res = await this.store.getConsent(this.request)
-        this.consent = { ...this.consent, ...res, scopes: res?.scopes || [] }
+        this.consent = { ...this.consent, ...res, scopes: res?.scopes || [], grantedCategories: res?.grantedCategories || [] }
         this.checked = buildInitialChecked(this.consent.scopes)
         this.state = res?.canApprove ? 'ready' : 'noPermission'
       } catch (err) {
         this.showError(resolveErrorState(err))
       }
+    },
+
+    dataCategoryName(code) {
+      return this.$t(`view.aiConnector.scope.${code.replace(/[:-]/g, '_')}`)
     },
 
     showError(kind) {
@@ -426,6 +442,34 @@ export default {
   :deep(.btn) {
     min-height: 44px;
   }
+}
+
+.data-list {
+  list-style: none;
+  margin: 0 0 var(--sp-sm);
+  padding: 0;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-sm);
+    padding: var(--sp-xs) 0;
+    color: var(--base-font-color);
+  }
+
+  &__name {
+    flex: 1;
+  }
+
+  &__state {
+    font-weight: 600;
+  }
+}
+
+.data-note {
+  margin: 0 0 var(--sp-xs);
+  color: var(--base-sub-color);
+  font-size: var(--fs-base);
 }
 
 .spin {

@@ -32,6 +32,7 @@ import labelStationKeyLang from './view/label-station-key/en.js'
 import publicLang from './view/public/en.js'
 import executiveLang from './view/executive/en.js'
 import aiConnectorLang from './view/ai-connector/en.js'
+import aiAdminLang from './view/ai-admin/en.js'
 import productionInsightLang from './view/production-insight/en.js'
 import * as mobileLang from './view/mobile/en.js'
 export default {
@@ -82,6 +83,7 @@ export default {
     report: { ...reportLang },
     executive: { ...executiveLang },
     aiConnector: { ...aiConnectorLang },
+    aiAdmin: { ...aiAdminLang },
     productionInsight: { ...productionInsightLang },
     printStation: { ...printStationLang },
     labelStation: { ...labelStationLang },

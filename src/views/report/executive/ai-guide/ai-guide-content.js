@@ -110,7 +110,7 @@ export const GUIDE_CATEGORIES = [
 ]
 
 export const GUIDE_NOT_YET_KEYS = ['people', 'dateRange', 'product', 'edit']
-export const GUIDE_TIP_KEYS = ['metal', 'unpaidScope', 'followUp', 'reconnect', 'reconnectTick', 'reconnectName', 'reconnectPat']
+export const GUIDE_TIP_KEYS = ['metal', 'unpaidScope', 'followUp', 'reconnect', 'reconnectTick', 'adminOpens']
 export const GUIDE_APP_KEYS = ['claude', 'chatgpt', 'gemini']
 
 export const questionTextKey = (key) => `view.aiConnector.guide.q.${key}`

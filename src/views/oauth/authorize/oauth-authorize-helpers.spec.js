@@ -5,7 +5,7 @@ import {
   isConsentRequestComplete,
   buildInitialChecked,
   buildApprovedScopes,
-  splitScopesByKind,
+  buildDataCategoryRows,
   resolveErrorState,
   extractRedirectUrl,
   isFramed,
@@ -67,18 +67,16 @@ describe('scope selection', () => {
     })
   })
 
-  it('approves required + ticked available scopes only', () => {
-    expect(buildApprovedScopes(scopes, { 'data:cost': true, 'data:receivables': true })).toEqual([
-      'module:executive',
-      'data:cost'
-    ])
+  it('approves required + ticked available MODULE scopes only and never sends data:*', () => {
+    expect(buildApprovedScopes(scopes, { 'data:cost': true, 'data:receivables': true })).toEqual(['module:executive'])
     expect(buildApprovedScopes(scopes, {})).toEqual(['module:executive'])
   })
 
-  it('splits scopes into module and data groups', () => {
-    const groups = splitScopesByKind(scopes)
-    expect(groups.module.map((s) => s.code)).toEqual(['module:executive'])
-    expect(groups.data.map((s) => s.code)).toEqual(['data:cost', 'data:receivables'])
+  it('lists all 4 data categories with on/off from grantedCategories', () => {
+    const rows = buildDataCategoryRows([{ code: 'data:cost', nameTh: 'ต้นทุน' }])
+    expect(rows.map((r) => r.code)).toEqual(['data:customer-names', 'data:worker-names', 'data:cost', 'data:receivables'])
+    expect(rows.filter((r) => r.enabled).map((r) => r.code)).toEqual(['data:cost'])
+    expect(buildDataCategoryRows().every((r) => !r.enabled)).toBe(true)
   })
 })
 

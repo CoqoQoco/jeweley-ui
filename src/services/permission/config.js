@@ -70,6 +70,8 @@ export const PERMISSIONS = {
 
   // AI Connector (เชื่อมแอป AI อ่านรายงานบริหาร — boss-only)
   AI_CONNECT: 'ai:connect',
+  // ควบคุมการเชื่อม AI รายคน (เปิด/ปิดข้อมูล ระงับ ดูประวัติ) — Dev เท่านั้น
+  AI_ADMIN: 'ai:admin',
 
   //master
   MASTER_VIEW: 'master:view',
@@ -122,6 +124,7 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.DASHBOARD,
     PERMISSIONS.EXECUTIVE_VIEW,
     PERMISSIONS.AI_CONNECT,
+    PERMISSIONS.AI_ADMIN,
 
     PERMISSIONS.USER_VIEW,
     PERMISSIONS.USER_CREATE,

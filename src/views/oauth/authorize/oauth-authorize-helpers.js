@@ -24,6 +24,9 @@ export function isConsentRequestComplete(request) {
 }
 
 const isAvailable = (scope) => scope.available !== false
+const isDataScope = (scope) => String(scope.kind || '').toUpperCase() === 'DATA' || String(scope.code || '').startsWith('data:')
+
+export const DATA_CATEGORY_CODES = ['data:customer-names', 'data:worker-names', 'data:cost', 'data:receivables']
 
 export function buildInitialChecked(scopes = []) {
   const checked = {}
@@ -35,17 +38,14 @@ export function buildInitialChecked(scopes = []) {
 
 export function buildApprovedScopes(scopes = [], checked = {}) {
   return scopes
-    .filter((scope) => isAvailable(scope) && (scope.required || checked[scope.code]))
+    .filter((scope) => !isDataScope(scope) && isAvailable(scope) && (scope.required || checked[scope.code]))
     .map((scope) => scope.code)
 }
 
-export function splitScopesByKind(scopes = []) {
-  const groups = { module: [], data: [] }
-  scopes.forEach((scope) => {
-    const key = String(scope.kind || '').toUpperCase() === 'DATA' ? 'data' : 'module'
-    groups[key].push(scope)
-  })
-  return groups
+// หมวดข้อมูลอ่อนไหวทั้ง 4 พร้อมสถานะเปิด/ปิดของบัญชีนี้ (Dev เป็นคนเปิด — หน้า consent แสดงอย่างเดียว)
+export function buildDataCategoryRows(grantedCategories = []) {
+  const granted = new Set((Array.isArray(grantedCategories) ? grantedCategories : []).map((item) => item?.code))
+  return DATA_CATEGORY_CODES.map((code) => ({ code, enabled: granted.has(code) }))
 }
 
 // 400 = คำขอไม่ถูกต้อง/หมดอายุ · 503 = ระบบยังไม่เปิดใช้ · 401 = session หมด (axios-helper พาไป login แล้วกลับหน้านี้เอง)

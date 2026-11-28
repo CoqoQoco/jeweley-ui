@@ -140,6 +140,19 @@ const routes = [
         }
       },
       {
+        path: '/setting/ai-admin',
+        name: 'ai-admin',
+        component: () => import('@/views/setting/ai-admin/index-view.vue'),
+        meta: {
+          Displayname: {
+            en: 'AI Connection Control',
+            th: 'ควบคุมการเชื่อม AI'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.AI_ADMIN]
+        }
+      },
+      {
         path: '/label-station-key',
         name: 'label-station-key',
         component: () => import('@/views/label-station-key/index-view.vue'),
