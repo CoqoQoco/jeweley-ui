@@ -236,3 +236,26 @@ describe('buildBillPrintModel - truncation to 2 decimals (continuous bill)', () 
     expect(buildBillPrintModel(mk([99.99]), { ...LAYOUT, showVat: true, summaryVatPercent: 7 }).totals.vat).toBe(6.99)
   })
 })
+
+describe('buildBillPrintModel - customer address newlines', () => {
+  it('splits explicit newlines into separate lines', () => {
+    const inv = { ...makeInvoice([]), customer: { name: 'C', address: 'a1\nb2\r\nc3' } }
+    const texts = buildBillPrintModel(inv, LAYOUT).pages[0].map((p) => p.text)
+    expect(texts).toEqual(expect.arrayContaining(['a1', 'b2', 'c3']))
+  })
+
+  it('caps address at 3 lines at default layout and never reaches the items area', () => {
+    const long = Array.from({ length: 80 }, (_, i) => 'word' + i).join(' ')
+    const inv = { ...makeInvoice([]), customer: { name: 'C', address: long } }
+    const prims = buildBillPrintModel(inv, LAYOUT).pages[0].filter((p) => p.x === 1.2 && p.text.startsWith('word'))
+    expect(prims).toHaveLength(3)
+  })
+
+  it('caps to 1 line when the items start right below the address', () => {
+    const inv = { ...makeInvoice([]), customer: { name: 'C', address: 'a1\nb2\nc3' } }
+    const layout = { ...LAYOUT, customerAddress: { x: 1.2, y: 2.15 }, itemsStart: { x: 0, y: 2.3 } }
+    const texts = buildBillPrintModel(inv, layout).pages[0].map((p) => p.text)
+    expect(texts).toContain('a1')
+    expect(texts).not.toContain('b2')
+  })
+})

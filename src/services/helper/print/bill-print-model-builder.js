@@ -1,5 +1,6 @@
 import { convertAmountToThaiText } from '@/services/utils/thai-baht-text.js'
 import { roundHalfUp } from '@/services/utils/money.js'
+import { wrapAddressLines } from '@/services/helper/print/print-text.js'
 
 const MM_TO_INCH = 1 / 25.4
 const RIGHT_ALIGN_WIDTH = 0.9
@@ -31,31 +32,6 @@ function formatDate(dateStr, useBuddhistYear) {
 
 function flag(L, key) {
   return L[key] !== undefined ? L[key] : true
-}
-
-function wrapText(text, maxChars) {
-  if (!text) return []
-  const words = String(text).split(/\s+/)
-  const lines = []
-  let current = ''
-  for (const word of words) {
-    if (word.length === 0) continue
-    if (word.length > maxChars) {
-      if (current.length > 0) { lines.push(current); current = '' }
-      for (let i = 0; i < word.length; i += maxChars) {
-        lines.push(word.slice(i, i + maxChars))
-      }
-    } else if (current.length === 0) {
-      current = word
-    } else if (current.length + 1 + word.length <= maxChars) {
-      current += ' ' + word
-    } else {
-      lines.push(current)
-      current = word
-    }
-  }
-  if (current.length > 0) lines.push(current)
-  return lines
 }
 
 const SO_LABEL = 'SO No. '
@@ -287,7 +263,11 @@ export function buildBillPrintModel(invoice, layout, options = {}) {
     if (L.showCustomerName) left(customerName, L.xCustomerName, L.yCustomerName, cfs)
     if (L.showCustomerTaxId) left(customerTaxId, L.xCustomerTaxId, L.yCustomerTaxId, cfs)
     if (L.showCustomerAddress) {
-      const addressLines = wrapText(customerAddress, L.customerAddressMaxChars)
+      const addressLines = wrapAddressLines(
+        customerAddress,
+        L.customerAddressMaxChars,
+        Math.min(3, Math.max(1, Math.floor((L.yItemsStart - L.yCustomerAddress) / L.rowHeight + 1e-6)))
+      )
       addressLines.forEach((line, i) => {
         left(line, L.xCustomerAddress, L.yCustomerAddress + i * L.rowHeight, cfs)
       })

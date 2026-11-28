@@ -1,10 +1,36 @@
 import { convertAmountToThaiText } from '@/services/utils/thai-baht-text.js'
 import { roundHalfUp } from '@/services/utils/money.js'
 import { formatQtyText } from '@/services/helper/pdf/shared/pdf-format.js'
+import { wrapAddressLines } from '@/services/helper/print/print-text.js'
 import { getVatLayoutDefaults, VAT_LAYOUT_KEY } from '@/services/helper/print/vat-layout-defaults.js'
 
 const MM_TO_INCH = 1 / 25.4
 const RIGHT_ALIGN_WIDTH = 0.9
+// ที่อยู่ลูกค้าห่อที่ 70 ตัวอักษร/บรรทัด จำนวนบรรทัดสูงสุดคิดจากช่องว่างถึงช่องถัดไปที่อยู่ต่ำกว่า (เลขผู้เสียภาษี/ชื่อ/เริ่มรายการ) ตาม layout (clamp 1-3)
+// ถ้าได้ 1 บรรทัด (เช่น vat-v2 ที่เลขผู้เสียภาษีอยู่ใต้ที่อยู่) พิมพ์ทั้งที่อยู่บรรทัดเดียว ไม่ตัดข้อความ (TK202611280003)
+const ADDRESS_LINES_CAP = 3
+// ประมาณ 12 ตัวอักษร/นิ้ว ที่ฟอนต์ 12pt (TH Sarabun) — ค่าประมาณ ต้องยืนยันบนกระดาษจริง
+const CHARS_PER_INCH_AT_12PT = 12
+const ADDRESS_RIGHT_GAP_INCH = 0.1
+const PAGE_RIGHT_EDGE_INCH = 8.5
+const MIN_ADDRESS_FONT_SIZE = 8
+
+function addressMaxChars(L, lines) {
+  const top = L.yCustomerAddress - L.rowHeight
+  const bottom = L.yCustomerAddress + lines * L.rowHeight
+  const xs = [[L.xDate, L.yDate], [L.xInvoiceNo, L.yInvoiceNo]]
+    .filter(([x, y]) => x > L.xCustomerAddress && y >= top && y <= bottom)
+    .map(([x]) => x)
+  const room = (xs.length ? Math.min(...xs) - ADDRESS_RIGHT_GAP_INCH : PAGE_RIGHT_EDGE_INCH) - L.xCustomerAddress
+  return Math.max(1, Math.floor(room * CHARS_PER_INCH_AT_12PT * 12 / L.headerFontSize))
+}
+
+function addressLineLimit(L) {
+  const next = [L.yCustomerTaxId, L.yCustomerName, L.yItemsStart].filter(y => y > L.yCustomerAddress)
+  if (next.length === 0) return ADDRESS_LINES_CAP
+  const gap = Math.min(...next) - L.yCustomerAddress
+  return Math.min(ADDRESS_LINES_CAP, Math.max(1, Math.floor(gap / L.rowHeight + 1e-6)))
+}
 
 function n0(val) {
   return Number(val).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
@@ -82,6 +108,7 @@ export function buildVatPrintModel(invoice, layout, options = {}) {
   const showDecimals = options?.showDecimals ?? true
   const money = (val) => showDecimals ? n2(val) : n0(val)
 
+  const addressLines = addressLineLimit(L)
   const currencyRate = Number(invoice.currencyRate) || 1
 
   const rawVatPercent = Number(invoice.vatPercent) !== 0 ? Number(invoice.vatPercent) : (Number(invoice.vat) || 0)
@@ -126,7 +153,16 @@ export function buildVatPrintModel(invoice, layout, options = {}) {
     const customerAddress = invoice.customer?.address || ''
     left(customerName, L.xCustomerName, L.yCustomerName, hfs)
     left(customerTaxId, L.xCustomerTaxId, L.yCustomerTaxId, hfs)
-    left(customerAddress, L.xCustomerAddress, L.yCustomerAddress, hfs)
+    if (addressLines === 1) {
+      const oneLine = String(customerAddress).split(/\r?\n/).map(t => t.trim()).filter(Boolean).join(' ')
+      const maxChars = addressMaxChars(L, 1)
+      const fit = oneLine.length > maxChars ? Math.max(MIN_ADDRESS_FONT_SIZE, hfs * maxChars / oneLine.length) : hfs
+      if (oneLine) left(oneLine, L.xCustomerAddress, L.yCustomerAddress, fit)
+    } else {
+      wrapAddressLines(customerAddress, addressMaxChars(L, addressLines), addressLines).forEach((line, i) => {
+        left(line, L.xCustomerAddress, L.yCustomerAddress + i * L.rowHeight, hfs)
+      })
+    }
 
     const pageItems = items.slice(currentPage * L.maxRowsPerPage, (currentPage + 1) * L.maxRowsPerPage)
     let y = L.yItemsStart

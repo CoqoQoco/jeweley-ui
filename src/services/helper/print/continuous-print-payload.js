@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import { isWalkInCustomer } from '@/services/helper/pdf/certificate/certificate-data.js'
 import { groupInvoiceLinesForPrint } from '@/services/utils/invoice-line-merge.js'
 import { splitBillWeights } from '@/services/helper/print/bill-gem-columns.js'
 
@@ -19,6 +20,26 @@ const BILL_FLAG_KEYS = [
   'unitPriceMode', 'productCodeMode', 'unitVatPercent', 'summaryVatPercent'
 ]
 
+// TK202611280003: ชื่อ/ที่อยู่/เลขผู้เสียภาษีใช้จาก master ลูกค้า (tbm_customer) ก่อน ว่างค่อยใช้ snapshot ของ invoice
+// มีผลกับใบเก่าตอนพิมพ์ซ้ำด้วย (พิมพ์ตามข้อมูล master ปัจจุบัน)
+export function resolvePrintCustomer(invoiceData) {
+  const d = invoiceData || {}
+  const useMaster = !isWalkInCustomer(d.customerCode)
+  const pick = (master, snapshot) => {
+    const m = useMaster ? master : ''
+    return m ? { value: m, source: 'master' } : { value: snapshot || '', source: 'snapshot' }
+  }
+  const name = pick(d.customerMasterName, d.customerName)
+  const address = pick(d.customerMasterAddress, d.customerAddress)
+  const taxId = pick(d.customerMasterTaxId, d.customerTaxId)
+  return {
+    name: name.value,
+    address: address.value,
+    taxId: taxId.value,
+    source: { name: name.source, address: address.source, taxId: taxId.source }
+  }
+}
+
 async function buildVatModel({ paperSize, invoiceData, invoiceItems, printData, invoiceNo, invoiceDate }) {
   const taxPaper = getTaxPaperConfig(paperSize)
   const layout = await getVatLayout(taxPaper.layoutKey)
@@ -27,15 +48,12 @@ async function buildVatModel({ paperSize, invoiceData, invoiceItems, printData, 
     ? { ...layout, offsetX: (layout.offsetX ?? 0) + (offsetMm.x || 0), offsetY: (layout.offsetY ?? 0) + (offsetMm.y || 0) }
     : (offsetMm.x || offsetMm.y ? { offsetX: offsetMm.x, offsetY: offsetMm.y } : null)
 
+  const customer = resolvePrintCustomer(invoiceData)
   const vatInvoice = {
     invoiceNo,
     invoiceDate: dayjs(invoiceDate).format('YYYY-MM-DD'),
-    customer: {
-      name: invoiceData.customerName || '',
-      address: invoiceData.customerAddress || '',
-      taxId: invoiceData.customerTaxId || ''
-    },
-    customerTaxId: invoiceData.customerTaxId || '',
+    customer: { name: customer.name, address: customer.address, taxId: customer.taxId },
+    customerTaxId: customer.taxId,
     items: (invoiceItems || []).map(i => ({
       productNameEN: i.productNameEN || i.description || i.productNumber || '',
       qty: Number(i.qty) || 0,
@@ -52,7 +70,7 @@ async function buildVatModel({ paperSize, invoiceData, invoiceItems, printData, 
   const vatMode = isTaxVatModeLocked(invoiceData) ? TAX_VAT_MODE_EXCLUDE : (printData.taxVatMode ?? defaultTaxVatMode(invoiceData))
 
   const model = buildVatPrintModel(vatInvoice, mergedLayout, { printerName: printData.printerName ?? null, showDecimals: printData.showDecimals, layoutKey: taxPaper.layoutKey, vatMode })
-  const logPayload = { flags: null, taxVatPercent: vatInvoice.vatPercent, taxVatMode: vatMode, billOffset: null, continuousOffset: printData.continuousOffset, printerName: printData.printerName, template: printData.invoiceTemplate, mergeSilverLines: !!printData.mergeSilverLines }
+  const logPayload = { customer, flags: null, taxVatPercent: vatInvoice.vatPercent, taxVatMode: vatMode, billOffset: null, continuousOffset: printData.continuousOffset, printerName: printData.printerName, template: printData.invoiceTemplate, mergeSilverLines: !!printData.mergeSilverLines }
 
   return { model, logPayload }
 }
@@ -76,15 +94,12 @@ async function buildBillModel({ invoiceData, invoiceItems, printData, invoiceNo,
 
   const gemColumnMap = printData.gemColumnMap || {}
 
+  const customer = resolvePrintCustomer(invoiceData)
   const billInvoice = {
     invoiceNo,
     invoiceDate: dayjs(invoiceDate).format('YYYY-MM-DD'),
-    customer: {
-      name: invoiceData.customerName || '',
-      address: invoiceData.customerAddress || '',
-      taxId: invoiceData.customerTaxId || ''
-    },
-    customerTaxId: invoiceData.customerTaxId || '',
+    customer: { name: customer.name, address: customer.address, taxId: customer.taxId },
+    customerTaxId: customer.taxId,
     soNumbers: collectSoNumbers(invoiceData, invoiceItems),
     customRemark: String(printData.customRemark || '').trim(),
     items: (invoiceItems || []).map(i => {
@@ -122,6 +137,7 @@ async function buildBillModel({ invoiceData, invoiceItems, printData, invoiceNo,
 
   const model = buildBillPrintModel(billInvoice, layoutPayload, { printerName: printData.printerName ?? null, showDecimals: printData.showDecimals })
   const logPayload = {
+    customer,
     unitPriceMode: printData.unitPriceMode,
     productCodeMode: printData.productCodeMode,
     customRemark: String(printData.customRemark || '').trim(),

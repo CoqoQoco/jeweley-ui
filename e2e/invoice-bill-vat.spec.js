@@ -78,4 +78,26 @@ test.describe('บิลกระดาษต่อเนื่อง VAT ท้
     }
     api.assertNoLeak()
   })
+
+  test('พิมพ์ชื่อ/ที่อยู่/เลขผู้เสียภาษีจาก master ลูกค้า (TK202611280003) ไม่ใช่ snapshot ใบแจ้งหนี้', async ({ page }) => {
+    const fx = buildInvoiceFixture({ vat: 7, lines: LINES })
+    Object.assign(fx.invoice, {
+      customerName: 'ชื่อเก่าใน invoice',
+      customerAddress: 'ที่อยู่เก่า',
+      customerTaxId: '1111111111111',
+      customerMasterName: 'บริษัท มาสเตอร์ จำกัด',
+      customerMasterAddress: '99 ถนนทดสอบ\nแขวงทดสอบ เขตทดสอบ',
+      customerMasterTaxId: '0105500000001'
+    })
+    const { api } = await openBillPrintDrawer(page, fx)
+    const model = await printAndCaptureBridge(page, api)
+    const texts = model.pages[0].map((p) => p.text)
+    expect(texts).toContain('บริษัท มาสเตอร์ จำกัด')
+    expect(texts).toContain('99 ถนนทดสอบ')
+    expect(texts).toContain('แขวงทดสอบ เขตทดสอบ')
+    expect(texts).toContain('0105500000001')
+    expect(texts).not.toContain('ชื่อเก่าใน invoice')
+    expect(texts).not.toContain('1111111111111')
+    api.assertNoLeak()
+  })
 })

@@ -69,4 +69,32 @@ test.describe('ใบกำกับภาษีกระดาษต่อเ�
     expect(api.callsTo('PrintLayout/vat-v2').length).toBeGreaterThan(0)
     api.assertNoLeak()
   })
+
+  for (const [label, paper] of [['แบบเดิม', PAPER_OLD], ['แบบใหม่ (v2)', PAPER_V2]]) {
+    test(`พิมพ์ชื่อ/ที่อยู่/เลขผู้เสียภาษีจาก master ลูกค้า (TK202611280003) ${label}`, async ({ page }) => {
+      const fx = buildInvoiceFixture({ vat: 0, lines: LINES })
+      Object.assign(fx.invoice, {
+        customerName: 'ชื่อเก่าใน invoice',
+        customerAddress: 'ที่อยู่เก่า',
+        customerTaxId: '1111111111111',
+        customerMasterName: 'บริษัท มาสเตอร์ จำกัด',
+        customerMasterAddress: '99 ถนนทดสอบ\nแขวงทดสอบ เขตทดสอบ',
+        customerMasterTaxId: '0105500000001'
+      })
+      const { api } = await openBillPrintDrawer(page, fx, { paper })
+      const model = await printAndCaptureBridge(page, api)
+      const texts = model.pages[0].map((p) => p.text)
+      expect(texts).toContain('บริษัท มาสเตอร์ จำกัด')
+      if (paper === PAPER_V2) {
+        expect(texts).toContain('99 ถนนทดสอบ แขวงทดสอบ เขตทดสอบ')
+      } else {
+        expect(texts).toContain('99 ถนนทดสอบ')
+        expect(texts).toContain('แขวงทดสอบ เขตทดสอบ')
+      }
+      expect(texts).toContain('0105500000001')
+      expect(texts).not.toContain('ชื่อเก่าใน invoice')
+      expect(texts).not.toContain('1111111111111')
+      api.assertNoLeak()
+    })
+  }
 })

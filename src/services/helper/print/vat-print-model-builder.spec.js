@@ -138,3 +138,61 @@ describe('buildVatPrintModel - vatMode include (TK202611250002)', () => {
     expect(texts.filter((t) => t === '500.00').length).toBeGreaterThanOrEqual(3)
   })
 })
+
+describe('buildVatPrintModel - customer address wrapping', () => {
+  const addrPrims = (model, y) => model.pages[0].filter((p) => Math.abs(p.y - y) < 0.0001 && Math.abs(p.x - VAT_LAYOUT_DEFAULTS.vat.customerAddress.x) < 0.0001)
+
+  it('splits explicit newlines into separate lines at rowHeight spacing', () => {
+    const D = VAT_LAYOUT_DEFAULTS.vat
+    const model = buildVatPrintModel(invoiceWith(100, 7, { customer: { name: 'A', address: 'line1\nline2\r\nline3' } }), null)
+    const texts = model.pages[0].map((p) => p.text)
+    expect(texts).toEqual(expect.arrayContaining(['line1', 'line2', 'line3']))
+    expect(addrPrims(model, D.customerAddress.y)[0].text).toBe('line1')
+    expect(addrPrims(model, D.customerAddress.y + D.rowHeight)[0].text).toBe('line2')
+    expect(addrPrims(model, D.customerAddress.y + 2 * D.rowHeight)[0].text).toBe('line3')
+  })
+
+  it('wraps a long address at 70 chars and caps at 3 lines', () => {
+    const long = Array.from({ length: 60 }, (_, i) => 'word' + i).join(' ')
+    const model = buildVatPrintModel(invoiceWith(100, 7, { customer: { name: 'A', address: long } }), null)
+    const D = VAT_LAYOUT_DEFAULTS.vat
+    const lines = [0, 1, 2, 3].map((i) => addrPrims(model, D.customerAddress.y + i * D.rowHeight)[0]?.text)
+    expect(lines[0].length).toBeLessThanOrEqual(56)
+    expect(lines[1]).toBeTruthy()
+    expect(lines[2]).toBeTruthy()
+    expect(lines[3]).toBeUndefined()
+  })
+})
+
+describe('buildVatPrintModel - customer address on vat-v2 (tax id directly below)', () => {
+  const D2 = VAT_LAYOUT_DEFAULTS['vat-v2']
+  const addrAtX = (model) => model.pages[0].filter((p) => Math.abs(p.x - D2.customerAddress.x) < 0.0001 && p.y >= D2.customerAddress.y - 0.0001 && p.y < D2.itemsStart.y)
+
+  it('long address stays one full primitive (no truncation)', () => {
+    const long = Array.from({ length: 60 }, (_, i) => 'word' + i).join(' ')
+    const model = buildVatPrintModel(invoiceWith(100, 7, { customer: { name: 'A', address: long }, customerTaxId: 'TAX1' }), null, { layoutKey: 'vat-v2' })
+    const prims = addrAtX(model).filter((p) => p.text.startsWith('word0'))
+    expect(prims).toHaveLength(1)
+    expect(prims[0].text).toBe(long)
+    expect(prims[0].fontSize).toBe(8)
+  })
+
+  it('address longer than the room shrinks font proportionally (60 chars fit at 12pt)', () => {
+    const addr = 'x'.repeat(80)
+    const model = buildVatPrintModel(invoiceWith(100, 7, { customer: { name: 'A', address: addr } }), null, { layoutKey: 'vat-v2' })
+    const p = model.pages[0].find((q) => q.text === addr)
+    expect(p.fontSize).toBeCloseTo(12 * 60 / 80, 5)
+  })
+
+  it('short address keeps header font size', () => {
+    const model = buildVatPrintModel(invoiceWith(100, 7, { customer: { name: 'A', address: 'short' } }), null, { layoutKey: 'vat-v2' })
+    expect(model.pages[0].find((q) => q.text === 'short').fontSize).toBe(12)
+  })
+
+  it('newline address is joined with a space into one primitive', () => {
+    const model = buildVatPrintModel(invoiceWith(100, 7, { customer: { name: 'A', address: 'line1\nline2' } }), null, { layoutKey: 'vat-v2' })
+    const texts = model.pages[0].map((p) => p.text)
+    expect(texts).toContain('line1 line2')
+    expect(texts).not.toContain('line1')
+  })
+})
