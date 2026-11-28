@@ -77,7 +77,7 @@
                   <i class="bi bi-arrow-clockwise"></i>
                 </span>
               </button>
-              <button class="btn btn-sm btn-green" @click="saveBOM" :disabled="!hasTransactionData">
+              <button v-if="canEdit" class="btn btn-sm btn-green" @click="saveBOM" :disabled="!hasTransactionData">
                 <span>
                   <i class="bi bi-calendar-check"></i>
                 </span>
@@ -115,6 +115,7 @@
                     optionLabel="nameTh"
                     optionValue="code"
                     class="w-full md:w-14rem"
+                    :disabled="!canEdit"
                     @update:modelValue="onMatchCodeChange($event, slotProps.data, slotProps.index)"
                   >
                   </Dropdown>
@@ -141,6 +142,7 @@
                   step="any"
                   min="0"
                   required
+                  :disabled="!canEdit"
                   @blur="onBluePrice(slotProps.data, slotProps.index, 'quantity')"
                 />
               </template>
@@ -164,6 +166,7 @@
                   step="any"
                   min="0"
                   required
+                  :disabled="!canEdit"
                   @blur="onBluePrice(slotProps.data, slotProps.index, 'price')"
                 />
               </template>
@@ -183,6 +186,7 @@ import Dropdown from 'primevue/dropdown'
 /* eslint-enable no-restricted-imports */
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
+import { hasProductionEditAccess } from '@/services/permission/production-access.js'
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usePlanBOMApiStore } from '@/stores/modules/api/plan/plan-bom-store.js'
 
@@ -266,6 +270,9 @@ export default {
   },
 
   computed: {
+    canEdit() {
+      return hasProductionEditAccess()
+    },
     model() {
       return this.modelValue
     },

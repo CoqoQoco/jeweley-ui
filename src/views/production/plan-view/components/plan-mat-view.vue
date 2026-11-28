@@ -7,7 +7,7 @@
           <span>{{ $t('view.production.planView.matSectionTitle') }}</span>
         </div>
         <div>
-          <div class="btn-add" :title="$t('common.btn.add')" type="button" @click="onShowFormMaterialUpdate">
+          <div v-if="canEdit" class="btn-add" :title="$t('common.btn.add')" type="button" @click="onShowFormMaterialUpdate">
             <span class="bi bi-plus"></span>
           </div>
         </div>
@@ -123,6 +123,7 @@ import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs.js'
 import api from '@/axios/axios-helper.js'
 
+import { hasProductionEditAccess } from '@/services/permission/production-access.js'
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
 import planOverview from './plan-overview.vue'
 
@@ -155,9 +156,13 @@ export default {
     modelHerder() {
       return this.modelValue
     },
+    canEdit() {
+      return hasProductionEditAccess()
+    },
     matColumns() {
+      const actionColumn = this.canEdit ? [{ field: 'action', header: '', minWidth: '60px', sortable: false }] : []
       return [
-        { field: 'action', header: '', minWidth: '60px', sortable: false },
+        ...actionColumn,
         { field: 'goldNavigation', header: this.$t('view.production.planView.colGoldType'), minWidth: '120px', sortable: false },
         { field: 'goldSizeNavigation', header: this.$t('view.production.planView.colGoldPercent'), minWidth: '100px', sortable: false },
         { field: 'goldQty', header: this.$t('view.production.planView.colGoldQty'), minWidth: '80px', sortable: false },
@@ -178,7 +183,7 @@ export default {
         { field: 'goldReceipt', header: this.$t('view.production.planView.colGoldReceipt'), minWidth: '100px', sortable: false },
         { field: 'bookNo', header: this.$t('view.production.planView.colBookNo'), minWidth: '80px', sortable: false },
         { field: 'no', header: this.$t('common.field.code'), minWidth: '80px', sortable: false },
-        { field: 'cost', header: this.$t('common.field.price'), minWidth: '80px', sortable: false },
+        ...(this.canEdit ? [{ field: 'cost', header: this.$t('common.field.price'), minWidth: '80px', sortable: false }] : []),
         { field: 'assignDate', header: this.$t('view.production.planView.colAssignDate'), minWidth: '150px', sortable: false }
       ]
     }

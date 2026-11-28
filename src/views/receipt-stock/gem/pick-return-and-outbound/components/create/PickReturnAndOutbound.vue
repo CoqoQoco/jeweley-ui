@@ -205,6 +205,13 @@
       </form>
     </div>
 
+    <duplicateModal
+      :isShow="isShowDuplicate"
+      :rows="duplicateRows"
+      @confirm="onDuplicateConfirm"
+      @back="isShowDuplicate = false"
+    ></duplicateModal>
+
     <confirm
       :isShow="isShowConfirm"
       :modelForm="gemsReturn"
@@ -228,6 +235,9 @@ import api from '@/axios/axios-helper.js'
 
 import dataExpand from './PickReturnAndOutboundExpand.vue'
 import confirm from './ConfirmView.vue'
+import duplicateModal from './duplicate-outbound-modal.vue'
+import { buildCheckItems, buildDuplicateRows } from './duplicate-outbound-helpers.js'
+import { useGemReturnApiStore } from '@/stores/modules/api/stock/gem-return-api.js'
 
 export default {
   components: {
@@ -235,11 +245,18 @@ export default {
     Column,
     dataExpand,
     confirm,
+    duplicateModal,
     pdf
+  },
+  setup() {
+    const gemReturnStore = useGemReturnApiStore()
+    return { gemReturnStore }
   },
   data() {
     return {
       isShowConfirm: false,
+      isShowDuplicate: false,
+      duplicateRows: [],
       modelMasterType: [
         { id: 1, description: 'รับเข้าคลัง [พลอยใหม่]' },
         { id: 2, description: 'รับเข้าคลัง [พลอยนอกสต๊อก]' },
@@ -254,10 +271,22 @@ export default {
     }
   },
   methods: {
-    onSubmit() {
-      if (this.validateData()) {
-        this.isShowConfirm = true
+    async onSubmit() {
+      if (!this.validateData()) return
+
+      // เช็กเบิกซ้ำอีกรอบตอนบันทึก — เจอซ้ำให้ถามยืนยัน ไม่บล็อกเด็ดขาด
+      const items = buildCheckItems(this.gemsReturn)
+      const duplicates = items.length ? await this.gemReturnStore.checkDuplicateOutbound(items) : []
+      if (duplicates.length) {
+        this.duplicateRows = buildDuplicateRows(this.gemsReturn, duplicates)
+        this.isShowDuplicate = true
+        return
       }
+      this.isShowConfirm = true
+    },
+    onDuplicateConfirm() {
+      this.isShowDuplicate = false
+      this.isShowConfirm = true
     },
     validateData() {
       let isValid = true

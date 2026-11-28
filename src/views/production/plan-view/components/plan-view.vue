@@ -30,17 +30,18 @@
           </span>
           <span>NEW</span>
         </button>
-        <button class="btn btn-sm btn-main mr-2" @click="onShowFormHeaderUpdate">
+        <button v-if="canEdit" class="btn btn-sm btn-main mr-2" @click="onShowFormHeaderUpdate">
           <span>
             <i class="bi bi-brush"></i>
           </span>
         </button>
-        <button class="btn btn-sm btn-red mr-2" @click="onMeltJob">
+        <button v-if="canEdit" class="btn btn-sm btn-red mr-2" @click="onMeltJob">
           <span>
             <i class="bi bi-trash"></i>
           </span>
         </button>
         <button
+          v-if="canEdit"
           :class="['btn btn-sm', isAllowCVD ? 'btn-dark' : 'btn-green']"
           @click="onCVDJob"
           :disabled="isAllowCVD"
@@ -164,6 +165,7 @@ import Gallery from '@/components/prime-vue/GalleryView.vue'
 import moment from 'dayjs'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
 import { FilePlanProduction } from '@/services/helper/pdf/FilePlanProduction.js'
+import { hasProductionEditAccess } from '@/services/permission/production-access.js'
 import { usePlanUpdateApiStore } from '@/stores/modules/api/plan-update-store.js'
 import { confirmSubmit, warning } from '@/services/alert/sweetAlerts.js'
 import { getAzureBlobUrl, getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
@@ -199,6 +201,9 @@ export default {
     }
   },
   computed: {
+    canEdit() {
+      return hasProductionEditAccess()
+    },
     model() {
       return this.modelValue
     },

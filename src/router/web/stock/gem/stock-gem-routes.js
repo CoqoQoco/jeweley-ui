@@ -16,6 +16,8 @@ const stockGemPickReturnAndOutboundCreate = () =>
     '@/views/receipt-stock/gem/pick-return-and-outbound/components/create/PickReturnAndOutbound.vue'
   )
 
+const stockGemReturnUnlinked = () => import('@/views/receipt-stock/gem/return-unlinked/index-view.vue')
+
 import stockGoldChildren from '../gold/stock-gold-routes.js'
 
 import { PERMISSIONS } from '@/services/permission/config.js'
@@ -143,6 +145,21 @@ const routes = [
           },
           minorShow: false,
           permissions: [PERMISSIONS.STOCK_GEM_EDIT]
+        }
+      },
+
+      {
+        path: '/stock-gem-return-unlinked',
+        name: 'stock-gem-return-unlinked',
+        component: stockGemReturnUnlinked,
+        menuId: 'STOCK-GEM-RETURN-UNLINKED',
+        meta: {
+          Displayname: {
+            en: 'Unlinked Gem Returns',
+            th: 'ใบรับคืนพลอยที่ยังไม่ผูกใบงาน'
+          },
+          minorShow: true,
+          permissions: [PERMISSIONS.STOCK_GEM_RETURN_FROM_PLAN]
         }
       },
 

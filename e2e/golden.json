@@ -7,6 +7,7 @@
     "invoice-tax-vat.spec.js",
     "plan-gold-return-weight.spec.js",
     "plan-update-process-editable.spec.js",
+    "production/plan-gem-return.spec.js",
     "receipt-silver-lot-suggest.spec.js",
     "rfid-bind.spec.js",
     "stock-label-full-price.spec.js",

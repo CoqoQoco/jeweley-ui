@@ -18,7 +18,7 @@
           </div>
         </template>
       </pageTitle>
-      <TabMenu :model="tabItems" v-model:activeIndex="tabActive" />
+      <TabMenu :model="visibleTabs" :activeIndex="tabIndex" @update:activeIndex="onTabChange" />
     </div>
 
     <!-- plan view -->
@@ -81,6 +81,7 @@
         :masterGold="masterGold"
         @onShowUpdate="onUpdated('process')"
         @transfer="onTransferJob"
+        @refresh="fetchPlan"
       ></planProcess>
       <planProcessUpdate
         :isShow="isUpdate.process"
@@ -94,7 +95,7 @@
       ></planProcessUpdate>
     </div>
 
-    <div v-if="tabActive === 7">
+    <div v-if="tabActive === 7 && canEdit">
       <planPriceView
         :modelValue="data"
         :modelMatValue="mat"
@@ -116,7 +117,7 @@
       ></planPriceViewUpdate>
     </div>
 
-    <div v-if="tabActive === 10">
+    <div v-if="tabActive === 10 && canEdit">
       <planBOMView
         :modelValue="data"
         :modelMatValue="mat"
@@ -152,6 +153,7 @@ import { usePlanSearchApiStore } from '@/stores/modules/api/plan-search-store.js
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { usePlanBOMApiStore } from '@/stores/modules/api/plan/plan-bom-store.js'
 import { confirmSubmit } from '@/services/alert/sweetAlerts.js'
+import { hasProductionEditAccess } from '@/services/permission/production-access.js'
 
 import planView from './components/plan-view.vue'
 import planViewUpdate from './modal/update-plan-view.vue'
@@ -213,6 +215,16 @@ export default {
   },
 
   computed: {
+    canEdit() {
+      return hasProductionEditAccess()
+    },
+    // tabActive เก็บ id ของแท็บ (ไม่ใช่ตำแหน่ง) — ผู้ใช้ที่ไม่มี production:edit ไม่เห็นแท็บบัตรต้นทุน (id 7) จึงต้องแปลง id <-> ตำแหน่งเอง
+    visibleTabs() {
+      return this.canEdit ? this.tabItems : this.tabItems.filter((t) => t.id !== 7)
+    },
+    tabIndex() {
+      return this.visibleTabs.findIndex((t) => t.id === this.tabActive)
+    },
     masterProductType() {
       return this.masterStore.productType
     },
@@ -268,6 +280,10 @@ export default {
   },
 
   methods: {
+    onTabChange(index) {
+      const tab = this.visibleTabs[index]
+      if (tab) this.tabActive = tab.id
+    },
     getStatusSeverity(status) {
       switch (status) {
         case 9999:

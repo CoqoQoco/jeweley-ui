@@ -12,6 +12,7 @@
         <!-- action -->
         <div>
           <button
+            v-if="canEditPlan"
             :class="['btn btn-sm ml-2', checkBtn('print') ? 'btn-secondary' : 'btn-primary']"
             title="พิมพ์แบบ"
             :disabled="checkBtn('print')"
@@ -20,6 +21,7 @@
             <span class="bi bi-printer"></span>
           </button>
           <button
+            v-if="canEditPlan"
             :class="['btn btn-sm ml-2', checkBtn('transfer') ? 'btn-secondary' : 'btn-dark']"
             title="โอนงาน"
             :disabled="checkBtn('transfer')"
@@ -28,6 +30,7 @@
             <span class="bi bi-arrow-down-up"></span>
           </button>
           <button
+            v-if="canEditPlan"
             :class="['btn btn-sm ml-2', checkBtn('update') ? 'btn-secondary' : 'btn-warning']"
             title="เเก้ไข"
             :disabled="checkBtn('update')"
@@ -205,14 +208,14 @@
     <div class="mt-3" v-if="status === 80">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <span class="title-text">คำนวณ Gold Loss</span>
-        <div v-if="data.goldLossPrice" class="d-flex align-items-center">
+        <div v-if="data.goldLossPrice && canEditPlan" class="d-flex align-items-center">
           <span class="title-text mr-2">ราคาทอง (บาท/กรัม):</span>
           <span class="title-text" style="font-weight: 600">{{ fmt2(data.goldLossPrice) }}</span>
         </div>
       </div>
       <BaseDataTable
         :items="goldLossRows"
-        :columns="goldLossColumns"
+        :columns="visibleGoldLossColumns"
         dataKey="id"
         :paginator="false"
         :showGridlines="true"
@@ -255,7 +258,7 @@
         <template #footer>
           <div class="d-flex justify-content-between title-text">
             <span>{{ goldLossRows.length }} รายการ</span>
-            <div class="d-flex align-items-center">
+            <div v-if="canEditPlan" class="d-flex align-items-center">
               <span class="mr-2">รวมเงิน ได้/ขาด :</span>
               <span
                 style="font-weight: 600"
@@ -286,44 +289,18 @@
           </div>
         </div>
       </div>
-      <div v-if="gemMaterialFromWithdraw.length === 0" class="pl-2 pt-2 desc-text">
+      <div v-if="gemMaterialFromWithdraw.length === 0 && !gemReturnedRows.length" class="pl-2 pt-2 desc-text">
         ไม่มีรายการวัตถุดิบจากคัดพลอย
       </div>
-      <BaseDataTable
+      <PlanGemTable
         v-else
-        :value="gemMaterialFromWithdraw"
-        :columns="gemColumns"
-        dataKey="id"
-        scrollable
-        stripedRows
-        scrollHeight="calc(100vh - 160px)"
-        :showGridlines="true"
-        :paginator="false"
-      >
-        <template #outboundDateTemplate="slotProps">
-          <div class="text-left">
-            {{ formatDateTime(slotProps.data.outboundDate) }}
-          </div>
-        </template>
-        <template #qtyTemplate="slotProps">
-          {{ slotProps.data.qty ? Number(slotProps.data.qty).toFixed(3).toLocaleString() : '0.000' }}
-        </template>
-        <template #weightTemplate="slotProps">
-          {{ slotProps.data.weight ? Number(slotProps.data.weight).toFixed(3).toLocaleString() : '0.000' }}
-        </template>
-        <template #priceTemplate="slotProps">
-          {{ slotProps.data.price ? Number(slotProps.data.price).toFixed(3).toLocaleString() : '0.000' }}
-        </template>
-        <template #footer>
-          <div class="d-flex justify-content-between title-text">
-            <div>
-              <span class="mr-2">จำนวน</span>
-              <span class="mr-2">{{ gemMaterialFromWithdraw.length }}</span>
-              <span>รายการ</span>
-            </div>
-          </div>
-        </template>
-      </BaseDataTable>
+        :rows="gemMaterialFromWithdraw"
+        :returnedRows="gemReturnedRows"
+        :showPrice="canEditPlan"
+        :canReturn="canReturnGem"
+        :returnDisabled="isGemReturnLocked"
+        @return-row="onReturnGemRow"
+      />
     </div>
 
     <!-- gem — status 70 (คัดพลอย): คงเดิม + ปุ่ม CSV -->
@@ -345,41 +322,14 @@
           </div>
         </div>
       </div>
-      <BaseDataTable
-        :value="data.tbtProductionPlanStatusGem"
-        :columns="gemColumns"
-        dataKey="id"
-        ref="dt"
-        scrollable
-        stripedRows
-        scrollHeight="calc(100vh - 160px)"
-        :showGridlines="true"
-        :paginator="false"
-      >
-        <template #outboundDateTemplate="slotProps">
-          <div class="text-left">
-            {{ formatDateTime(slotProps.data.outboundDate) }}
-          </div>
-        </template>
-        <template #qtyTemplate="slotProps">
-          {{ slotProps.data.qty ? Number(slotProps.data.qty).toFixed(3).toLocaleString() : '0.000' }}
-        </template>
-        <template #weightTemplate="slotProps">
-          {{ slotProps.data.weight ? Number(slotProps.data.weight).toFixed(3).toLocaleString() : '0.000' }}
-        </template>
-        <template #priceTemplate="slotProps">
-          {{ slotProps.data.price ? Number(slotProps.data.price).toFixed(3).toLocaleString() : '0.000' }}
-        </template>
-        <template #footer>
-          <div class="d-flex justify-content-between title-text">
-            <div>
-              <span class="mr-2">จำนวน</span>
-              <span class="mr-2">{{ data.tbtProductionPlanStatusGem.reduce((acc, item) => acc + item.qty, 0) }}</span>
-              <span>รายการ</span>
-            </div>
-          </div>
-        </template>
-      </BaseDataTable>
+      <PlanGemTable
+        :rows="data.tbtProductionPlanStatusGem"
+        :returnedRows="gemReturnedRows"
+        :showPrice="canEditPlan"
+        :canReturn="canReturnGem"
+        :returnDisabled="isGemReturnLocked"
+        @return-row="onReturnGemRow"
+      />
     </div>
 
     <div>
@@ -396,6 +346,18 @@
         </div>
       </div>
     </div>
+
+    <GemReturnModal
+      :isShow="isShow.gemReturn"
+      :row="gemReturnRow"
+      :planText="`${model.wo}-${model.woNumber}`"
+      :planWo="String(model.wo ?? '')"
+      :planWoNumber="model.woNumber ?? ''"
+      :hasSavedPrice="!!model.hasSavedPrice"
+      :hasSavedBom="!!model.hasSavedBom"
+      @closeModal="isShow.gemReturn = false"
+      @saved="onGemReturned"
+    />
 
     <modal :showModal="isShow.selectGold" @closeModal="closeModal" width="350px">
       <template v-slot:content>
@@ -417,6 +379,8 @@ import { defineAsyncComponent } from 'vue'
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
 import BaseDataTable from '@/components/prime-vue/DataTableWithPaging.vue'
+import PlanGemTable from './plan-gem-table.vue'
+import GemReturnModal from '../modal/gem-return-modal.vue'
 
 import { useMasterApiStore } from '@/stores/modules/api/master-store.js'
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
@@ -424,9 +388,13 @@ import { calculateWeightDifference } from '@/services/helper/match.js'
 import { ExcelHelper } from '@/services/utils/excel-js.js'
 import { EmbedSlipPdfBuilder } from '@/services/helper/pdf/FilePlanEmbed.js'
 import { getAzureBlobAsBase64 } from '@/config/azure-storage-config.js'
+import { hasProductionEditAccess } from '@/services/permission/production-access.js'
+import { hasGemReturnAccess } from '@/services/permission/gem-return-access.js'
+import { pickReturnsForHeader } from '../gem-return-helpers.js'
 
 const interfaceIsShow = {
-  selectGold: false
+  selectGold: false,
+  gemReturn: false
 }
 
 const interfaceData = {
@@ -439,6 +407,8 @@ export default {
   name: 'plan-process-view',
   components: {
     BaseDataTable,
+    PlanGemTable,
+    GemReturnModal,
     modal
   },
 
@@ -465,9 +435,34 @@ export default {
     }
   },
 
+  emits: ['onShowUpdate', 'transfer', 'refresh'],
+
   computed: {
     model() {
       return this.modelValue
+    },
+
+    visibleGoldLossColumns() {
+      return this.canEditPlan ? this.goldLossColumns : this.goldLossColumns.filter((c) => c.field !== 'moneyDiff')
+    },
+    canEditPlan() {
+      return hasProductionEditAccess()
+    },
+    canReturnGem() {
+      return hasGemReturnAccess()
+    },
+    // ใบงานสำเร็จ (100) / หลอม (500) แล้ว คืนพลอยไม่ได้
+    isGemReturnLocked() {
+      return [100, 500].includes(this.model?.status)
+    },
+    // ประวัติคืนเป็นระดับใบงาน: แถวที่ itemNo ตรง header นี้ + แถวที่ไม่ตรง header ไหนเลยแสดงที่คัดพลอย (70)
+    gemReturnedRows() {
+      const headers = this.model?.tbtProductionPlanStatusHeader ?? []
+      const own = this.data?.tbtProductionPlanStatusGem ?? []
+      const others = headers
+        .filter((h) => h.status !== this.status)
+        .flatMap((h) => h.tbtProductionPlanStatusGem ?? [])
+      return pickReturnsForHeader(this.model?.gemReturns, this.data?.id, own, others, this.status === 70)
     },
 
     masterProductType() {
@@ -493,7 +488,7 @@ export default {
     },
 
     showTotalWages() {
-      return this.status !== 70 // ไม่แสดงในสถานะคัดพลอย
+      return this.status !== 70 && this.canEditPlan // ไม่แสดงในสถานะคัดพลอย / ผู้ใช้ไม่มี production:edit ไม่เห็นค่าแรง
     },
     goldLossRows() {
       if (this.status !== 80 || !this.data || !this.data.tbtProductionPlanStatusDetail) return []
@@ -575,6 +570,7 @@ export default {
         ...interfaceIsShow
       },
       urlImage: '',
+      gemReturnRow: {},
 
       // --- gold loss (status 80) --- //
       goldLossColumns: [
@@ -794,18 +790,6 @@ export default {
           align: 'right',
           sortable: false
         }
-      ],
-      gemColumns: [
-        { field: 'name', header: 'พลอย', minWidth: '200px', sortable: false },
-        { field: 'outboundRunning', header: 'เลขที่เบิก', minWidth: '200px', sortable: false },
-        { field: 'outboundName', header: 'ผู้เบิก', minWidth: '200px', sortable: false },
-        { field: 'outboundDate', header: 'วันที่เบิก', minWidth: '200px', sortable: false },
-        { field: 'qty', header: 'จำนวน', width: '100px', sortable: false },
-        { field: 'weight', header: 'น้ำหนัก', width: '100px', sortable: false },
-        { field: 'unit', header: 'หน่วย', width: '100px', sortable: false },
-        { field: 'length', header: 'ความยาว', width: '100px', sortable: false },
-        { field: 'lengthUnit', header: 'หน่วยความยาว', width: '100px', sortable: false },
-        { field: 'price', header: 'ราคา', width: '100px', sortable: false }
       ]
     }
   },
@@ -951,7 +935,7 @@ export default {
       }
 
       // เพิ่มคอลัมน์ค่าแรง (ยกเว้นสถานะคัดพลอย)
-      if (this.status !== 70) {
+      if (this.status !== 70 && this.canEditPlan) {
         allColumns = [...allColumns, ...this.wagesColumns]
       }
 
@@ -975,6 +959,15 @@ export default {
       this.$emit('transfer', this.model, this.status)
     },
 
+    onReturnGemRow(row) {
+      this.gemReturnRow = { ...row }
+      this.isShow.gemReturn = true
+    },
+    onGemReturned() {
+      this.isShow.gemReturn = false
+      this.$emit('refresh')
+    },
+
     exportGemCsv() {
       const dataExcel = this.data.tbtProductionPlanStatusGem.map((item) => {
         return {
@@ -985,7 +978,7 @@ export default {
           จำนวน: item.qty ? Number(item.qty).toFixed(3) : '0.000',
           น้ำหนัก: item.weight ? Number(item.weight).toFixed(3) : '0.000',
           หน่วย: item.unit,
-          ราคา: item.price ? Number(item.price).toFixed(2) : '0.000'
+          ...(this.canEditPlan ? { ราคา: item.price ? Number(item.price).toFixed(2) : '0.000' } : {})
         }
       })
 
@@ -1018,7 +1011,7 @@ export default {
           หน่วย: item.unit,
           ความยาว: item.length ? Number(item.length).toFixed(3) : '0.000',
           หน่วยความยาว: item.lengthUnit,
-          ราคา: item.price ? Number(item.price).toFixed(2) : '0.000'
+          ...(this.canEditPlan ? { ราคา: item.price ? Number(item.price).toFixed(2) : '0.000' } : {})
         }
       })
 

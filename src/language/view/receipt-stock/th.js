@@ -110,7 +110,37 @@ export default {
       requestDate: 'วันที่',
       closePickReturn: 'รายการคืนเข้าคลัง [ปิดใบยืม]',
       successPickReturn: 'เลขที่ใบคืนวัตถุดิบ',
-      successPickOutbound: 'เลขที่ใบเบิกวัตถุดิบ'
+      successPickOutbound: 'เลขที่ใบเบิกวัตถุดิบ',
+      dup: {
+        inline: 'ใบงานนี้เบิก {code} ไปแล้ว',
+        inlineDetail: '{running} · {date} · {qty} เม็ด / {weight}',
+        confirmTitle: 'ยืนยันการเบิกซ้ำ',
+        confirmDesc: 'รายการต่อไปนี้ เคยเบิกให้ใบงานเดียวกันแล้ว ตรวจว่าตั้งใจเบิกเพิ่มจริงก่อนบันทึก',
+        colPlan: 'ใบงาน',
+        colGem: 'พลอย',
+        colPrev: 'เบิกไปแล้ว',
+        colNow: 'ครั้งนี้',
+        intentional: 'ตั้งใจเบิกเพิ่ม (เช่น พลอยแตก ต้องเปลี่ยน)',
+        back: 'กลับไปแก้',
+        confirm: 'ยืนยันเบิก'
+      }
+    },
+    returnUnlinked: {
+      title: 'ใบรับคืนพลอยที่ยังไม่ผูกใบงาน',
+      description: 'ใบรับคืนที่อ้างใบงาน และใบงานยังมีแถวพลอยจากการเบิกที่น่าจะตรงกัน',
+      fieldDate: 'วันที่รับคืน',
+      colRunning: 'ใบรับคืน',
+      colDate: 'วันที่',
+      colGem: 'พลอย',
+      colQtyWeight: 'จำนวน / น้ำหนัก',
+      colPlan: 'ใบงานที่ระบุ',
+      colRemark: 'หมายเหตุ',
+      colSuggested: 'แถวในใบงานที่น่าจะตรง',
+      colAction: 'จัดการ',
+      btnOpenPlan: 'เปิดใบงาน',
+      emptyMessage: 'ไม่พบใบรับคืนที่ยังไม่ผูกใบงาน',
+      rangeRequired: 'กรุณาระบุวันที่รับคืนทั้งช่วงต้นและปลาย',
+      rangeTooLong: 'ช่วงวันที่ต้องไม่เกิน {days} วัน'
     }
   },
   gold: {

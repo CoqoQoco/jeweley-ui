@@ -16,6 +16,7 @@
 
         <div class="d-flex">
           <button
+            v-if="canEdit"
             :class="['btn btn-sm ml-2', checkBtn('success') ? 'btn-secondary' : 'btn-green']"
             title="โอนสินค้า"
             :disabled="checkBtn('success')"
@@ -32,6 +33,7 @@
 
           <bomPDF :isVisible="isMakePrice" :modelValue="model" :modelPrice="modelBom"></bomPDF>
           <button
+            v-if="canEdit"
             :class="['btn btn-sm ml-2', checkBtn('add') ? 'btn-secondary' : 'btn-green']"
             title="ประเมินบัตรต้นทุน"
             :disabled="checkBtn('add')"
@@ -228,6 +230,7 @@ import Row from 'primevue/row'
 import Papa from 'papaparse'
 
 import { formatDate, formatDateTime } from '@/services/utils/dayjs'
+import { hasProductionEditAccess } from '@/services/permission/production-access.js'
 import api from '@/axios/axios-helper.js'
 import { confirmSubmit, success } from '@/services/alert/sweetAlerts.js'
 
@@ -271,6 +274,9 @@ export default {
     }
   },
   computed: {
+    canEdit() {
+      return hasProductionEditAccess()
+    },
     model() {
       return this.modelValue
     },

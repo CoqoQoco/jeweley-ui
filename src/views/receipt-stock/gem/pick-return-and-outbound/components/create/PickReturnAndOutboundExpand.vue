@@ -35,7 +35,7 @@
           </div>
         </template>
       </Column>
-      <Column field="productionPlan" header="แผนผลิต" style="width: 200px">
+      <Column field="productionPlan" header="แผนผลิต" style="min-width: 460px">
         <template #body="slotProps">
           <div v-if="slotProps.data.isAlreadyOutbound">
             <span>
@@ -53,7 +53,7 @@
             :forceSelection="true"
             :class="slotProps.data.productionPlan ? '' : 'p-invalid'"
             :disabled="slotProps.data.isAlreadyOutbound"
-            @update:modelValue="slotProps.data.productionPlan = $event"
+            @update:modelValue="onPlanChange(slotProps.data, $event)"
           >
             <template #option="{ option }">
               <div>
@@ -63,6 +63,21 @@
               </div>
             </template>
           </AutoCompleteGeneric>
+          <div v-if="slotProps.data.duplicates && slotProps.data.duplicates.length" class="dup-warning" role="alert">
+            <div v-for="d in slotProps.data.duplicates" :key="d.outboundRunning" class="dup-line">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              {{ $t('view.receiptStock.gem.pickReturnAndOutbound.dup.inline', { code: dataExpand.code }) }}
+              ·
+              {{
+                $t('view.receiptStock.gem.pickReturnAndOutbound.dup.inlineDetail', {
+                  running: d.outboundRunning,
+                  date: d.outboundDate ? formatDate(d.outboundDate) : '-',
+                  qty: Number(d.qty).toFixed(3),
+                  weight: Number(d.weight).toFixed(3)
+                })
+              }}
+            </div>
+          </div>
         </template>
       </Column>
       <Column field="mold" header="เเม่พิมพ์" style="width: 200px">
@@ -150,12 +165,18 @@ import Column from 'primevue/column'
 
 import AutoCompleteGeneric from '@/components/prime-vue/AutoCompleteGeneric.vue'
 import api from '@/axios/axios-helper.js'
+import { formatDate } from '@/services/utils/dayjs.js'
+import { useGemReturnApiStore } from '@/stores/modules/api/stock/gem-return-api.js'
 
 export default {
   components: {
     DataTable,
     Column,
     AutoCompleteGeneric
+  },
+  setup() {
+    const gemReturnStore = useGemReturnApiStore()
+    return { gemReturnStore }
   },
   props: {
     modelExpand: {
@@ -183,6 +204,20 @@ export default {
     }
   },
   methods: {
+    formatDate,
+
+    // AutoCompleteGeneric เขียน object ลง v-model เมื่อเลือกจากรายการ — เช็กเบิกซ้ำเฉพาะตอนได้ object ที่มี wo
+    async onPlanChange(row, value) {
+      row.productionPlan = value
+      row.duplicates = []
+      if (!value || typeof value !== 'object' || !value.wo) return
+      const res = await this.gemReturnStore.checkDuplicateOutbound([
+        { code: this.dataExpand.code, wo: value.wo, woNumber: value.woNumber }
+      ])
+      const current = row.productionPlan
+      if (current?.wo === value.wo && current?.woNumber === value.woNumber) row.duplicates = res
+    },
+
     async onSearchProductionPlanId(e) {
       const params = {
         take: 0,
@@ -249,6 +284,18 @@ export default {
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   background-color: #460505;
   padding: 10px;
+}
+.dup-warning {
+  margin-top: var(--sp-xs);
+  padding: var(--sp-xs) var(--sp-sm);
+  border: 1px solid var(--base-warning);
+  border-radius: var(--radius-sm);
+  background: var(--status-open-bg);
+  color: var(--base-sub-color);
+  font-size: var(--fs-base);
+}
+.dup-line {
+  white-space: nowrap;
 }
 .table-btn-action-container {
   display: flex;

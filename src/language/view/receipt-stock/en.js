@@ -110,7 +110,37 @@ export default {
       requestDate: 'Date',
       closePickReturn: 'Return to stock [Close borrow slip]',
       successPickReturn: 'Gem Return No.',
-      successPickOutbound: 'Gem Outbound No.'
+      successPickOutbound: 'Gem Outbound No.',
+      dup: {
+        inline: 'This job already has {code} issued',
+        inlineDetail: '{running} · {date} · {qty} pcs / {weight}',
+        confirmTitle: 'Confirm duplicate outbound',
+        confirmDesc: 'The following were already issued to the same job. Confirm you really intend to issue more before saving',
+        colPlan: 'Job',
+        colGem: 'Gem',
+        colPrev: 'Already issued',
+        colNow: 'This time',
+        intentional: 'I intend to issue more (e.g. broken gem, replacement)',
+        back: 'Go back and edit',
+        confirm: 'Confirm outbound'
+      }
+    },
+    returnUnlinked: {
+      title: 'Gem return slips not linked to a job',
+      description: 'Return slips that name a job, where the job still has outbound gem rows that likely match',
+      fieldDate: 'Return date',
+      colRunning: 'Return slip',
+      colDate: 'Date',
+      colGem: 'Gem',
+      colQtyWeight: 'Qty / Weight',
+      colPlan: 'Named job',
+      colRemark: 'Remark',
+      colSuggested: 'Likely matching job row',
+      colAction: 'Action',
+      btnOpenPlan: 'Open job',
+      emptyMessage: 'No unlinked return slips found',
+      rangeRequired: 'Please enter both start and end return dates',
+      rangeTooLong: 'The date range must not exceed {days} days'
     }
   },
   gold: {

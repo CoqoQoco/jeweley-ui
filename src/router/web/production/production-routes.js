@@ -178,7 +178,8 @@ const routes = [
             th: 'รายละเอียดงานผลิต'
           },
           minorShow: false,
-          permissions: [PERMISSIONS.PRODUCTION_EDIT]
+          // any-of: production:edit (เต็ม) หรือคนคลังพลอยที่คืนพลอยจากใบงานได้ (ปุ่มแก้ไขอื่นถูกซ่อนด้วยสิทธิ์ production:edit)
+          permissions: [PERMISSIONS.PRODUCTION_EDIT, PERMISSIONS.STOCK_GEM_RETURN_FROM_PLAN]
         }
       },
       {
