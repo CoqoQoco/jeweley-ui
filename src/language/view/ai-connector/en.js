@@ -150,7 +150,7 @@ export default {
     deniedTitle: 'Denied',
     deniedBody: 'No access was given to {name}. You can return to the app.',
     noPermissionTitle: 'This account cannot connect AI',
-    noPermissionBody: 'Use an executive account, or ask the administrator to add the AI connection permission.',
+    noPermissionBody: 'This account has no AI connect permission yet. Ask an administrator to assign the Boss role.',
     switchAccount: 'Sign out / switch account',
     invalidTitle: 'Invalid or expired request',
     invalidBody: 'Go back to the AI app and start connecting again.',
