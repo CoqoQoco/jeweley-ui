@@ -1129,6 +1129,7 @@ export default {
         try {
           await this.invoiceStore.createPrintLog({
             invoiceNumber: this.invoiceData.invoiceNumber,
+            invoiceRunning: this.invoiceData.invoiceNumber,
             paperType: 'guarantee-card',
             data: JSON.stringify({
               signerTitle,
@@ -1718,6 +1719,7 @@ export default {
           success(this.$t(successKey), 'Bridge GDI')
           this.invoiceStore.createPrintLog({
             invoiceNumber: printData.invoiceNumber,
+            invoiceRunning: this.invoiceData.invoiceNumber,
             paperType: taxPaper ? taxPaper.logPaperType : 'bill',
             data: JSON.stringify(logPayload)
           })
@@ -1738,6 +1740,7 @@ export default {
         const a4PaperType = printData.invoiceTemplate === 'summary' ? 'a4-summary' : 'a4'
         this.invoiceStore.createPrintLog({
           invoiceNumber: printData.invoiceNumber,
+          invoiceRunning: this.invoiceData.invoiceNumber,
           paperType: a4PaperType,
           data: JSON.stringify({ flags: null, billOffset: null, continuousOffset: null, printerName: printData.printerName, template: printData.invoiceTemplate, mergeSilverLines: options.mergeSilverLines, showImages: options.showImages })
         })

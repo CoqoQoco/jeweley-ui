@@ -161,7 +161,6 @@ export default {
 
 // DateRangeGeneric มี 2 input + ลูกศรอยู่ในคอลัมน์เดียวกัน — ต้องกินพื้นที่ 2 คอลัมน์ของ
 // .form-col-container (auto-fit minmax(240px,1fr)) ไม่งั้นแต่ละ input เหลือพื้นที่ไม่พอ ตัวเลขปี ค.ศ. โดนตัด
-// (pattern เดียวกับ sale/invoice/components/search-view.vue .date-range-field)
 :deep(.date-range-field) {
   grid-column: span 2;
 }

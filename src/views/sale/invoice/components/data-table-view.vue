@@ -25,6 +25,27 @@
         </div>
       </template>
 
+      <template #printedInvoiceNumbersTemplate="{ data }">
+        <div class="printed-number-cell">
+          <template v-if="getPrintedNumbers(data).length">
+            <span :class="['printed-tag', { 'printed-tag-match': isPrintedMatch(data) }]">{{ getShownPrinted(data) }}</span>
+            <span
+              v-if="getPrintedNumbers(data).length > 1"
+              class="printed-more"
+              role="note"
+              tabindex="0"
+              :title="$t('view.sale.invoice.printedNumbersTitle', { all: getPrintedNumbers(data).join(', ') })"
+              :aria-label="$t('view.sale.invoice.printedNumbersTitle', { all: getPrintedNumbers(data).join(', ') })"
+            >+{{ getPrintedNumbers(data).length - 1 }}</span>
+          </template>
+          <span v-else>-</span>
+        </div>
+      </template>
+
+      <template #soNumberTemplate="{ data }">
+        <div>{{ data.soNumber || '-' }}</div>
+      </template>
+
       <template #statusTemplate="{ data }">
         <div class="status-container">
           <span :class="getStatusBadgeClass(data.status)">{{ data.statusName }}</span>
@@ -169,6 +190,19 @@ export default {
           minWidth: '150px'
         },
         {
+          field: 'printedInvoiceNumbers',
+          header: this.$t('view.sale.invoice.printedNumber'),
+          sortable: false,
+          minWidth: '160px'
+        },
+        {
+          field: 'soNumber',
+          header: this.$t('view.sale.invoice.soNumber'),
+          sortable: false,
+          minWidth: '140px',
+          template: 'soNumberTemplate'
+        },
+        {
           field: 'invoiceType',
           header: this.$t('view.sale.invoice.invoiceTypeLabel'),
           sortable: false,
@@ -304,6 +338,25 @@ export default {
   },
 
   methods: {
+    getPrintedNumbers(data) {
+      if (!Array.isArray(data.printedInvoiceNumbers)) return []
+      return [...new Set(data.printedInvoiceNumbers)].filter((n) => n && n !== data.invoiceNumber)
+    },
+
+    getMatchedPrinted(data) {
+      const keyword = String(this.form.invoiceNumber || '').trim().toLowerCase()
+      if (!keyword) return null
+      return this.getPrintedNumbers(data).find((n) => String(n).toLowerCase().includes(keyword)) || null
+    },
+
+    isPrintedMatch(data) {
+      return !!this.getMatchedPrinted(data)
+    },
+
+    getShownPrinted(data) {
+      return this.getMatchedPrinted(data) || this.getPrintedNumbers(data)[0]
+    },
+
     onView(data) {
       this.setActiveRow(data)
       const route = this.$router.resolve({
@@ -412,6 +465,38 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-data-table';
 @import '@/assets/scss/custom-style/standard-form';
+
+.printed-number-cell {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-xs);
+  font-size: var(--fs-sm);
+}
+
+.printed-tag {
+  padding: 0 var(--sp-sm);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-green-bg);
+  color: var(--base-sub-color);
+}
+
+.printed-tag-match {
+  background-color: var(--base-warning);
+  color: var(--base-sub-color);
+  font-weight: 600;
+}
+
+.printed-more {
+  color: var(--base-sub-color);
+  font-weight: 400;
+
+  &:focus-visible {
+    outline: 2px solid var(--base-sub-color);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+}
 
 .btn-action-container {
   display: flex;

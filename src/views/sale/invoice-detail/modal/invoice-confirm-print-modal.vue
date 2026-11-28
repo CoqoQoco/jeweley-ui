@@ -67,8 +67,19 @@
                 :placeholder="$t('view.sale.invoiceDetail.invoiceNumberPlaceholder')"
               />
               <small class="form-text text-muted">
-                {{ $t('view.sale.invoiceDetail.originalValue') }}: {{ originalData.invoiceNumber }}
+                {{ $t('view.sale.invoiceDetail.systemNumber') }}: {{ originalData.invoiceNumber }}
               </small>
+              <div v-if="isInvoiceNumberPrefilled" class="prefilled-note">
+                <i class="bi bi-magic"></i>
+                <span>{{ $t('view.sale.invoiceDetail.prefilledFromPrevPrint') }}</span>
+                <ButtonGeneric
+                  variant="plain"
+                  icon="bi-arrow-counterclockwise"
+                  :title="$t('view.sale.invoiceDetail.useSystemNumber')"
+                  :aria-label="$t('view.sale.invoiceDetail.useSystemNumber')"
+                  @click="restoreSystemInvoiceNumber"
+                />
+              </div>
             </div>
 
             <div v-if="!draftMode" class="form-group mb-3">
@@ -739,6 +750,7 @@ export default {
     return {
       invoiceStore: useInvoiceApiStore(),
       printLogs: [],
+      prefilledInvoiceNumber: '',
       gemColumnMap: {},
       gemChoiceTouched: false,
       customRemark: '',
@@ -815,6 +827,10 @@ export default {
   },
 
   computed: {
+    isInvoiceNumberPrefilled() {
+      return !!this.prefilledInvoiceNumber && this.printData.invoiceNumber === this.prefilledInvoiceNumber
+    },
+
     titleText() {
       return this.draftMode
         ? this.$t('view.sale.invoiceDetail.draftBillTitle')
@@ -1181,8 +1197,26 @@ export default {
       } else {
         this.printLogs = []
       }
+      this.prefillPrintedInvoiceNumber()
       this.prefillCustomRemark()
       this.prefillGemColumnMap()
+    },
+
+    restoreSystemInvoiceNumber() {
+      this.printData.invoiceNumber = this.invoiceData.invoiceNumber || ''
+      this.prefilledInvoiceNumber = ''
+    },
+
+    prefillPrintedInvoiceNumber() {
+      const systemNumber = this.invoiceData.invoiceNumber || ''
+      if (this.printData.invoiceNumber !== systemNumber) return
+      const latest = [...this.printLogs]
+        .filter((log) => log.invoiceNo && log.paperType !== 'guarantee-card')
+        .sort((a, b) => String(b.printedAt || '').localeCompare(String(a.printedAt || '')))[0]
+      if (latest && latest.invoiceNo !== systemNumber) {
+        this.printData.invoiceNumber = latest.invoiceNo
+        this.prefilledInvoiceNumber = latest.invoiceNo
+      }
     },
 
     onGemColumnChange(key, value) {
@@ -1263,6 +1297,7 @@ export default {
     },
 
     initializePrintData() {
+      this.prefilledInvoiceNumber = ''
       this.originalData = {
         invoiceNumber: this.invoiceData.invoiceNumber || '',
         invoiceDate: this.invoiceData.invoiceDate || ''
@@ -1477,6 +1512,15 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/scss/custom-style/standard-form';
+
+.prefilled-note {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  margin-top: var(--sp-xs);
+  font-size: var(--fs-base);
+  color: var(--base-sub-color);
+}
 
 .invoice-confirm-print-container {
   // Component-specific styles only

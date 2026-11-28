@@ -100,3 +100,74 @@ describe('InvoiceConfirmPrintModal - draftMode', () => {
     expect(fetchPrintLogList).toHaveBeenCalled()
   })
 })
+
+describe('InvoiceConfirmPrintModal - prefill printed invoice number', () => {
+  beforeEach(() => {
+    fetchPrintLogList.mockReset()
+  })
+
+  const logs = [
+    { running: 1, invoiceNo: 'INV-1', paperType: 'bill', printedAt: '2026-11-01T10:00:00', data: JSON.stringify({ customRemark: 'เก่า' }) },
+    { running: 2, invoiceNo: 'INV-1-EDIT', paperType: 'bill', printedAt: '2026-11-02T10:00:00', data: JSON.stringify({ customRemark: 'ล่าสุด' }) }
+  ]
+
+  async function mountWithLogs(data) {
+    fetchPrintLogList.mockResolvedValue({ data })
+    const wrapper = create({ draftMode: false, invoiceData: { invoiceNumber: 'INV-1' } })
+    await new Promise((r) => setTimeout(r, 0))
+    await wrapper.vm.$nextTick()
+    return wrapper
+  }
+
+  it('prefills latest printed number but keeps the system number as original', async () => {
+    const wrapper = await mountWithLogs(logs)
+    const vm = wrapper.vm.$.proxy
+    expect(fetchPrintLogList).toHaveBeenCalledWith({ invoiceNumber: 'INV-1' })
+    expect(vm.printData.invoiceNumber).toBe('INV-1-EDIT')
+    expect(vm.originalData.invoiceNumber).toBe('INV-1')
+  })
+
+  it('still prefills custom remark from a log whose invoiceNo differs', async () => {
+    const wrapper = await mountWithLogs(logs)
+    expect(wrapper.vm.$.proxy.customRemark).toBe('ล่าสุด')
+  })
+
+  it('keeps system number when latest log used the system number', async () => {
+    const wrapper = await mountWithLogs([logs[1], { ...logs[0], printedAt: '2026-11-03T10:00:00' }])
+    expect(wrapper.vm.$.proxy.printData.invoiceNumber).toBe('INV-1')
+  })
+
+  it('ignores guarantee-card logs (they always store the system number)', async () => {
+    const wrapper = await mountWithLogs([
+      ...logs,
+      { running: 3, invoiceNo: 'INV-1', paperType: 'guarantee-card', printedAt: '2026-11-05T10:00:00', data: '{}' }
+    ])
+    expect(wrapper.vm.$.proxy.printData.invoiceNumber).toBe('INV-1-EDIT')
+  })
+
+  it('shows prefilled note and restore button resets to system number', async () => {
+    const wrapper = await mountWithLogs(logs)
+    const vm = wrapper.vm.$.proxy
+    expect(wrapper.text()).toContain('view.sale.invoiceDetail.prefilledFromPrevPrint')
+    vm.restoreSystemInvoiceNumber()
+    await wrapper.vm.$nextTick()
+    expect(vm.printData.invoiceNumber).toBe('INV-1')
+    expect(wrapper.text()).not.toContain('view.sale.invoiceDetail.prefilledFromPrevPrint')
+  })
+
+  it('hides prefilled note once the user edits the number', async () => {
+    const wrapper = await mountWithLogs(logs)
+    wrapper.vm.$.proxy.printData.invoiceNumber = 'X'
+    await wrapper.vm.$nextTick()
+    expect(wrapper.text()).not.toContain('view.sale.invoiceDetail.prefilledFromPrevPrint')
+  })
+
+  it('does not overwrite a number the user already edited', async () => {
+    fetchPrintLogList.mockResolvedValue({ data: logs })
+    const wrapper = create({ draftMode: false, invoiceData: { invoiceNumber: 'INV-1' } })
+    const vm = wrapper.vm.$.proxy
+    vm.printData.invoiceNumber = 'MINE'
+    await vm.fetchPrintLogs()
+    expect(vm.printData.invoiceNumber).toBe('MINE')
+  })
+})

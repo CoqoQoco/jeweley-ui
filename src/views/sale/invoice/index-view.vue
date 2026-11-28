@@ -15,6 +15,7 @@ import dataTable from './components/data-table-view.vue'
 
 const interfaceForm = {
   invoiceNumber: null,
+  soNumber: null,
   stockNumber: null,
   productNumber: null,
   moldNumber: null,
@@ -53,6 +54,7 @@ export default {
 
     onClearFilter() {
       this.form = { ...interfaceForm }
+      this.search = { ...interfaceForm }
     }
   }
 }

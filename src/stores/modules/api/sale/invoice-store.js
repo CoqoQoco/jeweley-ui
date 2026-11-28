@@ -49,6 +49,7 @@ export const useInvoiceApiStore = defineStore('invoice', {
         // DataSourceRequest format (same as SaleOrder)
         const search = {
           invoiceNumber: formValue.invoiceNumber || null,
+          soNumber: formValue.soNumber || null,
           dkInvoiceNumber: formValue.dkInvoiceNumber || null,
           customerName: formValue.customerName || null,
           customerCode: formValue.customerCode || null,
@@ -206,8 +207,8 @@ export const useInvoiceApiStore = defineStore('invoice', {
         skipLoading: false
       })
     },
-    async createPrintLog({ invoiceNumber, paperType, data }, { skipError = false } = {}) {
-      const param = { invoiceNumber, paperType, data }
+    async createPrintLog({ invoiceNumber, invoiceRunning, paperType, data }, { skipError = false } = {}) {
+      const param = { invoiceNumber, invoiceRunning, paperType, data }
       return await api.jewelry.post('Invoice/PrintLog/Create', param, { skipLoading: true, skipError })
     },
     async fetchPrintLogList({ invoiceNumber }) {
