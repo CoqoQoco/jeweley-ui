@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
 import { formatMoney } from '@/services/utils/decimal.js'
-import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
+import { computeInvoiceTotals, convertedUnitPrice, lineAmount, vatIncludedUnitEx, vatIncludedRowEx } from '@/services/utils/money.js'
 import { PDF_FONT, PDF_COLORS } from '@/services/helper/pdf/shared/pdf-theme.js'
 import { buildDocumentHeader } from '@/services/helper/pdf/shared/pdf-sections.js'
 import { COMPANY_INFO, loadCompanyInfo } from '@/config/company-info.js'
@@ -56,9 +56,12 @@ export class InvoicePdfBuilder {
     this.sellerName = saleOrderData?.sellerName || ''
     this.supportName = saleOrderData?.supportName || ''
 
-    // Calculate totals with new fields — ปัดเศษที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
-    const totals = computeDocumentTotals({
-      items: this.data,
+    // vatIncluded = THB ราคารวม VAT แล้ว: แถวแสดงราคาถอด VAT ปัดครึ่งขึ้นทีละแถว + บรรทัด VAT (header vat เป็น 0 จึงตั้ง % จากตัวกลาง)
+    this.vatIncluded = !!saleOrderData.vatIncluded
+
+    // Calculate totals with new fields — ปัดเศษผ่านตัวกลาง money.js (computeInvoiceTotals)
+    const totals = computeInvoiceTotals(this.data, {
+      vatIncluded: this.vatIncluded,
       currencyRate: this.currencyRate,
       currencyUnit: this.currencyUnit,
       specialDiscount: this.specialDiscount,
@@ -66,6 +69,7 @@ export class InvoicePdfBuilder {
       freight: this.freightAndInsurance,
       vatPercent: this.vatPercent
     })
+    if (this.vatIncluded) this.vatPercent = totals.vatPercent
     this.subtotal = totals.subTotal
     this.specialDiscount = totals.specialDiscount
     this.specialAddition = totals.specialAddition
@@ -415,8 +419,12 @@ export class InvoicePdfBuilder {
 
       // คำนวณราคาและจำนวน — ปัดที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
       const qty = Number(item.qty) || 0
-      const convertedPrice = convertedUnitPrice(item, this.currencyRate, this.currencyUnit)
-      const amount = lineAmount(item, this.currencyRate, this.currencyUnit)
+      const convertedPrice = this.vatIncluded
+        ? vatIncludedUnitEx(item)
+        : convertedUnitPrice(item, this.currencyRate, this.currencyUnit)
+      const amount = this.vatIncluded
+        ? vatIncludedRowEx(item)
+        : lineAmount(item, this.currencyRate, this.currencyUnit)
 
       sumQty += qty
       sumAmount += amount

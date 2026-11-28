@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { initPdfMake } from '@/services/utils/pdf-make'
-import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
+import { computeInvoiceTotals, convertedUnitPrice, lineAmount, vatIncludedUnitEx, vatIncludedRowEx } from '@/services/utils/money.js'
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
 import { PDF_FONT } from '@/services/helper/pdf/shared/pdf-theme.js'
 import {
@@ -54,9 +54,12 @@ export class InvoiceBillPdfBuilder {
     this.vatPercent =
       Number(this.saleOrderData.vatPercent) || Number(this.saleOrderData.vat) || 0
 
-    // ปัดเศษที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
-    const totals = computeDocumentTotals({
-      items: this.items,
+    // vatIncluded = THB ราคารวม VAT แล้ว: แถวแสดงราคาถอด VAT ปัดครึ่งขึ้นทีละแถว (header vat เป็น 0 จึงตั้ง % จากตัวกลาง)
+    this.vatIncluded = !!this.saleOrderData.vatIncluded
+
+    // ปัดเศษผ่านตัวกลาง money.js (computeInvoiceTotals)
+    const totals = computeInvoiceTotals(this.items, {
+      vatIncluded: this.vatIncluded,
       currencyRate: this.currencyRate,
       currencyUnit: this.currencyUnit,
       specialDiscount: this.specialDiscount,
@@ -64,6 +67,7 @@ export class InvoiceBillPdfBuilder {
       freight: this.freightAndInsurance,
       vatPercent: this.vatPercent
     })
+    if (this.vatIncluded) this.vatPercent = totals.vatPercent
     this.subtotal = totals.subTotal
     this.specialDiscount = totals.specialDiscount
     this.specialAddition = totals.specialAddition
@@ -148,8 +152,12 @@ export class InvoiceBillPdfBuilder {
       const itemNo = pageIndex * MAX_ROWS_PER_PAGE + rowIndex + 1
 
       const qty = Number(item.qty) || 0
-      const unitPrice = convertedUnitPrice(item, this.currencyRate, this.currencyUnit)
-      const amount = lineAmount(item, this.currencyRate, this.currencyUnit)
+      const unitPrice = this.vatIncluded
+        ? vatIncludedUnitEx(item)
+        : convertedUnitPrice(item, this.currencyRate, this.currencyUnit)
+      const amount = this.vatIncluded
+        ? vatIncludedRowEx(item)
+        : lineAmount(item, this.currencyRate, this.currencyUnit)
 
       const stockNo = formatItemStyleCode(item)
       const description = item.description || item.productNumber || ''

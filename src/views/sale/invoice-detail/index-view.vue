@@ -151,6 +151,10 @@
             :vatAmount="vatAmount"
             :grandTotalRaw="grandTotalRaw"
             :grandTotalRounded="grandTotalRounded"
+            :vatIncluded="!!invoiceData.vatIncluded"
+            :specialDiscountEx="documentTotals.specialDiscount"
+            :specialAdditionEx="documentTotals.specialAddition"
+            :freightEx="documentTotals.freight"
             class="mb-3"
           />
 
@@ -329,7 +333,7 @@ import { buildProductTypeLabelMap } from '@/services/helper/sale-summary/sale-su
 import dayjs from 'dayjs'
 import { computeInvoiceTotalExSpecial } from '@/services/helper/print/so-draft-bill.js'
 import { formatDocCurrency } from '@/services/utils/decimal.js'
-import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
+import { computeInvoiceTotals, convertedUnitPrice, lineAmount, vatIncludedUnitEx, vatIncludedRowEx } from '@/services/utils/money.js'
 import { ensureLineKey } from '@/services/utils/line-key.js'
 import { isMaterialInvoice } from '@/constants/invoice-types.js'
 import { toMaterialInvoiceItems } from '@/services/helper/invoice/material-invoice-items.js'
@@ -410,10 +414,10 @@ export default {
       return isMaterialInvoice(this.invoiceData)
     },
 
-    // ยอดรวม F.O.B. ของใบแจ้งหนี้ — ต้องคิดจากตัวกลาง computeDocumentTotals เพื่อให้เกณฑ์การปัดตรงกับใบ PDF (half-up)
+    // ยอดรวมของใบแจ้งหนี้ — ต้องคิดจากตัวกลาง computeInvoiceTotals เพื่อให้เกณฑ์การปัดตรงกับใบ PDF (vatIncluded = ถอด VAT ทีละแถว ปัดครึ่งขึ้น)
     documentTotals() {
-      return computeDocumentTotals({
-        items: this.invoiceItems,
+      return computeInvoiceTotals(this.invoiceItems, {
+        vatIncluded: !!this.invoiceData?.vatIncluded,
         currencyRate: this.invoiceData?.currencyRate,
         currencyUnit: this.invoiceData?.currencyUnit,
         specialDiscount: this.invoiceData?.specialDiscount,
@@ -446,6 +450,7 @@ export default {
     },
 
     invoiceTotalExSpecial() {
+      if (this.invoiceData?.vatIncluded) return this.documentTotals.grandTotalRounded
       return computeInvoiceTotalExSpecial(this.documentTotals?.subTotal, this.invoiceData?.vatPercent)
     },
 
@@ -1007,6 +1012,7 @@ export default {
 
     getConvertedPrice(item) {
       const shapedItem = { appraisalPrice: this.getAppraisalPrice(item), discountPercent: item.discountPercent }
+      if (this.invoiceData?.vatIncluded) return vatIncludedUnitEx(shapedItem)
       return convertedUnitPrice(shapedItem, this.invoiceData?.currencyRate, this.invoiceData?.currencyUnit)
     },
 
@@ -1016,6 +1022,7 @@ export default {
         discountPercent: item.discountPercent,
         qty: item.qty
       }
+      if (this.invoiceData?.vatIncluded) return vatIncludedRowEx(shapedItem)
       return lineAmount(shapedItem, this.invoiceData?.currencyRate, this.invoiceData?.currencyUnit)
     },
 
@@ -1380,7 +1387,8 @@ export default {
           specialDiscount: this.invoiceData.specialDiscount || 0,
           specialAddition: this.invoiceData.specialAddition || 0,
           freightAndInsurance: this.invoiceData.freightAndInsurance || 0,
-          vatPercent: this.invoiceData.vatPercent || this.invoiceData.vat || 0
+          vatPercent: this.invoiceData.vatPercent || this.invoiceData.vat || 0,
+          vatIncluded: !!this.invoiceData.vatIncluded
         },
         customer: {
           name: this.invoiceData.customerName,
@@ -1660,6 +1668,7 @@ export default {
               ? this.invoiceData.payments.reduce((s, p) => s + (Number(p.amount) || 0), 0)
               : 0,
             vatPercent: this.invoiceData.vatPercent !== undefined ? this.invoiceData.vatPercent : this.invoiceData.vat,
+            vatIncluded: !!this.invoiceData.vatIncluded,
             // MATERIAL: หัวใบอ้างอิงเลขที่ใบสั่งขายวัตถุดิบ (document no. ที่ user เห็น ไม่ใช่ running) แทน SO No.
             ...(this.isMaterial ? { refLabel: 'Ref. No.:', refNumber: this.invoiceData.materialSaleDocumentNo } : {})
           },
@@ -1783,6 +1792,7 @@ export default {
             ? this.invoiceData.payments.reduce((s, p) => s + (Number(p.amount) || 0), 0)
             : 0,
           vatPercent: this.invoiceData.vatPercent !== undefined ? this.invoiceData.vatPercent : this.invoiceData.vat,
+          vatIncluded: !!this.invoiceData.vatIncluded,
           // MATERIAL: หัวใบอ้างอิงเลขที่ใบสั่งขายวัตถุดิบ (document no. ที่ user เห็น ไม่ใช่ running) แทน SO No.
           ...(this.isMaterial ? { refLabel: 'Ref. No.:', refNumber: this.invoiceData.materialSaleDocumentNo } : {})
         },
@@ -1872,7 +1882,8 @@ export default {
             // Use version data for financial calculations
             specialDiscount: versionData.specialDiscount || 0,
             specialAddition: versionData.specialAddition || 0,
-            freightAndInsurance: versionData.freightAndInsurance || 0
+            freightAndInsurance: versionData.freightAndInsurance || 0,
+            vatIncluded: !!this.invoiceData.vatIncluded
           },
           customer: {
             name: this.invoiceData.customerName,

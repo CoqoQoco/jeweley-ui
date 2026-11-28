@@ -27,6 +27,25 @@ test.describe('ใบกำกับภาษีกระดาษต่อเ�
     api.assertNoLeak()
   })
 
+  test('vatIncluded (TK202611280005): default include ปัดครึ่งขึ้นทีละแถว 5,652.33 / 395.66 / 6,047.99 (ใบเก่าไม่มี flag ได้ 5,652.34)', async ({ page }) => {
+    const fx = buildInvoiceFixture({
+      vatIncluded: true,
+      lines: [
+        { stockNumber: 'E2E-T1', price: 1424 },
+        { stockNumber: 'E2E-T2', price: 3008 },
+        { stockNumber: 'E2E-T3', price: 1616 }
+      ]
+    })
+    const { api } = await openBillPrintDrawer(page, fx, { paper: PAPER_OLD })
+    const model = await printAndCaptureBridge(page, api)
+    const texts = footerTexts(model)
+    for (const v of ['1,330.84', '2,811.21', '1,510.28', '5,652.33', '395.66', '6,047.99']) {
+      expect(texts).toContain(v)
+    }
+    expect(texts).not.toContain('5,652.34')
+    api.assertNoLeak()
+  })
+
   test('THB vat=0: เลือก exclude -> บวก VAT ท้ายบิลแบบเดิม 14,874.76 / 1,041.23 / 15,915.99', async ({ page }) => {
     const fx = buildInvoiceFixture({ vat: 0, lines: LINES })
     const { api, drawer } = await openBillPrintDrawer(page, fx, { paper: PAPER_OLD })

@@ -101,6 +101,7 @@ export function toInvoicePdfData({ invoiceData, invoiceItems }) {
       specialAddition: invoiceData.specialAddition || 0,
       freightAndInsurance: invoiceData.freightAndInsurance || 0,
       vatPercent: invoiceData.vatPercent || 0,
+      vatIncluded: !!invoiceData.vatIncluded,
       salePerson: invoiceData.salePerson || null,
       saleSupport: invoiceData.saleSupport || null,
       // D6: มัดจำที่หักตอนออก invoice + เงินที่รับชำระเพิ่มเติมแล้ว — ให้ InvoicePdfBuilder หักออกจากยอดสุทธิ

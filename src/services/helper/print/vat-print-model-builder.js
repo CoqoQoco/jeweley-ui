@@ -1,5 +1,5 @@
 import { convertAmountToThaiText } from '@/services/utils/thai-baht-text.js'
-import { roundHalfUp } from '@/services/utils/money.js'
+import { roundHalfUp, computeInvoiceTotals, vatIncludedUnitEx, vatIncludedRowEx, VAT_INCLUDED_PERCENT } from '@/services/utils/money.js'
 import { formatQtyText } from '@/services/helper/pdf/shared/pdf-format.js'
 import { wrapAddressLines } from '@/services/helper/print/print-text.js'
 import { getVatLayoutDefaults, VAT_LAYOUT_KEY } from '@/services/helper/print/vat-layout-defaults.js'
@@ -116,7 +116,20 @@ export function buildVatPrintModel(invoice, layout, options = {}) {
   const isInclude = options?.vatMode === 'include' && vatPercent > 0
   const divisor = isInclude ? 1 + vatPercent / 100 : 1
 
-  const unitNet = (item) => Number(item.appraisalPrice) * (1 - Number(item.discountPercent) / 100) / currencyRate / divisor
+  // ใบ vatIncluded โหมด include ที่ VAT 7%: ตัวเลขทุกช่องต้องตรงกับ invoice (ถอด VAT ทีละแถว ปัดครึ่งขึ้น 2 ตำแหน่ง รวม special)
+  const useInvoiceFigures = !!invoice.vatIncluded && isInclude && vatPercent === VAT_INCLUDED_PERCENT
+  const invoiceTotals = useInvoiceFigures
+    ? computeInvoiceTotals(invoice.items || [], {
+      vatIncluded: true,
+      specialDiscount: invoice.specialDiscount,
+      specialAddition: invoice.specialAddition,
+      freight: invoice.freightAndInsurance
+    })
+    : null
+
+  const unitNet = (item) => useInvoiceFigures
+    ? vatIncludedUnitEx(item)
+    : Number(item.appraisalPrice) * (1 - Number(item.discountPercent) / 100) / currencyRate / divisor
 
   let subtotal = 0
   for (const item of invoice.items || []) {
@@ -175,7 +188,9 @@ export function buildVatPrintModel(invoice, layout, options = {}) {
       right(formatQtyText(item.qty), L.xItemQty, y, ifs)
       right(money(isInclude ? unitNet(item) : item.appraisalPrice), L.xItemPrice, y, ifs)
 
-      const lineAmount = isInclude
+      const lineAmount = useInvoiceFigures
+        ? vatIncludedRowEx(item)
+        : isInclude
         ? unitNet(item) * Number(item.qty)
         : Number(item.appraisalPrice) * (1 - Number(item.discountPercent) / 100) / currencyRate * Number(item.qty)
       right(money(lineAmount), L.xItemAmount, y, ifs)
@@ -185,14 +200,13 @@ export function buildVatPrintModel(invoice, layout, options = {}) {
     }
 
     if (currentPage === totalPages - 1) {
-      // กติกาปัดทศนิยมของใบกำกับภาษี = ร้านเป็นผู้ตัดสินใจเลือก (TK202611250002) ไม่ใช่ dev
-      // ปัดจากยอดเต็มครั้งเดียว ยอดอาจต่างจากใบส่งของ (บิลต่อเนื่องที่ตัดทศนิยม) 1 สตางค์ ห้ามแก้จนกว่าร้านสั่ง
-      // โหมด include: แถวที่พิมพ์อาจบวกกันไม่เท่ายอด subtotal ที่พิมพ์ (เช่น INV261112012 แถวรวม 5,652.33 แต่พิมพ์ 5,652.34) — เป็นส่วนหนึ่งของกติกาที่ร้านเลือก ห้ามแก้
+      // ใบ vatIncluded (โหมด include 7%) ใช้ตัวเลขชุดเดียวกับ invoice ทุกช่อง (ปัดครึ่งขึ้นทีละแถว)
+      // ใบอื่น: กติกาปัดทศนิยมของใบกำกับภาษี = ร้านเป็นผู้ตัดสินใจเลือก (TK202611250002) ไม่ใช่ dev — ปัดจากยอดเต็มครั้งเดียว ห้ามแก้จนกว่าร้านสั่ง
       // ยอดต้องบวกกันลงตัวบนกระดาษ: ปัด subtotal ก่อน แล้ว VAT คิดจากยอดที่ปัดแล้ว ปัดอีกครั้ง รวม = subtotal + VAT
       const scale = showDecimals ? 2 : 0
-      const totalBeforeVatRounded = roundHalfUp(totalBeforeVat, scale)
-      const vatAmountRounded = roundHalfUp(totalBeforeVatRounded * vatPercent / 100, scale)
-      const totalAmountRounded = roundHalfUp(totalBeforeVatRounded + vatAmountRounded, scale)
+      const totalBeforeVatRounded = invoiceTotals ? invoiceTotals.afterSpecial : roundHalfUp(totalBeforeVat, scale)
+      const vatAmountRounded = invoiceTotals ? invoiceTotals.vatAmount : roundHalfUp(totalBeforeVatRounded * vatPercent / 100, scale)
+      const totalAmountRounded = invoiceTotals ? invoiceTotals.grandTotalRounded : roundHalfUp(totalBeforeVatRounded + vatAmountRounded, scale)
 
       right(money(totalBeforeVatRounded), L.xSubtotal, L.ySubtotal, hfs)
       right(money(vatAmountRounded), L.xVat, L.yVat, hfs)

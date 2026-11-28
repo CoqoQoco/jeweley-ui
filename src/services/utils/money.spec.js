@@ -7,7 +7,12 @@ import {
   convertedUnitPrice,
   lineAmount,
   computeDocumentTotals,
-  formatDocumentMoney
+  formatDocumentMoney,
+  round2,
+  vatIncludedUnitEx,
+  vatIncludedRowEx,
+  willBeVatIncluded,
+  computeInvoiceTotals
 } from './money.js'
 
 describe('isForeignCurrency', () => {
@@ -226,5 +231,97 @@ describe('formatDocumentMoney', () => {
     expect(formatDocumentMoney('abc')).toBe('0.00')
     expect(formatDocumentMoney(undefined)).toBe('0.00')
     expect(formatDocumentMoney(null)).toBe('0.00')
+  })
+})
+
+describe('round2', () => {
+  it('ปัดครึ่งขึ้น ไม่โดน float drift', () => {
+    expect(round2(1.005)).toBe(1.01)
+    expect(round2(2.675)).toBe(2.68)
+    expect(round2(-1.005)).toBe(-1.01)
+    expect(round2(2811.2149)).toBe(2811.21)
+  })
+})
+
+describe('vatIncludedUnitEx / vatIncludedRowEx', () => {
+  it('3008 → 2811.21 ต่อหน่วย', () => {
+    expect(vatIncludedUnitEx({ appraisalPrice: 3008, discountPercent: 0 })).toBe(2811.21)
+  })
+
+  it('แถว = round2(unitEx × qty)', () => {
+    expect(vatIncludedRowEx({ appraisalPrice: 3008, discountPercent: 0, qty: 3 })).toBe(8433.63)
+  })
+
+  it('ส่วนลด % ถูกหักก่อนถอด VAT', () => {
+    expect(vatIncludedUnitEx({ appraisalPrice: 1000, discountPercent: 10 })).toBe(841.12)
+  })
+})
+
+describe('willBeVatIncluded', () => {
+  it('THB && vat 0 → true', () => {
+    expect(willBeVatIncluded({ currencyUnit: 'THB', vat: 0 })).toBe(true)
+  })
+  it('vat > 0 หรือ US$ → false', () => {
+    expect(willBeVatIncluded({ currencyUnit: 'THB', vat: 7 })).toBe(false)
+    expect(willBeVatIncluded({ currencyUnit: 'US$', vat: 0 })).toBe(false)
+  })
+})
+
+describe('computeInvoiceTotals', () => {
+  const rows = (prices) => prices.map((p) => ({ appraisalPrice: p, discountPercent: 0, qty: 1 }))
+
+  it('INV261118022 (21 แถว) → 347214.94 / 24305.05 / 371519.99', () => {
+    const prices = [63400, 35040, 47840, 47920, 7920, 16480, 9360, 16000, 15880, 10480, 8720, 10280, 15840, 9520, 8200, 7480, 7360, 7560, 10720, 8720, 6800]
+    const t = computeInvoiceTotals(rows(prices), { vatIncluded: true, currencyUnit: 'THB', currencyRate: 1 })
+    expect(t.subTotal).toBe(347214.94)
+    expect(t.vatAmount).toBe(24305.05)
+    expect(t.grandTotalRounded).toBe(371519.99)
+  })
+
+  it('1424/3008/1616 → แถว 1330.84/2811.21/1510.28 รวม 5652.33 / 395.66 / 6047.99', () => {
+    const items = rows([1424, 3008, 1616])
+    expect(items.map((i) => vatIncludedRowEx(i))).toEqual([1330.84, 2811.21, 1510.28])
+    const t = computeInvoiceTotals(items, { vatIncluded: true, currencyUnit: 'THB' })
+    expect(t.subTotal).toBe(5652.33)
+    expect(t.vatAmount).toBe(395.66)
+    expect(t.grandTotalRounded).toBe(6047.99)
+  })
+
+  it('50010.24 ส่วนลดพิเศษ 10.24 → 46738.54 / 9.57 / 46728.97 / 3271.03 / 50000.00', () => {
+    const t = computeInvoiceTotals(rows([50010.24]), { vatIncluded: true, currencyUnit: 'THB', specialDiscount: 10.24 })
+    expect(t.subTotal).toBe(46738.54)
+    expect(t.specialDiscount).toBe(9.57)
+    expect(t.specialDiscountIncl).toBe(10.24)
+    expect(t.afterSpecial).toBe(46728.97)
+    expect(t.vatAmount).toBe(3271.03)
+    expect(t.grandTotalRounded).toBe(50000)
+  })
+
+  it('บวกเพิ่ม + ค่าขนส่ง ถอด VAT ทีละตัว (รับ freightAndInsurance ได้)', () => {
+    const t = computeInvoiceTotals(rows([1070]), { vatIncluded: true, specialAddition: 107, freightAndInsurance: 214 })
+    expect(t.subTotal).toBe(1000)
+    expect(t.specialAddition).toBe(100)
+    expect(t.freight).toBe(200)
+    expect(t.vatAmount).toBe(91)
+    expect(t.grandTotalRounded).toBe(1391)
+  })
+
+  it('ไม่ vatIncluded → ใช้ computeDocumentTotals เดิม (vat 7% ก่อน VAT)', () => {
+    const t = computeInvoiceTotals(rows([1000]), { vatIncluded: false, currencyUnit: 'THB', currencyRate: 1, vatPercent: 7 })
+    expect(t.subTotal).toBe(1000)
+    expect(t.vatAmount).toBeCloseTo(70, 6)
+    expect(t.grandTotalRounded).toBe(1070)
+  })
+})
+
+describe('willBeVatIncluded — currency/rate (mirror server)', () => {
+  it('สกุลว่างไม่ใช่ THB', () => {
+    expect(willBeVatIncluded({ currencyUnit: '', vat: 0 })).toBe(false)
+    expect(willBeVatIncluded({ vat: 0 })).toBe(false)
+  })
+  it('THB ต้อง rate == 1 (ไม่ส่ง = 1)', () => {
+    expect(willBeVatIncluded({ currencyUnit: 'THB', currencyRate: 1, vat: 0 })).toBe(true)
+    expect(willBeVatIncluded({ currencyUnit: 'THB', vat: 0 })).toBe(true)
+    expect(willBeVatIncluded({ currencyUnit: 'THB', currencyRate: 35, vat: 0 })).toBe(false)
   })
 })

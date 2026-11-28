@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 
 import { COMPANY_INFO, COMPANY_SOCIAL, socialUrl } from '@/config/company-info.js'
 import { PAYMENT_METHOD_BY_CODE } from '@/constants/payment-methods.js'
+import { computeInvoiceTotals, vatIncludedUnitEx, vatIncludedRowEx } from '@/services/utils/money.js'
 
 // ไฟล์นี้สร้างใบเสร็จเป็น "ข้อความล้วนอังกฤษ" (ASCII-only, ไม่ผ่าน pdfmake/ภาพ) แล้วส่งเข้าคิวงานพิมพ์ —
 // เครื่องกลางที่หน้า /print-station (views/print-station/index-view.vue) ดึงงานจากคิวแล้วส่งต่อให้
@@ -237,11 +238,28 @@ export class ReceiptTextBuilder {
     this.freightAndInsurance = toNumber(this.data.freightAndInsurance)
     this.vatPercent = toNumber(this.data.vatPercent)
 
-    this.subtotal = this.calculateSubtotal()
+    // vatIncluded (THB ราคารวม VAT แล้ว): แถว/ยอดรวม/VAT ต้องตรงกับ invoice — คิดผ่าน computeInvoiceTotals (special ถอด VAT แล้ว)
+    this.vatIncluded = !!this.data.vatIncluded
+    const invoiceTotals = this.vatIncluded
+      ? computeInvoiceTotals(this.items, {
+        vatIncluded: true,
+        specialDiscount: this.specialDiscount,
+        specialAddition: this.specialAddition,
+        freight: this.freightAndInsurance
+      })
+      : null
+    if (invoiceTotals) {
+      this.specialDiscount = invoiceTotals.specialDiscount
+      this.specialAddition = invoiceTotals.specialAddition
+      this.freightAndInsurance = invoiceTotals.freight
+      this.vatPercent = invoiceTotals.vatPercent
+    }
+
+    this.subtotal = invoiceTotals ? invoiceTotals.subTotal : this.calculateSubtotal()
     this.totalAfterAdjust = this.subtotal - this.specialDiscount + this.specialAddition
     this.totalBeforeVat = this.totalAfterAdjust + this.freightAndInsurance
-    this.vatAmount = (this.totalBeforeVat * this.vatPercent) / 100
-    this.calculatedGrandTotal = this.totalBeforeVat + this.vatAmount
+    this.vatAmount = invoiceTotals ? invoiceTotals.vatAmount : (this.totalBeforeVat * this.vatPercent) / 100
+    this.calculatedGrandTotal = invoiceTotals ? invoiceTotals.grandTotalRounded : this.totalBeforeVat + this.vatAmount
 
     // grandTotal/paidAmount/remainingAmount จาก backend เป็นค่าหลักเสมอถ้าส่งมา ห้ามคำนวณทับ (เหมือน receipt-80mm-builder.js)
     this.grandTotal = this.isProvided(this.data.grandTotal)
@@ -324,8 +342,8 @@ export class ReceiptTextBuilder {
       const qty = toNumber(item?.qty)
       const discountPercent = toNumber(item?.discountPercent)
       const priceAfterDiscount = price * (1 - discountPercent / 100)
-      const unitPrice = priceAfterDiscount / this.currencyRate
-      const total = unitPrice * qty
+      const unitPrice = this.vatIncluded ? vatIncludedUnitEx(item) : priceAfterDiscount / this.currencyRate
+      const total = this.vatIncluded ? vatIncludedRowEx(item) : unitPrice * qty
       const description = item?.description || item?.stockNumber || '-'
 
       wrapText(description).forEach((line) => lines.push(line))

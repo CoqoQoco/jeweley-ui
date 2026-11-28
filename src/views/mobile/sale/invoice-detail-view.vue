@@ -106,23 +106,23 @@
         </div>
         <div v-if="invoiceData.specialDiscount" class="summary-row">
           <span class="summary-label">{{ $t('view.mobile.sale.invoiceSpecialDiscountLabel') }}</span>
-          <span class="summary-value discount">-{{ formatCurrency(invoiceData.specialDiscount) }}</span>
+          <span class="summary-value discount">-{{ formatCurrency(shownSpecialDiscount) }}</span>
         </div>
         <div v-if="invoiceData.specialAddition" class="summary-row">
           <span class="summary-label">{{ $t('view.mobile.sale.invoiceSpecialAdditionLabel') }}</span>
-          <span class="summary-value addition">+{{ formatCurrency(invoiceData.specialAddition) }}</span>
+          <span class="summary-value addition">+{{ formatCurrency(shownSpecialAddition) }}</span>
         </div>
         <div v-if="invoiceData.freightAndInsurance" class="summary-row">
           <span class="summary-label">{{ $t('view.mobile.sale.invoiceFreightLabel') }}</span>
-          <span class="summary-value">{{ formatCurrency(invoiceData.freightAndInsurance) }}</span>
+          <span class="summary-value">{{ formatCurrency(shownFreight) }}</span>
         </div>
         <div class="summary-divider"></div>
         <div class="summary-row">
           <span class="summary-label">{{ $t('view.mobile.sale.invoiceBeforeVatLabel') }}</span>
           <span class="summary-value">{{ formatCurrency(totalBeforeVat) }}</span>
         </div>
-        <div v-if="invoiceData.vatPercent" class="summary-row">
-          <span class="summary-label">{{ $t('view.mobile.sale.invoiceVatLabel', { percent: invoiceData.vatPercent }) }}</span>
+        <div v-if="shownVatPercent" class="summary-row">
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceVatLabel', { percent: shownVatPercent }) }}</span>
           <span class="summary-value">{{ formatCurrency(vatAmount) }}</span>
         </div>
         <div class="summary-divider"></div>
@@ -315,7 +315,7 @@ import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { fetchVoidDocCounts, formatCertificateNos, buildVoidDocsHtml } from '@/services/helper/invoice/void-docs.js'
 import { useCertificateApiStore } from '@/stores/modules/api/sale/certificate-store.js'
 import { getPaymentStatus } from '@/services/utils/payment-status.js'
-import { computeDocumentTotals } from '@/services/utils/money.js'
+import { computeInvoiceTotals } from '@/services/utils/money.js'
 import { PAYMENT_METHOD_BY_CODE, MOBILE_SALE_PAYMENT_LABEL_KEYS } from '@/constants/payment-methods.js'
 import dayjs from 'dayjs'
 import SoItemCard from './components/so-item-card.vue'
@@ -397,10 +397,31 @@ export default {
       return Number(this.invoiceData?.currencyRate) || 1
     },
 
-    // ยอดรวม F.O.B. — ต้องคิดจากตัวกลาง computeDocumentTotals เพื่อให้เกณฑ์การปัดตรงกับใบ PDF (half-up)
+    vatIncluded() {
+      return !!this.invoiceData?.vatIncluded
+    },
+
+    // vatIncluded: header vat = 0 แต่แสดง VAT 7% และ special เป็นยอดก่อน VAT (ตรงกับ web)
+    shownVatPercent() {
+      return this.vatIncluded ? this.documentTotals.vatPercent : this.invoiceData?.vatPercent
+    },
+
+    shownSpecialDiscount() {
+      return this.vatIncluded ? this.documentTotals.specialDiscount : this.invoiceData?.specialDiscount
+    },
+
+    shownSpecialAddition() {
+      return this.vatIncluded ? this.documentTotals.specialAddition : this.invoiceData?.specialAddition
+    },
+
+    shownFreight() {
+      return this.vatIncluded ? this.documentTotals.freight : this.invoiceData?.freightAndInsurance
+    },
+
+    // ยอดรวม — ต้องคิดจากตัวกลาง computeInvoiceTotals เพื่อให้เกณฑ์การปัดตรงกับใบ PDF (vatIncluded = ถอด VAT ทีละแถว ปัดครึ่งขึ้น)
     documentTotals() {
-      return computeDocumentTotals({
-        items: this.invoiceItems,
+      return computeInvoiceTotals(this.invoiceItems, {
+        vatIncluded: this.vatIncluded,
         currencyRate: this.invoiceData?.currencyRate,
         currencyUnit: this.invoiceData?.currencyUnit,
         specialDiscount: this.invoiceData?.specialDiscount,

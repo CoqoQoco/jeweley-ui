@@ -60,13 +60,20 @@
     />
 
     <div :class="['form-row mb-3', hasSupport ? 'three-col' : 'two-col']">
-      <FormFieldGeneric :label="$t('view.sale.billingNote.vatPercent')" :required="true">
-        <InputTextGeneric
-          type="number"
-          step="0.01"
-          :modelValue="vatPercent"
-          @update:modelValue="$emit('update:vatPercent', $event)"
-        />
+      <FormFieldGeneric :label="$t('view.sale.billingNote.vatPercent')" :required="!vatLocked">
+        <div class="vat-input-row">
+          <InputTextGeneric
+            type="number"
+            step="0.01"
+            :modelValue="vatPercent"
+            :disabled="vatLocked"
+            @update:modelValue="$emit('update:vatPercent', $event)"
+          />
+          <span class="vat-suffix">%</span>
+        </div>
+        <div v-if="vatLocked" class="vat-locked-reason">
+          {{ $t('view.sale.billingNote.vatLockedReason', { percent: vatPercent }) }}
+        </div>
       </FormFieldGeneric>
       <FormFieldGeneric v-if="hasSupport" :label="$t('view.sale.billingNote.supportPercent')">
         <InputTextGeneric
@@ -146,6 +153,7 @@ export default {
     silverResizeAmount: { type: Number, default: 0 },
     totalResize: { type: Number, default: 0 },
     vatPercent: { type: [String, Number], default: 7 },
+    vatLocked: { type: Boolean, default: false },
     supportPercent: { type: [String, Number], default: 0 },
     hasSupport: { type: Boolean, default: false },
     remark: { type: String, default: '' },
@@ -198,6 +206,23 @@ export default {
       grid-template-columns: 1fr;
     }
   }
+}
+
+.vat-input-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+}
+
+.vat-suffix {
+  font-size: var(--fs-base);
+  color: var(--base-font-color);
+}
+
+.vat-locked-reason {
+  margin-top: var(--sp-xs);
+  font-size: var(--fs-base);
+  color: var(--base-sub-color);
 }
 
 .total-resize-row {

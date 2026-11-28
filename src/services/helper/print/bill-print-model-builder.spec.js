@@ -171,7 +171,7 @@ describe('buildBillPrintModel - footer VAT totals', () => {
     expect(b.totals.vat).toBeCloseTo(651, 2)
   })
 
-  it('subVat mode + showVat 7 truncates to 2dp: 4345.79 x2 = 8691.58 + 608.41 = 9299.99', () => {
+  it('subVat mode + showVat 7 rounds half-up to 2dp: 4345.79 x2 = 8691.58 + 608.41 = 9299.99', () => {
     const model = buildBillPrintModel(inv, { ...LAYOUT, showVat: true, summaryVatPercent: 7, unitPriceMode: 'subVat', unitVatPercent: 7 })
     expect(model.totals).toEqual({ subtotal: 8691.58, vat: 608.41, grandTotal: 9299.99 })
   })
@@ -189,7 +189,7 @@ describe('buildBillPrintModel - footer VAT totals', () => {
   })
 })
 
-describe('buildBillPrintModel - truncation to 2 decimals (continuous bill)', () => {
+describe('buildBillPrintModel - round half-up to 2 decimals (continuous bill)', () => {
   const mk = (prices, qty = 1) => ({
     invoiceNo: 'X', invoiceDate: '2026-11-01', customer: {}, soNumbers: [], currencyRate: 1,
     items: prices.map((p) => ({ qty, appraisalPrice: p, discountPercent: 0 }))
@@ -205,35 +205,68 @@ describe('buildBillPrintModel - truncation to 2 decimals (continuous bill)', () 
     expect(computeBillTotals(mk([1424, 3008, 1616]), SUB)).toEqual(model.totals)
   })
 
-  it('cuts instead of rounding when the third decimal is >= 5', () => {
+  it('rounds up when the third decimal is >= 5', () => {
     const model = buildBillPrintModel(mk([1.07 * 100.006]), { ...LAYOUT, unitPriceMode: 'subVat', unitVatPercent: 7, showVat: false })
-    expect(model.totals.subtotal).toBe(100)
+    expect(model.totals.subtotal).toBe(100.01)
     const m2 = buildBillPrintModel(mk([100.019]), { ...LAYOUT, showVat: false })
-    expect(m2.totals.subtotal).toBe(100.01)
-    expect(texts(m2)).toContain('100.01')
+    expect(m2.totals.subtotal).toBe(100.02)
+    expect(texts(m2)).toContain('100.02')
   })
 
-  it('truncates the line amount after unit price when qty > 1', () => {
+  it('rounds the line amount after the unit price when qty > 1', () => {
     const model = buildBillPrintModel(mk([1424], 3), SUB)
     expect(texts(model)).toContain('1,330.84')
     expect(model.totals.subtotal).toBe(3992.52)
-    expect(model.totals.vat).toBe(279.47)
-    expect(model.totals.grandTotal).toBe(4271.99)
+    expect(model.totals.vat).toBe(279.48)
+    expect(model.totals.grandTotal).toBe(4272)
   })
 
   it('does not lose a cent on float traps (0.29, 1.005, 1330.84)', () => {
     const t = (price) => buildBillPrintModel(mk([price]), { ...LAYOUT, showVat: false }).totals.subtotal
     expect(t(0.29)).toBe(0.29)
-    expect(t(1.005)).toBe(1)
+    expect(t(1.005)).toBe(1.01)
     expect(t(1330.84)).toBe(1330.84)
     expect(t(1330.8399999)).toBe(1330.84)
     expect(t(4.35)).toBe(4.35)
     expect(t(1.15)).toBe(1.15)
   })
 
-  it('VAT is cut: 100.01 x 7% = 7.0007 -> 7.00; 99.99 x 7% = 6.9993 -> 6.99', () => {
+  it('VAT is rounded half-up: 100.01 x 7% = 7.0007 -> 7.00; 99.99 x 7% = 6.9993 -> 7.00', () => {
     expect(buildBillPrintModel(mk([100.01]), { ...LAYOUT, showVat: true, summaryVatPercent: 7 }).totals.vat).toBe(7)
-    expect(buildBillPrintModel(mk([99.99]), { ...LAYOUT, showVat: true, summaryVatPercent: 7 }).totals.vat).toBe(6.99)
+    expect(buildBillPrintModel(mk([99.99]), { ...LAYOUT, showVat: true, summaryVatPercent: 7 }).totals.vat).toBe(7)
+  })
+})
+
+describe('buildBillPrintModel - vatIncluded invoice (subVat mode uses invoice figures)', () => {
+  const mk = (prices, extra = {}) => ({
+    invoiceNo: 'X', invoiceDate: '2026-11-01', customer: {}, soNumbers: [], currencyRate: 1, vatIncluded: true,
+    items: prices.map((p) => ({ qty: 1, appraisalPrice: p, discountPercent: 0 })),
+    ...extra
+  })
+  const SUB = { ...LAYOUT, showVat: true, summaryVatPercent: 7, unitPriceMode: 'subVat', unitVatPercent: 7 }
+  const texts = (model) => model.pages[0].map((p) => p.text)
+
+  it('INV261118022 (21 rows) → 347,214.94 / 24,305.05 / 371,519.99', () => {
+    const prices = [63400, 35040, 47840, 47920, 7920, 16480, 9360, 16000, 15880, 10480, 8720, 10280, 15840, 9520, 8200, 7480, 7360, 7560, 10720, 8720, 6800]
+    const model = buildBillPrintModel(mk(prices), SUB)
+    expect(model.totals).toEqual({ subtotal: 347214.94, vat: 24305.05, grandTotal: 371519.99 })
+    expect(computeBillTotals(mk(prices), SUB)).toEqual(model.totals)
+  })
+
+  it('1424/3008/1616 rows 1330.84/2811.21/1510.28 → 5,652.33 / 395.66 / 6,047.99', () => {
+    const model = buildBillPrintModel(mk([1424, 3008, 1616]), SUB)
+    expect(model.totals).toEqual({ subtotal: 5652.33, vat: 395.66, grandTotal: 6047.99 })
+    ;['1,330.84', '2,811.21', '1,510.28'].forEach((v) => expect(texts(model)).toContain(v))
+  })
+
+  it('includes specials: 50010.24 less special discount 10.24 → 46,728.97 / 3,271.03 / 50,000.00', () => {
+    const model = buildBillPrintModel(mk([50010.24], { specialDiscount: 10.24 }), SUB)
+    expect(model.totals).toEqual({ subtotal: 46728.97, vat: 3271.03, grandTotal: 50000 })
+  })
+
+  it('hiding VAT drops VAT from the grand total (as before)', () => {
+    const model = buildBillPrintModel(mk([1424]), { ...SUB, showVat: false })
+    expect(model.totals).toEqual({ subtotal: 1330.84, vat: 0, grandTotal: 1330.84 })
   })
 })
 

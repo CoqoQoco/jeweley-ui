@@ -578,6 +578,7 @@
                             @input="$forceUpdate()"
                             placeholder="0"
                           />
+                          <small v-if="isVatIncluded" class="ml-2 text-muted">{{ $t('view.sale.saleOrder.vatIncludedHint') }}</small>
                         </div>
                       </template>
                     </Column>
@@ -816,7 +817,15 @@ import { useSaleChannelApiStore } from '@/stores/modules/api/sale/sale-channel-s
 import { usrSaleOrderDepositApiStore } from '@/stores/modules/api/sale/sale-order-deposit-store.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 import { getPaymentApiName } from '@/constants/payment-methods.js'
-import { computeDocumentTotals, convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
+import {
+  computeInvoiceTotals,
+  convertedUnitPrice as baseConvertedUnitPrice,
+  lineAmount as baseLineAmount,
+  formatDocumentMoney,
+  vatIncludedUnitEx,
+  vatIncludedRowEx,
+  willBeVatIncluded
+} from '@/services/utils/money.js'
 import { isPlaceholderItem } from '@/services/utils/copy-item.js'
 import { hasMarginAccess } from '@/services/permission/margin-access.js'
 import { classifyMaterial, getDocMaterialMode, getMaterialLabel } from '@/services/helper/sale-material-columns.js'
@@ -954,10 +963,19 @@ export default {
       return this.stockItems.filter((item) => this.selectedItems.includes(item.id))
     },
 
-    // ยอดรวม F.O.B. ของรายการที่เลือก — ต้องคิดจากตัวกลาง computeDocumentTotals เพื่อให้เกณฑ์การปัดตรงกับใบ PDF (half-up)
+    // THB && VAT = 0 → server จะตั้งใบนี้เป็น vatIncluded (ราคารวม VAT แล้ว) — preview ต้องใช้กติกาเดียวกัน
+    isVatIncluded() {
+      return willBeVatIncluded({
+        currencyUnit: this.saleOrderData.currencyUnit || 'THB',
+        currencyRate: this.saleOrderData.currencyRate || 1.0,
+        vat: this.vatPercent
+      })
+    },
+
+    // ยอดรวมของรายการที่เลือก — ต้องคิดจากตัวกลาง computeInvoiceTotals เพื่อให้ตรงกับยอดที่ server เก็บและใบ PDF
     documentTotals() {
-      return computeDocumentTotals({
-        items: this.selectedStockItemsForTotals,
+      return computeInvoiceTotals(this.selectedStockItemsForTotals, {
+        vatIncluded: this.isVatIncluded,
         currencyRate: this.saleOrderData.currencyRate,
         currencyUnit: this.saleOrderData.currencyUnit,
         specialDiscount: this.specialDiscount,
@@ -1141,8 +1159,13 @@ export default {
       }).format(amount || 0)
     },
 
-    convertedUnitPrice,
-    lineAmount,
+    convertedUnitPrice(item, rate, unit) {
+      return this.isVatIncluded ? vatIncludedUnitEx(item) : baseConvertedUnitPrice(item, rate, unit)
+    },
+
+    lineAmount(item, rate, unit) {
+      return this.isVatIncluded ? vatIncludedRowEx(item) : baseLineAmount(item, rate, unit)
+    },
 
     formatDocMoney(value) {
       return formatDocumentMoney(value)
@@ -1163,7 +1186,7 @@ export default {
     // คำนวณราคาแปลงสกุลเงิน
     getConvertedPrice(item) {
       const shapedItem = { appraisalPrice: this.getAppraisalPrice(item), discountPercent: item.discountPercent }
-      return convertedUnitPrice(shapedItem, this.saleOrderData.currencyRate, this.saleOrderData.currencyUnit)
+      return this.convertedUnitPrice(shapedItem, this.saleOrderData.currencyRate, this.saleOrderData.currencyUnit)
     },
 
     // คำนวณราคารวมของแต่ละรายการ
@@ -1173,7 +1196,7 @@ export default {
         discountPercent: item.discountPercent,
         qty: item.qty
       }
-      return lineAmount(shapedItem, this.saleOrderData.currencyRate, this.saleOrderData.currencyUnit)
+      return this.lineAmount(shapedItem, this.saleOrderData.currencyRate, this.saleOrderData.currencyUnit)
     },
 
     // Format ราคาพร้อม currency

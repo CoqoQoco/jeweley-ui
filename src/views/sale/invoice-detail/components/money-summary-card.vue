@@ -14,17 +14,17 @@
     </div>
 
     <div v-if="isOpen" class="money-summary-body">
-      <span class="ms-label">{{ $t('view.sale.invoiceDetail.subtotal') }}</span>
+      <span class="ms-label">{{ subtotalLabel }}</span>
       <span class="ms-value">{{ formatAmount(subTotal) }}</span>
 
-      <span class="ms-label">{{ $t('view.sale.invoiceDetail.specialDiscount') }}</span>
-      <span class="ms-value">-{{ formatAmount(invoiceData.specialDiscount || 0) }}</span>
+      <span class="ms-label">{{ $t('view.sale.invoiceDetail.specialDiscount') }}{{ exVatSuffix }}</span>
+      <span class="ms-value">-{{ formatAmount(shownSpecialDiscount) }}</span>
 
-      <span class="ms-label">{{ $t('view.sale.invoiceDetail.specialSurcharge') }}</span>
-      <span class="ms-value">+{{ formatAmount(invoiceData.specialAddition || 0) }}</span>
+      <span class="ms-label">{{ $t('view.sale.invoiceDetail.specialSurcharge') }}{{ exVatSuffix }}</span>
+      <span class="ms-value">+{{ formatAmount(shownSpecialAddition) }}</span>
 
-      <span class="ms-label">{{ $t('view.sale.invoiceDetail.freightInsuranceRow') }}</span>
-      <span class="ms-value">{{ formatAmount(invoiceData.freightAndInsurance || 0) }}</span>
+      <span class="ms-label">{{ $t('view.sale.invoiceDetail.freightInsuranceRow') }}{{ exVatSuffix }}</span>
+      <span class="ms-value">{{ formatAmount(shownFreight) }}</span>
 
       <div class="ms-rule"></div>
 
@@ -39,7 +39,9 @@
       <span class="ms-label ms-label--total">{{ $t('view.sale.quotation.payableTotal') }}</span>
       <span class="ms-value ms-value--total">{{ formatAmount(grandTotalRounded) }} {{ currencyUnit }}</span>
 
-      <div class="ms-footnote">{{ footnoteText }}</div>
+      <div class="ms-footnote">
+        <div v-for="line in footnoteLines" :key="line">{{ line }}</div>
+      </div>
     </div>
   </div>
 </template>
@@ -47,6 +49,7 @@
 <script>
 import ButtonGeneric from '@/components/generic/ButtonGeneric.vue'
 import { formatDocCurrency } from '@/services/utils/decimal.js'
+import { VAT_INCLUDED_PERCENT } from '@/services/utils/money.js'
 
 export default {
   name: 'MoneySummaryCard',
@@ -83,6 +86,22 @@ export default {
     grandTotalRounded: {
       type: Number,
       default: 0
+    },
+    vatIncluded: {
+      type: Boolean,
+      default: false
+    },
+    specialDiscountEx: {
+      type: Number,
+      default: 0
+    },
+    specialAdditionEx: {
+      type: Number,
+      default: 0
+    },
+    freightEx: {
+      type: Number,
+      default: 0
     }
   },
 
@@ -97,12 +116,50 @@ export default {
       return this.invoiceData?.currencyUnit || 'THB'
     },
 
+    effectiveVatPercent() {
+      return this.vatIncluded ? VAT_INCLUDED_PERCENT : (this.invoiceData?.vatPercent || 0)
+    },
+
+    subtotalLabel() {
+      return this.vatIncluded
+        ? this.$t('view.sale.invoiceDetail.subtotalBeforeVat')
+        : this.$t('view.sale.invoiceDetail.subtotal')
+    },
+
+    shownSpecialDiscount() {
+      return this.vatIncluded ? this.specialDiscountEx : (this.invoiceData.specialDiscount || 0)
+    },
+
+    shownSpecialAddition() {
+      return this.vatIncluded ? this.specialAdditionEx : (this.invoiceData.specialAddition || 0)
+    },
+
+    shownFreight() {
+      return this.vatIncluded ? this.freightEx : (this.invoiceData.freightAndInsurance || 0)
+    },
+
     vatLabel() {
-      return this.$t('view.sale.invoiceDetail.vatPercentRow', { percent: this.invoiceData?.vatPercent || 0 })
+      return this.$t('view.sale.invoiceDetail.vatPercentRow', { percent: this.effectiveVatPercent })
     },
 
     roundingDiff() {
       return this.grandTotalRounded - this.grandTotalRaw
+    },
+
+    exVatSuffix() {
+      return this.vatIncluded ? ' ' + this.$t('view.sale.invoiceDetail.beforeVatSuffix') : ''
+    },
+
+    footnoteLines() {
+      if (this.vatIncluded) {
+        const prefix = 'view.sale.invoiceDetail.moneySummaryFootnoteVatIncluded'
+        return [
+          this.$t(prefix + '1', { percent: VAT_INCLUDED_PERCENT }),
+          this.$t(prefix + '2'),
+          this.$t(prefix + '3')
+        ]
+      }
+      return [this.footnoteText]
     },
 
     footnoteText() {
@@ -200,8 +257,8 @@ export default {
 
 .ms-footnote {
   grid-column: 1 / -1;
-  text-align: right;
-  font-size: var(--fs-sm);
+  text-align: left;
+  font-size: var(--fs-base);
   color: var(--base-sub-color);
 }
 </style>

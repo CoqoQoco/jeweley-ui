@@ -57,9 +57,9 @@
             <Column :header="$t('view.sale.saleOrder.discountPercent')" :frozen="!!frozenCols['discountPercent']" :alignFrozen="frozenCols['discountPercent'] || undefined" />
             <Column :header="$t('view.sale.invoiceDetail.priceAfterDiscount')" :frozen="!!frozenCols['discountPrice']" :alignFrozen="frozenCols['discountPrice'] || undefined" />
             <Column :header="$t('view.sale.saleOrder.convertedRate')" :frozen="!!frozenCols['currencyRate']" :alignFrozen="frozenCols['currencyRate'] || undefined" />
-            <Column :header="'ราคาแปลง (' + (invoiceData.currencyUnit || 'THB') + ')'" :frozen="!!frozenCols['priceAfterMultiply']" :alignFrozen="frozenCols['priceAfterMultiply'] || undefined" />
+            <Column :header="priceColumnHeader" :frozen="!!frozenCols['priceAfterMultiply']" :alignFrozen="frozenCols['priceAfterMultiply'] || undefined" />
             <Column :header="$t('view.sale.quotation.quantity')" :frozen="!!frozenCols['qty']" :alignFrozen="frozenCols['qty'] || undefined" />
-            <Column :header="'รวมราคา (' + (invoiceData.currencyUnit || 'THB') + ')'" :frozen="!!frozenCols['total']" :alignFrozen="frozenCols['total'] || undefined" />
+            <Column :header="totalColumnHeader" :frozen="!!frozenCols['total']" :alignFrozen="frozenCols['total'] || undefined" />
           </Row>
         </ColumnGroup>
 
@@ -318,7 +318,7 @@
 
         <Column
           field="priceAfterMultiply"
-          :header="'ราคาแปลง (' + (formSaleOrder.currencyUnit || '') + ') '"
+          :header="priceColumnHeader"
           style="min-width: 150px"
           :frozen="!!frozenCols['priceAfterMultiply']"
           :alignFrozen="frozenCols['priceAfterMultiply'] || undefined"
@@ -326,7 +326,7 @@
           <template #body="slotProps">
             <div class="qty-container">
               <span>{{
-                formatDocMoney(convertedUnitPrice(slotProps.data, formSaleOrder.currencyRate, formSaleOrder.currencyUnit))
+                formatDocMoney(unitPriceOf(slotProps.data))
               }}</span>
             </div>
           </template>
@@ -356,7 +356,7 @@
 
         <Column
           field="total"
-          :header="'รวมราคา (' + (formSaleOrder.currencyUnit || '') + ') '"
+          :header="totalColumnHeader"
           style="min-width: 150px"
           :frozen="!!frozenCols['total']"
           :alignFrozen="frozenCols['total'] || undefined"
@@ -364,7 +364,7 @@
           <template #body="slotProps">
             <div class="qty-container">
               <span>{{
-                formatDocMoney(lineAmount(slotProps.data, formSaleOrder.currencyRate, formSaleOrder.currencyUnit))
+                formatDocMoney(rowAmountOf(slotProps.data))
               }}</span>
             </div>
           </template>
@@ -473,7 +473,7 @@ import Row from 'primevue/row'
 import imagePreview from '@/components/prime-vue/ImagePreview.vue'
 import dayjs from 'dayjs'
 import { formatDocCurrency } from '@/services/utils/decimal.js'
-import { convertedUnitPrice, lineAmount, formatDocumentMoney } from '@/services/utils/money.js'
+import { convertedUnitPrice, lineAmount, formatDocumentMoney, vatIncludedUnitEx, vatIncludedRowEx } from '@/services/utils/money.js'
 import activeRowHighlight from '@/composables/useActiveRowHighlight.js'
 
 import { classifyMaterial, getColumnHeaders, getDocMaterialMode, getMaterialLabel } from '@/services/helper/sale-material-columns.js'
@@ -513,6 +513,17 @@ export default {
   },
 
   computed: {
+    currencyLabel() {
+      return this.invoiceData.currencyUnit || this.formSaleOrder.currencyUnit || 'THB'
+    },
+    priceColumnHeader() {
+      const key = this.invoiceData.vatIncluded ? 'priceExVatHeader' : 'convertedPriceHeader'
+      return this.$t(`view.sale.invoiceDetail.${key}`, { currency: this.currencyLabel })
+    },
+    totalColumnHeader() {
+      const key = this.invoiceData.vatIncluded ? 'lineTotalExVatHeader' : 'lineTotalHeader'
+      return this.$t(`view.sale.invoiceDetail.${key}`, { currency: this.currencyLabel })
+    },
     materialMode() {
       return getDocMaterialMode(this.invoiceItems)
     },
@@ -599,8 +610,14 @@ export default {
       if (!value && value !== 0) return '0.00'
       return formatDocCurrency(value, this.invoiceData.currencyUnit || this.formSaleOrder.currencyUnit, 'en-US')
     },
-    convertedUnitPrice,
-    lineAmount,
+    unitPriceOf(item) {
+      if (this.invoiceData.vatIncluded) return vatIncludedUnitEx(item)
+      return convertedUnitPrice(item, this.formSaleOrder.currencyRate, this.formSaleOrder.currencyUnit)
+    },
+    rowAmountOf(item) {
+      if (this.invoiceData.vatIncluded) return vatIncludedRowEx(item)
+      return lineAmount(item, this.formSaleOrder.currencyRate, this.formSaleOrder.currencyUnit)
+    },
     formatDocMoney(value) {
       return formatDocumentMoney(value)
     },
@@ -682,6 +699,7 @@ export default {
     },
     getConvertedPrice(item) {
       const shapedItem = { appraisalPrice: this.getAppraisalPrice(item), discountPercent: item.discountPercent }
+      if (this.invoiceData.vatIncluded) return vatIncludedUnitEx(shapedItem)
       const currencyUnit = this.invoiceData.currencyUnit || this.formSaleOrder.currencyUnit
       return convertedUnitPrice(shapedItem, this.invoiceData.currencyRate, currencyUnit)
     },
@@ -691,6 +709,7 @@ export default {
         discountPercent: item.discountPercent,
         qty: item.qty
       }
+      if (this.invoiceData.vatIncluded) return vatIncludedRowEx(shapedItem)
       const currencyUnit = this.invoiceData.currencyUnit || this.formSaleOrder.currencyUnit
       return lineAmount(shapedItem, this.invoiceData.currencyRate, currencyUnit)
     },

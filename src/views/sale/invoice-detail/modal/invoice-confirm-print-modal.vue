@@ -809,6 +809,7 @@ export default {
       billVatOverridden: false,
       billVatSavedShowVat: true,
       billVatTouched: false,
+      billVatIncludedSaved: null,
       autoPreviewTimer: null
     }
   },
@@ -920,7 +921,15 @@ export default {
         appraisalPrice: Number(i.appraisalPrice) || 0,
         discountPercent: Number(i.discountPercent) || 0
       }))
-      return computeBillTotals({ items, currencyRate: this.invoiceData?.currencyRate }, this.billElementFlags)
+      const d = this.invoiceData || {}
+      return computeBillTotals({
+        items,
+        currencyRate: d.currencyRate,
+        vatIncluded: !!d.vatIncluded,
+        specialDiscount: d.specialDiscount,
+        specialAddition: d.specialAddition,
+        freightAndInsurance: d.freightAndInsurance
+      }, this.billElementFlags)
     },
 
     showUseSubVatBtn() {
@@ -993,6 +1002,7 @@ export default {
           this.billVatTouched = false
           this.taxVatPercent = defaultTaxVatPercent(this.invoiceData)
           this.taxVatMode = defaultTaxVatMode(this.invoiceData)
+          this.applyBillVatIncludedDefault()
           this.applyBillVatDefault()
         }
       },
@@ -1014,6 +1024,7 @@ export default {
       } else {
         this.selectedPrinter = null
       }
+      this.applyBillVatIncludedDefault()
       this.applyBillVatDefault()
     }
   },
@@ -1303,6 +1314,28 @@ export default {
       return dayjs(date).format('DD/MM/YYYY')
     },
 
+    // ใบ vatIncluded (THB ราคารวม VAT แล้ว): บิลต่อเนื่องเริ่มที่โหมดถอด VAT + แสดง VAT ท้ายบิล เพื่อให้ตัวเลขตรงกับ invoice
+    // ค่า 4 ตัวนี้ไม่ถูกบันทึกลง storage (คืนค่าเดิมตอนบันทึก) กันไปกระทบใบอื่น
+    applyBillVatIncludedDefault() {
+      const apply = this.paperSize === 'bill' && !!this.invoiceData?.vatIncluded
+      if (apply && !this.billVatIncludedSaved) {
+        const f = this.billElementFlags
+        this.billVatIncludedSaved = {
+          unitPriceMode: f.unitPriceMode,
+          showVat: f.showVat,
+          unitVatPercent: f.unitVatPercent,
+          summaryVatPercent: f.summaryVatPercent
+        }
+        f.unitPriceMode = 'subVat'
+        f.showVat = true
+        f.unitVatPercent = 7
+        f.summaryVatPercent = 7
+      } else if (!apply && this.billVatIncludedSaved) {
+        Object.assign(this.billElementFlags, this.billVatIncludedSaved)
+        this.billVatIncludedSaved = null
+      }
+    },
+
     applyBillVatDefault() {
       const shouldOverride = this.paperSize === 'bill' && this.invoiceVatPercent === 0
         && this.billElementFlags.unitPriceMode === 'tag' && !this.billVatTouched
@@ -1349,6 +1382,7 @@ export default {
       this.applyBillVatDefault()
       const toSave = { ...this.billElementFlags }
       if (this.billVatOverridden) toSave.showVat = this.billVatSavedShowVat
+      if (this.billVatIncludedSaved) Object.assign(toSave, this.billVatIncludedSaved)
       if (this.draftMode) return
       storage.setItem('bill-print-column-flags', JSON.stringify(toSave))
     },

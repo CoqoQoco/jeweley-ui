@@ -233,26 +233,30 @@
               <div class="p-2">
                 <div class="summary-grid">
                   <div class="summary-row">
-                    <span class="summary-label">{{ $t('view.sale.invoiceDetail.subtotal') }}:</span>
+                    <span class="summary-label">{{ isVatIncluded ? $t('view.sale.invoiceDetail.subtotalBeforeVat') : $t('view.sale.invoiceDetail.subtotal') }}:</span>
                     <span class="summary-value">{{ formatNumber(totalItems) }}</span>
                   </div>
                   <div class="summary-row text-danger" v-if="versionData.specialDiscount > 0">
                     <span class="summary-label">{{ $t('view.sale.invoiceDetail.discountAmount') }}:</span>
                     <span class="summary-value"
-                      >-{{ formatNumber(versionData.specialDiscount) }}</span
+                      >-{{ formatNumber(isVatIncluded ? versionTotals.specialDiscount : versionData.specialDiscount) }}</span
                     >
                   </div>
                   <div class="summary-row text-success" v-if="versionData.specialAddition > 0">
                     <span class="summary-label">{{ $t('view.sale.invoiceDetail.surchargeAmount') }}:</span>
                     <span class="summary-value"
-                      >+{{ formatNumber(versionData.specialAddition) }}</span
+                      >+{{ formatNumber(isVatIncluded ? versionTotals.specialAddition : versionData.specialAddition) }}</span
                     >
                   </div>
                   <div class="summary-row" v-if="versionData.freightAndInsurance > 0">
                     <span class="summary-label">{{ $t('view.sale.invoiceDetail.freightAndInsurance') }}:</span>
                     <span class="summary-value">{{
-                      formatNumber(versionData.freightAndInsurance)
+                      formatNumber(isVatIncluded ? versionTotals.freight : versionData.freightAndInsurance)
                     }}</span>
+                  </div>
+                  <div class="summary-row" v-if="isVatIncluded">
+                    <span class="summary-label">{{ $t('view.sale.invoiceDetail.vatPercentRow', { percent: versionTotals.vatPercent }) }}:</span>
+                    <span class="summary-value">{{ formatNumber(versionTotals.vatAmount) }}</span>
                   </div>
                   <div class="summary-row summary-total">
                     <span class="summary-label font-weight-bold">{{ $t('view.sale.invoiceDetail.grandTotal') }}:</span>
@@ -298,6 +302,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import { warning } from '@/services/alert/sweetAlerts.js'
 import { useInvoiceApiStore } from '@/stores/modules/api/sale/invoice-store.js'
+import { computeInvoiceTotals, vatIncludedUnitEx, vatIncludedRowEx } from '@/services/utils/money.js'
 
 const modal = defineAsyncComponent(() => import('@/components/modal/modal-view.vue'))
 
@@ -349,13 +354,34 @@ export default {
   },
 
   computed: {
+    isVatIncluded() {
+      return !!this.invoiceData?.vatIncluded
+    },
+
+    // ใบ vatIncluded: ยอดทั้งหมดคิดผ่าน computeInvoiceTotals (ถอด VAT ทีละแถว) ให้ตรงกับใบจริง
+    versionTotals() {
+      return computeInvoiceTotals(this.versionData.items, {
+        vatIncluded: this.isVatIncluded,
+        currencyRate: this.versionData.currencyRate,
+        currencyUnit: this.versionData.currencyUnit,
+        specialDiscount: this.versionData.specialDiscount,
+        specialAddition: this.versionData.specialAddition,
+        freight: this.versionData.freightAndInsurance
+      })
+    },
+
     totalItems() {
+      if (this.isVatIncluded) return this.versionTotals.subTotal
       return this.versionData.items.reduce((sum, item) => {
         return sum + this.calculateItemTotal(item)
       }, 0)
     },
 
     totalAfterAdjustments() {
+      if (this.isVatIncluded) {
+        const t = this.versionTotals
+        return t.subTotal - t.specialDiscount + t.specialAddition
+      }
       const total = this.totalItems
       const afterDiscount = total - (this.versionData.specialDiscount || 0)
       const afterAddition = afterDiscount + (this.versionData.specialAddition || 0)
@@ -363,6 +389,7 @@ export default {
     },
 
     grandTotal() {
+      if (this.isVatIncluded) return this.versionTotals.grandTotalRounded
       return this.totalAfterAdjustments + (this.versionData.freightAndInsurance || 0)
     }
   },
@@ -399,12 +426,14 @@ export default {
     },
 
     calculateConvertedPrice(item) {
+      if (this.isVatIncluded) return vatIncludedUnitEx(item)
       const priceAfterDiscount = this.calculatePriceAfterDiscount(item)
       const rate = Number(this.versionData.currencyRate) || 1
       return priceAfterDiscount / rate
     },
 
     calculateItemTotal(item) {
+      if (this.isVatIncluded) return vatIncludedRowEx(item)
       const convertedPrice = this.calculateConvertedPrice(item)
       const qty = Number(item.qty) || 0
       return convertedPrice * qty

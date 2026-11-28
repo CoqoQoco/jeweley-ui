@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import ExcelJS from 'exceljs'
-import { computeDocumentTotals, convertedUnitPrice, lineAmount, roundHalfUp } from '@/services/utils/money.js'
+import { computeInvoiceTotals, convertedUnitPrice, lineAmount, roundHalfUp, vatIncludedUnitEx, vatIncludedRowEx } from '@/services/utils/money.js'
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
 import { writeMaterialsSheet } from '@/services/helper/excel/shared/material-rows.js'
 import {
@@ -44,9 +44,12 @@ export class InvoiceExcelBuilder {
     this.freightAndInsurance = Number(saleOrderData.freightAndInsurance) || 0
     this.vatPercent = Number(saleOrderData.vatPercent) || Number(saleOrderData.vat) || 0
 
-    // Calculate totals — ปัดเศษที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
-    const totals = computeDocumentTotals({
-      items: this.data,
+    // vatIncluded = THB ราคารวม VAT แล้ว: แถวแสดงราคาถอด VAT ปัดครึ่งขึ้นทีละแถว (header vat เป็น 0 จึงตั้ง % จากตัวกลาง)
+    this.vatIncluded = !!saleOrderData.vatIncluded
+
+    // Calculate totals — ปัดเศษผ่านตัวกลาง money.js (computeInvoiceTotals)
+    const totals = computeInvoiceTotals(this.data, {
+      vatIncluded: this.vatIncluded,
       currencyRate: this.currencyRate,
       currencyUnit: this.currencyUnit,
       specialDiscount: this.specialDiscount,
@@ -54,6 +57,7 @@ export class InvoiceExcelBuilder {
       freight: this.freightAndInsurance,
       vatPercent: this.vatPercent
     })
+    if (this.vatIncluded) this.vatPercent = totals.vatPercent
     this.subtotal = totals.subTotal
     this.specialDiscount = totals.specialDiscount
     this.specialAddition = totals.specialAddition
@@ -474,8 +478,12 @@ export class InvoiceExcelBuilder {
     this.data.forEach((item, index) => {
       // ปัดที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
       const qty = Number(item.qty) || 0
-      const convertedPrice = convertedUnitPrice(item, this.currencyRate, this.currencyUnit)
-      const amount = lineAmount(item, this.currencyRate, this.currencyUnit)
+      const convertedPrice = this.vatIncluded
+        ? vatIncludedUnitEx(item)
+        : convertedUnitPrice(item, this.currencyRate, this.currencyUnit)
+      const amount = this.vatIncluded
+        ? vatIncludedRowEx(item)
+        : lineAmount(item, this.currencyRate, this.currencyUnit)
 
       // Build multiline material text (matching PDF mini-table layout)
       const buildMaterialText = (type) => {

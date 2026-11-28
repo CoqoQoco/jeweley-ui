@@ -5,7 +5,7 @@ import ContinuousPrintPreviewPanel from '@/views/sale/invoice-detail/modal/conti
 import { DRAFT_INVOICE_NUMBER, buildSoDraftInvoiceData, computeInvoiceTotalExSpecial } from '@/services/helper/print/so-draft-bill.js'
 
 // host ต้องมี: saleOrderData, specialDiscount, specialAddition, freightAndInsurance, vatPercent,
-// selectedStockItemsForTotals, documentTotals (computeDocumentTotals)
+// selectedStockItemsForTotals, documentTotals (computeInvoiceTotals)
 export default {
   components: { InvoiceConfirmPrintModal, ContinuousPrintPreviewPanel },
 
@@ -30,6 +30,7 @@ export default {
     },
 
     draftBillTotalExSpecial() {
+      if (this.draftBillInvoiceData.vatIncluded) return this.documentTotals?.grandTotalRounded ?? 0
       return computeInvoiceTotalExSpecial(this.documentTotals?.subTotal, this.vatPercent)
     },
 

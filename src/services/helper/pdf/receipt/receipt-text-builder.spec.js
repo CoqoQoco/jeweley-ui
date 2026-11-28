@@ -322,3 +322,21 @@ describe('buildReceiptText — บรรทัดวัตถุดิบชิ�
     })
   })
 })
+
+describe('buildReceiptText — vatIncluded (TK202611280005)', () => {
+  const items = [1424, 3008, 1616].map((p, i) => baseItem({ stockNumber: `S${i}`, stockNumberOrigin: `S${i}`, appraisalPrice: p, discountPercent: 0, materialSummary: [] }))
+
+  it('ใบ vatIncluded: แถว ex-VAT + Subtotal 5,652.33 / VAT 7% 395.66 / TOTAL 6,047.99 ตรง invoice', () => {
+    const text = buildReceiptText(baseData({ items, vatIncluded: true, vatPercent: 0, grandTotal: 6047.99 }))
+    for (const v of ['1,330.84', '2,811.21', '1,510.28', '5,652.33', 'VAT 7%', '395.66', '6,047.99']) {
+      expect(text).toContain(v)
+    }
+  })
+
+  it('ใบที่ไม่ใช่ vatIncluded (เช่น POS ราคาป้าย) ยังคิดราคาป้ายเดิม ไม่มีบรรทัด VAT', () => {
+    const text = buildReceiptText(baseData({ items, vatPercent: 0, grandTotal: 6048 }))
+    expect(text).toContain('6,048.00')
+    expect(text).not.toContain('VAT 7%')
+    expect(text).not.toContain('5,652.33')
+  })
+})

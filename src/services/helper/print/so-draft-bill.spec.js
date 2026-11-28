@@ -20,7 +20,8 @@ describe('so-draft-bill', () => {
       specialDiscount: 10,
       specialAddition: 5,
       freightAndInsurance: 0,
-      vatPercent: 7
+      vatPercent: 7,
+      vatIncluded: false
     })
   })
 
@@ -30,6 +31,7 @@ describe('so-draft-bill', () => {
     expect(data.customerTaxId).toBe('')
     expect(data.currencyRate).toBe(1)
     expect(data.vatPercent).toBe(0)
+    expect(data.vatIncluded).toBe(true)
     expect(buildSoDraftInvoiceData({}).soNumber).toBe('')
   })
 

@@ -56,7 +56,9 @@
       v-model:goldResizePerUnit="form.goldResizePerUnit"
       v-model:silverResizeQty="form.silverResizeQty"
       v-model:silverResizePerUnit="form.silverResizePerUnit"
-      v-model:vatPercent="form.vatPercent"
+      :vatPercent="displayVatPercent"
+      :vatLocked="isVatLocked"
+      @update:vatPercent="form.vatPercent = $event"
       v-model:supportPercent="form.supportPercent"
       v-model:hasSupport="form.hasSupport"
       v-model:remark="form.remark"
@@ -79,6 +81,7 @@
 import { useBillingNoteApiStore } from '@/stores/modules/api/sale/billing-note-store.js'
 import { formatISOString } from '@/services/utils/dayjs.js'
 import { roundDecimal } from '@/services/utils/decimal.js'
+import { computeBillingTotals, isVatPercentLocked, effectiveBillingVatPercent, mapBillingNoteItems } from '@/services/helper/billing-note/billing-note-totals.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { warning, success } from '@/services/alert/sweetAlerts.js'
 
@@ -141,10 +144,21 @@ export default {
       return !!this.$route.params.running
     },
 
+    // mirror BillingTotals ของ server: ใบ vatIncluded ใช้ VAT ของใบเอง ใบอื่นใช้ subTotal × % VAT
+    billingTotals() {
+      return computeBillingTotals(this.selectedInvoices, this.form.vatPercent)
+    },
+
+    isVatLocked() {
+      return isVatPercentLocked(this.selectedInvoices)
+    },
+
+    displayVatPercent() {
+      return effectiveBillingVatPercent(this.selectedInvoices, this.form.vatPercent)
+    },
+
     subTotal() {
-      return roundDecimal(
-        this.selectedInvoices.reduce((sum, inv) => sum + (Number(inv.subTotal) || 0), 0)
-      )
+      return this.billingTotals.subTotal
     },
 
     goldResizeAmount() {
@@ -166,11 +180,11 @@ export default {
     },
 
     vatAmount() {
-      return roundDecimal((this.subTotal * (Number(this.form.vatPercent) || 0)) / 100)
+      return this.billingTotals.vatAmount
     },
 
     grandTotal() {
-      return roundDecimal(this.subTotal + this.vatAmount)
+      return this.billingTotals.grandTotal
     },
 
     canSave() {
@@ -203,12 +217,7 @@ export default {
       this.form.hasSupport = data.hasSupport
       this.form.remark = data.remark || ''
 
-      this.availableInvoices = (data.items || []).map((it) => ({
-        invoiceRunning: it.invoiceRunning,
-        invoiceDate: it.invoiceDate,
-        subTotal: it.amountBeforeVat,
-        customerName: data.customerName
-      }))
+      this.availableInvoices = mapBillingNoteItems(data)
       this.selectedInvoices = [...this.availableInvoices]
       this.hasFetchedInvoices = true
 
@@ -297,7 +306,7 @@ export default {
           silverResizePerUnit: Number(this.form.silverResizePerUnit) || 0,
           supportPercent: Number(this.form.supportPercent) || 0,
           hasSupport: this.form.hasSupport,
-          vatPercent: Number(this.form.vatPercent) || 0,
+          vatPercent: this.displayVatPercent,
           remark: this.form.remark || null
         }
 
@@ -320,7 +329,7 @@ export default {
         silverResizePerUnit: Number(this.form.silverResizePerUnit) || 0,
         supportPercent: Number(this.form.supportPercent) || 0,
         hasSupport: this.form.hasSupport,
-        vatPercent: Number(this.form.vatPercent) || 0,
+        vatPercent: this.displayVatPercent,
         remark: this.form.remark || null,
         products: this.products.map((p) => ({
           invoiceRunning: p.invoiceRunning,

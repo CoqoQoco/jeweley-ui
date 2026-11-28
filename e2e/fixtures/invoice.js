@@ -5,6 +5,7 @@
  * ให้ invoice นี้ — ดังนั้นต้องมีทั้ง stockConfirm.invoice === invoiceNumber และ data.stockItems
  *
  * @param {Object} o
+ * @param {boolean} [o.vatIncluded] ใบ THB ราคารวม VAT แล้ว (TK202611280005) — header vat ยังเป็น 0 เสมอ
  * @param {Array<{stockNumber:string, price:number, qty?:number, discount?:number}>} o.lines
  */
 export function buildInvoiceFixture({
@@ -16,6 +17,7 @@ export function buildInvoiceFixture({
   specialAddition = 0,
   freightAndInsurance = 0,
   vat = 0,
+  vatIncluded = false,
   lines
 }) {
   const stockItems = lines.map((l, i) => ({
@@ -50,6 +52,7 @@ export function buildInvoiceFixture({
     specialAddition,
     freightAndInsurance,
     vat,
+    vatIncluded,
     deposit: 0,
     payments: [],
     confirmedItems: []

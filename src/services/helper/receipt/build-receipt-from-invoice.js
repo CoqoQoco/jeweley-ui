@@ -104,6 +104,8 @@ export async function buildReceiptFromInvoice(invoiceNumber) {
     specialAddition: invoiceResponse.specialAddition,
     freightAndInsurance: invoiceResponse.freightAndInsurance,
     vatPercent: invoiceResponse.vat,
+    // THB ราคารวม VAT แล้ว (vat ใน header = 0): builder ถอด VAT ทีละแถวให้ตรงกับ invoice
+    vatIncluded: !!invoiceResponse.vatIncluded,
     // ยอดจริงถูกปัดขึ้นด้วย CeilMoney ที่ backend แล้ว — ห้ามคำนวณเองฝั่ง client
     grandTotal: invoiceResponse.grandTotalRounded ?? invoiceResponse.grandTotalRaw,
     // D6: มัดจำที่หักจากใบสั่งขาย (SO deposit) มากับ Invoice/Get ตรงๆ — ต้องส่งต่อให้ builder หักออกจากยอดคงเหลือ

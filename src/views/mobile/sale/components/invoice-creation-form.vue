@@ -157,7 +157,7 @@
         </div>
 
         <div class="summary-row">
-          <span class="summary-label">{{ $t('view.mobile.sale.invoiceVatAmount') }}</span>
+          <span class="summary-label">{{ $t('view.mobile.sale.invoiceVatAmount') }}<template v-if="isVatIncluded"> ({{ $t('view.sale.saleOrder.vatIncludedHint') }})</template></span>
           <span class="summary-value">{{ formatCurrency(vatAmount) }}</span>
         </div>
 
@@ -251,7 +251,7 @@ import { success, error, warning } from '@/services/alert/sweetAlerts.js'
 import { confirmThenSubmit } from '@/composables/useConfirmSubmit.js'
 import { PAYMENT_METHODS, MOBILE_SALE_PAYMENT_LABEL_KEYS, getPaymentApiName } from '@/constants/payment-methods.js'
 import InputTextGeneric from '@/components/generic/InputTextGeneric.vue'
-import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
+import { computeInvoiceTotals, convertedUnitPrice, lineAmount, vatIncludedRowEx, willBeVatIncluded } from '@/services/utils/money.js'
 import { hasMarginAccess } from '@/services/permission/margin-access.js'
 
 // value string ที่ v-model ของฟอร์มนี้ใช้ ('credit_card'/'credit_term' มี underscore ต่างจาก key ของ constants)
@@ -338,10 +338,15 @@ export default {
       return this.stockItems.filter(item => this.selectedItems.includes(item.stockNumber))
     },
 
-    // ยอดรวม F.O.B. ของรายการที่เลือก — ต้องคิดจากตัวกลาง computeDocumentTotals เพื่อให้เกณฑ์การปัดตรงกับใบ PDF (half-up)
+    // THB && VAT = 0 → server จะตั้งใบนี้เป็น vatIncluded (ราคารวม VAT แล้ว) — preview ต้องใช้กติกาเดียวกัน
+    isVatIncluded() {
+      return willBeVatIncluded({ currencyUnit: this.displayCurrency, currencyRate: this.currencyRate, vat: this.vatPercent })
+    },
+
+    // ยอดรวมของรายการที่เลือก — ต้องคิดจากตัวกลาง computeInvoiceTotals เพื่อให้ตรงกับยอดที่ server เก็บและใบ PDF
     documentTotals() {
-      return computeDocumentTotals({
-        items: this.selectedStockItemsForTotals,
+      return computeInvoiceTotals(this.selectedStockItemsForTotals, {
+        vatIncluded: this.isVatIncluded,
         currencyRate: this.currencyRate,
         currencyUnit: this.displayCurrency,
         specialDiscount: this.specialDiscount,
@@ -399,6 +404,7 @@ export default {
         discountPercent: item.discountPercent,
         qty: Number(item.qty) || 1
       }
+      if (this.isVatIncluded) return vatIncludedRowEx(shapedItem)
       return lineAmount(shapedItem, this.currencyRate, this.displayCurrency)
     },
 

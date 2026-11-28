@@ -1,5 +1,5 @@
 import { convertAmountToThaiText } from '@/services/utils/thai-baht-text.js'
-import { roundHalfUp } from '@/services/utils/money.js'
+import { round2, computeInvoiceTotals, vatIncludedUnitEx, vatIncludedRowEx } from '@/services/utils/money.js'
 import { wrapAddressLines } from '@/services/helper/print/print-text.js'
 
 const MM_TO_INCH = 1 / 25.4
@@ -68,41 +68,58 @@ function finiteOr(val, fallback) {
   return Number.isFinite(num) ? num : fallback
 }
 
-// กติกาตัดทศนิยม 2 ตำแหน่งไม่ปัด = ร้านเป็นผู้ตัดสินใจเลือก (TK202611240006 comment 1041) ไม่ใช่ dev — ห้ามแก้จนกว่าร้านสั่ง
-function trunc2(value) {
-  const num = roundHalfUp(value, 6)
-  if (!Number.isFinite(num) || num === 0) return 0
-  const abs = Math.abs(num)
-  const cut = Math.floor(Number(`${abs}e2`)) / 100
-  return num < 0 ? -cut : cut
+// ใบ vatIncluded (THB ราคารวม VAT แล้ว) ที่พิมพ์โหมด subVat: ตัวเลขทุกช่องต้องตรงกับ invoice (ถอด VAT ทีละแถว ปัดครึ่งขึ้น 2 ตำแหน่ง รวม special)
+// ยอดรวมที่พิมพ์ = ยอดหลัง special ก่อน VAT (บวก VAT แล้วเท่ายอดรวมทั้งสิ้น) — แถวอาจรวมไม่เท่ายอดนี้เมื่อมี special
+function usesInvoiceFigures(invoice, L) {
+  return !!invoice?.vatIncluded && L.unitPriceMode === 'subVat'
 }
 
 function resolveUnitPriceFor(item, L, rate) {
   const base = Number(item.appraisalPrice) * (1 - Number(item.discountPercent) / 100)
-  let factor = 1
-  if (L.unitPriceMode === 'addVat') factor = 1 + L.unitVatPercent / 100
-  else if (L.unitPriceMode === 'subVat') factor = 1 / (1 + L.unitVatPercent / 100)
-  return trunc2(base * factor / rate)
+  let value = base
+  if (L.unitPriceMode === 'addVat') value = base * (1 + L.unitVatPercent / 100)
+  else if (L.unitPriceMode === 'subVat') value = base / (1 + L.unitVatPercent / 100)
+  return round2(value / rate)
 }
 
-function computeTotalsFromResolved(items, L, rate) {
+function unitPriceOf(item, L, rate, invoiceFigures) {
+  return invoiceFigures ? vatIncludedUnitEx(item) : resolveUnitPriceFor(item, L, rate)
+}
+
+function rowAmountOf(item, unitPrice, invoiceFigures) {
+  return invoiceFigures ? vatIncludedRowEx(item) : round2(unitPrice * Number(item.qty))
+}
+
+function computeTotalsFromResolved(invoice, L, rate) {
+  const items = invoice?.items || []
+  if (usesInvoiceFigures(invoice, L)) {
+    const t = computeInvoiceTotals(items, {
+      vatIncluded: true,
+      specialDiscount: invoice.specialDiscount,
+      specialAddition: invoice.specialAddition,
+      freight: invoice.freightAndInsurance
+    })
+    const vat = L.showVat ? t.vatAmount : 0
+    return { subtotal: t.afterSpecial, vat, grandTotal: round2(t.afterSpecial + vat) }
+  }
   let sum = 0
   for (const item of items) {
-    sum += trunc2(resolveUnitPriceFor(item, L, rate) * Number(item.qty))
+    sum += round2(resolveUnitPriceFor(item, L, rate) * Number(item.qty))
   }
-  const subtotal = roundHalfUp(sum, 2)
-  const vat = L.showVat ? trunc2(subtotal * L.summaryVatPercent / 100) : 0
-  return { subtotal, vat, grandTotal: roundHalfUp(subtotal + vat, 2) }
+  const subtotal = round2(sum)
+  const vat = L.showVat ? round2(subtotal * L.summaryVatPercent / 100) : 0
+  return { subtotal, vat, grandTotal: round2(subtotal + vat) }
 }
 
 /**
  * Pure totals of the continuous bill (invoice/foreign currency) — same logic the builder prints.
- * Every figure is truncated (cut, not rounded) to 2 decimals so the printed rows add up exactly.
+ * Every figure is rounded half-up to 2 decimals (round2) so the printed rows add up exactly.
+ * vatIncluded invoices in subVat mode use the invoice's own figures (specials included).
  */
 export function computeBillTotals(invoice, layout) {
   const L = resolveLayout(layout)
   const rate = Number(invoice?.currencyRate) || 1
-  return computeTotalsFromResolved(invoice?.items || [], L, rate)
+  return computeTotalsFromResolved(invoice, L, rate)
 }
 
 function resolveLayout(layout) {
@@ -228,12 +245,9 @@ export function buildBillPrintModel(invoice, layout, options = {}) {
 
   const r = currencyRate
 
-  // Compute per-item unitPrice based on mode, already converted to foreign currency
-  function resolveUnitPrice(item) {
-    return resolveUnitPriceFor(item, L, r)
-  }
+  const invoiceFigures = usesInvoiceFigures(invoice, L)
 
-  const totals = computeTotalsFromResolved(items, L, r)
+  const totals = computeTotalsFromResolved(invoice, L, r)
   const subtotalSum = totals.subtotal
   const vatAmount = totals.vat
   const grandTotal = totals.grandTotal
@@ -285,9 +299,9 @@ export function buildBillPrintModel(invoice, layout, options = {}) {
     let itemNo = currentPage * L.maxRowsPerPage + 1
 
     for (const item of pageItems) {
-      const tagAfterDisc = trunc2(Number(item.appraisalPrice) * (1 - Number(item.discountPercent) / 100))
-      const unitPrice = resolveUnitPrice(item)
-      const lineAmount = trunc2(unitPrice * Number(item.qty))
+      const tagAfterDisc = round2(Number(item.appraisalPrice) * (1 - Number(item.discountPercent) / 100))
+      const unitPrice = unitPriceOf(item, L, r, invoiceFigures)
+      const lineAmount = rowAmountOf(item, unitPrice, invoiceFigures)
 
       if (L.showItemNo) left(String(itemNo), L.xItemNo, y, ifs)
       if (L.showDescription) left(item.productNameEN || '', L.xItemDesc, y, ifs)
@@ -299,7 +313,7 @@ export function buildBillPrintModel(invoice, layout, options = {}) {
 
       // priceBeforeDiscount column = appraisalPrice (cost price, unchanged)
       if (L.showPriceBeforeDiscount) {
-        right(money(trunc2(item.appraisalPrice)), L.xPriceBeforeDiscount, y, ifs)
+        right(money(round2(item.appraisalPrice)), L.xPriceBeforeDiscount, y, ifs)
       }
 
       // priceIncludingVat column = tagAfterDisc (stable tag price after discount)

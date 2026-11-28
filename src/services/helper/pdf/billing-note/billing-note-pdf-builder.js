@@ -293,7 +293,7 @@ export class BillingNotePdfBuilder {
     const grandTotal = Number(this.data.grandTotal) || 0
 
     const summaryRows = [{ label: 'ยอดก่อน VAT', value: this.formatMoney(subTotal) }]
-    summaryRows.push({ label: `VAT ${vatPercent}%`, value: this.formatMoney(vatAmount) })
+    summaryRows.push({ label: vatPercent > 0 ? `VAT ${vatPercent}%` : 'VAT', value: this.formatMoney(vatAmount) })
 
     return {
       margin: [0, 10, 0, 0],

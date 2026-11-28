@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import { initPdfMake } from '@/services/utils/pdf-make'
-import { computeDocumentTotals, convertedUnitPrice, lineAmount } from '@/services/utils/money.js'
+import { computeInvoiceTotals, convertedUnitPrice, lineAmount, vatIncludedUnitEx, vatIncludedRowEx } from '@/services/utils/money.js'
 import { formatItemStyleCode } from '@/services/utils/item-code.js'
 import { COMPANY_INFO, COMPANY_TAX_ID, COMPANY_BANK, loadCompanyInfo } from '@/config/company-info.js'
 import { PDF_COLORS, PDF_STYLES, PDF_FONT } from '../shared/pdf-theme.js'
@@ -58,9 +58,12 @@ export class InvoiceSummaryPdfBuilder {
     this.showCifLabel = saleOrderData?.showCifLabel !== undefined ? saleOrderData.showCifLabel : true
     this.showImages = saleOrderData?.showImages !== false
 
-    // Compute financial totals — ปัดเศษที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
-    const totals = computeDocumentTotals({
-      items: this.data,
+    // vatIncluded = THB ราคารวม VAT แล้ว: แถวแสดงราคาถอด VAT ปัดครึ่งขึ้นทีละแถว (header vat เป็น 0 จึงตั้ง % จากตัวกลาง)
+    this.vatIncluded = !!saleOrderData.vatIncluded
+
+    // Compute financial totals — ปัดเศษผ่านตัวกลาง money.js (computeInvoiceTotals)
+    const totals = computeInvoiceTotals(this.data, {
+      vatIncluded: this.vatIncluded,
       currencyRate: this.currencyRate,
       currencyUnit: this.currencyUnit,
       specialDiscount: this.specialDiscount,
@@ -68,6 +71,7 @@ export class InvoiceSummaryPdfBuilder {
       freight: this.freightAndInsurance,
       vatPercent: this.vatPercent
     })
+    if (this.vatIncluded) this.vatPercent = totals.vatPercent
     this.subtotal = totals.subTotal
     this.specialDiscount = totals.specialDiscount
     this.specialAddition = totals.specialAddition
@@ -143,8 +147,12 @@ export class InvoiceSummaryPdfBuilder {
 
       // ปัดที่ราคาต่อชิ้นก่อนเสมอผ่านตัวกลาง money.js
       const qty = Number(item.qty) || 0
-      const convertedPrice = convertedUnitPrice(item, this.currencyRate, this.currencyUnit)
-      const amount = lineAmount(item, this.currencyRate, this.currencyUnit)
+      const convertedPrice = this.vatIncluded
+        ? vatIncludedUnitEx(item)
+        : convertedUnitPrice(item, this.currencyRate, this.currencyUnit)
+      const amount = this.vatIncluded
+        ? vatIncludedRowEx(item)
+        : lineAmount(item, this.currencyRate, this.currencyUnit)
 
       body.push([
         setTableCell((actualIndex + 1).toString()),

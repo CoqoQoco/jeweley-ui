@@ -49,9 +49,11 @@ export function isTaxVatModeLocked(invoiceData) {
   return isMaterialInvoice(invoiceData)
 }
 
-// ใบสินค้า THB ที่บันทึก vatPercent=0 = ราคาในใบรวม VAT แล้ว → ถอด VAT ก่อนแล้วบวกท้ายบิล
+// ใบสินค้า THB ที่ราคารวม VAT แล้ว (vatIncluded) → ถอด VAT ทีละแถวแล้วบวกท้ายบิล
+// ใบเก่าที่ยังไม่มี flag: THB และ vatPercent=0 ถือว่ารวม VAT แล้วเช่นกัน
 export function defaultTaxVatMode(invoiceData) {
   if (isTaxVatModeLocked(invoiceData)) return TAX_VAT_MODE_EXCLUDE
+  if (invoiceData?.vatIncluded) return TAX_VAT_MODE_INCLUDE
   const unit = String(invoiceData?.currencyUnit || 'THB').trim().toUpperCase()
   if (unit === 'THB' && Number(invoiceData?.vatPercent) === 0) return TAX_VAT_MODE_INCLUDE
   return TAX_VAT_MODE_EXCLUDE

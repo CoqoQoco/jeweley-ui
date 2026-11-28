@@ -171,3 +171,45 @@ describe('InvoicePdfBuilder — รวมบรรทัดเงิน: ยอ�
     expect(JSON.stringify(m.b.getSummarySection())).toBe(JSON.stringify(a.b.getSummarySection()))
   })
 })
+
+describe('InvoicePdfBuilder — vatIncluded (THB ราคารวม VAT แล้ว)', () => {
+  const make = (prices, saleOrderData, itemsPerPage = 30) =>
+    new InvoicePdfBuilder(
+      prices.map((p) => ({ appraisalPrice: p, discountPercent: 0, qty: 1 })),
+      { name: 'Test Customer' },
+      '2026-11-18',
+      { vatIncluded: true, vatPercent: 0, ...saleOrderData },
+      'THB',
+      1,
+      'INV-TEST-VAT',
+      itemsPerPage
+    )
+
+  it('1424/3008/1616 → แถว 1,330.84 / 2,811.21 / 1,510.28 รวม 5,652.33 VAT 395.66 รวมทั้งสิ้น 6,047.99', () => {
+    const b = make([1424, 3008, 1616])
+    const body = b.buildFinalTableBody(b.data, 0, 1)
+    expect([1, 2, 3].map((i) => cellAmount(body[i]))).toEqual([1330.84, 2811.21, 1510.28])
+    expect(b.subtotal).toBe(5652.33)
+    expect(b.vatPercent).toBe(7)
+    expect(b.vatAmount).toBe(395.66)
+    expect(b.grandTotalRounded).toBe(6047.99)
+    expect(cellAmount(findRow(body, (t) => t === 'VAT (7%)'))).toBe(395.66)
+    expect(cellAmount(findRow(body, (t) => t === 'C.I.F'))).toBe(6047.99)
+  })
+
+  it('INV261118022 → 347,214.94 / 24,305.05 / 371,519.99', () => {
+    const prices = [63400, 35040, 47840, 47920, 7920, 16480, 9360, 16000, 15880, 10480, 8720, 10280, 15840, 9520, 8200, 7480, 7360, 7560, 10720, 8720, 6800]
+    const b = make(prices)
+    expect(b.subtotal).toBe(347214.94)
+    expect(b.vatAmount).toBe(24305.05)
+    expect(b.grandTotalRounded).toBe(371519.99)
+  })
+
+  it('ส่วนลดพิเศษรวม VAT: 50010.24 ลด 10.24 → ส่วนลดที่พิมพ์ 9.57 รวมทั้งสิ้น 50,000.00', () => {
+    const b = make([50010.24], { specialDiscount: 10.24 })
+    const body = b.buildFinalTableBody(b.data, 0, 1)
+    expect(cellAmount(findRow(body, (t) => t === 'SPECIAL DISCOUNT'))).toBe(-9.57)
+    expect(b.vatAmount).toBe(3271.03)
+    expect(b.grandTotalRounded).toBe(50000)
+  })
+})

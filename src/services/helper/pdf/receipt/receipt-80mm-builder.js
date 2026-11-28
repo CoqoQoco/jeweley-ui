@@ -5,6 +5,7 @@ import { initPdfMake } from '@/services/utils/pdf-make.js'
 import { i18n } from '@/plugins/i18n/config.js'
 import { COMPANY_INFO, COMPANY_SOCIAL, socialUrl } from '@/config/company-info.js'
 import { PAYMENT_METHOD_BY_CODE } from '@/constants/payment-methods.js'
+import { computeInvoiceTotals, vatIncludedUnitEx, vatIncludedRowEx } from '@/services/utils/money.js'
 
 // 80mm thermal paper in pt (1mm = 2.83465pt)
 const PAGE_WIDTH = 226.77
@@ -138,11 +139,28 @@ export class Receipt80mmBuilder {
     this.freightAndInsurance = toNumber(this.data.freightAndInsurance)
     this.vatPercent = toNumber(this.data.vatPercent)
 
-    this.subtotal = this.calculateSubtotal()
+    // vatIncluded (THB ราคารวม VAT แล้ว): แถว/ยอดรวม/VAT ต้องตรงกับ invoice — คิดผ่าน computeInvoiceTotals (special ถอด VAT แล้ว)
+    this.vatIncluded = !!this.data.vatIncluded
+    const invoiceTotals = this.vatIncluded
+      ? computeInvoiceTotals(this.items, {
+        vatIncluded: true,
+        specialDiscount: this.specialDiscount,
+        specialAddition: this.specialAddition,
+        freight: this.freightAndInsurance
+      })
+      : null
+    if (invoiceTotals) {
+      this.specialDiscount = invoiceTotals.specialDiscount
+      this.specialAddition = invoiceTotals.specialAddition
+      this.freightAndInsurance = invoiceTotals.freight
+      this.vatPercent = invoiceTotals.vatPercent
+    }
+
+    this.subtotal = invoiceTotals ? invoiceTotals.subTotal : this.calculateSubtotal()
     this.totalAfterAdjust = this.subtotal - this.specialDiscount + this.specialAddition
     this.totalBeforeVat = this.totalAfterAdjust + this.freightAndInsurance
-    this.vatAmount = (this.totalBeforeVat * this.vatPercent) / 100
-    this.calculatedGrandTotal = this.totalBeforeVat + this.vatAmount
+    this.vatAmount = invoiceTotals ? invoiceTotals.vatAmount : (this.totalBeforeVat * this.vatPercent) / 100
+    this.calculatedGrandTotal = invoiceTotals ? invoiceTotals.grandTotalRounded : this.totalBeforeVat + this.vatAmount
 
     // grandTotal จาก backend เป็นค่าหลักเสมอถ้าส่งมา — ค่าที่คำนวณเองใช้เทียบ/แสดงบรรทัดย่อยเท่านั้น
     this.grandTotal = this.isProvided(this.data.grandTotal)
@@ -228,8 +246,8 @@ export class Receipt80mmBuilder {
       const qty = toNumber(item?.qty)
       const discountPercent = toNumber(item?.discountPercent)
       const priceAfterDiscount = price * (1 - discountPercent / 100)
-      const convertedPrice = priceAfterDiscount / this.currencyRate
-      const total = convertedPrice * qty
+      const convertedPrice = this.vatIncluded ? vatIncludedUnitEx(item) : priceAfterDiscount / this.currencyRate
+      const total = this.vatIncluded ? vatIncludedRowEx(item) : convertedPrice * qty
       const description = item?.description || item?.stockNumber || '-'
 
       blocks.push({ text: description, fontSize: 9, bold: true, margin: [0, 2, 0, 0] })

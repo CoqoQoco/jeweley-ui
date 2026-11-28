@@ -64,6 +64,7 @@ async function buildVatModel({ paperSize, invoiceData, invoiceItems, printData, 
     specialDiscount: Number(invoiceData.specialDiscount) || 0,
     specialAddition: Number(invoiceData.specialAddition) || 0,
     freightAndInsurance: Number(invoiceData.freightAndInsurance) || 0,
+    vatIncluded: !!invoiceData.vatIncluded,
     vatPercent: Math.min(100, Math.max(0, Number(printData.taxVatPercent ?? defaultTaxVatPercent(invoiceData)) || 0))
   }
 
@@ -127,7 +128,8 @@ async function buildBillModel({ invoiceData, invoiceItems, printData, invoiceNo,
     specialDiscount: Number(invoiceData.specialDiscount) || 0,
     specialAddition: Number(invoiceData.specialAddition) || 0,
     freightAndInsurance: Number(invoiceData.freightAndInsurance) || 0,
-    vatPercent: Number(invoiceData.vatPercent) || 0
+    vatPercent: Number(invoiceData.vatPercent) || 0,
+    vatIncluded: !!invoiceData.vatIncluded
   }
 
   const layoutPayload = mergedBillLayout ? { ...mergedBillLayout } : {}

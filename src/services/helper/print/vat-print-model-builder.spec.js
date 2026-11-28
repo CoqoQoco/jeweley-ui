@@ -139,6 +139,30 @@ describe('buildVatPrintModel - vatMode include (TK202611250002)', () => {
   })
 })
 
+describe('buildVatPrintModel - vatIncluded invoice (include mode uses invoice figures)', () => {
+  const rows = [3560, 7520, 4040].map((p) => ({ productNameEN: 'X', qty: 1, appraisalPrice: p, discountPercent: 60 }))
+
+  it('INV261112012 vatIncluded => 5,652.33 / 395.66 / 6,047.99', () => {
+    const inv = invoiceWith(0, 7, { items: rows, vatIncluded: true })
+    const texts = summaryTexts(buildVatPrintModel(inv, null, { vatMode: 'include' }))
+    for (const t of ['1,330.84', '2,811.21', '1,510.28', '5,652.33', '395.66', '6,047.99']) {
+      expect(texts).toContain(t)
+    }
+  })
+
+  it('specials are VAT-inclusive: 50010.24 less 10.24 => 46,728.97 / 3,271.03 / 50,000.00', () => {
+    const inv = invoiceWith(50010.24, 7, { vatIncluded: true, specialDiscount: 10.24 })
+    const texts = summaryTexts(buildVatPrintModel(inv, null, { vatMode: 'include' }))
+    for (const t of ['46,728.97', '3,271.03', '50,000.00']) expect(texts).toContain(t)
+  })
+
+  it('exclude mode on a vatIncluded invoice keeps the legacy path', () => {
+    const inv = invoiceWith(0, 7, { items: rows, vatIncluded: true })
+    const texts = summaryTexts(buildVatPrintModel(inv, null, { vatMode: 'exclude' }))
+    expect(texts).toContain('6,471.36')
+  })
+})
+
 describe('buildVatPrintModel - customer address wrapping', () => {
   const addrPrims = (model, y) => model.pages[0].filter((p) => Math.abs(p.y - y) < 0.0001 && Math.abs(p.x - VAT_LAYOUT_DEFAULTS.vat.customerAddress.x) < 0.0001)
 

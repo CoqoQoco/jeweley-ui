@@ -92,7 +92,11 @@ describe('buildContinuousPrintModel - tax VAT %', () => {
 })
 
 describe('defaultTaxVatMode (TK202611250002)', () => {
-  it('THB product invoice saved with vat 0 => include', () => {
+  it('vatIncluded flag => include (even if saved vat is not 0)', () => {
+    expect(defaultTaxVatMode({ vatIncluded: true, vatPercent: 0, currencyUnit: 'THB' })).toBe('include')
+    expect(defaultTaxVatMode({ vatIncluded: true, vatPercent: 7 })).toBe('include')
+  })
+  it('old THB product invoice (no flag) saved with vat 0 => include', () => {
     expect(defaultTaxVatMode({ vatPercent: 0, currencyUnit: 'THB' })).toBe('include')
     expect(defaultTaxVatMode({ vatPercent: 0 })).toBe('include')
   })

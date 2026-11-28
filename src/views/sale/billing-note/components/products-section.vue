@@ -140,7 +140,7 @@ export default {
         { field: 'productTypeName', header: this.$t('view.sale.billingNote.productTypeName'), minWidth: '150px', sortable: false, template: 'productTypeNameTemplate' },
         { field: 'productionType', header: this.$t('view.sale.billingNote.productionType'), minWidth: '150px', sortable: false, template: 'productionTypeTemplate' },
         { field: 'qty', header: this.$t('view.sale.billingNote.qty'), minWidth: '100px', sortable: false, template: 'qtyTemplate' },
-        { field: 'amount', header: this.$t('view.sale.billingNote.amount'), minWidth: '120px', sortable: false, template: 'amountTemplate' }
+        { field: 'amount', header: this.$t('view.sale.billingNote.amountBeforeVat'), minWidth: '120px', sortable: false, template: 'amountTemplate' }
       ]
 
       if (!this.readonly) {

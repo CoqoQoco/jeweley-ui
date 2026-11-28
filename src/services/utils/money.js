@@ -171,6 +171,115 @@ export function computeDocumentTotals({
 }
 
 /**
+ * VAT ที่ใช้ถอดราคา invoice THB ที่ "ราคารวม VAT แล้ว" (flag vatIncluded) — ต้องตรงกับ API (MathHelper)
+ */
+export const VAT_INCLUDED_PERCENT = 7
+
+/**
+ * ปัดครึ่งขึ้น 2 ตำแหน่ง หลังปัด 6 ตำแหน่งก่อน — ต้องตรง MathHelper.Round2 ฝั่ง API ทุกบิต
+ * (ใช้ใน invoice ที่ vatIncluded เท่านั้น ที่ปัดทีละแถว)
+ * @param {number|string} value
+ * @returns {number}
+ */
+export function round2(value) {
+  return roundHalfUp(roundHalfUp(value, 6), 2)
+}
+
+/**
+ * ราคาต่อชิ้นหลังหักส่วนลด ถอด VAT แล้ว ปัด 2 ตำแหน่ง (invoice vatIncluded)
+ * @param {Object} item - { appraisalPrice, discountPercent }
+ * @param {number} [vatPercent=7]
+ * @returns {number}
+ */
+export function vatIncludedUnitEx(item, vatPercent = VAT_INCLUDED_PERCENT) {
+  const net = (Number(item?.appraisalPrice) || 0) * (1 - (Number(item?.discountPercent) || 0) / 100)
+  return round2(net / (1 + vatPercent / 100))
+}
+
+/**
+ * ยอดต่อแถวของ invoice vatIncluded = round2(unitEx × qty)
+ * @param {Object} item - { appraisalPrice, discountPercent, qty }
+ * @param {number} [vatPercent=7]
+ * @returns {number}
+ */
+export function vatIncludedRowEx(item, vatPercent = VAT_INCLUDED_PERCENT) {
+  return round2(vatIncludedUnitEx(item, vatPercent) * (Number(item?.qty) || 0))
+}
+
+/**
+ * invoice ใหม่จะถูก server ตั้งเป็น vatIncluded เมื่อ THB && vat == 0 && currencyRate == 1 (POS และ INVM ไม่ผ่านทางนี้)
+ * สกุลว่าง = ไม่ใช่ THB (เหมือน server) · currencyRate ไม่ส่งมา = 1
+ * ต้องแก้คู่กับ jewelry-api InvoiceService.Create (เงื่อนไข vatIncluded) เสมอ — ห้ามแก้ฝั่งเดียว
+ * @param {{ currencyUnit?: string, currencyRate?: number|string, vat?: number|string }} header
+ * @returns {boolean}
+ */
+export function willBeVatIncluded(header) {
+  const rawRate = header?.currencyRate
+  const rate = rawRate === undefined || rawRate === null || rawRate === '' ? 1 : Number(rawRate)
+  return !isForeignCurrency(header?.currencyUnit) && (Number(header?.vat) || 0) === 0 && rate === 1
+}
+
+/**
+ * ยอดรวมของ invoice — vatIncluded ใช้กติกาถอด VAT ทีละแถว (ตรง MathHelper.ComputeInvoiceTotalsVatIncluded)
+ * ไม่งั้นใช้ computeDocumentTotals เดิม
+ *
+ * ผลลัพธ์ vatIncluded: subTotal = Σ แถว ex-VAT (ก่อน special), specialDiscount/specialAddition/freight = ex-VAT
+ * (ตัวเลขที่ลงบัญชี — specialDiscountIncl ฯลฯ คือค่าที่กรอก/รวม VAT), vatAmount = VAT, grandTotalRounded = ยอดรวมทั้งสิ้น
+ *
+ * @param {Array} items - { appraisalPrice, discountPercent, qty }
+ * @param {Object} header - { vatIncluded, currencyRate, currencyUnit, specialDiscount, specialAddition, freight | freightAndInsurance, vatPercent }
+ */
+export function computeInvoiceTotals(items, header = {}) {
+  const freightInput = header.freight ?? header.freightAndInsurance ?? 0
+  if (!header.vatIncluded) {
+    return {
+      ...computeDocumentTotals({
+        items,
+        currencyRate: header.currencyRate,
+        currencyUnit: header.currencyUnit,
+        specialDiscount: header.specialDiscount,
+        specialAddition: header.specialAddition,
+        freight: freightInput,
+        vatPercent: header.vatPercent
+      }),
+      vatIncluded: false
+    }
+  }
+
+  const list = Array.isArray(items) ? items : []
+  const pct = VAT_INCLUDED_PERCENT
+  const divisor = 1 + pct / 100
+  const specialDiscountIncl = Number(header.specialDiscount) || 0
+  const specialAdditionIncl = Number(header.specialAddition) || 0
+  const freightIncl = Number(freightInput) || 0
+
+  const subTotal = round2(list.reduce((sum, item) => sum + vatIncludedRowEx(item, pct), 0))
+  const specialDiscount = round2(specialDiscountIncl / divisor)
+  const specialAddition = round2(specialAdditionIncl / divisor)
+  const freight = round2(freightIncl / divisor)
+  const afterSpecial = round2(subTotal - specialDiscount + specialAddition + freight)
+  const vatAmount = round2(afterSpecial * (pct / 100))
+  const grandTotal = round2(afterSpecial + vatAmount)
+
+  return {
+    subTotal,
+    specialDiscount,
+    specialAddition,
+    freight,
+    specialDiscountIncl,
+    specialAdditionIncl,
+    freightIncl,
+    afterSpecial,
+    vatPercent: pct,
+    vatAmount,
+    grandTotalRaw: grandTotal,
+    grandTotalRounded: grandTotal,
+    roundingAdjustment: 0,
+    vatIncluded: true
+  }
+}
+
+/**
  * แปลงยอดเงินเอกสารเป็น string ทศนิยม 2 ตำแหน่งพร้อม thousand separator เสมอ
  * (ใช้แสดงผลบนตารางเอกสารขาย — สกุลต่างประเทศแสดง 2 ตำแหน่งเหมือน THB ตามมาตรฐานใหม่)
  * ค่าที่ไม่ใช่ตัวเลขให้เป็น '0.00'
